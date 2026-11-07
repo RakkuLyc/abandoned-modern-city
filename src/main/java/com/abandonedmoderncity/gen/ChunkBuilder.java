@@ -1,0 +1,723 @@
+package com.abandonedmoderncity.gen;
+
+import com.abandonedmoderncity.core.BlockCode;
+import com.abandonedmoderncity.core.ChunkPlan;
+import com.abandonedmoderncity.core.Lot;
+import com.abandonedmoderncity.core.Params;
+import com.abandonedmoderncity.core.Profile;
+import com.abandonedmoderncity.core.WorldPlan;
+import java.util.ArrayList;
+import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.WorldGenRegion;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.ai.village.poi.PoiTypes;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.BambooStalkBlock;
+import net.minecraft.world.level.block.BeehiveBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BushBlock;
+import net.minecraft.world.level.block.CactusBlock;
+import net.minecraft.world.level.block.CarpetBlock;
+import net.minecraft.world.level.block.CaveVinesBlock;
+import net.minecraft.world.level.block.CaveVinesPlantBlock;
+import net.minecraft.world.level.block.CocoaBlock;
+import net.minecraft.world.level.block.HangingRootsBlock;
+import net.minecraft.world.level.block.HugeMushroomBlock;
+import net.minecraft.world.level.block.IronBarsBlock;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.MultifaceBlock;
+import net.minecraft.world.level.block.PointedDripstoneBlock;
+import net.minecraft.world.level.block.SnowLayerBlock;
+import net.minecraft.world.level.block.SporeBlossomBlock;
+import net.minecraft.world.level.block.SugarCaneBlock;
+import net.minecraft.world.level.block.VineBlock;
+import net.minecraft.world.level.block.WallBlock;
+import net.minecraft.world.level.block.WebBlock;
+import net.minecraft.world.level.block.state.properties.WallSide;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
+
+/**
+ * Writes the plan of one chunk into the proto chunk.
+ *
+ * <ol>
+ *   <li>Each planned column is read once (highest block, natural ground, its surface block), then built:
+ *   <b>roads</b> on the ground cut everything above and fill below with stone; <b>bridges</b> get a two-block deck,
+ *   parapets and pillars down to the ground; <b>tunnels</b> get a floor, 5 blocks of air and a ceiling (glowstone
+ *   every 12 blocks), between two {@code TUNNEL_WALL} columns; <b>lots</b> are flattened to the city level and get
+ *   their yard, park, plaza or building; <b>slopes</b> clamp the natural ground to the planned range.</li>
+ *   <li>Liquids next to any air the chunk opened become stone (no water or lava flowing onto the streets later).</li>
+ *   <li>Leaves left without their trunk are marked for post-processing, so vanilla lets them decay.</li>
+ *   <li>Trees, lakes and plants that chunks decorated later put on neighbouring roads are removed again
+ *   ({@link #repairNeighbours}).</li>
+ * </ol>
+ * Writes stay in this chunk, except steps 2-4 which only touch the 3 x 3 chunks the region allows.
+ */
+final class ChunkBuilder {
+    private static final int CEILING = Params.CLEARANCE + 1;
+    /** How far into a neighbour the crowns of this chunk's trees (and lakes) can reach. */
+    private static final int NEIGHBOUR_REACH = 16;
+    /** Tallest vanilla trees stand below ~40 blocks over their ground. */
+    private static final int OVERHANG = 48;
+
+    private final WorldPlan plan;
+    private final WorldGenRegion region;
+    private final ChunkAccess chunk;
+    private final ChunkPlan cp;
+    private final int bx;
+    private final int bz;
+    private final int minY;
+    private final int maxY;
+    private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+    private final int[] airLo = new int[256];
+    private final int[] airHi = new int[256];
+    private final List<int[]> removedTrunks = new ArrayList<>();
+    private final int scanTop;
+
+    // column scan results
+    private int top;
+    private int groundY;
+    private BlockState natural;
+
+    private ChunkBuilder(WorldPlan plan, WorldGenRegion region, ChunkAccess chunk, ChunkPlan cp) {
+        this.plan = plan;
+        this.region = region;
+        this.chunk = chunk;
+        this.cp = cp;
+        this.bx = chunk.getPos().getMinBlockX();
+        this.bz = chunk.getPos().getMinBlockZ();
+        this.minY = chunk.getMinBuildHeight();
+        this.maxY = chunk.getMaxBuildHeight();
+        int highest = chunk.getHighestFilledSectionIndex();
+        this.scanTop = highest < 0 ? minY - 1
+                : Math.min(maxY - 1, net.minecraft.core.SectionPos.sectionToBlockCoord(chunk.getSectionYFromSectionIndex(highest)) + 15);
+        java.util.Arrays.fill(airLo, Integer.MAX_VALUE);
+        java.util.Arrays.fill(airHi, Integer.MIN_VALUE);
+    }
+
+    static boolean build(WorldPlan plan, WorldGenRegion region, ChunkAccess chunk) {
+        ChunkPos c = chunk.getPos();
+        ChunkPlan cp = plan.chunk(c.x, c.z);
+        boolean built = false;
+        if (cp.any) {
+            ChunkBuilder b = new ChunkBuilder(plan, region, chunk, cp);
+            b.run();
+            built = true;
+        }
+        repairNeighbours(plan, region, c);
+        return built;
+    }
+
+    private void run() {
+        for (int lz = 0; lz < 16; lz++) {
+            for (int lx = 0; lx < 16; lx++) {
+                int i = ChunkPlan.idx(lx, lz);
+                byte kind = cp.kind[i];
+                if (kind == ChunkPlan.NONE) {
+                    continue;
+                }
+                scan(lx, lz);
+                switch (kind) {
+                    case ChunkPlan.ROAD -> road(i, lx, lz);
+                    case ChunkPlan.LOT -> lot(i, lx, lz);
+                    case ChunkPlan.SKIRT -> skirt(i, lx, lz);
+                    case ChunkPlan.TUNNEL_WALL -> tunnelWall(i, lx, lz);
+                    default -> {
+                    }
+                }
+            }
+        }
+        seal();
+        removeOrphanLeaves();
+    }
+
+    // ------------------------------------------------------------------ column reading
+
+    private void scan(int lx, int lz) {
+        int x = bx + lx;
+        int z = bz + lz;
+        int y = scanTop;
+        while (y >= minY && chunk.getBlockState(pos.set(x, y, z)).isAir()) {
+            y--;
+        }
+        top = y;
+        while (y >= minY && !isGround(chunk.getBlockState(pos.set(x, y, z)))) {
+            y--;
+        }
+        groundY = y;
+        natural = y >= minY ? chunk.getBlockState(pos.set(x, y, z)) : null;
+    }
+
+    /** Natural ground: solid terrain, not trees, plants, liquids, snow layers or mushrooms. */
+    static boolean isGround(BlockState s) {
+        if (s.isAir() || !s.getFluidState().isEmpty()) {
+            return false;
+        }
+        if (s.is(BlockTags.LEAVES) || s.is(BlockTags.LOGS) || s.is(Blocks.MANGROVE_ROOTS) || s.is(Blocks.BEE_NEST)
+                || s.is(Blocks.MUSHROOM_STEM)) {
+            return false;
+        }
+        Block b = s.getBlock();
+        if (b instanceof HugeMushroomBlock || b instanceof CactusBlock || b instanceof BambooStalkBlock) {
+            return false;
+        }
+        return s.isSolid();
+    }
+
+    /** Natural decoration that must never stand on or hang over a road. */
+    static boolean isDecoration(BlockState s) {
+        if (s.isAir()) {
+            return false;
+        }
+        Block b = s.getBlock();
+        return s.is(BlockTags.LEAVES) && !s.getValue(LeavesBlock.PERSISTENT) || s.is(BlockTags.LOGS)
+                || b instanceof VineBlock || b instanceof MultifaceBlock || b instanceof SnowLayerBlock
+                || b instanceof BushBlock || b instanceof CocoaBlock || b instanceof BeehiveBlock
+                || s.is(Blocks.MANGROVE_ROOTS) || b instanceof HugeMushroomBlock || s.is(Blocks.MUSHROOM_STEM)
+                || b instanceof CarpetBlock || b instanceof HangingRootsBlock || b instanceof PointedDripstoneBlock
+                || b instanceof SporeBlossomBlock || b instanceof CaveVinesBlock || b instanceof CaveVinesPlantBlock
+                || b instanceof BambooStalkBlock || b instanceof SugarCaneBlock || b instanceof CactusBlock
+                || b instanceof WebBlock || s.is(Blocks.PUMPKIN) || s.is(Blocks.MELON);
+    }
+
+    // ------------------------------------------------------------------ writing
+
+    private void set(int x, int y, int z, BlockState s) {
+        if (y < minY || y >= maxY) {
+            return;
+        }
+        pos.set(x, y, z);
+        BlockState old = chunk.getBlockState(pos);
+        if (old == s) {
+            return;
+        }
+        if (old.hasBlockEntity() || s.hasBlockEntity() || PoiTypes.forState(old).isPresent()) {
+            // through the region: removes the old block entity / point of interest properly, and creates the new one
+            // (the fountain chest)
+            region.setBlock(pos, s, Block.UPDATE_CLIENTS);
+        } else {
+            chunk.setBlockState(pos, s, false);
+        }
+        if (s.getBlock() instanceof IronBarsBlock) {
+            // glass panes connect to their neighbours when the chunk is promoted (walls are connected by wallState)
+            chunk.markPosForPostprocessing(pos.immutable());
+        }
+    }
+
+    /** Air from y0 to y1 (inclusive) in column i; remembers the opened range and removed tree trunks. */
+    private void clear(int i, int x, int z, int y0, int y1) {
+        y0 = Math.max(y0, minY);
+        y1 = Math.min(y1, maxY - 1);
+        if (y1 < y0) {
+            return;
+        }
+        int trunkTop = Integer.MIN_VALUE;
+        for (int y = y0; y <= y1; y++) {
+            BlockState old = chunk.getBlockState(pos.set(x, y, z));
+            if (old.isAir()) {
+                continue;
+            }
+            if (old.is(BlockTags.LOGS)) {
+                trunkTop = y;
+            }
+            set(x, y, z, Palette.AIR);
+        }
+        markAir(i, y0, y1);
+        if (trunkTop != Integer.MIN_VALUE) {
+            removedTrunks.add(new int[]{x, trunkTop, z});
+        }
+    }
+
+    private void markAir(int i, int y0, int y1) {
+        airLo[i] = Math.min(airLo[i], y0);
+        airHi[i] = Math.max(airHi[i], y1);
+    }
+
+    // ------------------------------------------------------------------ column kinds
+
+    private void road(int i, int lx, int lz) {
+        int x = bx + lx;
+        int z = bz + lz;
+        int h2 = cp.h2[i];
+        boolean slab = ChunkPlan.isSlab(h2);
+        int ys = ChunkPlan.surfaceY(h2);
+        byte zone = cp.zone[i];
+        byte flags = cp.flags[i];
+        BlockState surface = Palette.roadSurface(zone, slab);
+        BlockState base = Palette.roadBase(zone);
+        switch (cp.struct[i]) {
+            case Profile.BRIDGE -> {
+                clear(i, x, z, ys + 1, top);
+                set(x, ys, z, surface);
+                set(x, ys - 1, z, base);
+                if ((flags & ChunkPlan.F_PILLAR) != 0) {
+                    for (int y = ys - 2; y > groundY; y--) {
+                        set(x, y, z, Palette.STONE);
+                    }
+                }
+            }
+            case Profile.TUNNEL -> {
+                set(x, ys, z, surface);
+                set(x, ys - 1, z, base);
+                for (int y = ys + 1; y < ys + CEILING; y++) {
+                    set(x, y, z, Palette.AIR);
+                }
+                markAir(i, ys + 1, ys + CEILING - 1);
+                set(x, ys + CEILING, z, (flags & ChunkPlan.F_LIGHT) != 0 ? Palette.LIGHT : Palette.STONE);
+            }
+            default -> {
+                clear(i, x, z, ys + 1, top);
+                set(x, ys, z, surface);
+                set(x, ys - 1, z, base);
+                for (int y = ys - 2; y > groundY; y--) {
+                    set(x, y, z, Palette.STONE);
+                }
+            }
+        }
+        if (ChunkPlan.walled(zone)) {
+            int top = wallTop(plan, x, z);
+            for (int y = ys + 1; y <= top; y++) {
+                set(x, y, z, wallState(plan, x, y, z));
+            }
+        }
+    }
+
+    private void tunnelWall(int i, int lx, int lz) {
+        int x = bx + lx;
+        int z = bz + lz;
+        int ys = ChunkPlan.surfaceY(cp.h2[i]);
+        for (int y = ys - 1; y <= ys + CEILING; y++) {
+            set(x, y, z, Palette.STONE);
+        }
+    }
+
+    private void lot(int i, int lx, int lz) {
+        int x = bx + lx;
+        int z = bz + lz;
+        int base = cp.h2[i] / 2 - 1;
+        clear(i, x, z, base + 1, top);
+        for (int y = base - 1; y > groundY; y--) {
+            set(x, y, z, y >= base - 3 ? Palette.DIRT : Palette.STONE);
+        }
+        Lot lot = cp.lot[i];
+        if (lot == null) {
+            set(x, base, z, cp.city != null && cp.city.paved() ? Palette.of(cp.city.yardCode(), 0, null) : Palette.lotGround(natural));
+            return;
+        }
+        int maxH = base + lot.heightAboveBase();
+        for (int y = base; y <= maxH; y++) {
+            BlockState s = Palette.of(lot.code(x, y, z, base), 0, natural);
+            if (s != null) {
+                set(x, y, z, s);
+            }
+        }
+    }
+
+    private void skirt(int i, int lx, int lz) {
+        if (groundY < minY) {
+            return;
+        }
+        int x = bx + lx;
+        int z = bz + lz;
+        int g = groundY + 1;
+        int target = Math.max(cp.lo[i], Math.min(cp.hi[i], g));
+        if (target < g) {
+            clear(i, x, z, target, top);
+            set(x, target - 1, z, Palette.surfaceFor(natural));
+        } else if (target > g) {
+            BlockState surface = Palette.surfaceFor(natural);
+            BlockState sub = Palette.subsurfaceFor(natural);
+            for (int y = g; y < target; y++) {
+                set(x, y, z, y == target - 1 ? surface : y >= target - 3 ? sub : Palette.STONE);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------ after the columns
+
+    /** Liquids next to air this chunk opened become stone, so nothing flows onto streets and lots later. */
+    private void seal() {
+        BlockPos.MutableBlockPos n = new BlockPos.MutableBlockPos();
+        for (int i = 0; i < 256; i++) {
+            if (airLo[i] > airHi[i]) {
+                continue;
+            }
+            int x = bx + (i & 15);
+            int z = bz + (i >> 4);
+            int yEnd = Math.min(airHi[i], airLo[i] + 64);
+            for (int y = airLo[i]; y <= yEnd; y++) {
+                if (!chunk.getBlockState(pos.set(x, y, z)).isAir()) {
+                    continue;
+                }
+                for (Direction d : Direction.Plane.HORIZONTAL) {
+                    n.set(x + d.getStepX(), y, z + d.getStepZ());
+                    BlockState s = region.getBlockState(n);
+                    if (!s.getFluidState().isEmpty() && !plannedFluid(n.getX(), n.getY(), n.getZ())) {
+                        region.setBlock(n, Palette.STONE, Block.UPDATE_CLIENTS);
+                    }
+                }
+            }
+        }
+    }
+
+    /** Whether the plan itself puts a fluid at (x, y, z) (fountain water, field channels): it is never sealed. */
+    private boolean plannedFluid(int x, int y, int z) {
+        ChunkPlan p = plan.chunk(x >> 4, z >> 4);
+        int i = ChunkPlan.idx(x & 15, z & 15);
+        return p.kind[i] == ChunkPlan.LOT && plannedFluid(p.lot[i], x, y, z, p.h2[i] / 2 - 1);
+    }
+
+    static boolean plannedFluid(Lot lot, int x, int y, int z, int base) {
+        if (lot == null || !lot.contains(x, z)) {
+            return false;
+        }
+        int code = lot.code(x, y, z, base);
+        if (code == BlockCode.KEEP) {
+            return false;
+        }
+        BlockState s = Palette.of(code, 0, null);
+        return s != null && !s.getFluidState().isEmpty();
+    }
+
+    /** How far (through leaves) a leaf block may be from a log before vanilla lets it decay. */
+    private static final int LEAF_REACH = 6;
+    /** Leaves are removed up to this far (horizontally) from a cut trunk. */
+    private static final int ORPHAN_RADIUS = 7;
+
+    /**
+     * Leaves of a tree whose trunk the city or a slope cut are removed right away, the way vanilla decay would remove
+     * them: within {@link #ORPHAN_RADIUS} of a cut trunk, every natural leaf block that is no longer within
+     * {@link #LEAF_REACH} steps (through leaves) of any log goes. Logs are searched in a wider box, so leaves held by
+     * a tree standing just outside stay.
+     */
+    private void removeOrphanLeaves() {
+        if (removedTrunks.isEmpty()) {
+            return;
+        }
+        int reach = ORPHAN_RADIUS + LEAF_REACH;
+        int x0 = Integer.MAX_VALUE;
+        int x1 = Integer.MIN_VALUE;
+        int z0 = Integer.MAX_VALUE;
+        int z1 = Integer.MIN_VALUE;
+        int y0 = Integer.MAX_VALUE;
+        int y1 = Integer.MIN_VALUE;
+        for (int[] t : removedTrunks) {
+            x0 = Math.min(x0, t[0]);
+            x1 = Math.max(x1, t[0]);
+            y0 = Math.min(y0, t[1]);
+            y1 = Math.max(y1, t[1]);
+            z0 = Math.min(z0, t[2]);
+            z1 = Math.max(z1, t[2]);
+        }
+        // the box stays inside the 3 x 3 chunks the region may touch
+        x0 = Math.max(bx - 16, x0 - reach);
+        x1 = Math.min(bx + 31, x1 + reach);
+        z0 = Math.max(bz - 16, z0 - reach);
+        z1 = Math.min(bz + 31, z1 + reach);
+        y0 = Math.max(minY, y0 - 8);
+        y1 = Math.min(maxY - 1, y1 + 12);
+        int w = x1 - x0 + 1;
+        int d = z1 - z0 + 1;
+        int h = y1 - y0 + 1;
+        byte[] dist = new byte[w * d * h];
+        java.util.Arrays.fill(dist, Byte.MAX_VALUE);
+        boolean[] leaf = new boolean[w * d * h];
+        java.util.ArrayDeque<Integer> queue = new java.util.ArrayDeque<>();
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        for (int y = y0; y <= y1; y++) {
+            for (int z = z0; z <= z1; z++) {
+                for (int x = x0; x <= x1; x++) {
+                    BlockState s = region.getBlockState(p.set(x, y, z));
+                    int k = (x - x0) + w * ((z - z0) + d * (y - y0));
+                    if (s.is(BlockTags.LOGS)) {
+                        dist[k] = 0;
+                        queue.add(k);
+                    } else if (s.getBlock() instanceof LeavesBlock && !s.getValue(LeavesBlock.PERSISTENT)) {
+                        leaf[k] = true;
+                    }
+                }
+            }
+        }
+        int[] step = {1, -1, w, -w, w * d, -w * d};
+        while (!queue.isEmpty()) {
+            int k = queue.poll();
+            int next = dist[k] + 1;
+            if (next > LEAF_REACH) {
+                continue;
+            }
+            int kx = k % w;
+            int kz = (k / w) % d;
+            int ky = k / (w * d);
+            for (int s = 0; s < 6; s++) {
+                if (s == 0 && kx == w - 1 || s == 1 && kx == 0 || s == 2 && kz == d - 1 || s == 3 && kz == 0
+                        || s == 4 && ky == h - 1 || s == 5 && ky == 0) {
+                    continue;
+                }
+                int n = k + step[s];
+                if (leaf[n] && dist[n] > next) {
+                    dist[n] = (byte) next;
+                    queue.add(n);
+                }
+            }
+        }
+        for (int y = y0; y <= y1; y++) {
+            for (int z = z0; z <= z1; z++) {
+                for (int x = x0; x <= x1; x++) {
+                    int k = (x - x0) + w * ((z - z0) + d * (y - y0));
+                    if (!leaf[k] || dist[k] <= LEAF_REACH || !nearCutTrunk(x, z)) {
+                        continue;
+                    }
+                    region.setBlock(p.set(x, y, z), Palette.AIR, Block.UPDATE_CLIENTS);
+                }
+            }
+        }
+    }
+
+    private boolean nearCutTrunk(int x, int z) {
+        for (int[] t : removedTrunks) {
+            if (Math.abs(t[0] - x) <= ORPHAN_RADIUS && Math.abs(t[2] - z) <= ORPHAN_RADIUS) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Vanilla decorates each chunk before this feature runs for it, so the trees, plants, rocks, lakes and ore blobs
+     * of a chunk can reach into a neighbour that was built earlier: leaves over a street, a mushroom on a building's
+     * floor, a dirt or granite blob eating the stone of a sidewalk or a tunnel wall. So after every chunk, the
+     * neighbours that are already built get their road structure restored and the intruders removed:
+     * <ul>
+     *   <li>road columns: surface and base blocks, parapets, tunnel ceilings, and the free height above the lanes;</li>
+     *   <li>tunnel wall columns: the wall;</li>
+     *   <li>within {@link #NEIGHBOUR_REACH} of the border: crowns and plants over roads (up to {@link #OVERHANG})
+     *   and inside / on top of buildings.</li>
+     * </ul>
+     * Neighbours not built yet are left alone: they will be built from scratch, over whatever was put there.
+     */
+    static void repairNeighbours(WorldPlan plan, WorldGenRegion region, ChunkPos c) {
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        BlockPos.MutableBlockPos n = new BlockPos.MutableBlockPos();
+        for (int dz = -1; dz <= 1; dz++) {
+            for (int dx = -1; dx <= 1; dx++) {
+                if (dx == 0 && dz == 0) {
+                    continue;
+                }
+                ChunkPlan np = plan.chunk(c.x + dx, c.z + dz);
+                if (!np.any) {
+                    continue;
+                }
+                ChunkAccess nc = region.getChunk(c.x + dx, c.z + dz);
+                if (!nc.getPersistedStatus().isOrAfter(ChunkStatus.FEATURES)) {
+                    continue;
+                }
+                int maxY = nc.getMaxBuildHeight();
+                int nbx = (c.x + dx) << 4;
+                int nbz = (c.z + dz) << 4;
+                for (int lz = 0; lz < 16; lz++) {
+                    for (int lx = 0; lx < 16; lx++) {
+                        int i = ChunkPlan.idx(lx, lz);
+                        byte kind = np.kind[i];
+                        int x = nbx + lx;
+                        int z = nbz + lz;
+                        boolean near = (dx < 0 ? lx >= 16 - NEIGHBOUR_REACH : dx == 0 || lx < NEIGHBOUR_REACH)
+                                && (dz < 0 ? lz >= 16 - NEIGHBOUR_REACH : dz == 0 || lz < NEIGHBOUR_REACH);
+                        if (kind == ChunkPlan.TUNNEL_WALL) {
+                            int ys = ChunkPlan.surfaceY(np.h2[i]);
+                            for (int y = ys - 1; y <= ys + CEILING; y++) {
+                                restore(region, nc, p.set(x, y, z), Palette.STONE);
+                            }
+                            continue;
+                        }
+                        if (kind == ChunkPlan.LOT) {
+                            Lot lot = np.lot[i];
+                            repairLot(region, nc, p, n, x, z, np.h2[i] / 2 - 1, lot,
+                                    np.city != null && np.city.paved() ? np.city.yardCode() : BlockCode.GRASS);
+                            continue;
+                        }
+                        if (kind != ChunkPlan.ROAD) {
+                            continue;
+                        }
+                        int h2 = np.h2[i];
+                        int ys = ChunkPlan.surfaceY(h2);
+                        byte zone = np.zone[i];
+                        boolean tunnel = np.struct[i] == Profile.TUNNEL;
+                        restore(region, nc, p.set(x, ys, z), Palette.roadSurface(zone, ChunkPlan.isSlab(h2)));
+                        restore(region, nc, p.set(x, ys - 1, z), Palette.roadBase(zone));
+                        if (ChunkPlan.walled(zone)) {
+                            for (int y = ys + 1; y <= wallTop(plan, x, z); y++) {
+                                restore(region, nc, p.set(x, y, z), wallState(plan, x, y, z));
+                            }
+                        }
+                        if (tunnel) {
+                            BlockState ceiling = nc.getBlockState(p.set(x, ys + CEILING, z));
+                            if (!ceiling.is(Blocks.STONE) && !ceiling.is(Blocks.GLOWSTONE)) {
+                                region.setBlock(p, (np.flags[i] & ChunkPlan.F_LIGHT) != 0 ? Palette.LIGHT : Palette.STONE,
+                                        Block.UPDATE_CLIENTS);
+                            }
+                        }
+                        // free height above the lanes
+                        int free0 = ChunkPlan.walled(zone) ? wallTop(plan, x, z) + 1 : ys + 1;
+                        int free1 = ys + (tunnel ? Params.CLEARANCE : 4);
+                        for (int y = free0; y <= free1 && y < maxY; y++) {
+                            BlockState s = nc.getBlockState(p.set(x, y, z));
+                            if (s.isAir()) {
+                                continue;
+                            }
+                            boolean liquid = !s.getFluidState().isEmpty();
+                            region.setBlock(p, Palette.AIR, Block.UPDATE_CLIENTS);
+                            if (liquid) {
+                                for (Direction d : Direction.Plane.HORIZONTAL) {
+                                    n.set(x + d.getStepX(), y, z + d.getStepZ());
+                                    if (region.ensureCanWrite(n) && !region.getBlockState(n).getFluidState().isEmpty()) {
+                                        region.setBlock(n, Palette.STONE, Block.UPDATE_CLIENTS);
+                                    }
+                                }
+                            }
+                        }
+                        if (tunnel || !near) {
+                            continue;
+                        }
+                        // crowns and plants hanging over the road
+                        for (int y = free1 + 1; y <= Math.min(maxY - 1, ys + OVERHANG); y++) {
+                            var section = nc.getSection(nc.getSectionIndex(y));
+                            if (section.hasOnlyAir()) {
+                                y |= 15;
+                                continue;
+                            }
+                            BlockState s = section.getBlockState(lx, y & 15, lz);
+                            if (isDecoration(s)) {
+                                region.setBlock(p.set(x, y, z), Palette.AIR, Block.UPDATE_CLIENTS);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /** Height above a lot's ground that lakes (8 tall) and dungeon rooms of a later chunk can reach. */
+    private static final int LOT_REPAIR_ABOVE = 8;
+
+    /**
+     * Lakes (with their cave air and the stone rim of lava lakes) and dungeon rooms of a chunk decorated later can cut
+     * into a lot built earlier next door: the ground under the lot is filled again, the lot surface and the low part
+     * of buildings, park trees and plazas are put back, and liquids are removed (with the liquid next to them sealed).
+     */
+    private static void repairLot(WorldGenRegion region, ChunkAccess nc, BlockPos.MutableBlockPos p,
+                                  BlockPos.MutableBlockPos n, int x, int z, int base, Lot lot, int yard) {
+        boolean paved = yard != BlockCode.GRASS;
+        for (int y = base - 3; y < base; y++) {
+            BlockState s = nc.getBlockState(p.set(x, y, z));
+            if (s.isAir() || !s.getFluidState().isEmpty()) {
+                region.setBlock(p, Palette.DIRT, Block.UPDATE_CLIENTS);
+            }
+        }
+        for (int y = base; y <= base + LOT_REPAIR_ABOVE; y++) {
+            int code = lot == null ? (y == base ? yard : BlockCode.KEEP) : lot.code(x, y, z, base);
+            BlockState s = nc.getBlockState(p.set(x, y, z));
+            boolean liquid = !s.getFluidState().isEmpty();
+            if (code == BlockCode.KEEP || code == BlockCode.AIR || code == BlockCode.SHRUB) {
+                // inside a building everything that is not the building goes; over a yard only liquids do
+                boolean rock = paved && s.is(Blocks.MOSSY_COBBLESTONE);
+                if (liquid || code == BlockCode.AIR && !s.isAir() || code == BlockCode.KEEP && y > base && (isDecoration(s) || rock)) {
+                    region.setBlock(p, Palette.AIR, Block.UPDATE_CLIENTS);
+                    for (Direction d : Direction.Plane.HORIZONTAL) {
+                        n.set(x + d.getStepX(), y, z + d.getStepZ());
+                        if (region.ensureCanWrite(n) && !region.getBlockState(n).getFluidState().isEmpty()
+                                && !plannedFluid(lot, n.getX(), y, n.getZ(), base)) {
+                            region.setBlock(n, Palette.STONE, Block.UPDATE_CLIENTS);
+                        }
+                    }
+                }
+                continue;
+            }
+            BlockState want = Palette.of(code, 0, null);
+            if (code == BlockCode.GRASS) {
+                // yards may legitimately be sand (desert) or turned into another soil: only refill holes
+                if (s.isAir() || liquid) {
+                    region.setBlock(p, want, Block.UPDATE_CLIENTS);
+                }
+            } else if (s.getBlock() != want.getBlock()) {
+                region.setBlock(p, want, Block.UPDATE_CLIENTS);
+                if (want.getBlock() instanceof IronBarsBlock) {
+                    nc.markPosForPostprocessing(p.immutable());
+                }
+            }
+        }
+        // crowns of trees from chunks decorated later, hanging over the lot (their trunk is usually cut afterwards,
+        // when that chunk builds its own part of the city)
+        for (int y = base + LOT_REPAIR_ABOVE + 1; y <= Math.min(nc.getMaxBuildHeight() - 1, base + OVERHANG); y++) {
+            var section = nc.getSection(nc.getSectionIndex(y));
+            if (section.hasOnlyAir()) {
+                y |= 15;
+                continue;
+            }
+            int code = lot == null ? BlockCode.KEEP : lot.code(x, y, z, base);
+            if ((code == BlockCode.KEEP || code == BlockCode.AIR) && isDecoration(section.getBlockState(x & 15, y & 15, z & 15))) {
+                region.setBlock(p.set(x, y, z), Palette.AIR, Block.UPDATE_CLIENTS);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------ highway edge walls
+
+    /** Surface y of a highway edge column (one with a wall), or Integer.MIN_VALUE when the column is not one. */
+    private static int edgeSurface(WorldPlan plan, int x, int z) {
+        ChunkPlan cp = plan.chunk(x >> 4, z >> 4);
+        int i = ChunkPlan.idx(x & 15, z & 15);
+        return cp.kind[i] == ChunkPlan.ROAD && ChunkPlan.walled(cp.zone[i]) ? ChunkPlan.surfaceY(cp.h2[i]) : Integer.MIN_VALUE;
+    }
+
+    private static final int[][] SIDES = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+
+    /**
+     * Highest wall block of an edge column: one above its surface, or higher when the next edge column along a ramp
+     * starts higher, so that the two walls share a level and connect.
+     */
+    static int wallTop(WorldPlan plan, int x, int z) {
+        int top = edgeSurface(plan, x, z) + 1;
+        for (int[] d : SIDES) {
+            int n = edgeSurface(plan, x + d[0], z + d[1]);
+            if (n != Integer.MIN_VALUE) {
+                top = Math.max(top, n + 1);
+            }
+        }
+        return top;
+    }
+
+    /**
+     * Wall block with its connections worked out from the plan (not left to vanilla when the chunk is promoted: the
+     * neighbouring chunk may not exist yet, and the wall would stay unconnected on that side).
+     */
+    static BlockState wallState(WorldPlan plan, int x, int y, int z) {
+        boolean[] c = new boolean[4];
+        for (int k = 0; k < 4; k++) {
+            int nx = x + SIDES[k][0];
+            int nz = z + SIDES[k][1];
+            int n = edgeSurface(plan, nx, nz);
+            c[k] = n != Integer.MIN_VALUE && y >= n + 1 && y <= wallTop(plan, nx, nz);
+        }
+        boolean straight = c[0] && c[2] && !c[1] && !c[3] || c[1] && c[3] && !c[0] && !c[2];
+        boolean up = !straight || y < wallTop(plan, x, z);
+        ChunkPlan own = plan.chunk(x >> 4, z >> 4);
+        boolean town = own.zone[ChunkPlan.idx(x & 15, z & 15)] == ChunkPlan.RURAL_PARAPET;
+        return (town ? Palette.TOWN_WALL : Palette.WALL)
+                .setValue(WallBlock.NORTH_WALL, c[0] ? WallSide.LOW : WallSide.NONE)
+                .setValue(WallBlock.EAST_WALL, c[1] ? WallSide.LOW : WallSide.NONE)
+                .setValue(WallBlock.SOUTH_WALL, c[2] ? WallSide.LOW : WallSide.NONE)
+                .setValue(WallBlock.WEST_WALL, c[3] ? WallSide.LOW : WallSide.NONE)
+                .setValue(WallBlock.UP, up);
+    }
+
+    /** Puts back one block of the road structure if something else took its place. */
+    private static void restore(WorldGenRegion region, ChunkAccess nc, BlockPos.MutableBlockPos p, BlockState want) {
+        if (nc.getBlockState(p) != want) {
+            region.setBlock(p, want, Block.UPDATE_CLIENTS);
+        }
+    }
+}
