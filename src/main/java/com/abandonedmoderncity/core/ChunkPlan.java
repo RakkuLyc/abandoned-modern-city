@@ -24,18 +24,10 @@ public final class ChunkPlan {
     public static final byte PARAPET = 5;
     /** Highway center marking (yellow); city marks are {@link #MARK} (white). */
     public static final byte MARK_HIGHWAY = 6;
-    /** Town sidewalks and crossing squares: stone. */
-    public static final byte TOWN_SIDEWALK = 7;
-    /** Edge of the town trunk: stone (its cobblestone wall is off for now). */
-    public static final byte TOWN_PARAPET = 8;
-    /** Town lanes (streets and trunk): andesite. */
-    public static final byte TOWN_LANE = 9;
-    /** Edge of a highway near a town (rural_highway pattern): stone with a cobblestone wall. */
-    public static final byte RURAL_PARAPET = 10;
 
     /** Whether a road zone carries a wall. */
     public static boolean walled(byte zone) {
-        return zone == PARAPET || zone == RURAL_PARAPET;
+        return zone == PARAPET;
     }
 
     // flags

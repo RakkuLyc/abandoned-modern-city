@@ -43,7 +43,7 @@ public final class SimpleCommands {
                 .then(Commands.literal("info").executes(SimpleCommands::info))
                 .then(Commands.literal("locate").then(Commands.argument("what", StringArgumentType.word())
                         .suggests((c, b) -> {
-                            for (String s : List.of("city", "urban_city", "rural_city", "special_city", "highway", "tunnel", "bridge")) {
+                            for (String s : List.of("city", "highway", "tunnel", "bridge")) {
                                 b.suggest(s);
                             }
                             return b.buildFuture();
@@ -119,8 +119,7 @@ public final class SimpleCommands {
     }
 
     /**
-     * Nearest city / urban_city (4 x 4 grid) / rural_city (3 x 2 town on a highway) / special_city (octagonal), or the
-     * nearest highway / tunnel / bridge column. The coordinates are clickable (they suggest a /tp), like /locate.
+     * Nearest city, or the nearest highway / tunnel / bridge column. The coordinates are clickable (they suggest a /tp), like /locate.
      */
     private static int locate(CommandContext<CommandSourceStack> c, String what) {
         WorldPlan plan = plan(c);
@@ -129,41 +128,28 @@ public final class SimpleCommands {
         }
         double px = c.getSource().getPosition().x;
         double pz = c.getSource().getPosition().z;
-        boolean cityKind = what.equals("city") || what.equals("urban_city") || what.equals("special_city");
-        boolean known = cityKind || what.equals("rural_city") || what.equals("highway") || what.equals("tunnel")
-                || what.equals("bridge");
+        boolean cityKind = what.equals("city");
+        boolean known = cityKind || what.equals("highway") || what.equals("tunnel") || what.equals("bridge");
         if (!known) {
             c.getSource().sendFailure(Component.literal("[AMCS] unknown target '" + what
-                    + "' (city, urban_city, rural_city, special_city, highway, tunnel, bridge)"));
+                    + "' (city, highway, tunnel, bridge)"));
             return 0;
         }
         double best = Double.MAX_VALUE;
         String found = null;
         int[] at = null;
-        // cities are cheap to plan: look far; highways (and the towns on them) only around the nearer cells
+        // cities are cheap to plan: look far; highways only around the nearer cells
         int[] radii = cityKind ? new int[]{4, 8, 16} : new int[]{3, 6};
         for (int cells : radii) {
             double r = cells * plan.params.cellSize();
             List<City> cities = plan.citiesIn(px - r, pz - r, px + r, pz + r);
             if (cityKind) {
                 for (City ct : cities) {
-                    boolean match = what.equals("city") || what.equals("urban_city") && !ct.octagon
-                            || what.equals("special_city") && ct.octagon;
                     double d = Math.hypot(ct.cx - px, ct.cz - pz);
-                    if (match && d < best) {
-                        best = d;
-                        found = (ct.octagon ? "special (octagonal) " : "urban ") + ct;
-                        at = new int[]{ct.cx, ct.level + 1, ct.cz};
-                    }
-                }
-            } else if (what.equals("rural_city")) {
-                for (Highway h : plan.highwaysOf(cities)) {
-                    City t = h.town;
-                    double d = t == null ? Double.MAX_VALUE : Math.hypot(t.cx - px, t.cz - pz);
                     if (d < best) {
                         best = d;
-                        found = "rural " + t + " on " + h;
-                        at = new int[]{t.cx, t.level + 1, t.cz};
+                        found = ct.toString();
+                        at = new int[]{ct.cx, ct.level + 1, ct.cz};
                     }
                 }
             } else {

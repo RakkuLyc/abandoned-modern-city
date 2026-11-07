@@ -25,13 +25,10 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
 
     /** Distance between parallel street centerlines of the 4 x 4 cities (one city block = BLOCK x BLOCK). */
     public static final int BLOCK = 203;
-    /** Same for the 3 x 2 towns and the octagonal cities' lots. */
-    public static final int TOWN_BLOCK = 85;
     /** Every city is GRID x GRID blocks ((GRID + 1) x (GRID + 1) streets). */
     public static final int GRID = 4;
-    /** Length of a street between two crossings (4 x 4 cities: 186, towns: 68), and the dash / gap of its center marking. */
+    /** Length of a street between two crossings (186), and the dash / gap of its center marking. */
     public static final int STREET_RUN = 186;
-    public static final int TOWN_STREET_RUN = 68;
     public static final int DASH = 11;
     public static final int DASH_GAP = 6;
     /** Radius of the curved corners on the outside of the city (convex corners of the street ring). */
@@ -101,7 +98,7 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
             throw new IllegalArgumentException("cellSize " + cellSize + " is too small for maxRadius " + maxRadius
                     + " (needs at least " + (2 * margin(maxRadius) + 64) + ")");
         }
-        if (minRadius < TOWN_BLOCK || minRadius > maxRadius) {
+        if (minRadius < 1 || minRadius > maxRadius) {
             throw new IllegalArgumentException("bad city radius range " + minRadius + ".." + maxRadius);
         }
     }

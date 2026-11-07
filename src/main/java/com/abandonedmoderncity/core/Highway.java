@@ -20,13 +20,6 @@ public final class Highway {
     public final long key;
     public final City.Exit exitA;
     public final City.Exit exitB;
-    /**
-     * Town the highway runs through (null if none): the path reaches the town's trunk at point {@link #kIn}, runs
-     * straight along it and leaves it at {@link #kOut}; between them the town's streets are drawn, at the town level.
-     */
-    public final City town;
-    public final int kIn;
-    public final int kOut;
     /** Number of segments; points are 0..length. */
     public final int length;
     public final double step;
@@ -39,11 +32,7 @@ public final class Highway {
     private final Map<Long, int[]> buckets;
     private volatile Detail detail;
 
-    private Highway(City a, City b, long key, City.Exit exitA, City.Exit exitB, double[] px, double[] pz, double step,
-                    City town, int kIn, int kOut) {
-        this.town = town;
-        this.kIn = kIn;
-        this.kOut = kOut;
+    private Highway(City a, City b, long key, City.Exit exitA, City.Exit exitB, double[] px, double[] pz, double step) {
         this.a = a;
         this.b = b;
         this.key = key;
@@ -79,43 +68,12 @@ public final class Highway {
 
     /** Builds the curve between two exits: P0 + d0 (leaving A), P3 + d3 (leaving B, i.e. arriving reversed). */
     static Highway create(City a, City.Exit exitA, City b, City.Exit exitB, long key) {
-        return create(a, exitA, b, exitB, key, null, null, null);
-    }
-
-    /**
-     * Same, through a town: a curve from A to the town exit {@code townA}, the straight trunk to {@code townB}, a curve
-     * from there to B.
-     */
-    static Highway create(City a, City.Exit exitA, City b, City.Exit exitB, long key, City town, City.Exit townA,
-                          City.Exit townB) {
         double[] p0 = a.exitWorld(exitA);
         double[] d0 = a.exitDirection(exitA);
         double[] p3 = b.exitWorld(exitB);
         double[] d3 = b.exitDirection(exitB);
         List<double[]> pts = new ArrayList<>();
-        double tIn = 0;
-        double tOut = 0;
-        if (town == null) {
-            bezier(pts, p0, d0, p3, d3);
-        } else {
-            double[] q0 = town.exitWorld(townA);
-            double[] e0 = town.exitDirection(townA);
-            double[] q1 = town.exitWorld(townB);
-            double[] e1 = town.exitDirection(townB);
-            bezier(pts, p0, d0, q0, e0);
-            tIn = arc(pts);
-            // straight along the trunk, a point every quarter block
-            double tl = Math.hypot(q1[0] - q0[0], q1[1] - q0[1]);
-            int m = Math.max(1, (int) Math.ceil(tl * 4));
-            for (int i = 1; i <= m; i++) {
-                double f = i / (double) m;
-                pts.add(new double[]{q0[0] + (q1[0] - q0[0]) * f, q0[1] + (q1[1] - q0[1]) * f});
-            }
-            tOut = arc(pts);
-            List<double[]> tail = new ArrayList<>();
-            bezier(tail, q1, e1, p3, d3);
-            pts.addAll(tail.subList(1, tail.size()));
-        }
+        bezier(pts, p0, d0, p3, d3);
         int n = pts.size() - 1;
         double[] bx = new double[n + 1];
         double[] bz = new double[n + 1];
@@ -147,18 +105,7 @@ public final class Highway {
         zs[0] = p0[1];
         xs[len] = p3[0];
         zs[len] = p3[1];
-        int kIn = town == null ? 0 : (int) Math.round(tIn / step);
-        int kOut = town == null ? 0 : (int) Math.round(tOut / step);
-        return new Highway(a, b, key, exitA, exitB, xs, zs, step, town, kIn, kOut);
-    }
-
-    /** Arc length of a polyline. */
-    private static double arc(List<double[]> pts) {
-        double s = 0;
-        for (int i = 1; i < pts.size(); i++) {
-            s += Math.hypot(pts.get(i)[0] - pts.get(i - 1)[0], pts.get(i)[1] - pts.get(i - 1)[1]);
-        }
-        return s;
+        return new Highway(a, b, key, exitA, exitB, xs, zs, step);
     }
 
     /** Appends a dense cubic Bezier from p0 (leaving along d0) to p3 (arriving against d3). */
@@ -180,11 +127,6 @@ public final class Highway {
         }
     }
 
-    /** Whether point k lies on the town trunk (between the two town entrances). */
-    public boolean inTown(int k) {
-        return town != null && k >= kIn && k <= kOut;
-    }
-
     public double x(int k) {
         return px[k];
     }
@@ -197,7 +139,7 @@ public final class Highway {
      * Width of the edge strip at point k: 1 block where the highway runs along an axis, up to 1.41 on a diagonal, so the
      * edge columns always touch by a side (walls only connect sideways).
      */
-    /** Width of the highway (21) and of a city street (17), which it narrows to next to cities and towns. */
+    /** Width of the highway (21) and of a city street (17), which it narrows to next to cities. */
     public static final int FULL_WIDTH = (int) Math.round(2 * Params.HIGHWAY_HW);
     public static final int NARROW_WIDTH = (int) Math.round(2 * Params.STREET_HW);
     /** The highway loses 1 block of width every TAPER_STEP blocks as it nears a city ... */
@@ -208,19 +150,15 @@ public final class Highway {
      */
     public static final int TAPER_START = (int) Math.ceil(Params.HIGHWAY_HW + Params.STREET_HW + 4) + 3;
 
-    /** Whether index k is where the highway meets a city or town street: open edges, no walls. */
+    /** Whether index k is where the highway meets a city street: open edges, no walls. */
     public boolean junction(int k) {
         double jl = Params.HIGHWAY_HW + Params.STREET_HW + 4;
-        return k < jl || k > length - jl || town != null && k > kIn - jl && k < kOut + jl;
+        return k < jl || k > length - jl;
     }
 
-    /** Blocks along the path from k to the nearest city or town end of the highway (0 inside the town). */
+    /** Blocks along the path from k to the nearest end of the highway. */
     int endDistance(int k) {
-        int d = Math.min(k, length - k);
-        if (town != null) {
-            d = Math.min(d, k < kIn ? kIn - k : k > kOut ? k - kOut : 0);
-        }
-        return Math.max(0, d);
+        return Math.max(0, Math.min(k, length - k));
     }
 
     /**
@@ -447,35 +385,8 @@ public final class Highway {
             ground[k] = g[i0] + (g[i1] - g[i0]) * t;
             water[k] = t < 0.5 ? w[i0] : w[i1];
         }
-        int[] he;
-        byte[] type;
-        if (town == null) {
-            he = Profile.build(length, a.level, b.level, target, Params.FLAT_END, DEADBAND, sea + 2);
-            type = Profile.classify(he, ground, water);
-        } else {
-            // A -> town, flat through the town, town -> B
-            int[] h1 = Profile.build(kIn, a.level, town.level, Arrays.copyOfRange(target, 0, kIn + 1),
-                    Params.FLAT_END, DEADBAND, sea + 2);
-            int[] h3 = Profile.build(length - kOut, town.level, b.level, Arrays.copyOfRange(target, kOut, length + 1),
-                    Params.FLAT_END, DEADBAND, sea + 2);
-            byte[] t1 = Profile.classify(h1, Arrays.copyOfRange(ground, 0, kIn + 1), Arrays.copyOfRange(water, 0, kIn + 1));
-            byte[] t3 = Profile.classify(h3, Arrays.copyOfRange(ground, kOut, length + 1),
-                    Arrays.copyOfRange(water, kOut, length + 1));
-            he = new int[length + 1];
-            type = new byte[length + 1];
-            for (int k = 0; k <= length; k++) {
-                if (k <= kIn) {
-                    he[k] = h1[k];
-                    type[k] = t1[k];
-                } else if (k >= kOut) {
-                    he[k] = h3[k - kOut];
-                    type[k] = t3[k - kOut];
-                } else {
-                    he[k] = town.level * 8;
-                    type[k] = Profile.GROUND;
-                }
-            }
-        }
+        int[] he = Profile.build(length, a.level, b.level, target, Params.FLAT_END, DEADBAND, sea + 2);
+        byte[] type = Profile.classify(he, ground, water);
         boolean[] pillar = Profile.pillars(type);
         boolean valid = true;
         String reason = "ok";
@@ -491,7 +402,6 @@ public final class Highway {
 
     @Override
     public String toString() {
-        return "Highway[" + a.ci + "," + a.cj + " -> " + b.ci + "," + b.cj + " len=" + length
-                + (town != null ? " via " + town : "") + "]";
+        return "Highway[" + a.ci + "," + a.cj + " -> " + b.ci + "," + b.cj + " len=" + length + "]";
     }
 }

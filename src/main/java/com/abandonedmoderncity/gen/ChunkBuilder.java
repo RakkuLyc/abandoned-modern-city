@@ -305,7 +305,7 @@ final class ChunkBuilder {
         }
         Lot lot = cp.lot[i];
         if (lot == null) {
-            set(x, base, z, cp.city != null && cp.city.paved() ? Palette.of(cp.city.yardCode(), 0, null) : Palette.lotGround(natural));
+            set(x, base, z, cp.city != null ? Palette.of(cp.city.yardCode(), 0, null) : Palette.lotGround(natural));
             return;
         }
         int maxH = base + lot.heightAboveBase();
@@ -536,7 +536,7 @@ final class ChunkBuilder {
                         if (kind == ChunkPlan.LOT) {
                             Lot lot = np.lot[i];
                             repairLot(region, nc, p, n, x, z, np.h2[i] / 2 - 1, lot,
-                                    np.city != null && np.city.paved() ? np.city.yardCode() : BlockCode.GRASS);
+                                    np.city != null ? np.city.yardCode() : BlockCode.GRASS);
                             continue;
                         }
                         if (kind != ChunkPlan.ROAD) {
@@ -704,9 +704,7 @@ final class ChunkBuilder {
         }
         boolean straight = c[0] && c[2] && !c[1] && !c[3] || c[1] && c[3] && !c[0] && !c[2];
         boolean up = !straight || y < wallTop(plan, x, z);
-        ChunkPlan own = plan.chunk(x >> 4, z >> 4);
-        boolean town = own.zone[ChunkPlan.idx(x & 15, z & 15)] == ChunkPlan.RURAL_PARAPET;
-        return (town ? Palette.TOWN_WALL : Palette.WALL)
+        return Palette.WALL
                 .setValue(WallBlock.NORTH_WALL, c[0] ? WallSide.LOW : WallSide.NONE)
                 .setValue(WallBlock.EAST_WALL, c[1] ? WallSide.LOW : WallSide.NONE)
                 .setValue(WallBlock.SOUTH_WALL, c[2] ? WallSide.LOW : WallSide.NONE)

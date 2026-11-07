@@ -23,20 +23,18 @@ Por enquanto **sem prédios**: eles serão projetados de novo neste mod.
 
 | Tipo | Onde | Forma |
 |---|---|---|
-| Cidade 4 × 4 (`urban_city`) | uma por célula de 2 048 blocos (70% das células) | grid rígido de 4 × 4 quarteirões de 186 × 186 (eixos a 203, ~830 blocos de lado), 4 entradas de rodovia |
-| Cidade octogonal (`special_city`) | 25% das cidades de célula | rotatória central (ilha de 96 de diâmetro), 2 anéis octogonais a 80 blocos um do outro, 8 ruas radiais; sem prédios |
-| Cidade 3 × 2 (`rural_city`) | 50% das rodovias, perto do meio delas | 3 × 2 quarteirões de 68, atravessada pela rodovia na rua do meio |
+| Cidade 4 × 4 | uma por célula de 2 048 blocos (70% das células) | grid rígido de 4 × 4 quarteirões de 186 × 186 (eixos a 203, ~830 blocos de lado), 4 entradas de rodovia |
+
+Só existe esse tipo de cidade: as cidades octogonais e as cidades 3 × 2 das rodovias (com o padrão rural_highway e
+as plantações) foram removidas em 7 nov 2026.
 
 - Cada cidade fica numa única altura: água é aterrada, morro é cortado, e um talude 1:1 faz a transição.
-- As cidades 4 × 4 perdem de 0 a 7 trechos de rua (sem criar beco sem saída). O espaço vira grama ou une quarteirões.
+- As cidades perdem de 0 a 7 trechos de rua (sem criar beco sem saída). O espaço vira grama ou une quarteirões.
 - **Quarteirões:** cerca de 1 em 8 quarteirões é um parque inteiro; os outros são só chão da cidade
   (`gray_concrete_powder`), à espera dos prédios novos.
 - **Parques:**
   - grama, flores e caminhos de `dirt_path` (grade ou cata-vento), escalados com o tamanho do parque;
   - fonte `waterfall.nbt` no centro, com baú vazio em 50% delas.
-- **Cidades 3 × 2:**
-  - pelo menos 1 quarteirão de plantação abandonada (os outros com 15% de chance);
-  - o resto é chão de `dirt_path`.
 
 ### Ruas e rodovias
 
@@ -44,9 +42,6 @@ Por enquanto **sem prédios**: eles serão projetados de novo neste mod.
 |---|---|---|
 | Rua da cidade | 17 | `smooth_stone` 2 · `polished_blackstone` 13 (faixa `white_concrete` tracejada no 9º bloco) · `smooth_stone` 2 |
 | Rodovia | 21 | `smooth_stone` + `stone_brick_wall` 1 · `polished_blackstone` 19 (faixa `yellow_terracotta`) · `smooth_stone` + muro 1 |
-| Rodovia perto de cidade 3 × 2 (150 blocos) | 21 | `andesite` 19 (lajes nas rampas) · `stone` + `cobblestone_wall` nas bordas |
-| Rua do meio da cidade 3 × 2 | 17 | `andesite` 15 com faixa amarela · `stone` 1 de cada lado |
-| Demais ruas da cidade 3 × 2 | 17 | `stone` 2 · `andesite` 13 (faixa branca) · `stone` 2 |
 
 - **Faixa central:** traços de 11 com intervalo de 6. Cada cruzamento tem um quadrado 2 × 2 de `smooth_stone` em
   cada esquina.
@@ -79,14 +74,13 @@ Por enquanto **sem prédios**: eles serão projetados de novo neste mod.
 core/   planejador puro (sem classes do Minecraft) — testado com JUnit
   Params         toda a geometria fixa (larguras, quarteirões, rampas, túneis, pontes) + valores da config
   Terrain        interface: altura natural do chão e água por coluna
-  City           estágio 1 (existe? centro, altura, octogonal?) e estágio 2 (ruas, quarteirões, lotes);
-                 também as cidades 3 × 2 (town)
-  Lot            lotes: parque, plantação (e praça / terreno vazio nas cidades ainda não pavimentadas)
+  City           estágio 1 (existe? centro, altura) e estágio 2 (ruas, quarteirões, lotes)
+  Lot            lotes: por enquanto só o parque inteiro de quarteirão
   Park           parques com caminhos e fonte
   Template       estruturas .nbt do usuário (fonte waterfall.nbt)
   Highway        curva entre duas entradas de cidade, pontos a cada bloco, projeção de colunas
   Profile        perfil de altura "plano ou rampa" e classificação chão / ponte / túnel
-  WorldPlan      cidades, rede de rodovias, cidades 3 × 2, plano de cada chunk (ChunkPlan); caches
+  WorldPlan      cidades, rede de rodovias, plano de cada chunk (ChunkPlan); caches
   PlanAudit      auditoria do plano (usada nos testes e no jogo)
   PlanRender     PNGs do plano (detalhe, rede, perfil lateral)
 gen/    camada do jogo
@@ -105,13 +99,11 @@ command/  /amcs, auditoria dos blocos (WorldAudit), renders do mundo, bateria au
      (70%), longe das bordas.
    - A célula tenta até 10 posições e fica com a primeira em que o terreno não é majoritariamente água e a altura
      (mediana de 9 amostras, mínimo nível do mar + 2) não passa de `maxCityLevel`.
-   - 25% das cidades são octogonais.
 2. **Planejar.**
    - Ruas, quarteirões e lotes saem do grid da cidade.
    - Ligações de rodovia: grafo de Gabriel. Cada cidade reserva uma entrada por vizinha, de frente para ela.
    - A rodovia é validada: comprimento até `highwayMaxLength`, raio de curva ≥ 60, distância de outras cidades,
      rampa possível e água. Ela é descartada se chegar perto demais de uma rodovia mais curta.
-   - Metade das rodovias ganha uma cidade 3 × 2 no meio.
 3. **Construir.**
    - `WorldPlan.chunk(cx, cz)` diz o que cada coluna deve ser: rua, rodovia, ponte, túnel, parede de túnel, lote ou
      talude. O `ChunkBuilder` só executa.
@@ -127,9 +119,7 @@ A geometria (larguras, quarteirões, rampas, túneis, pontes) fica em `core/Para
 ## Comandos (op 2)
 
 - `/amcs info` — o que o plano quer na coluna onde você está (tipo, altura, estrutura, cidade, rodovia, lote).
-- `/amcs locate city|urban_city|rural_city|special_city|highway|tunnel|bridge` — o mais próximo, com coordenadas
-  clicáveis (sugerem um `/tp`). `urban_city` = cidade 4 × 4, `rural_city` = cidade 3 × 2 de rodovia,
-  `special_city` = cidade octogonal.
+- `/amcs locate city|highway|tunnel|bridge` — o mais próximo, com coordenadas clicáveis (sugerem um `/tp`).
 - `/amcs plan [raio]` — auditoria do plano em volta (não gera nada) + PNG.
 - `/amcs audit [raio]` — gera os chunks em volta, audita plano e blocos, PNG do mundo.
 - `/amcs network [raio]` — PNG da rede de cidades e rodovias.

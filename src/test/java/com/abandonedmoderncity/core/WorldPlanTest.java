@@ -51,9 +51,6 @@ class WorldPlanTest {
             WorldPlan p = plan(SEEDS[0], kind);
             City.Hit hit = new City.Hit();
             for (City c : allCities(p)) {
-                if (c.octagon) {
-                    continue;
-                }
                 cities++;
                 int n = c.gridHalf();
                 assertTrue(c.isCityBlock(0, 0), "center block");
@@ -106,7 +103,7 @@ class WorldPlanTest {
         WorldPlan p = plan(SEEDS[1], TestTerrain.Kind.FLAT);
         Set<Integer> done = new HashSet<>();
         for (City c : allCities(p)) {
-            if (c.octagon || !done.add(c.streetCuts())) {
+            if (!done.add(c.streetCuts())) {
                 continue;
             }
             int r = (int) Math.ceil(c.influence / 16) + 1;
@@ -121,64 +118,13 @@ class WorldPlanTest {
     }
 
     @Test
-    void townsSitOnTheirHighwaysAndPassTheAudit() throws Exception {
-        int towns = 0;
-        int highways = 0;
-        int[] cuts = new int[City.TOWN_MAX_CUTS + 1];
-        StringBuilder out = new StringBuilder();
-        StringBuilder shifts = new StringBuilder();
-        for (TestTerrain.Kind kind : TestTerrain.Kind.values()) {
-            WorldPlan p = plan(SEEDS[0], kind);
-            NetworkStats st = NetworkStats.of(p, -CELLS, -CELLS, CELLS, CELLS);
-            int rendered = 0;
-            for (Highway h : st.highways) {
-                highways++;
-                City t = h.town;
-                if (t == null) {
-                    continue;
-                }
-                towns++;
-                cuts[t.streetCuts()]++;
-                assertTrue(t.town && t.blockCount() == 6, "3 x 2 town " + t);
-                assertTrue(h.kIn > 0 && h.kOut > h.kIn && h.kOut < h.length, h + " town indices");
-                // near the middle of the path (shift up to TOWN_SHIFT, plus the bend onto the trunk)
-                double mid = (h.kIn + h.kOut) / 2.0 / h.length;
-                assertTrue(Math.abs(mid - 0.5) <= City.TOWN_SHIFT + 0.04, h + " town at " + mid + " of the path");
-                shifts.append(String.format(java.util.Locale.ROOT, " %.3f", mid));
-                // the path is straight on the trunk line and at the town level
-                Highway.Detail det = h.detail(p.terrain);
-                for (int k = h.kIn + 1; k < h.kOut; k++) {
-                    double off = t.eastWest ? h.z(k) - (t.cz + 0.5) : h.x(k) - (t.cx + 0.5);
-                    assertEquals(0, off, 0.05, h + " leaves the trunk at " + k);
-                    assertEquals(2 * t.level, det.h2(k), h + " height in town at " + k);
-                }
-                // the town is the one the chunks see
-                assertTrue(p.townNear(t.cx, t.cz, 0) == t, "townNear " + t);
-                int r = (int) Math.ceil((Math.max(t.halfX(), t.halfZ()) + Params.CITY_SKIRT) / 16) + 1;
-                int ccx = Math.floorDiv(t.cx, 16);
-                int ccz = Math.floorDiv(t.cz, 16);
-                PlanAudit.Report rep = PlanAudit.audit(p, ccx - r, ccz - r, ccx + r, ccz + r);
-                out.append(kind).append(' ').append(h).append(": ").append(rep.summary());
-                assertTrue(rep.ok(), h + ": " + rep.summary());
-                if (rendered++ < 2) {
-                    PlanRender.write(PlanRender.detail(p, ccx - r, ccz - r, ccx + r, ccz + r),
-                            new File(renderDir(), "town_" + kind + "_" + rendered + ".png"));
-                }
-            }
-        }
-        System.out.println("[WorldPlanTest] towns " + towns + " on " + highways + " highways, removed segments "
-                + java.util.Arrays.toString(cuts) + "\nposition on the path:" + shifts + "\n" + out);
-        assertTrue(towns > highways / 5, "too few towns: " + towns + " of " + highways);
-    }
-
-    @Test
     void streetWidthIsConstantOnStraightStreets() {
         // on a city without waves the street bands are exactly 11 (street) or 15 (avenue) columns wide
         WorldPlan p = plan(SEEDS[0], TestTerrain.Kind.FLAT);
         City.Hit hit = new City.Hit();
         int checked = 0;
         for (City c : allCities(p)) {
-            if (c.warp.maxSlope() != 0 || c.octagon) {
+            if (c.warp.maxSlope() != 0) {
                 continue;
             }
             int n = c.gridHalf();

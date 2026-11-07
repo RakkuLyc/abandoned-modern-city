@@ -225,7 +225,7 @@ public final class WorldPlan {
             double dz = b.cz - a.cz;
             double l = Math.sqrt(dx * dx + dz * dz);
             // the free exits whose direction faces the other city best (all the border crossings of one side of the
-            // grid share a direction; the octagon has one exit per direction)
+            // grid share a direction)
             double best = -2;
             for (City.Exit e : free) {
                 double[] d = a.exitDirection(e);
@@ -326,125 +326,12 @@ public final class WorldPlan {
         if (clearOfCities(h) != null) {
             return null;
         }
-        Highway t = withTown(h, p, q, key);
-        return t != null ? t : h;
+        return h;
     }
 
-    private static final long TOWN_SALT = 0x544F574EL;
-
-    /**
-     * The same link through a 3 x 2 town (rolled per link with {@link City#TOWN_CHANCE}), centered near the middle of the
-     * plain curve (shifted up to {@link City#TOWN_SHIFT} of its length toward either city) and aligned with the axis
-     * closest to the curve's direction there; null when the link has no town or the town does not fit (water, too high, near a city, ramps or curves impossible).
-     */
-    private Highway withTown(Highway h, City p, City q, long key) {
-        long r = Hash.of(seed, TOWN_SALT, key);
-        if (Hash.unit(r) >= City.TOWN_CHANCE) {
-            return null;
-        }
-        // the middle of the path, shifted up to TOWN_SHIFT of its length toward either city
-        double shift = (2 * Hash.unit(Hash.next(r, 1)) - 1) * City.TOWN_SHIFT;
-        int m = (int) Math.round(h.length * (0.5 + shift));
-        double tx = h.x(Math.min(h.length, m + 8)) - h.x(Math.max(0, m - 8));
-        double tz = h.z(Math.min(h.length, m + 8)) - h.z(Math.max(0, m - 8));
-        boolean ew = Math.abs(tx) >= Math.abs(tz);
-        int cx = (int) Math.floor(h.x(m));
-        int cz = (int) Math.floor(h.z(m));
-        City probe = City.town(r, cx, cz, ew, sea + 2, terrain);
-        // site: 3 x 3 samples over the town, not mostly water
-        int[] g = new int[9];
-        int n = 0;
-        int wet = 0;
-        for (int dz = -1; dz <= 1; dz++) {
-            for (int dx = -1; dx <= 1; dx++) {
-                int x = cx + (int) Math.round(dx * probe.halfX() * 0.8);
-                int z = cz + (int) Math.round(dz * probe.halfZ() * 0.8);
-                if (terrain.water(x, z)) {
-                    wet++;
-                } else {
-                    g[n++] = terrain.ground(x, z);
-                }
-            }
-        }
-        if (wet > 4 || n == 0) {
-            return null;
-        }
-        java.util.Arrays.sort(g, 0, n);
-        int level = Math.max(g[n / 2], sea + 2);
-        if (level > params.maxCityLevel()) {
-            return null;
-        }
-        if (cityNear(cx, cz, Math.hypot(probe.halfX(), probe.halfZ()) + Params.CITY_SKIRT) != null) {
-            return null;
-        }
-        // the town exit facing city p
-        List<City.Exit> te = probe.exits();
-        double[] pa = p.exitWorld(exit(p, q));
-        double[] w0 = probe.exitWorld(te.get(0));
-        double[] w1 = probe.exitWorld(te.get(1));
-        boolean firstToP = Math.hypot(w0[0] - pa[0], w0[1] - pa[1]) <= Math.hypot(w1[0] - pa[0], w1[1] - pa[1]);
-        City.Exit toP = firstToP ? te.get(0) : te.get(1);
-        City.Exit toQ = firstToP ? te.get(1) : te.get(0);
-        Highway t = Highway.create(p, exit(p, q), q, exit(q, p), key, probe, toP, toQ);
-        int minPart = 2 * Params.FLAT_END + 32;
-        int part1 = t.kIn;
-        int part3 = t.length - t.kOut;
-        if (part1 < minPart || part3 < minPart || t.length > params.highwayMaxLength()) {
-            return null;
-        }
-        // the town level must be reachable from both cities
-        int lo = Math.max(p.level - (part1 - 2 * Params.FLAT_END) / Profile.E, q.level - (part3 - 2 * Params.FLAT_END) / Profile.E);
-        int hi = Math.min(p.level + (part1 - 2 * Params.FLAT_END) / Profile.E, q.level + (part3 - 2 * Params.FLAT_END) / Profile.E);
-        lo = Math.max(lo, sea + 2);
-        if (lo > hi) {
-            return null;
-        }
-        level = Math.max(lo, Math.min(hi, level));
-        City town = City.town(r, cx, cz, ew, level, terrain);
-        t = Highway.create(p, exit(p, q), q, exit(q, p), key, town, toP, toQ);
-        if (t.minCurveRadius() < Params.MIN_CURVE_RADIUS || clearOfCities(t) != null) {
-            return null;
-        }
-        return t;
-    }
-
-    /** Rectangle of a town with its slopes: {x0, z0, x1, z1}. */
-    static double[] townBox(City t, double pad) {
-        double hx = t.halfX() + Params.CITY_SKIRT + pad;
-        double hz = t.halfZ() + Params.CITY_SKIRT + pad;
-        return new double[]{t.cx + 0.5 - hx, t.cz + 0.5 - hz, t.cx + 0.5 + hx, t.cz + 0.5 + hz};
-    }
-
-    /** Whether highway e runs through (or right next to) the town of another highway. */
-    static boolean entersTown(Highway e, City town) {
-        if (town == null) {
-            return false;
-        }
-        double[] b = townBox(town, Params.HIGHWAY_HW + 2);
-        if (e.maxX < b[0] || e.minX > b[2] || e.maxZ < b[1] || e.minZ > b[3]) {
-            return false;
-        }
-        for (int k = 0; k <= e.length; k++) {
-            double x = e.x(k);
-            double z = e.z(k);
-            if (x >= b[0] && x <= b[2] && z >= b[1] && z <= b[3]) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /** Whether two kept highways would collide: too close, one through the other's town, or overlapping towns. */
+    /** Whether two kept highways would collide (too close). */
     static boolean conflict(Highway e, Highway f) {
-        if (tooClose(e, f) || entersTown(e, f.town) || entersTown(f, e.town)) {
-            return true;
-        }
-        if (e.town != null && f.town != null) {
-            double[] a = townBox(e.town, 0);
-            double[] b = townBox(f.town, 0);
-            return a[0] <= b[2] && b[0] <= a[2] && a[1] <= b[3] && b[1] <= a[3];
-        }
-        return false;
+        return tooClose(e, f);
     }
 
     /** Null when the path keeps its distance from every city, else the reason. */
@@ -617,26 +504,6 @@ public final class WorldPlan {
         });
     }
 
-    /** How far from the center a town changes anything (its streets plus slopes), along its longer side. */
-    static final double TOWN_REACH = 3 * Params.TOWN_BLOCK / 2.0 + Params.STREET_HW + 1 + Params.CITY_SKIRT + 2;
-
-    /** The town (of a kept highway) whose box with slopes comes within {@code slack} of (x, z), or null. */
-    public City townNear(double x, double z, double slack) {
-        if (!params.highways()) {
-            return null;
-        }
-        for (Highway h : highwaysIn(x, z, x, z, TOWN_REACH + slack)) {
-            if (h.town == null) {
-                continue;
-            }
-            double[] b = townBox(h.town, slack);
-            if (x >= b[0] && x <= b[2] && z >= b[1] && z <= b[3]) {
-                return h.town;
-            }
-        }
-        return null;
-    }
-
     // ------------------------------------------------------------------ chunk plans
 
     public ChunkPlan chunk(int cx, int cz) {
@@ -660,9 +527,6 @@ public final class WorldPlan {
         int bx = cx << 4;
         int bz = cz << 4;
         City city = cityNear(bx + 8, bz + 8, 12);
-        if (city == null) {
-            city = townNear(bx + 8, bz + 8, 12);
-        }
         cp.city = city;
         List<HighwayRef> refs = new ArrayList<>();
         for (Highway h : highwaysIn(bx, bz, bx + 16, bz + 16, HIGHWAY_REACH + 2)) {
@@ -753,28 +617,15 @@ public final class WorldPlan {
                     cp.h2[i] = (short) (2 * city.level);
                     cp.struct[i] = Profile.GROUND;
                     cp.flags[i] = ChunkPlan.F_CITY;
-                    byte zone;
-                    if (city.town && hit.trunk) {
-                        // the highway through the town: 15 lanes, yellow marking, stone edges (no walls for now)
-                        zone = hit.trunkD <= City.TRUNK_LANE_HW
-                                ? (cMark ? ChunkPlan.MARK_HIGHWAY : ChunkPlan.TOWN_LANE) : ChunkPlan.TOWN_PARAPET;
-                    } else if (city.town) {
-                        zone = cLane ? (cMark ? ChunkPlan.MARK : ChunkPlan.TOWN_LANE) : ChunkPlan.TOWN_SIDEWALK;
-                    } else {
-                        zone = cLane ? (cMark ? ChunkPlan.MARK : ChunkPlan.LANE) : ChunkPlan.SIDEWALK;
-                    }
-                    if (band != null && bandAbs <= bandLane) {
+                    byte zone = cLane ? (cMark ? ChunkPlan.MARK : ChunkPlan.LANE) : ChunkPlan.SIDEWALK;
+                    if (band != null && bandAbs <= bandLane && zone == ChunkPlan.SIDEWALK) {
                         // where a highway joins the street, the sidewalk opens into lanes (markings stay)
-                        if (zone == ChunkPlan.SIDEWALK) {
-                            zone = ChunkPlan.LANE;
-                        } else if (zone == ChunkPlan.TOWN_SIDEWALK || zone == ChunkPlan.TOWN_PARAPET) {
-                            zone = ChunkPlan.TOWN_LANE;
-                        }
+                        zone = ChunkPlan.LANE;
                     }
                     cp.zone[i] = zone;
                 } else if (cLot) {
                     // lots win over the highway band: a highway (21 wide) narrows to the 17-wide street where it
-                    // enters a city or runs through a town
+                    // enters a city
                     cp.kind[i] = ChunkPlan.LOT;
                     cp.h2[i] = (short) (2 * city.level);
                     cp.lot[i] = city.lotAt(hit.bi, hit.bj, bx + lx, bz + lz);
@@ -787,18 +638,14 @@ public final class WorldPlan {
                     cp.highway[i] = band.h;
                     byte flags = ChunkPlan.F_HIGHWAY;
                     byte zone;
-                    // near a town the highway takes the rural_highway pattern: andesite lanes, stone + cobblestone wall
-                    boolean rural = band.h.town != null && k >= band.h.kIn - City.RURAL_REACH
-                            && k <= band.h.kOut + City.RURAL_REACH;
                     if (bandAbs <= Params.MARK_HW && Math.floorMod(k, Params.DASH + Params.DASH_GAP) < Params.DASH) {
                         zone = ChunkPlan.MARK_HIGHWAY;
                     } else if (bandAbs <= bandLane) {
-                        zone = rural ? ChunkPlan.TOWN_LANE : ChunkPlan.LANE;
+                        zone = ChunkPlan.LANE;
                     } else {
                         // edge with a wall on top, open where the highway meets the city street
                         boolean junction = band.h.junction(k);
-                        zone = junction ? (rural ? ChunkPlan.TOWN_PARAPET : ChunkPlan.SHOULDER)
-                                : rural ? ChunkPlan.RURAL_PARAPET : ChunkPlan.PARAPET;
+                        zone = junction ? ChunkPlan.SHOULDER : ChunkPlan.PARAPET;
                     }
                     if (st == Profile.BRIDGE && band.d.pillar[k] && bandAbs >= 2.5 && bandAbs <= 5.5) {
                         flags |= ChunkPlan.F_PILLAR;

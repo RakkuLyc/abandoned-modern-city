@@ -160,13 +160,6 @@ public final class PlanAudit {
         for (City c : cities) {
             auditCity(plan, c, r, x0, z0, w, d, kind, drivable, h2);
         }
-        // towns on the highways
-        for (Highway h : plan.highwaysIn(x0 - 400, z0 - 400, x0 + w + 400, z0 + d + 400, 0)) {
-            if (h.town != null) {
-                r.stat("towns", 1);
-                auditCity(plan, h.town, r, x0, z0, w, d, kind, drivable, h2);
-            }
-        }
         // highways
         for (Highway h : plan.highwaysIn(x0, z0, x0 + w, z0 + d, 0)) {
             auditHighway(plan, h, r, x0, z0, w, d, kind, h2, struct, flags);
@@ -182,10 +175,6 @@ public final class PlanAudit {
 
     private static void auditCity(WorldPlan plan, City c, Report r, int x0, int z0, int w, int d,
                                   byte[] kind, boolean[] drivable, short[] h2) {
-        if (c.octagon) {
-            auditOctagon(c, r, x0, z0, w, d, kind, drivable, h2);
-            return;
-        }
         int n = c.gridHalf();
         boolean fullyInside = true;
         List<int[]> streets = new ArrayList<>();
@@ -257,9 +246,6 @@ public final class PlanAudit {
                 }
                 for (Lot lot : blockLots) {
                     r.stat("lots", 1);
-                    if (lot.type == Lot.Type.FARM) {
-                        r.stat("fields", 1);
-                    }
                 }
             }
         }
@@ -272,57 +258,6 @@ public final class PlanAudit {
                 int g = gx + gz * w;
                 if (kind[g] == ChunkPlan.ROAD && !seen[g]) {
                     r.fail("city_split", c + " street at " + p[0] + "," + p[1] + " not reachable");
-                }
-            }
-            r.stat("cities_fully_checked", 1);
-        }
-    }
-
-    /**
-     * Octagonal variant: points on the roundabout, on both octagonal rings (every 22.5 degrees) and in the middle of the
-     * 8 radial streets must be road, and all connected.
-     */
-    private static void auditOctagon(City c, Report r, int x0, int z0, int w, int d, byte[] kind, boolean[] drivable,
-                                     short[] h2) {
-        List<int[]> pts = new ArrayList<>();
-        double ox = c.cx + 0.5;
-        double oz = c.cz + 0.5;
-        for (int k = 0; k < 16; k++) {
-            double a = k * Math.PI / 8;
-            double dx = Math.cos(a);
-            double dz = Math.sin(a);
-            double norm = Math.max(Math.max(Math.abs(dx), Math.abs(dz)), (Math.abs(dx) + Math.abs(dz)) / Math.sqrt(2));
-            for (double radius : new double[]{City.OCT_RING, City.OCT_INNER / norm, City.OCT_OUTER / norm}) {
-                pts.add(new int[]{(int) Math.floor(ox + dx * radius), (int) Math.floor(oz + dz * radius)});
-            }
-            if (k % 2 == 0) {
-                double t = (City.OCT_RING + City.OCT_OUTER) / 2;
-                pts.add(new int[]{(int) Math.floor(ox + dx * t), (int) Math.floor(oz + dz * t)});
-            }
-        }
-        r.stat("cities", 1);
-        r.stat("octagonal_cities", 1);
-        int[] first = null;
-        boolean inside = true;
-        for (int[] p : pts) {
-            int gx = p[0] - x0;
-            int gz = p[1] - z0;
-            if (!inRegion(gx, gz, w, d)) {
-                inside = false;
-                continue;
-            }
-            if (kind[gx + gz * w] != ChunkPlan.ROAD) {
-                r.fail("street_missing", c + " (octagon) at " + p[0] + "," + p[1]);
-            } else if (first == null) {
-                first = p;
-            }
-        }
-        if (inside && first != null) {
-            boolean[] seen = flood(first[0] - x0, first[1] - z0, w, d, drivable, h2);
-            for (int[] p : pts) {
-                int g = (p[0] - x0) + (p[1] - z0) * w;
-                if (kind[g] == ChunkPlan.ROAD && !seen[g]) {
-                    r.fail("city_split", c + " (octagon) street at " + p[0] + "," + p[1] + " not reachable");
                 }
             }
             r.stat("cities_fully_checked", 1);

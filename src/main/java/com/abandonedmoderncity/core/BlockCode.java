@@ -42,18 +42,13 @@ public final class BlockCode {
     /** Yard of a paved city (gray concrete powder). */
     public static final int CITY_GROUND = 27;
 
-    // town houses and fields; the 4 directions are added to the base code: + direction 0..3 (west, east, north, south)
+    // town houses; the 4 directions are added to the base code: + direction 0..3 (west, east, north, south)
     public static final int PLANKS = 30;
     public static final int GLASS = 31;
     public static final int DOOR_LOWER = 32;
     public static final int DOOR_UPPER = 36;
     /** Oak stair whose high side faces the added direction. */
     public static final int STAIR = 40;
-    public static final int FARMLAND = 44;
-    public static final int WATER = 45;
-    /** Crop {@code CROP + 8 * kind + age}: kind 0 wheat, 1 carrots, 2 potatoes (ages 0..7), 3 beetroots (0..3). */
-    public static final int CROP = 50;
-    public static final int CROP_END = CROP + 32;
 
     /** Grass block whatever the biome (parks of paved cities), dirt path, smooth stone slab (fountain ring). */
     public static final int LAWN = 28;
@@ -78,8 +73,4 @@ public final class BlockCode {
     public static final int BUILDING_STAIR_END = BUILDING_STAIR + 4;
     /** Block {@code TEMPLATE + i}: entry i of the palette of {@link Template#WATERFALL}. */
     public static final int TEMPLATE = 1000;
-
-    public static boolean isCrop(int code) {
-        return code >= CROP && code < CROP_END;
-    }
 }

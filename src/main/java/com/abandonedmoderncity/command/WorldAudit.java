@@ -172,7 +172,7 @@ public final class WorldAudit {
         }
         double m = measure(c, p, x, z, ys);
         if (!cp.drivable(i)) {
-            if (!at(c, p, x, ys + 1, z).is(cp.zone[i] == ChunkPlan.RURAL_PARAPET ? Blocks.COBBLESTONE_WALL : Blocks.STONE_BRICK_WALL)) {
+            if (!at(c, p, x, ys + 1, z).is(Blocks.STONE_BRICK_WALL)) {
                 r.fail("parapet", where);
             }
             return m;
@@ -249,15 +249,11 @@ public final class WorldAudit {
         int base = cp.h2[i] / 2 - 1;
         BlockState ground = at(c, p, x, base, z);
         Lot lot = cp.lot[i];
-        boolean channel = lot != null && lot.code(x, base, z, base) == BlockCode.WATER;
-        if (channel) {
-            r.stat("field_water_columns", 1);
-        }
-        if (ground.isAir() || !ground.getFluidState().isEmpty() && !channel) {
+        if (ground.isAir() || !ground.getFluidState().isEmpty()) {
             r.fail("lot_hole", x + "," + base + "," + z + " " + id(ground));
         }
         if (lot == null) {
-            if (cp.city != null && cp.city.paved()) {
+            if (cp.city != null) {
                 r.stat("yard_columns", 1);
                 BlockState want = Palette.of(cp.city.yardCode(), 0, null);
                 if (ground.getBlock() != want.getBlock()) {

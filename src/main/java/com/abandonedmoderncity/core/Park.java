@@ -17,8 +17,12 @@ import java.util.List;
 public final class Park {
     public static final int GRID = 0;
     public static final int PINWHEEL = 1;
-    /** Distance from the center to the middle of the grid paths, and radius of the circular path. */
+    /**
+     * Distance from the center to the middle of the grid paths, and radius of the circular path, for a park
+     * {@link #BASE_SIZE} wide; larger parks scale them up (186 wide: x 2.7).
+     */
     static final double PATH_OFFSET = 16;
+    static final int BASE_SIZE = 68;
     static final double PATH_HW = 1.0;
     /** Ring of smooth stone slabs around the fountain: radii (column centers) between these. */
     static final double RING_IN = 12.5;
@@ -62,7 +66,7 @@ public final class Park {
         this.oz = (z0 + z1 + 1) / 2 - t.sz / 2;
         this.cx = ox + t.sx / 2.0;
         this.cz = oz + t.sz / 2.0;
-        double scale = Math.max(1, Math.min(x1 - x0 + 1, z1 - z0 + 1) / (double) Params.TOWN_STREET_RUN);
+        double scale = Math.max(1, Math.min(x1 - x0 + 1, z1 - z0 + 1) / (double) BASE_SIZE);
         this.offset = PATH_OFFSET * scale;
         this.growth = ARM_GROWTH * scale;
         this.armPhase = Hash.range(Hash.next(seed, 3), 0.0, Math.PI / 2);

@@ -20,9 +20,7 @@ import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import com.abandonedmoderncity.core.Template;
-import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.DoorBlock;
-import net.minecraft.world.level.block.FarmBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.properties.SlabType;
@@ -51,12 +49,6 @@ public final class Palette {
     public static final BlockState HIGHWAY_MARK = Blocks.YELLOW_TERRACOTTA.defaultBlockState();
     /** Wall on the highway edges. */
     public static final BlockState WALL = Blocks.STONE_BRICK_WALL.defaultBlockState();
-    /** Towns: sidewalks of stone, cobblestone walls along the trunk. */
-    public static final BlockState TOWN_WALL = Blocks.COBBLESTONE_WALL.defaultBlockState();
-    public static final BlockState STONE_SLAB = Blocks.STONE_SLAB.defaultBlockState();
-    /** Town lanes: andesite. */
-    public static final BlockState TOWN_LANE = Blocks.ANDESITE.defaultBlockState();
-    public static final BlockState TOWN_LANE_SLAB = Blocks.ANDESITE_SLAB.defaultBlockState();
     /** Fill, tunnel lining and bridge pillars. */
     public static final BlockState STONE = Blocks.STONE.defaultBlockState();
     /** Tunnel ceiling lights. */
@@ -85,9 +77,6 @@ public final class Palette {
     public static final BlockState[] DOOR_LOWER = new BlockState[4];
     public static final BlockState[] DOOR_UPPER = new BlockState[4];
     public static final BlockState[] STAIR = new BlockState[4];
-    public static final BlockState FARMLAND = Blocks.FARMLAND.defaultBlockState().setValue(FarmBlock.MOISTURE, 7);
-    public static final BlockState WATER = Blocks.WATER.defaultBlockState();
-    public static final BlockState[] CROPS = new BlockState[BlockCode.CROP_END - BlockCode.CROP];
 
     /** Double doors of the buildings: index facing + 4 * (hinge right) + 8 * (upper half). */
     public static final BlockState[] BUILDING_DOOR = new BlockState[16];
@@ -103,13 +92,6 @@ public final class Palette {
             DOOR_LOWER[d] = door.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER);
             DOOR_UPPER[d] = door.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER);
             STAIR[d] = Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, DIRS[d]);
-        }
-        Block[] crops = {Blocks.WHEAT, Blocks.CARROTS, Blocks.POTATOES, Blocks.BEETROOTS};
-        for (int kind = 0; kind < 4; kind++) {
-            CropBlock crop = (CropBlock) crops[kind];
-            for (int age = 0; age < 8; age++) {
-                CROPS[8 * kind + age] = crop.getStateForAge(Math.min(age, crop.getMaxAge()));
-            }
         }
     }
 
@@ -206,9 +188,6 @@ public final class Palette {
         if (code >= BlockCode.FLOWER && code < BlockCode.FLOWER + BlockCode.FLOWERS) {
             return FLOWERS[code - BlockCode.FLOWER];
         }
-        if (BlockCode.isCrop(code)) {
-            return CROPS[code - BlockCode.CROP];
-        }
         if (code >= BlockCode.BUILDING_DOOR && code < BlockCode.BUILDING_DOOR_END) {
             return BUILDING_DOOR[code - BlockCode.BUILDING_DOOR];
         }
@@ -251,8 +230,6 @@ public final class Palette {
             case BlockCode.CITY_GROUND -> CITY_GROUND;
             case BlockCode.PLANKS -> PLANKS;
             case BlockCode.GLASS -> GLASS;
-            case BlockCode.FARMLAND -> FARMLAND;
-            case BlockCode.WATER -> WATER;
             case BlockCode.LAWN -> GRASS;
             case BlockCode.PATH -> PATH;
             case BlockCode.RING_SLAB -> RING_SLAB;
@@ -274,9 +251,6 @@ public final class Palette {
     public static BlockState roadSurface(byte zone, boolean slab) {
         return switch (zone) {
             case ChunkPlan.PARAPET -> SIDEWALK;
-            case ChunkPlan.TOWN_PARAPET, ChunkPlan.RURAL_PARAPET -> STONE;
-            case ChunkPlan.TOWN_LANE -> slab ? TOWN_LANE_SLAB : TOWN_LANE;
-            case ChunkPlan.TOWN_SIDEWALK -> slab ? STONE_SLAB : STONE;
             case ChunkPlan.MARK -> slab ? LANE_SLAB : CITY_MARK;
             case ChunkPlan.MARK_HIGHWAY -> slab ? LANE_SLAB : HIGHWAY_MARK;
             case ChunkPlan.LANE -> slab ? LANE_SLAB : LANE;
@@ -286,12 +260,6 @@ public final class Palette {
 
     /** Full block under a slab, or the second deck layer. */
     public static BlockState roadBase(byte zone) {
-        if (zone == ChunkPlan.TOWN_PARAPET || zone == ChunkPlan.RURAL_PARAPET || zone == ChunkPlan.TOWN_SIDEWALK) {
-            return STONE;
-        }
-        if (zone == ChunkPlan.TOWN_LANE) {
-            return TOWN_LANE;
-        }
         return zone == ChunkPlan.LANE || zone == ChunkPlan.MARK || zone == ChunkPlan.MARK_HIGHWAY ? LANE : SIDEWALK;
     }
 
@@ -308,8 +276,8 @@ public final class Palette {
 
     /** All fixed states the generator places (natural surface blocks reused for slopes are checked when used). */
     public static List<BlockState> all() {
-        Set<BlockState> set = new LinkedHashSet<>(List.of(LANE, LANE_SLAB, SIDEWALK, SIDEWALK_SLAB, CITY_MARK, HIGHWAY_MARK, WALL, TOWN_WALL, STONE_SLAB, TOWN_LANE, TOWN_LANE_SLAB, STONE, LIGHT, DIRT, GRASS, SANDSTONE,
-                RED_SANDSTONE, COARSE_DIRT, CITY_GROUND, PLANKS, GLASS, RAIL, FARMLAND, PLAZA, PLAZA_ALT, LOG, LEAVES, SHRUB, ROOF_MOSS, LADDER_EAST, LADDER_WEST, LADDER_SOUTH, LADDER_NORTH,
+        Set<BlockState> set = new LinkedHashSet<>(List.of(LANE, LANE_SLAB, SIDEWALK, SIDEWALK_SLAB, CITY_MARK, HIGHWAY_MARK, WALL, STONE, LIGHT, DIRT, GRASS, SANDSTONE,
+                RED_SANDSTONE, COARSE_DIRT, CITY_GROUND, PLANKS, GLASS, RAIL, PLAZA, PLAZA_ALT, LOG, LEAVES, SHRUB, ROOF_MOSS, LADDER_EAST, LADDER_WEST, LADDER_SOUTH, LADDER_NORTH,
                 Blocks.SAND.defaultBlockState(), Blocks.RED_SAND.defaultBlockState()));
         for (BlockState[] style : STYLES) {
             set.addAll(List.of(style));
@@ -323,7 +291,6 @@ public final class Palette {
         }
         set.addAll(List.of(BALCONY_FLOOR));
         set.addAll(List.of(BALCONY_WALL));
-        set.addAll(List.of(CROPS));
         set.addAll(List.of(PATH, RING_SLAB, TALL_GRASS_LOWER, TALL_GRASS_UPPER));
         set.addAll(List.of(FLOWERS));
         for (BlockState f : fountain()) {
@@ -332,7 +299,6 @@ public final class Palette {
                 set.add(f);
             }
         }
-        // WATER (field channels) is a fluid, not a block to break: left out of the hardness check
         return new ArrayList<>(set);
     }
 
@@ -350,7 +316,7 @@ public final class Palette {
             }
         }
         List<BlockState> structures = new ArrayList<>(List.of(PLAZA, PLAZA_ALT, COARSE_DIRT, LOG, ROOF_MOSS, PLANKS, GLASS,
-                FARMLAND, CITY_GROUND));
+                CITY_GROUND));
         for (BlockState[] style : STYLES) {
             structures.addAll(List.of(style));
         }

@@ -23,48 +23,12 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
  * {@code u = U(i)}, east-west line {@code j} is {@code v = V(j)}; block (i, j) spans {@code [U(i), U(i+1)] x [V(j), V(j+1)]}.
  */
 public final class City {
-    /** Distance between parallel street centerlines: Params.BLOCK in the 4 x 4 cities, TOWN_BLOCK otherwise. */
-    public final int S;
+    /** Distance between parallel street centerlines. */
+    public final int S = Params.BLOCK;
     static final double R_ARC = Params.ARC_RADIUS;
     /** Grid-space search radius for street primitives: the widest street plus its slopes, with slack for the waves. */
     static final double SEARCH = (Params.AVENUE_HW + Params.CITY_SKIRT) * 1.05 + 2;
     private static final long SALT = 0x43495459L;
-
-    /**
-     * Octagonal variant (a quarter of the cities): a central roundabout, two concentric octagonal
-     * ring streets 80 blocks apart, and 8 straight streets from the roundabout to the outer ring (N, NE, E, ...),
-     * meeting the rings at the middle of their sides. Same 17-block street section and markings as the grid.
-     */
-    public final boolean octagon;
-    public static final double OCTAGON_CHANCE = 0.25;
-    /** Roundabout island radius, then ring street centerlines: roundabout, inner octagon, outer octagon. */
-    static final double OCT_ISLAND = 48;
-    static final double OCT_GAP = 80;
-    static final double OCT_RING = OCT_ISLAND + Params.STREET_HW;
-    static final double OCT_INNER = OCT_RING + 2 * Params.STREET_HW + OCT_GAP;
-    static final double OCT_OUTER = OCT_INNER + 2 * Params.STREET_HW + OCT_GAP;
-    private static final double SQ2 = Math.sqrt(2);
-
-    /**
-     * Small 3 x 2 town on a highway (see {@link WorldPlan}): the highway runs straight through it along its middle
-     * street (the trunk), which keeps the highway look (yellow marking, cobblestone walls). Sidewalks are stone.
-     */
-    public final boolean town;
-    /** Town only: whether the highway (the trunk) runs east-west (else north-south). */
-    public final boolean eastWest;
-    /** Grid blocks iFirst..iLast x jFirst..jLast. */
-    public final int iFirst;
-    public final int iLast;
-    public final int jFirst;
-    public final int jLast;
-    public static final double TOWN_CHANCE = 0.5;
-    /** A highway takes the rural_highway pattern (andesite, cobblestone walls) this far before and after its town. */
-    public static final int RURAL_REACH = 150;
-    /** Largest shift of a town from the middle of its highway, as a fraction of the highway length. */
-    public static final double TOWN_SHIFT = 0.10;
-    public static final int TOWN_MAX_CUTS = 2;
-    /** Lanes of the town trunk: 15 wide, then one column of stone with a cobblestone wall on each side. */
-    public static final double TRUNK_LANE_HW = 7.5;
 
     public final int ci;
     public final int cj;
@@ -88,31 +52,10 @@ public final class City {
     private volatile Layout layout;
 
     private City(int ci, int cj, long seed, int cx, int cz, int radius, int level, Warp warp,
-                 double a2, double p2, double a3, double p3, Terrain terrain, boolean octagon) {
-        this(ci, cj, Cache.key(ci, cj), seed, cx, cz, radius, level, warp, a2, p2, a3, p3, terrain, octagon, false, false);
-    }
-
-    private City(int ci, int cj, long id, long seed, int cx, int cz, int radius, int level, Warp warp,
-                 double a2, double p2, double a3, double p3, Terrain terrain, boolean octagon, boolean town,
-                 boolean eastWest) {
-        this.octagon = octagon;
-        this.town = town;
-        this.S = town || octagon ? Params.TOWN_BLOCK : Params.BLOCK;
-        this.eastWest = eastWest;
-        if (town) {
-            this.iFirst = -1;
-            this.iLast = eastWest ? 1 : 0;
-            this.jFirst = -1;
-            this.jLast = eastWest ? 0 : 1;
-        } else {
-            this.iFirst = FIRST;
-            this.iLast = LAST;
-            this.jFirst = FIRST;
-            this.jLast = LAST;
-        }
+                 double a2, double p2, double a3, double p3, Terrain terrain) {
         this.ci = ci;
         this.cj = cj;
-        this.id = id;
+        this.id = Cache.key(ci, cj);
         this.seed = seed;
         this.cx = cx;
         this.cz = cz;
@@ -122,8 +65,8 @@ public final class City {
         this.warp = warp;
         // street centerlines on block centers (x + 0.5), so a 17-wide street covers exactly 17 columns
         // the grid (blocks FIRST..LAST) is centered on the city center
-        this.u0 = cx - (int) Math.floor((iFirst + iLast + 1) / 2.0 * S) + 0.5;
-        this.v0 = cz - (int) Math.floor((jFirst + jLast + 1) / 2.0 * S) + 0.5;
+        this.u0 = cx - (int) Math.floor((FIRST + LAST + 1) / 2.0 * S) + 0.5;
+        this.v0 = cz - (int) Math.floor((FIRST + LAST + 1) / 2.0 * S) + 0.5;
         this.shapeA2 = a2;
         this.shapeP2 = p2;
         this.shapeA3 = a3;
@@ -174,17 +117,15 @@ public final class City {
             long ha = Hash.next(h, 100 + attempt);
             int cx = ci * p.cellSize() + margin + Hash.range(ha, 0, span);
             int cz = cj * p.cellSize() + margin + Hash.range(Hash.next(ha, 1), 0, span);
-            // every city is the same 3 x 3 grid: the radius only bounds its area of influence
-            boolean oct = Hash.unit(Hash.next(h, 20)) < OCTAGON_CHANCE;
-            int radius = oct ? (int) Math.ceil(OCT_OUTER + Params.STREET_HW)
-                    : Params.GRID_RADIUS;
+            // every city is the same 4 x 4 grid: the radius only bounds its area of influence
+            int radius = Params.GRID_RADIUS;
             Object r = trySite(p, t, cx, cz, radius);
             if (r instanceof String s) {
                 reason = s;
                 continue;
             }
             int level = (Integer) r;
-            return build(h, ci, cj, cx, cz, radius, level, t, oct);
+            return build(h, ci, cj, cx, cz, radius, level, t);
         }
         return reason;
     }
@@ -220,35 +161,13 @@ public final class City {
         return level;
     }
 
-    private static City build(long h, int ci, int cj, int cx, int cz, int radius, int level, Terrain t, boolean oct) {
+    private static City build(long h, int ci, int cj, int cx, int cz, int radius, int level, Terrain t) {
         // a rigid grid: straight streets, right angles
         Warp warp = Warp.NONE;
         return new City(ci, cj, h, cx, cz, radius, level, warp,
                 Hash.range(Hash.next(h, 12), 0.0, 0.12), Hash.range(Hash.next(h, 13), 0.0, 2 * Math.PI),
-                Hash.range(Hash.next(h, 14), 0.0, 0.08), Hash.range(Hash.next(h, 15), 0.0, 2 * Math.PI), t, oct);
+                Hash.range(Hash.next(h, 14), 0.0, 0.08), Hash.range(Hash.next(h, 15), 0.0, 2 * Math.PI), t);
     }
-
-    /**
-     * A 3 x 2 town centered on (cx, cz), its trunk (middle street) on line z = cz + 0.5 (east-west) or
-     * x = cx + 0.5 (north-south). Pure function of its arguments.
-     */
-    public static City town(long seed, int cx, int cz, boolean eastWest, int level, Terrain t) {
-        int radius = 3 * Params.TOWN_BLOCK / 2 + (int) Params.STREET_HW + 1;
-        return new City(Math.floorDiv(cx, 16), Math.floorDiv(cz, 16), Hash.next(seed, 77), seed, cx, cz, radius, level,
-                Warp.NONE, 0, 0, 0, 0, t, false, true, eastWest);
-    }
-
-    /** Half extents of the built area (streets included) along x and z, from the center. */
-    public double halfX() {
-        return (iLast - iFirst + 1) * S / 2.0 + Params.STREET_HW + 1;
-    }
-
-    public double halfZ() {
-        return (jLast - jFirst + 1) * S / 2.0 + Params.STREET_HW + 1;
-    }
-
-    /** Town: the grid line of the trunk (east-west line j = 0, or north-south line i = 0). */
-    public static final int TRUNK_LINE = 0;
 
     public double U(int i) {
         return u0 + (double) i * S;
@@ -280,14 +199,8 @@ public final class City {
         boolean[] zCut;
         final int cuts;
 
-        /** Lines whose segments are never removed (Integer.MIN_VALUE = none). */
-        final int trunkX;
-        final int trunkZ;
-
-        Layout(int n, boolean[] city, long seed, int maxCuts, int trunkX, int trunkZ) {
+        Layout(int n, boolean[] city, long seed, int maxCuts) {
             this.n = n;
-            this.trunkX = trunkX;
-            this.trunkZ = trunkZ;
             this.w = 2 * n + 1;
             this.city = city;
             int count = 0;
@@ -344,10 +257,10 @@ public final class City {
             List<int[]> segs = new ArrayList<>();
             for (int j = -n; j <= n + 1; j++) {
                 for (int i = -n; i <= n + 1; i++) {
-                    if (xDrawn(i, j) && i != trunkX) {
+                    if (xDrawn(i, j)) {
                         segs.add(new int[]{0, i, j});
                     }
-                    if (zDrawn(i, j) && j != trunkZ) {
+                    if (zDrawn(i, j)) {
                         segs.add(new int[]{1, i, j});
                     }
                 }
@@ -489,18 +402,15 @@ public final class City {
      * to the city level.
      */
     private Layout computeLayout() {
-        int n = Math.max(Math.max(-iFirst, iLast), Math.max(-jFirst, jLast));
+        int n = Math.max(-FIRST, LAST);
         int w = 2 * n + 1;
         boolean[] city = new boolean[w * w];
-        for (int j = jFirst; j <= jLast; j++) {
-            for (int i = iFirst; i <= iLast; i++) {
+        for (int j = FIRST; j <= LAST; j++) {
+            for (int i = FIRST; i <= LAST; i++) {
                 city[(i + n) + (j + n) * w] = true;
             }
         }
-        // towns: the trunk segments are never removed
-        int trunkX = town && !eastWest ? TRUNK_LINE : Integer.MIN_VALUE;
-        int trunkZ = town && eastWest ? TRUNK_LINE : Integer.MIN_VALUE;
-        return new Layout(n, city, seed, town ? TOWN_MAX_CUTS : MAX_CUTS, trunkX, trunkZ);
+        return new Layout(n, city, seed, MAX_CUTS);
     }
 
     public int blockCount() {
@@ -532,11 +442,8 @@ public final class City {
         return layout().zRemoved(i, j);
     }
 
-    /** Whether column (x, z) lies on the band of a removed street segment (grid cities and towns). */
+    /** Whether column (x, z) lies on the band of a removed street segment. */
     public boolean onRemovedStreet(double x, double z) {
-        if (octagon) {
-            return false;
-        }
         Layout L = layout();
         int i = (int) Math.round((x - u0) / S);
         int j = (int) Math.round((z - v0) / S);
@@ -548,7 +455,7 @@ public final class City {
 
     /** Number of street segments removed from the grid (0..{@link #MAX_CUTS}). */
     public int streetCuts() {
-        return octagon ? 0 : layout().cuts;
+        return layout().cuts;
     }
 
     public int cornerAt(int i, int j) {
@@ -556,20 +463,6 @@ public final class City {
     }
 
     public List<Exit> exits() {
-        if (octagon) {
-            // the ends of the 8 radial streets on the outer ring; i = direction index (0 = east, then clockwise)
-            List<Exit> ex = new ArrayList<>();
-            for (int k = 0; k < 8; k++) {
-                ex.add(new Exit(k, 0, OCT_DIR, false));
-            }
-            return ex;
-        }
-        if (town) {
-            // the two ends of the trunk
-            return eastWest
-                    ? List.of(new Exit(iFirst, TRUNK_LINE, Exit.WEST, false), new Exit(iLast + 1, TRUNK_LINE, Exit.EAST, false))
-                    : List.of(new Exit(TRUNK_LINE, jFirst, Exit.NORTH, false), new Exit(TRUNK_LINE, jLast + 1, Exit.SOUTH, false));
-        }
         return layout().exits;
     }
 
@@ -580,10 +473,6 @@ public final class City {
 
     /** World position where a highway leaving through this exit starts (on the outer street's centerline). */
     public double[] exitWorld(Exit e) {
-        if (e.dir() == OCT_DIR) {
-            double a = e.i() * Math.PI / 4;
-            return new double[]{cx + 0.5 + StrictMath.cos(a) * OCT_OUTER, cz + 0.5 + StrictMath.sin(a) * OCT_OUTER};
-        }
         if (!e.mid()) {
             return nodeWorld(e.i(), e.j());
         }
@@ -593,10 +482,6 @@ public final class City {
 
     /** Unit world direction of a highway leaving through this exit (perpendicular to the outer street). */
     public double[] exitDirection(Exit e) {
-        if (e.dir() == OCT_DIR) {
-            double a = e.i() * Math.PI / 4;
-            return new double[]{StrictMath.cos(a), StrictMath.sin(a)};
-        }
         double[] p = exitWorld(e);
         double dx;
         double dz;
@@ -623,9 +508,6 @@ public final class City {
     }
 
     /** Whether the street that continues into the city from this exit is an avenue. */
-    /** Exit direction code of the octagonal variant (the direction index is in {@link Exit#i()}). */
-    static final int OCT_DIR = 100;
-
     public boolean exitOnAvenue(Exit e) {
         if (e.mid()) {
             return false;
@@ -650,9 +532,6 @@ public final class City {
         public boolean lot;
         /** Distance beyond the outer edge of the nearest street; negative inside a street, +inf when far. */
         public double edge;
-        /** Town: on the trunk (the highway through the town), outside the crossings; trunkD = distance to its axis. */
-        public boolean trunk;
-        public double trunkD;
         /** Grid block containing the column. */
         public int bi;
         public int bj;
@@ -663,7 +542,6 @@ public final class City {
             mark = false;
             count = 0;
             lot = false;
-            trunk = false;
             edge = Double.POSITIVE_INFINITY;
         }
 
@@ -678,10 +556,6 @@ public final class City {
      * get exactly the same answer for a column.
      */
     public void query(double x, double z, Hit h) {
-        if (octagon) {
-            queryOctagon(x, z, h);
-            return;
-        }
         Layout L = layout();
         h.reset();
         double u = x;
@@ -731,10 +605,6 @@ public final class City {
         // north-south streets (only the segment of block row bj can contain v)
         for (int i = iLo; i <= iHi; i++) {
             if (L.xDrawn(i, bj) && v >= V(bj) && v <= V(bj + 1)) {
-                if (i == L.trunkX && Math.abs(u - U(i)) <= hw) {
-                    h.trunk = true;
-                    h.trunkD = Math.abs(u - U(i));
-                }
                 if (consider(h, Math.abs(u - U(i)), false)) {
                     markCandidate = true;
                     markAlong = v - V(bj) - hw;
@@ -744,10 +614,6 @@ public final class City {
         // east-west streets
         for (int j = jLo; j <= jHi; j++) {
             if (L.zDrawn(bi, j) && u >= U(bi) && u <= U(bi + 1)) {
-                if (j == L.trunkZ && Math.abs(v - V(j)) <= hw) {
-                    h.trunk = true;
-                    h.trunkD = Math.abs(v - V(j));
-                }
                 if (consider(h, Math.abs(v - V(j)), false)) {
                     markCandidate = true;
                     markAlong = u - U(bi) - hw;
@@ -820,54 +686,7 @@ public final class City {
     // ------------------------------------------------------------------ lots
 
     /** Lots of a city block (cached). */
-    /** Octagonal variant: roundabout, two octagonal rings and 8 radial streets (see {@link #octagon}). */
-    private void queryOctagon(double x, double z, Hit h) {
-        h.reset();
-        double ax = x - (cx + 0.5);
-        double az = z - (cz + 0.5);
-        double rho = Math.sqrt(ax * ax + az * az);
-        // octagon "radius": distance to the side lines of a regular octagon whose sides face the 8 directions
-        double oct = Math.max(Math.max(Math.abs(ax), Math.abs(az)), (Math.abs(ax) + Math.abs(az)) / SQ2);
-        double angle = StrictMath.atan2(az, ax);
-        double markAlong = 0;
-        boolean markCandidate = false;
-        if (consider(h, Math.abs(rho - OCT_RING), false)) {
-            markCandidate = true;
-            markAlong = angle * OCT_RING;
-        }
-        if (consider(h, Math.abs(oct - OCT_INNER), false)) {
-            markCandidate = true;
-            markAlong = angle * OCT_INNER;
-        }
-        if (consider(h, Math.abs(oct - OCT_OUTER), false)) {
-            markCandidate = true;
-            markAlong = angle * OCT_OUTER;
-        }
-        for (int k = 0; k < 8; k++) {
-            double a = k * Math.PI / 4;
-            double c = StrictMath.cos(a);
-            double sn = StrictMath.sin(a);
-            double t = ax * c + az * sn;
-            if (t < OCT_RING || t > OCT_OUTER) {
-                continue;
-            }
-            if (consider(h, Math.abs(-ax * sn + az * c), false)) {
-                markCandidate = true;
-                markAlong = t - OCT_RING;
-            }
-        }
-        h.mark = h.count == 1 && markCandidate
-                && Math.floorMod((int) Math.floor(markAlong), Params.DASH + Params.DASH_GAP) < Params.DASH;
-        h.bi = Integer.MIN_VALUE;
-        h.bj = Integer.MIN_VALUE;
-        // the island and the ground between the streets, up to the outer ring, are the city's lots
-        h.lot = !h.road && oct < OCT_OUTER;
-    }
-
     public List<Lot> lots(int bi, int bj) {
-        if (octagon) {
-            return List.of();
-        }
         Layout L = layout();
         if (!L.isCity(bi, bj)) {
             return List.of();
@@ -897,182 +716,46 @@ public final class City {
         return h.lot && !h.road && h.bi == bi && h.bj == bj && (!setback || h.edge >= Params.LOT_SETBACK);
     }
 
-    private boolean buildable(Hit h, int bi, int bj, int x, int z) {
-        query(x + 0.5, z + 0.5, h);
-        return h.lot && h.bi == bi && h.bj == bj && h.edge >= Params.LOT_SETBACK;
-    }
-
-    /** Grid cities and towns (not the octagon): parks and fields on some blocks, gray concrete powder elsewhere. */
-    public boolean paved() {
-        return !octagon;
-    }
-
-    /** Free ground of a paved city: gray concrete powder; dirt path in towns. */
+    /** Free ground of the city: gray concrete powder. */
     public int yardCode() {
-        return town ? BlockCode.PATH : BlockCode.CITY_GROUND;
+        return BlockCode.CITY_GROUND;
     }
 
     private List<Lot> computeLots(int bi, int bj) {
-        if (paved()) {
-            // the free rectangle of a grid block: from the sidewalks; across a removed street up to its middle (the
-            // two blocks join), or over the whole band of a removed street on the border of the city
-            Layout L = layout();
-            double hw = Params.STREET_HW;
-            boolean[] street = {L.xDrawn(bi, bj), L.xDrawn(bi + 1, bj), L.zDrawn(bi, bj), L.zDrawn(bi, bj + 1)};
-            int x0 = (int) Math.round(street[0] ? U(bi) + hw : L.isCity(bi - 1, bj) ? U(bi) - 0.5 : U(bi) - hw);
-            int x1 = (int) Math.round(street[1] ? U(bi + 1) - hw - 1 : L.isCity(bi + 1, bj) ? U(bi + 1) - 1.5 : U(bi + 1) + hw - 1);
-            int z0 = (int) Math.round(street[2] ? V(bj) + hw : L.isCity(bi, bj - 1) ? V(bj) - 0.5 : V(bj) - hw);
-            int z1 = (int) Math.round(street[3] ? V(bj + 1) - hw - 1 : L.isCity(bi, bj + 1) ? V(bj + 1) - 1.5 : V(bj + 1) + hw - 1);
-            // a corner over two removed streets can still be a crossing of the other two streets (or lie outside the
-            // city when both are border streets): that side then stops at the street line
-            Hit h = new Hit();
-            if (!buildable(h, bi, bj, x0, z0, false) || !buildable(h, bi, bj, x1, z0, false)) {
-                z0 = (int) Math.round(V(bj) + hw);
-            }
-            if (!buildable(h, bi, bj, x0, z1, false) || !buildable(h, bi, bj, x1, z1, false)) {
-                z1 = (int) Math.round(V(bj + 1) - hw - 1);
-            }
-            // a removed street on the border of the city still gets a row (facing out of the city)
-            boolean[] front = {street[0] || !L.isCity(bi - 1, bj), street[1] || !L.isCity(bi + 1, bj),
-                    street[2] || !L.isCity(bi, bj - 1), street[3] || !L.isCity(bi, bj + 1)};
-            return ringLots(bi, bj, x0, z0, x1, z1, front, h);
-        }
-        double[][] corners = {
-                warp.toWorld(U(bi), V(bj)), warp.toWorld(U(bi + 1), V(bj)),
-                warp.toWorld(U(bi), V(bj + 1)), warp.toWorld(U(bi + 1), V(bj + 1))};
-        double minX = Double.MAX_VALUE;
-        double maxX = -Double.MAX_VALUE;
-        double minZ = Double.MAX_VALUE;
-        double maxZ = -Double.MAX_VALUE;
-        for (double[] c : corners) {
-            minX = Math.min(minX, c[0]);
-            maxX = Math.max(maxX, c[0]);
-            minZ = Math.min(minZ, c[1]);
-            maxZ = Math.max(maxZ, c[1]);
-        }
-        int x0 = (int) Math.floor(minX);
-        int x1 = (int) Math.ceil(maxX);
-        int z0 = (int) Math.floor(minZ);
-        int z1 = (int) Math.ceil(maxZ);
+        // the free rectangle of a grid block: from the sidewalks; across a removed street up to its middle (the
+        // two blocks join), or over the whole band of a removed street on the border of the city
+        Layout L = layout();
+        double hw = Params.STREET_HW;
+        boolean[] street = {L.xDrawn(bi, bj), L.xDrawn(bi + 1, bj), L.zDrawn(bi, bj), L.zDrawn(bi, bj + 1)};
+        int x0 = (int) Math.round(street[0] ? U(bi) + hw : L.isCity(bi - 1, bj) ? U(bi) - 0.5 : U(bi) - hw);
+        int x1 = (int) Math.round(street[1] ? U(bi + 1) - hw - 1 : L.isCity(bi + 1, bj) ? U(bi + 1) - 1.5 : U(bi + 1) + hw - 1);
+        int z0 = (int) Math.round(street[2] ? V(bj) + hw : L.isCity(bi, bj - 1) ? V(bj) - 0.5 : V(bj) - hw);
+        int z1 = (int) Math.round(street[3] ? V(bj + 1) - hw - 1 : L.isCity(bi, bj + 1) ? V(bj + 1) - 1.5 : V(bj + 1) + hw - 1);
+        // a corner over two removed streets can still be a crossing of the other two streets (or lie outside the
+        // city when both are border streets): that side then stops at the street line
         Hit h = new Hit();
-        // shrink the rectangle until every column of its outline is buildable ground of this block
-        for (int guard = 0; guard < 4 * S; guard++) {
-            if (x1 - x0 < 7 || z1 - z0 < 7) {
-                return List.of();
-            }
-            boolean changed = false;
-            if (!columnOk(h, bi, bj, x0, z0, z1)) {
-                x0++;
-                changed = true;
-            }
-            if (!columnOk(h, bi, bj, x1, z0, z1)) {
-                x1--;
-                changed = true;
-            }
-            if (!rowOk(h, bi, bj, z0, x0, x1)) {
-                z0++;
-                changed = true;
-            }
-            if (!rowOk(h, bi, bj, z1, x0, x1)) {
-                z1--;
-                changed = true;
-            }
-            if (!changed) {
-                break;
-            }
+        if (!buildable(h, bi, bj, x0, z0, false) || !buildable(h, bi, bj, x1, z0, false)) {
+            z0 = (int) Math.round(V(bj) + hw);
         }
-        if (x1 - x0 < 7 || z1 - z0 < 7) {
-            return List.of();
+        if (!buildable(h, bi, bj, x0, z1, false) || !buildable(h, bi, bj, x1, z1, false)) {
+            z1 = (int) Math.round(V(bj + 1) - hw - 1);
         }
-        List<int[]> rects = new ArrayList<>();
-        split(rects, x0, z0, x1, z1, Hash.of(seed, 0x4C4F54L, bi, bj), 0);
-        List<Lot> lots = new ArrayList<>(rects.size());
-        int index = 0;
-        for (int[] r : rects) {
-            lots.add(Lot.create(this, r[0], r[1], r[2], r[3], Hash.of(seed, 0x4C4F54L, bi, bj, index++), h));
-        }
-        return List.copyOf(lots);
+        return blockLots(bi, bj, x0, z0, x1, z1);
     }
 
-    private boolean columnOk(Hit h, int bi, int bj, int x, int z0, int z1) {
-        for (int z = z0; z <= z1; z++) {
-            if (!buildable(h, bi, bj, x, z)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean rowOk(Hit h, int bi, int bj, int z, int x0, int x1) {
-        for (int x = x0; x <= x1; x++) {
-            if (!buildable(h, bi, bj, x, z)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /** Share of the blocks of a paved city that are one whole park (grass and trees, no buildings). */
+    /** Share of the city blocks that are one whole park (grass and trees, no buildings). */
     public static final double PARK_BLOCK_CHANCE = 0.125;
     /**
      * The lots of block (bi, bj), inside its free rectangle x0..x1, z0..z1 (whose outline touches the sidewalks, and
-     * reaches across removed streets): some blocks are a single park (town: a field); the others have no lots yet, all
-     * their ground is the city's free ground (gray concrete powder; dirt path in towns). No buildings: they will be
-     * designed anew.
+     * reaches across removed streets): some blocks are a single park; the others have no lots yet, all their ground is
+     * the city's free ground (gray concrete powder). No buildings: they will be designed anew.
      */
-    private List<Lot> ringLots(int bi, int bj, int x0, int z0, int x1, int z1, boolean[] street, Hit h) {
-        Layout L = layout();
+    private List<Lot> blockLots(int bi, int bj, int x0, int z0, int x1, int z1) {
         long rs = Hash.of(seed, 0x52494E47L, bi, bj);
-        if (town && (farmBlock(L) == (bi + L.n) + (bj + L.n) * L.w || Hash.unit(Hash.next(rs, 3)) < TOWN_FARM_CHANCE)) {
-            return List.of(Lot.farm(x0, z0, x1, z1, Hash.next(rs, 4)));
-        }
         if (Hash.unit(rs) < PARK_BLOCK_CHANCE) {
             return List.of(Lot.park(x0, z0, x1, z1, Hash.next(rs, 1)));
         }
         return List.of();
-    }
-
-    /** Share of the other town blocks that are fields too (one is always a field). */
-    public static final double TOWN_FARM_CHANCE = 0.15;
-
-    /** Index (bi + n) + (bj + n) * w of the town block that is always a field. */
-    private int farmBlock(Layout L) {
-        List<Integer> blocks = new ArrayList<>();
-        for (int bj = -L.n; bj < L.w - L.n; bj++) {
-            for (int bi = -L.n; bi < L.w - L.n; bi++) {
-                if (L.isCity(bi, bj)) {
-                    blocks.add((bi + L.n) + (bj + L.n) * L.w);
-                }
-            }
-        }
-        return blocks.isEmpty() ? -1 : blocks.get(Hash.range(Hash.next(seed, 0x4641), 0, blocks.size() - 1));
-    }
-
-    /** Guillotine cuts with 3-block gaps until no lot side exceeds 40 blocks. */
-    private static void split(List<int[]> out, int x0, int z0, int x1, int z1, long h, int depth) {
-        int w = x1 - x0 + 1;
-        int d = z1 - z0 + 1;
-        int longest = Math.max(w, d);
-        if (longest > 40 && depth < 8) {
-            boolean alongX = w >= d;
-            int start = alongX ? x0 : z0;
-            int len = longest;
-            int cut = start + (int) Math.round(len * Hash.range(h, 0.4, 0.6));
-            int aEnd = cut - 2;
-            int bStart = cut + 2;
-            int end = alongX ? x1 : z1;
-            if (aEnd - start + 1 >= 12 && end - bStart + 1 >= 12) {
-                if (alongX) {
-                    split(out, x0, z0, aEnd, z1, Hash.next(h, 1), depth + 1);
-                    split(out, bStart, z0, x1, z1, Hash.next(h, 2), depth + 1);
-                } else {
-                    split(out, x0, z0, x1, aEnd, Hash.next(h, 1), depth + 1);
-                    split(out, x0, bStart, x1, z1, Hash.next(h, 2), depth + 1);
-                }
-                return;
-            }
-        }
-        out.add(new int[]{x0, z0, x1, z1});
     }
 
     /** 0 at the outskirts, 1 at the center. */
@@ -1084,6 +767,6 @@ public final class City {
 
     @Override
     public String toString() {
-        return (town ? "Town[" : "City[") + ci + "," + cj + " @ " + cx + "," + cz + " r=" + radius + " level=" + level + "]";
+        return "City[" + ci + "," + cj + " @ " + cx + "," + cz + " r=" + radius + " level=" + level + "]";
     }
 }

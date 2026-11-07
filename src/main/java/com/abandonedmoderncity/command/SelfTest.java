@@ -132,10 +132,6 @@ public final class SelfTest {
         }
         List<Highway> hs = plan.highwaysOf(cities.subList(0, Math.min(cities.size(), 16)));
         hs.sort(Comparator.comparingLong(h -> h.key));
-        // the 3 x 2 town nearest to spawn
-        hs.stream().filter(h -> h.town != null)
-                .min(Comparator.comparingDouble(h -> (double) h.town.cx * h.town.cx + (double) h.town.cz * h.town.cz))
-                .ifPresent(h -> addCity(out, chosen, "town nearest to spawn", h.town));
         // the longest run of each kind
         addRun(out, plan, hs, "longest tunnel", Profile.TUNNEL, null);
         addRun(out, plan, hs, "longest bridge over water", Profile.BRIDGE, Boolean.TRUE);

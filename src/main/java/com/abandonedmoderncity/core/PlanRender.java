@@ -79,9 +79,6 @@ public final class PlanRender {
                 int base = switch (cp.zone[i]) {
                     case ChunkPlan.MARK -> rgb(235, 235, 235);
                     case ChunkPlan.SIDEWALK -> rgb(165, 165, 165);
-                    case ChunkPlan.TOWN_SIDEWALK -> rgb(140, 140, 140);
-                    case ChunkPlan.TOWN_PARAPET, ChunkPlan.RURAL_PARAPET -> rgb(100, 100, 100);
-                    case ChunkPlan.TOWN_LANE -> rgb(110, 112, 110);
                     case ChunkPlan.MARK_HIGHWAY -> rgb(230, 190, 40);
                     case ChunkPlan.SHOULDER, ChunkPlan.PARAPET -> rgb(120, 120, 120);
                     default -> rgb(65, 65, 70);
@@ -92,9 +89,6 @@ public final class PlanRender {
                     } else if (cp.struct[i] == Profile.TUNNEL && cp.zone[i] != ChunkPlan.MARK) {
                         base = rgb(220, 130, 30);
                     }
-                    if (cp.zone[i] == ChunkPlan.TOWN_LANE && cp.struct[i] == Profile.GROUND) {
-                        base = rgb(110, 112, 110);
-                    }
                     if (ChunkPlan.isSlab(cp.h2[i]) && cp.zone[i] == ChunkPlan.LANE) {
                         base = rgb(((base >> 16) & 255) - 15, ((base >> 8) & 255) - 5, (base & 255) + 60);
                     }
@@ -104,8 +98,8 @@ public final class PlanRender {
             case ChunkPlan.LOT -> {
                 Lot lot = cp.lot[i];
                 if (lot == null) {
-                    if (cp.city != null && cp.city.paved()) {
-                        return cp.city.town ? rgb(150, 115, 70) : rgb(155, 155, 150);
+                    if (cp.city != null) {
+                        return rgb(155, 155, 150);
                     }
                     return rgb(120, 175, 100);
                 }
@@ -130,7 +124,7 @@ public final class PlanRender {
                     if (c >= BlockCode.FLOWER && c < BlockCode.FLOWER + BlockCode.FLOWERS) {
                         return rgb(230, 90, 120);
                     }
-                    if (BlockCode.isCrop(c) || c == BlockCode.SHRUB) {
+                    if (c == BlockCode.SHRUB) {
                         return rgb(170, 175, 60);
                     }
                     if (c == BlockCode.LEAVES || c == BlockCode.LOG) {
@@ -142,7 +136,6 @@ public final class PlanRender {
                 }
                 return switch (lot.type) {
                     case PARK -> lot.code(x, base, z, base) == BlockCode.PATH ? rgb(150, 115, 70) : rgb(70, 160, 70);
-                    case FARM -> lot.code(x, base, z, base) == BlockCode.WATER ? rgb(60, 90, 200) : rgb(120, 85, 55);
                     case PLAZA -> rgb(200, 195, 175);
                     case EMPTY -> rgb(170, 150, 110);
                     default -> rgb(120, 175, 100);

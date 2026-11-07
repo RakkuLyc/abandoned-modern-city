@@ -32,7 +32,6 @@ Alvos por seed:
 | cidade mais alta entre as 16 mais próximas | | ✓ |
 | cidade costeira (água a até 96 blocos da área de influência) | | ✓ |
 | cidade de terreno mais acidentado | | ✓ |
-| cidade 3 × 2 mais próxima do spawn | ✓ | ✓ |
 | o túnel mais longo (com as aproximações) | ✓ | ✓ |
 | a ponte mais longa sobre água | ✓ | ✓ |
 | o viaduto seco mais longo | | ✓ |
@@ -54,18 +53,17 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 
 ## 2. O que é verificado
 
-### Unitários (10 testes)
+### Unitários (9 testes)
 
 | Teste | Verifica |
 |---|---|
 | `ProfileTest.profilesAreFlatOrRampAndJoinTheCities` | 4 000 perfis aleatórios (com penhascos): começa e termina no nível de cada cidade, 48 blocos planos nas pontas, variação ≤ 1/8 de bloco por bloco, trechos planos sempre em altura inteira, nunca abaixo do mínimo, superfície (meio-bloco) nunca muda mais de 0,5 entre vizinhos |
 | `ProfileTest.halfBlockStepsAreEvenlySpaced` | numa subida, os degraus de meia-laje ficam a pelo menos 4 blocos um do outro |
 | `ProfileTest.classificationRunsAreClean` | 2 000 perfis: junções sempre no chão, túneis ≥ 16, pontes secas ≥ 8, toda água fora das junções é ponte |
-| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades de grid dos 7 terrenos (270 cidades, 268 111 lotes): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado, todos os valores de 0 a 7 aparecem, toda coluna de lote (prédio, viela, jardim, parque…) é lote do quarteirão certo e não toca rua |
+| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (367 cidades, 856 lotes — parques): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado, todos os valores de 0 a 7 aparecem, toda coluna de lote é lote do quarteirão certo e não toca rua |
 | `WorldPlanTest.streetWidthIsConstantOnStraightStreets` | toda rua reta de cidade tem exatamente 17 colunas |
 | `WorldPlanTest.highwayNetworkIsConsistentAndWellConnected` | 21 combinações terreno × seed: Gabriel simétrico, rodovia começa e termina exatamente na entrada de cada cidade, raio de curva ≥ 60, pontos a ~1 bloco, comprimento máximo, entrada nunca usada duas vezes, no máximo 4 rodovias por cidade, nenhum par de rodovias perto demais (sem cruzamentos); limites: plano/colinas ≥ 85% das ligações e ≤ 5% de cidades sem rodovia, montanhas/rios/cânions ≤ 15%, e pelo menos metade das células com cidade (exceto ilhas); gera `network_*.png` |
 | `WorldPlanTest.removedStreetsAreRenderedAndAudited` | uma cidade 4 × 4 para cada quantidade de ruas cortadas (0 a 7): passa no `PlanAudit` e gera `cuts_N.png` |
-| `WorldPlanTest.townsSitOnTheirHighwaysAndPassTheAudit` | cidades 3 × 2 em todas as rodovias dos 7 terrenos (301 cidades em 673 rodovias): 6 quarteirões, posição perto do meio da rodovia (±10%), rodovia reta sobre a rua do meio e no nível da cidade, `townNear` encontra a cidade, `PlanAudit` sem falhas, pelo menos 1 rodovia em 5 com cidade; gera `town_*.png` |
 | `PlanAuditTest.citiesAndHighwaysPassThePlanAudit` | `PlanAudit` coluna a coluna em 3 cidades inteiras e 2 rodovias inteiras por terreno × seed (105 auditorias); gera `city_*.png` |
 | `PlanAuditTest.planIsIndependentOfQueryOrderAndThreads` | 3 721 chunks planejados de novo em ordem embaralhada por 8 threads: resultado idêntico, campo a campo |
 
@@ -83,8 +81,6 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
   - `city_split` e `removed_street` (o meio de um trecho de rua cortado não virou chão de lote).
 - **Lotes:** `lot_overlap` (dois lotes de um quarteirão se sobrepõem).
 
-As cidades 3 × 2 das rodovias passam pelas mesmas verificações de cidade.
-
 ### `WorldAudit` (blocos gerados)
 
 - **Superfície das vias:**
@@ -97,9 +93,9 @@ As cidades 3 × 2 das rodovias passam pelas mesmas verificações de cidade.
 - **Estruturas:** `parapet`, `tunnel_ceiling` (`stone` ou `glowstone`), `tunnel_wall` e `pillar_floating`.
 - **Lotes:**
   - `lot_hole`;
-  - `yard_ground` (chão livre de cidade 4 × 4 que não é `gray_concrete_powder`; pedras de floresta e buracos são
+  - `yard_ground` (chão livre de cidade que não é `gray_concrete_powder`; pedras de floresta e buracos são
     reparados);
-  - `building_mismatch` (nome herdado: bloco de lote — parque, fonte, plantação — diferente da definição;
+  - `building_mismatch` (nome herdado: bloco de lote — parque, fonte — diferente da definição;
     costuras entre chunks apareceriam aqui).
 - **Regras gerais:**
   - `hard_block` (bloco indestrutível em via, ponte, túnel ou lote; qualquer dureza é permitida);
@@ -149,13 +145,13 @@ e a regra de escada e apoio no mesmo chunk.
 ```bash
 ./gradlew test                                   # unitários, ~2 min (renders em build/test-renders/)
 ./gradlew test --tests '*WorldPlanTest.streetWidthIsConstantOnStraightStreets'   # só um teste
-tools/selftest.sh quick 20261027                 # bateria rápida (4 alvos), ~4 min
+tools/selftest.sh quick 20261027                 # bateria rápida (3 alvos), ~4 min
 tools/selftest.sh full 20261027 -3297019724594858492 3478477863671517581 1
 cat run/selftest/<seed>/report.txt               # termina com RESULT: PASS ou FAIL
 ```
 
 No jogo (op):
-- `/amcs locate urban_city` (ou `rural_city`, `special_city`, `tunnel`, `bridge`);
+- `/amcs locate city` (ou `highway`, `tunnel`, `bridge`);
 - `/amcs info`, que mostra o que o plano quer na coluna;
 - `/amcs audit 6` e `/amcs plan 12`.
 
@@ -172,16 +168,21 @@ No jogo (op):
   - para comparar, o próprio Minecraft gasta dezenas de ms por chunk.
 - **Testes unitários:** ~2 min no total (sem o teste dos prédios, que levava ~8 min).
 
-## 6. Resultados atuais (7 nov 2026, cópia sem prédios)
+## 6. Resultados atuais (7 nov 2026, sem cidades octogonais e 3 × 2)
 
-- **Unitários:** 10 de 10 passam.
-  - **Auditorias de plano:** 105 auditorias coluna a coluna, além das cidades com ruas cortadas e das cidades 3 × 2.
+- **Unitários:** 9 de 9 passam (o teste das cidades 3 × 2 saiu junto com elas); `./gradlew build` em ~1 min 25 s.
+  - **Auditorias de plano:** 105 auditorias coluna a coluna, além de uma cidade para cada quantidade de ruas
+    cortadas (0 a 7).
+  - **Rede (7 terrenos × 3 seeds):** sem as cidades octogonais todas as cidades são 4 × 4 (16
+    quarteirões); 84–90% das ligações viram rodovia nos terrenos `MIXED`, `CANYONS` e `RIVERS`, e nenhuma cidade
+    fica sem rodovia nesses terrenos.
 - **Bateria no mundo:**
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
   | `20261027` | `quick` | 7 nov | cópia sem prédios | PASS: 4 alvos, uma cidade 4 × 4 com 2 lotes (parques) e 37 765 colunas de chão livre conferidas, 18 953 colunas de via, 2,25 ms por chunk |
 
-  Vale rodar a bateria completa quando houver mudanças: `tools/selftest.sh full`.
+  A bateria ainda não rodou depois da remoção das cidades octogonais e 3 × 2 (o alvo "cidade 3 × 2 mais próxima do
+  spawn" saiu). Vale rodar a bateria completa quando houver mudanças: `tools/selftest.sh full`.
 - Em nenhuma rodada houve degrau, buraco, obstáculo, pilar flutuante, rodovia sem conexão, bloco indestrutível ou
   loot nas vias, pontes e túneis depois das correções 4 e 5.
