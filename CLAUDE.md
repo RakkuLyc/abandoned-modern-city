@@ -26,20 +26,24 @@ Abandoned Simple City (`RakkuLyc/abandoned-simple-city`, pasta `AbandonedModernC
 rodovias, túneis, pontes, quarteirões, parques e plantações, **sem os prédios** (e sem as casinhas das cidades
 3 × 2) e sem o histórico de commits. Os prédios serão projetados de novo aqui. O Abandoned Modern City original
 (pasta `AbandonedModernCity-Deprecated`) está descontinuado. Ainda em 7 nov 2026 o usuário mandou remover as cidades
-octogonais e as cidades 3 × 2 das rodovias (com o padrão rural_highway perto delas e as plantações): hoje só existem
-as cidades 4 × 4.
+octogonais e as cidades 3 × 2 das rodovias (com o padrão rural_highway perto delas e as plantações), e depois trocar
+o grid 4 × 4 por 2 × 2 com células de 1024: hoje só existem as cidades 2 × 2.
 
 ## Especificação das ruas e cidades (atual)
 
-- Grid rígido, ruas retas e cantos em ângulo reto: cidade = 4 × 4 quarteirões de 186 × 186 (`Params.BLOCK` = 203
-  entre eixos, ~830 blocos de lado). Todas as cidades são assim (não há mais variantes).
-- Água é aterrada, morro é cortado. Cidades a ~2 000 blocos umas das outras (célula 2048).
+- Grid rígido, ruas retas e cantos em ângulo reto: cidade = 2 × 2 quarteirões de 186 × 186 (`Params.GRID` = 2,
+  `Params.BLOCK` = 203 entre eixos, ~424 blocos de lado, 3 × 3 ruas e 9 cruzamentos). Todas as cidades são assim
+  (não há mais variantes).
+- Água é aterrada, morro é cortado. Cidades a ~1 000 blocos umas das outras (célula 1024, `Params.DEFAULT`). Para
+  caber na célula, o `maxRadius` padrão passou de 288 para 212 (o raio da cidade 2 × 2); o centro de cada cidade só
+  varia ~112 blocos dentro da célula.
 - Rua com 17 de largura: 2 `smooth_stone` (calçada) + 13 `polished_blackstone` (pista) + 2 `smooth_stone`.
 - Trecho de rua de 186 blocos + 17 de cruzamento; quadrado 2 × 2 de `smooth_stone` em cada esquina de cruzamento.
 - Faixa central no 9º bloco da largura, traços de 11 com intervalo de 6 (quantos couberem, centrados); `white_concrete` na cidade,
   `yellow_terracotta` nas rodovias.
 - 4 entradas por cidade, em cruzamentos de 3 vias da borda: cada ligação é combinada pelas duas cidades e a seed
-  sorteia a entrada entre os cruzamentos do lado voltado para a cidade de destino ("opção 2").
+  sorteia a entrada entre os cruzamentos do lado voltado para a cidade de destino ("opção 2"). No 2 × 2 cada lado tem
+  um só cruzamento de 3 vias (o do meio), então cada lado recebe no máximo uma rodovia.
 - Rodovias com 21: 1 `smooth_stone` + `stone_brick_wall` em cima, 19 `polished_blackstone` (faixa `yellow_terracotta`
   no meio), 1 `smooth_stone` + muro. Muros conectados pelo plano (não pelo vanilla). Dentro das cidades os lotes têm
   prioridade: a rodovia estreita para a rua de 17 nas entradas. As rodovias vão direto de uma cidade à outra.
@@ -47,7 +51,8 @@ as cidades 4 × 4.
   os lados, de 21 até 17 (largura de rua), logo depois da junção com a rua.
 - Túneis com 7 blocos de altura livre (`Params.CLEARANCE`); só há túnel com 11+ blocos de terreno acima da pista
   (`Params.TUNNEL_COVER`).
-- Ruas cortadas: cada cidade perde de 0 a 7 trechos de rua (sorteio uniforme, `City.MAX_CUTS`),
+- Ruas cortadas: **desligadas** (`City.MAX_CUTS` = 0, pedido do usuário para o 2 × 2; o código continua). Quando
+  ligadas, cada cidade perde de 0 a `MAX_CUTS` trechos de rua (sorteio uniforme),
   internos ou da borda; nunca cria beco sem saída e a cidade continua toda conectada. O espaço vira grama, unindo
   os quarteirões. Entradas não são protegidas (só ficam conectadas).
 - Quarteirões: sem prédios por enquanto. ~1 em 8 quarteirões é um parque

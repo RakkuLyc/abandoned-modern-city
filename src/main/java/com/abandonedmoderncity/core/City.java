@@ -78,10 +78,13 @@ public final class City {
 
     /** Entrances (highways) of every city, at border T crossings facing the linked cities. */
     public static final int EXITS = 4;
-    /** Most street segments removed from a grid city (the count is uniform in 0..MAX_CUTS). */
-    public static final int MAX_CUTS = 7;
+    /**
+     * Most street segments removed from a grid city (the count is uniform in 0..MAX_CUTS). 0 = switched off (asked by
+     * the user for the 2 x 2 grid, where only the inner cross could be cut); the cutting code stays for later.
+     */
+    public static final int MAX_CUTS = 0;
     static final long CUT_SALT = 0x43555453L;
-    /** Grid blocks of a city: FIRST..LAST in both directions (-1..1 for a 3 x 3 grid, -2..1 for 4 x 4). */
+    /** Grid blocks of a city: FIRST..LAST in both directions (-1..0 for the 2 x 2 grid, -2..1 for 4 x 4). */
     public static final int FIRST = -(Params.GRID / 2);
     public static final int LAST = (Params.GRID + 1) / 2 - 1;
 
@@ -117,7 +120,7 @@ public final class City {
             long ha = Hash.next(h, 100 + attempt);
             int cx = ci * p.cellSize() + margin + Hash.range(ha, 0, span);
             int cz = cj * p.cellSize() + margin + Hash.range(Hash.next(ha, 1), 0, span);
-            // every city is the same 4 x 4 grid: the radius only bounds its area of influence
+            // every city is the same 2 x 2 grid: the radius only bounds its area of influence
             int radius = Params.GRID_RADIUS;
             Object r = trySite(p, t, cx, cz, radius);
             if (r instanceof String s) {
@@ -397,8 +400,8 @@ public final class City {
     }
 
     /**
-     * The fixed tic-tac-toe grid: GRID x GRID blocks (blocks -1..1 for GRID = 3), 4 x 4 streets, 16 crossings
-     * (4 of 4 ways inside, 8 of 3 ways on the border, 4 of 2 ways at the corners). The terrain under it is filled or cut
+     * The fixed grid: GRID x GRID blocks (blocks -1..0 for GRID = 2), 3 x 3 streets, 9 crossings (1 of 4 ways in the
+     * middle, 4 of 3 ways on the border, 4 of 2 ways at the corners). The terrain under it is filled or cut
      * to the city level.
      */
     private Layout computeLayout() {

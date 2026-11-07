@@ -19,14 +19,14 @@ package com.abandonedmoderncity.core;
 public record Params(int cellSize, double cityChance, int minRadius, int maxRadius, int maxCityLevel,
                      int highwayMaxLength, boolean highways) {
 
-    public static final Params DEFAULT = new Params(2048, 0.7, 128, 288, 150, 4000, true);
+    public static final Params DEFAULT = new Params(1024, 0.7, 128, 212, 150, 4000, true);
 
     // ------------------------------------------------------------------ city grid
 
-    /** Distance between parallel street centerlines of the 4 x 4 cities (one city block = BLOCK x BLOCK). */
+    /** Distance between parallel street centerlines of the cities (one city block = BLOCK x BLOCK). */
     public static final int BLOCK = 203;
     /** Every city is GRID x GRID blocks ((GRID + 1) x (GRID + 1) streets). */
-    public static final int GRID = 4;
+    public static final int GRID = 2;
     /** Length of a street between two crossings (186), and the dash / gap of its center marking. */
     public static final int STREET_RUN = 186;
     public static final int DASH = 11;
@@ -111,7 +111,7 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
         return radius * 1.2 + BLOCK * 0.71 + MAX_WARP + AVENUE_HW + CITY_SKIRT + 4;
     }
 
-    /** Radius of a 4 x 4 city (half its width, streets included). */
+    /** Radius of a city (half its width, streets included): 212 for the 2 x 2 grid. */
     public static final int GRID_RADIUS = GRID * BLOCK / 2 + (int) STREET_HW + 1;
 
     /** City centers are kept this far from the cell edges, so the cities of two cells never overlap. */

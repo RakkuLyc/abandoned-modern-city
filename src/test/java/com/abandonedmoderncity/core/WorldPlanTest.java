@@ -92,8 +92,12 @@ class WorldPlanTest {
         for (int k = 1; k <= City.MAX_CUTS; k++) {
             withCuts += cutHistogram[k];
         }
-        assertTrue(withCuts > cities / 2, "too few cities with removed streets");
-        assertTrue(cutHistogram[City.MAX_CUTS] > 0, "no city with " + City.MAX_CUTS + " removed streets");
+        if (City.MAX_CUTS == 0) {
+            assertEquals(0, withCuts, "street cuts are switched off");
+        } else {
+            assertTrue(withCuts > cities / 2, "too few cities with removed streets");
+            assertTrue(cutHistogram[City.MAX_CUTS] > 0, "no city with " + City.MAX_CUTS + " removed streets");
+        }
         assertTrue(cities > 40, "too few cities: " + cities);
     }
 
