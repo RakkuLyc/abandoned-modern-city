@@ -23,11 +23,11 @@ Por enquanto **sem prédios**: eles serão projetados de novo neste mod.
 
 | Tipo | Onde | Forma |
 |---|---|---|
-| Cidade 2 × 2 | uma por célula de 1 024 blocos (70% das células) | grid rígido de 2 × 2 quarteirões de 186 × 186 (eixos a 203, ~424 blocos de lado, 3 × 3 ruas), até 4 entradas de rodovia (o cruzamento do meio de cada lado) |
+| Cidade 2 × 2 | uma por célula de 512 blocos (70% das células) | grid rígido de 2 × 2 quarteirões de 105 × 60 (eixos a 122 e a 77, ~261 × ~171 blocos com as ruas, 3 × 3 ruas; o lado comprido fica leste-oeste ou norte-sul, sorteado por cidade), até 4 entradas de rodovia (o cruzamento do meio de cada lado) |
 
 Só existe esse tipo de cidade: as cidades octogonais e as cidades 3 × 2 das rodovias (com o padrão rural_highway e
-as plantações) foram removidas em 7 nov 2026, e o grid passou de 4 × 4 (células de 2 048) para 2 × 2 (células de
-1 024).
+as plantações) foram removidas em 7 nov 2026; o grid passou de 4 × 4 quarteirões de 186 (células de 2 048) para
+2 × 2 quarteirões de 105 × 60 (células de 512).
 
 - Cada cidade fica numa única altura: água é aterrada, morro é cortado, e um talude 1:1 faz a transição.
 - Ruas cortadas estão desligadas (`City.MAX_CUTS` = 0); o código que corta trechos sem criar beco sem saída
@@ -97,7 +97,7 @@ command/  /amcs, auditoria dos blocos (WorldAudit), renders do mundo, bateria au
 ### Estágios
 
 1. **Existe cidade?**
-   - O mundo é dividido em células de `cellSize` (1 024). Cada célula tem uma cidade com chance `cityChance`
+   - O mundo é dividido em células de `cellSize` (512). Cada célula tem uma cidade com chance `cityChance`
      (70%), longe das bordas.
    - A célula tenta até 10 posições e fica com a primeira em que o terreno não é majoritariamente água e a altura
      (mediana de 9 amostras, mínimo nível do mar + 2) não passa de `maxCityLevel`.
@@ -117,7 +117,7 @@ command/  /amcs, auditoria dos blocos (WorldAudit), renders do mundo, bateria au
 
 `enabled`, `cellSize`, `cityChance`, `minRadius`, `maxRadius`, `maxCityLevel`, `highways`, `highwayMaxLength`.
 A geometria (larguras, quarteirões, rampas, túneis, pontes) fica em `core/Params` e as cidades em `core/City`. Mudanças valem para chunks novos e mudam o plano: use um mundo novo.
-Padrões: `cellSize` = 1024 e `maxRadius` = 212. Um arquivo de config antigo (de quando eram 2048 e 288) mantém os
+Padrões: `cellSize` = 512 e `maxRadius` = 131. Um arquivo de config antigo (com 2048/288 ou 1024/212) mantém os
 valores velhos: apague-o ou ajuste os dois valores.
 
 ## Comandos (op 2)

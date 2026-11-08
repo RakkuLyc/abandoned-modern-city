@@ -19,16 +19,21 @@ package com.abandonedmoderncity.core;
 public record Params(int cellSize, double cityChance, int minRadius, int maxRadius, int maxCityLevel,
                      int highwayMaxLength, boolean highways) {
 
-    public static final Params DEFAULT = new Params(1024, 0.7, 128, 212, 150, 4000, true);
+    public static final Params DEFAULT = new Params(512, 0.7, 128, 131, 150, 4000, true);
 
     // ------------------------------------------------------------------ city grid
 
-    /** Distance between parallel street centerlines of the cities (one city block = BLOCK x BLOCK). */
-    public static final int BLOCK = 203;
+    /**
+     * City blocks are BLOCK_LONG_RUN x BLOCK_SHORT_RUN (105 x 60) of free ground between the sidewalks; their street
+     * centerlines are a street width further apart (122 and 77). Each city rolls whether the long side runs east-west.
+     */
+    public static final int BLOCK_LONG_RUN = 105;
+    public static final int BLOCK_SHORT_RUN = 60;
+    public static final int BLOCK_LONG = BLOCK_LONG_RUN + 17;
+    public static final int BLOCK_SHORT = BLOCK_SHORT_RUN + 17;
     /** Every city is GRID x GRID blocks ((GRID + 1) x (GRID + 1) streets). */
     public static final int GRID = 2;
-    /** Length of a street between two crossings (186), and the dash / gap of its center marking. */
-    public static final int STREET_RUN = 186;
+    /** Dash / gap of the street center marking. */
     public static final int DASH = 11;
     public static final int DASH_GAP = 6;
     /** Radius of the curved corners on the outside of the city (convex corners of the street ring). */
@@ -104,15 +109,22 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
     }
 
     /**
-     * Farthest distance from a city center at which the city changes anything (lots, streets, slopes): the organic
-     * shape reaches 1.2 R, a block adds its half diagonal, then waves, the widest street and its slopes.
+     * Farthest distance from a city center at which the city changes anything (lots, streets, slopes): the corner of
+     * the rectangular city (half diagonal, at most 1.2 x the half long side: 157 for 131 x 86), then waves and slopes.
      */
     public static double influence(int radius) {
-        return radius * 1.2 + BLOCK * 0.71 + MAX_WARP + AVENUE_HW + CITY_SKIRT + 4;
+        return radius * 1.2 + MAX_WARP + CITY_SKIRT + 4;
     }
 
-    /** Radius of a city (half its width, streets included): 212 for the 2 x 2 grid. */
-    public static final int GRID_RADIUS = GRID * BLOCK / 2 + (int) STREET_HW + 1;
+    /** Half the long side of a city, streets included: 131 for the 2 x 2 grid (the short side: 86). */
+    public static final int GRID_RADIUS = GRID * BLOCK_LONG / 2 + (int) STREET_HW + 1;
+    public static final int GRID_HALF_SHORT = GRID * BLOCK_SHORT / 2 + (int) STREET_HW + 1;
+
+    static {
+        if (Math.hypot(GRID_RADIUS, GRID_HALF_SHORT) > 1.2 * GRID_RADIUS) {
+            throw new IllegalStateException("the city rectangle is too elongated for influence()");
+        }
+    }
 
     /** City centers are kept this far from the cell edges, so the cities of two cells never overlap. */
     public static int margin(int maxRadius) {

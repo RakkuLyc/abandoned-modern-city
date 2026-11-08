@@ -48,7 +48,7 @@ Alvos repetidos (a mesma cidade em dois critérios) entram uma vez só. Seeds fi
 - `CANYONS` (planalto cortado por cânions estreitos abaixo do nível do mar).
 - `RIVERS` (terra ondulada cortada por rios e salpicada de lagos, como o overworld real perto das seeds da bateria).
 
-Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa área de 9 × 9 células de 1 024
+Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa área de 9 × 9 células de 512
 (~18 000 × 18 000 blocos).
 
 ## 2. O que é verificado
@@ -60,7 +60,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `ProfileTest.profilesAreFlatOrRampAndJoinTheCities` | 4 000 perfis aleatórios (com penhascos): começa e termina no nível de cada cidade, 48 blocos planos nas pontas, variação ≤ 1/8 de bloco por bloco, trechos planos sempre em altura inteira, nunca abaixo do mínimo, superfície (meio-bloco) nunca muda mais de 0,5 entre vizinhos |
 | `ProfileTest.halfBlockStepsAreEvenlySpaced` | numa subida, os degraus de meia-laje ficam a pelo menos 4 blocos um do outro |
 | `ProfileTest.classificationRunsAreClean` | 2 000 perfis: junções sempre no chão, túneis ≥ 16, pontes secas ≥ 8, toda água fora das junções é ponte |
-| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (358 cidades 2 × 2, 197 lotes — parques): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado; com as ruas cortadas desligadas (`MAX_CUTS` = 0) nenhuma cidade tem corte, senão todos os valores de 0 a `MAX_CUTS` aparecem; toda coluna de lote é lote do quarteirão certo e não toca rua |
+| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (361 cidades 2 × 2 de quarteirões 105 × 60, 205 lotes — parques): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado; com as ruas cortadas desligadas (`MAX_CUTS` = 0) nenhuma cidade tem corte, senão todos os valores de 0 a `MAX_CUTS` aparecem; toda coluna de lote é lote do quarteirão certo e não toca rua |
 | `WorldPlanTest.streetWidthIsConstantOnStraightStreets` | toda rua reta de cidade tem exatamente 17 colunas |
 | `WorldPlanTest.highwayNetworkIsConsistentAndWellConnected` | 21 combinações terreno × seed: Gabriel simétrico, rodovia começa e termina exatamente na entrada de cada cidade, raio de curva ≥ 60, pontos a ~1 bloco, comprimento máximo, entrada nunca usada duas vezes, no máximo 4 rodovias por cidade, nenhum par de rodovias perto demais (sem cruzamentos); limites: plano/colinas ≥ 85% das ligações e ≤ 5% de cidades sem rodovia, montanhas/rios/cânions ≤ 15%, e pelo menos metade das células com cidade (exceto ilhas); gera `network_*.png` |
 | `WorldPlanTest.removedStreetsAreRenderedAndAudited` | uma cidade para cada quantidade de ruas cortadas (hoje só 0): passa no `PlanAudit` e gera `cuts_N.png` |
@@ -168,15 +168,16 @@ No jogo (op):
   - para comparar, o próprio Minecraft gasta dezenas de ms por chunk.
 - **Testes unitários:** ~2 min no total (sem o teste dos prédios, que levava ~8 min).
 
-## 6. Resultados atuais (7 nov 2026, cidades 2 × 2 em células de 1 024)
+## 6. Resultados atuais (7 nov 2026, cidades 2 × 2 de quarteirões 105 × 60 em células de 512)
 
-- **Unitários:** 9 de 9 passam; `./gradlew build` em ~1 min 30 s.
-  - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas (cidades de 9 nós de rua), mais a cidade
-    sem cortes do teste de ruas cortadas.
-  - **Rede (7 terrenos × 3 seeds, 81 células):** 40 a 62 cidades por combinação, todas com 4 quarteirões; 82–98%
-    das ligações viram rodovia fora das ilhas (ilhas: 67–79%). O principal motivo de ligação perdida agora é
-    `curve too tight` (raio < 60), porque as ligações ficaram mais curtas; só 1 cidade em todas as 21
-    combinações fica sem rodovia (ilhas, seed 42: 3%).
+- **Unitários:** 9 de 9 passam; `./gradlew build` em ~30 s (a área dos testes encolheu com a célula).
+  - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
+    cortadas.
+  - **Rede (7 terrenos × 3 seeds, 81 células):** 45 a 62 cidades por combinação. Ligações que viram rodovia:
+    94–96% no plano, nas colinas e nos cânions; 85–91% nos rios; 83–84% no terreno misto; 74–84% nas ilhas; 76–86%
+    nas montanhas. Com rodovias de ~300–500 blocos, aparece um motivo novo de ligação perdida: `levels too far apart
+    for the length` (até 21 nas montanhas), porque a rampa de 1 bloco a cada 8 não vence o desnível. Cidades sem
+    rodovia: no máximo 2 (4%, montanhas, seed 42).
 - **Bateria no mundo:**
 
   | Seed | Escopo | Data | Versão | Resultado |
@@ -184,6 +185,6 @@ No jogo (op):
   | `20261027` | `quick` | 7 nov | cópia sem prédios | PASS: 4 alvos, uma cidade 4 × 4 com 2 lotes (parques) e 37 765 colunas de chão livre conferidas, 18 953 colunas de via, 2,25 ms por chunk |
 
   A bateria ainda não rodou depois da remoção das cidades octogonais e 3 × 2 (o alvo "cidade 3 × 2 mais próxima do
-  spawn" saiu) nem depois da troca para 2 × 2 em células de 1 024. Vale rodar a bateria completa quando houver mudanças: `tools/selftest.sh full`.
+  spawn" saiu) nem depois da troca para 2 × 2 de quarteirões 105 × 60 em células de 512. Vale rodar a bateria completa quando houver mudanças: `tools/selftest.sh full`.
 - Em nenhuma rodada houve degrau, buraco, obstáculo, pilar flutuante, rodovia sem conexão, bloco indestrutível ou
   loot nas vias, pontes e túneis depois das correções 4 e 5.

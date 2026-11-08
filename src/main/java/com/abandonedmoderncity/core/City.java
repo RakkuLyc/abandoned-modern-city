@@ -23,8 +23,14 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
  * {@code u = U(i)}, east-west line {@code j} is {@code v = V(j)}; block (i, j) spans {@code [U(i), U(i+1)] x [V(j), V(j+1)]}.
  */
 public final class City {
-    /** Distance between parallel street centerlines. */
-    public final int S = Params.BLOCK;
+    /**
+     * Distance between parallel street centerlines: SX between the north-south streets (along x), SZ between the
+     * east-west ones. One of them is {@link Params#BLOCK_LONG}, the other {@link Params#BLOCK_SHORT}, rolled per city.
+     */
+    public final int SX;
+    public final int SZ;
+    /** Whether the long side of the blocks runs east-west (along x). */
+    public final boolean longX;
     static final double R_ARC = Params.ARC_RADIUS;
     /** Grid-space search radius for street primitives: the widest street plus its slopes, with slack for the waves. */
     static final double SEARCH = (Params.AVENUE_HW + Params.CITY_SKIRT) * 1.05 + 2;
@@ -57,6 +63,9 @@ public final class City {
         this.cj = cj;
         this.id = Cache.key(ci, cj);
         this.seed = seed;
+        this.longX = Hash.unit(Hash.next(seed, 21)) < 0.5;
+        this.SX = longX ? Params.BLOCK_LONG : Params.BLOCK_SHORT;
+        this.SZ = longX ? Params.BLOCK_SHORT : Params.BLOCK_LONG;
         this.cx = cx;
         this.cz = cz;
         this.radius = radius;
@@ -65,8 +74,8 @@ public final class City {
         this.warp = warp;
         // street centerlines on block centers (x + 0.5), so a 17-wide street covers exactly 17 columns
         // the grid (blocks FIRST..LAST) is centered on the city center
-        this.u0 = cx - (int) Math.floor((FIRST + LAST + 1) / 2.0 * S) + 0.5;
-        this.v0 = cz - (int) Math.floor((FIRST + LAST + 1) / 2.0 * S) + 0.5;
+        this.u0 = cx - (int) Math.floor((FIRST + LAST + 1) / 2.0 * SX) + 0.5;
+        this.v0 = cz - (int) Math.floor((FIRST + LAST + 1) / 2.0 * SZ) + 0.5;
         this.shapeA2 = a2;
         this.shapeP2 = p2;
         this.shapeA3 = a3;
@@ -173,11 +182,11 @@ public final class City {
     }
 
     public double U(int i) {
-        return u0 + (double) i * S;
+        return u0 + (double) i * SX;
     }
 
     public double V(int j) {
-        return v0 + (double) j * S;
+        return v0 + (double) j * SZ;
     }
 
     /** Organic outline: the city reaches radius * shape(angle), at most 1.2 radius. */
@@ -448,10 +457,10 @@ public final class City {
     /** Whether column (x, z) lies on the band of a removed street segment. */
     public boolean onRemovedStreet(double x, double z) {
         Layout L = layout();
-        int i = (int) Math.round((x - u0) / S);
-        int j = (int) Math.round((z - v0) / S);
-        int bi = (int) Math.floor((x - u0) / S);
-        int bj = (int) Math.floor((z - v0) / S);
+        int i = (int) Math.round((x - u0) / SX);
+        int j = (int) Math.round((z - v0) / SZ);
+        int bi = (int) Math.floor((x - u0) / SX);
+        int bj = (int) Math.floor((z - v0) / SZ);
         return Math.abs(x - U(i)) <= Params.STREET_HW && L.xRemoved(i, bj)
                 || Math.abs(z - V(j)) <= Params.STREET_HW && L.zRemoved(bi, j);
     }
@@ -480,7 +489,7 @@ public final class City {
             return nodeWorld(e.i(), e.j());
         }
         boolean eastWest = e.dir() == Exit.EAST || e.dir() == Exit.WEST;
-        return eastWest ? warp.toWorld(U(e.i()), V(e.j()) + S / 2.0) : warp.toWorld(U(e.i()) + S / 2.0, V(e.j()));
+        return eastWest ? warp.toWorld(U(e.i()), V(e.j()) + SZ / 2.0) : warp.toWorld(U(e.i()) + SX / 2.0, V(e.j()));
     }
 
     /** Unit world direction of a highway leaving through this exit (perpendicular to the outer street). */
@@ -563,16 +572,16 @@ public final class City {
         h.reset();
         double u = x;
         double v = z;
-        int bi = (int) Math.floor((u - u0) / S);
-        int bj = (int) Math.floor((v - v0) / S);
+        int bi = (int) Math.floor((u - u0) / SX);
+        int bj = (int) Math.floor((v - v0) / SZ);
         h.bi = bi;
         h.bj = bj;
         double hw = Params.STREET_HW;
         double lane = Params.STREET_LANE_HW;
-        int iLo = (int) Math.ceil((u - SEARCH - u0) / S);
-        int iHi = (int) Math.floor((u + SEARCH - u0) / S);
-        int jLo = (int) Math.ceil((v - SEARCH - v0) / S);
-        int jHi = (int) Math.floor((v + SEARCH - v0) / S);
+        int iLo = (int) Math.ceil((u - SEARCH - u0) / SX);
+        int iHi = (int) Math.floor((u + SEARCH - u0) / SX);
+        int jLo = (int) Math.ceil((v - SEARCH - v0) / SZ);
+        int jHi = (int) Math.floor((v + SEARCH - v0) / SZ);
         // crossings: a 17 x 17 square of lanes, smooth stone 2 x 2 in the corners, and sidewalk along the sides
         // that have no street (the border of the city)
         for (int j = jLo; j <= jHi; j++) {
@@ -605,12 +614,14 @@ public final class City {
         }
         boolean markCandidate = false;
         double markAlong = 0;
+        int markRun = 0;
         // north-south streets (only the segment of block row bj can contain v)
         for (int i = iLo; i <= iHi; i++) {
             if (L.xDrawn(i, bj) && v >= V(bj) && v <= V(bj + 1)) {
                 if (consider(h, Math.abs(u - U(i)), false)) {
                     markCandidate = true;
                     markAlong = v - V(bj) - hw;
+                    markRun = SZ - (int) (2 * hw);
                 }
             }
         }
@@ -620,10 +631,11 @@ public final class City {
                 if (consider(h, Math.abs(v - V(j)), false)) {
                     markCandidate = true;
                     markAlong = u - U(bi) - hw;
+                    markRun = SX - (int) (2 * hw);
                 }
             }
         }
-        h.mark = h.count == 1 && markCandidate && dash((int) Math.floor(markAlong), S - (int) (2 * hw));
+        h.mark = h.count == 1 && markCandidate && dash((int) Math.floor(markAlong), markRun);
         if (!h.road && L.isCity(bi, bj)) {
             h.lot = true;
         } else if (!h.road) {

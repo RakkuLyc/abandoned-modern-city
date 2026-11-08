@@ -27,18 +27,22 @@ rodovias, túneis, pontes, quarteirões, parques e plantações, **sem os prédi
 3 × 2) e sem o histórico de commits. Os prédios serão projetados de novo aqui. O Abandoned Modern City original
 (pasta `AbandonedModernCity-Deprecated`) está descontinuado. Ainda em 7 nov 2026 o usuário mandou remover as cidades
 octogonais e as cidades 3 × 2 das rodovias (com o padrão rural_highway perto delas e as plantações), e depois trocar
-o grid 4 × 4 por 2 × 2 com células de 1024: hoje só existem as cidades 2 × 2.
+o grid 4 × 4 por 2 × 2 com células de 1024, e por fim os quarteirões para 105 × 60 com células de 512: hoje só
+existem as cidades 2 × 2 de quarteirões retangulares.
 
 ## Especificação das ruas e cidades (atual)
 
-- Grid rígido, ruas retas e cantos em ângulo reto: cidade = 2 × 2 quarteirões de 186 × 186 (`Params.GRID` = 2,
-  `Params.BLOCK` = 203 entre eixos, ~424 blocos de lado, 3 × 3 ruas e 9 cruzamentos). Todas as cidades são assim
-  (não há mais variantes).
-- Água é aterrada, morro é cortado. Cidades a ~1 000 blocos umas das outras (célula 1024, `Params.DEFAULT`). Para
-  caber na célula, o `maxRadius` padrão passou de 288 para 212 (o raio da cidade 2 × 2); o centro de cada cidade só
-  varia ~112 blocos dentro da célula.
+- Grid rígido, ruas retas e cantos em ângulo reto: cidade = 2 × 2 quarteirões de 105 × 60 de área livre
+  (`Params.GRID` = 2, `Params.BLOCK_LONG_RUN` / `BLOCK_SHORT_RUN`; eixos das ruas a 122 e a 77, `BLOCK_LONG` /
+  `BLOCK_SHORT`), 3 × 3 ruas e 9 cruzamentos, ~261 × ~171 blocos com as ruas. Cada cidade sorteia (50%) se o lado
+  comprido dos quarteirões fica leste-oeste ou norte-sul (`City.longX`); todos os quarteirões da cidade seguem a mesma
+  orientação. Todas as cidades são assim (não há mais variantes).
+- Água é aterrada, morro é cortado. Cidades a ~500 blocos umas das outras (célula 512, `Params.DEFAULT`). O
+  `maxRadius` padrão é 131 (metade do lado comprido da cidade). A área de influência (`Params.influence`) é a
+  meia-diagonal do retângulo da cidade (≤ 1,2 × 131) + 10 + talude de 32 + 4 = ~203; com ela o centro de cada cidade
+  varia ~100 blocos dentro da célula.
 - Rua com 17 de largura: 2 `smooth_stone` (calçada) + 13 `polished_blackstone` (pista) + 2 `smooth_stone`.
-- Trecho de rua de 186 blocos + 17 de cruzamento; quadrado 2 × 2 de `smooth_stone` em cada esquina de cruzamento.
+- Trecho de rua de 105 ou 60 blocos (o lado do quarteirão) + 17 de cruzamento; quadrado 2 × 2 de `smooth_stone` em cada esquina de cruzamento.
 - Faixa central no 9º bloco da largura, traços de 11 com intervalo de 6 (quantos couberem, centrados); `white_concrete` na cidade,
   `yellow_terracotta` nas rodovias.
 - 4 entradas por cidade, em cruzamentos de 3 vias da borda: cada ligação é combinada pelas duas cidades e a seed
@@ -62,7 +66,7 @@ o grid 4 × 4 por 2 × 2 com células de 1024: hoje só existem as cidades 2 × 
 - Parques (`Park`): grama com mato, tall grass e flores (papoula, dente-de-leão, azure bluet, tulipas, oxeye daisy,
   cornflower); caminhos de `dirt_path` de 3 blocos com ~8% de falhas, em duas variantes (50%): grade "jogo da velha"
   (2 + 2 caminhos retos a 16 do centro) ou cata-vento (círculo de raio 16 + 4 braços em espiral); distâncias escaladas
-  com o tamanho do parque (base `Park.BASE_SIZE` = 68; 186 → ×2,7). Centro sem árvores:
+  com o tamanho do parque (base `Park.BASE_SIZE` = 68 no lado menor; nos quarteirões de 105 × 60 não escala, ×1). Centro sem árvores:
   fonte `waterfall.nbt` (do usuário, em `resources/amcs/`) cercada de `smooth_stone_slab` (meio bloco) do anel até a
   cerca de folhas da fonte.
   Baú vazio em 50% das fontes (senão `mossy_cobblestone`).

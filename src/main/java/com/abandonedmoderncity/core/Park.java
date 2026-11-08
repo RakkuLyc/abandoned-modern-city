@@ -19,7 +19,7 @@ public final class Park {
     public static final int PINWHEEL = 1;
     /**
      * Distance from the center to the middle of the grid paths, and radius of the circular path, for a park
-     * {@link #BASE_SIZE} wide; larger parks scale them up (186 wide: x 2.7).
+     * {@link #BASE_SIZE} wide; larger parks scale them up (the 105 x 60 blocks are not: x 1).
      */
     static final double PATH_OFFSET = 16;
     static final int BASE_SIZE = 68;

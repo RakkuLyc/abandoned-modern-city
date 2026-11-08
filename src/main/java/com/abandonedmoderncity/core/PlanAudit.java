@@ -192,17 +192,17 @@ public final class PlanAudit {
                 }
                 // segment midpoints
                 if (c.xSegment(i, j)) {
-                    streets.add(mid(c, c.U(i), c.V(j) + c.S / 2.0));
+                    streets.add(mid(c, c.U(i), c.V(j) + c.SZ / 2.0));
                 }
                 if (c.zSegment(i, j)) {
-                    streets.add(mid(c, c.U(i) + c.S / 2.0, c.V(j)));
+                    streets.add(mid(c, c.U(i) + c.SX / 2.0, c.V(j)));
                 }
                 // removed segments: their middle is ground of the joined blocks, never road
                 if (c.xRemoved(i, j)) {
-                    removed.add(mid(c, c.U(i), c.V(j) + c.S / 2.0));
+                    removed.add(mid(c, c.U(i), c.V(j) + c.SZ / 2.0));
                 }
                 if (c.zRemoved(i, j)) {
-                    removed.add(mid(c, c.U(i) + c.S / 2.0, c.V(j)));
+                    removed.add(mid(c, c.U(i) + c.SX / 2.0, c.V(j)));
                 }
             }
         }
