@@ -85,8 +85,11 @@ public final class City {
 
     // ------------------------------------------------------------------ stage 1
 
-    /** Entrances (highways) of every city, at border T crossings facing the linked cities. */
-    public static final int EXITS = 4;
+    /**
+     * Most entrances (highways) of a city: the 4 border T crossings and the 4 corners (one highway per crossing), facing
+     * the linked cities.
+     */
+    public static final int EXITS = 8;
     /**
      * Most street segments removed from a grid city (the count is uniform in 0..MAX_CUTS). 0 = switched off (asked by
      * the user for the 2 x 2 grid, where only the inner cross could be cut); the cutting code stays for later.
@@ -235,6 +238,9 @@ public final class City {
                     int c = (nwB ? 1 : 0) + (neB ? 1 : 0) + (swB ? 1 : 0) + (seB ? 1 : 0);
                     if (c == 1) {
                         corner[(i + n) + (j + n) * nw] = (byte) (seB ? 1 : swB ? 2 : neB ? 3 : 4);
+                        // a corner of the city: a highway may continue either of its two border streets outwards
+                        ex.add(new Exit(i, j, seB || neB ? Exit.WEST : Exit.EAST, false));
+                        ex.add(new Exit(i, j, seB || swB ? Exit.NORTH : Exit.SOUTH, false));
                     } else if (c == 2) {
                         // two edge-adjacent city blocks: a T junction on the outline, a possible highway exit
                         if (neB && seB) {
@@ -249,7 +255,7 @@ public final class City {
                     }
                 }
             }
-            // the border T crossings: WorldPlan picks the city's EXITS entrances among them
+            // the border T crossings and the corners (two directions each): WorldPlan picks the entrances among them
             this.exits = List.copyOf(ex);
             this.xCut = new boolean[nw * nw];
             this.zCut = new boolean[nw * nw];
@@ -388,7 +394,8 @@ public final class City {
 
     /**
      * A possible highway exit, leaving the city in direction {@code dir}: either an outline node (i, j) where an inner
-     * street meets the outer street ({@code mid = false}; the highway continues that street), or the middle of the
+     * street meets the outer street, or a corner of the city ({@code mid = false}; the highway continues the street that
+     * runs in direction {@code dir}; a corner has one exit per direction, a single highway uses it), or the middle of the
      * outline segment starting at node (i, j) ({@code mid = true}; along north-south line i for EAST/WEST, along
      * east-west line j for NORTH/SOUTH).
      */

@@ -45,9 +45,12 @@ existem as cidades 2 × 2 de quarteirões retangulares.
 - Trecho de rua de 105 ou 60 blocos (o lado do quarteirão) + 17 de cruzamento; quadrado 2 × 2 de `smooth_stone` em cada esquina de cruzamento.
 - Faixa central no 9º bloco da largura, traços de 11 com intervalo de 6 (quantos couberem, centrados); `white_concrete` na cidade,
   `yellow_terracotta` nas rodovias.
-- 4 entradas por cidade, em cruzamentos de 3 vias da borda: cada ligação é combinada pelas duas cidades e a seed
-  sorteia a entrada entre os cruzamentos do lado voltado para a cidade de destino ("opção 2"). No 2 × 2 cada lado tem
-  um só cruzamento de 3 vias (o do meio), então cada lado recebe no máximo uma rodovia.
+- Até 8 entradas por cidade (`City.EXITS`): os 4 cruzamentos de 3 vias do meio dos lados e os 4 cantos. No canto a
+  rodovia continua, para fora, uma das duas ruas da borda (sai reta, nunca a 45°); cada cruzamento recebe no máximo
+  uma rodovia. Cada ligação é combinada pelas duas cidades. A entrada fica no lado voltado para a cidade de destino
+  (a direção que mais aponta para ela) e, entre os candidatos desse lado (canto, meio, canto), no que está mais
+  deslocado na direção dela (vizinha a nordeste → canto NE); a seed sorteia entre os empatados. Ligam-se as vizinhas
+  de Gabriel que estão entre as 8 mais próximas uma da outra.
 - Rodovias com 21: 1 `smooth_stone` + `stone_brick_wall` em cima, 19 `polished_blackstone` (faixa `yellow_terracotta`
   no meio), 1 `smooth_stone` + muro. Muros conectados pelo plano (não pelo vanilla). Dentro das cidades os lotes têm
   prioridade: a rodovia estreita para a rua de 17 nas entradas. As rodovias vão direto de uma cidade à outra.

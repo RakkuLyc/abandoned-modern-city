@@ -23,7 +23,7 @@ Por enquanto **sem prédios**: eles serão projetados de novo neste mod.
 
 | Tipo | Onde | Forma |
 |---|---|---|
-| Cidade 2 × 2 | uma por célula de 512 blocos (70% das células) | grid rígido de 2 × 2 quarteirões de 105 × 60 (eixos a 122 e a 77, ~261 × ~171 blocos com as ruas, 3 × 3 ruas; o lado comprido fica leste-oeste ou norte-sul, sorteado por cidade), até 4 entradas de rodovia (o cruzamento do meio de cada lado) |
+| Cidade 2 × 2 | uma por célula de 512 blocos (70% das células) | grid rígido de 2 × 2 quarteirões de 105 × 60 (eixos a 122 e a 77, ~261 × ~171 blocos com as ruas, 3 × 3 ruas; o lado comprido fica leste-oeste ou norte-sul, sorteado por cidade), até 8 entradas de rodovia (o cruzamento do meio de cada lado e os 4 cantos) |
 
 Só existe esse tipo de cidade: as cidades octogonais e as cidades 3 × 2 das rodovias (com o padrão rural_highway e
 as plantações) foram removidas em 7 nov 2026; o grid passou de 4 × 4 quarteirões de 186 (células de 2 048) para
@@ -49,8 +49,9 @@ as plantações) foram removidas em 7 nov 2026; o grid passou de 4 × 4 quarteir
   cada esquina.
 - **Rede de rodovias:** grafo de Gabriel entre os centros das cidades. É planar e conexo, e as rodovias nunca se
   cruzam.
-  - Cada ligação é combinada pelas duas cidades. A entrada é sorteada entre os cruzamentos de 3 vias da borda voltada
-    para a cidade de destino.
+  - Cada ligação é combinada pelas duas cidades. A entrada fica no lado voltado para a cidade de destino: no
+    cruzamento do meio ou num canto, o que estiver mais deslocado na direção dela (sorteio entre empatados). Do
+    canto a rodovia sai reta, continuando uma das ruas da borda. Até 8 rodovias por cidade, uma por cruzamento.
   - Perto de cada cidade, a rodovia afunila de 21 para 17, perdendo 1 bloco a cada 8.
 - **Perfil "plano ou rampa"** (`core/Profile`): trechos planos em alturas inteiras e rampas de 1 bloco a cada 8, com
   meia-laje a cada 4.

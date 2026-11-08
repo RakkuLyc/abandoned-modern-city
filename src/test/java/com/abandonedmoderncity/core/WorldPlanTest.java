@@ -181,9 +181,10 @@ class WorldPlanTest {
                     assertTrue(h.minCurveRadius() >= Params.MIN_CURVE_RADIUS, h + " curve radius " + h.minCurveRadius());
                     assertTrue(h.step > 0.9 && h.step < 1.1, "point spacing " + h.step);
                     assertTrue(h.length <= Params.DEFAULT.highwayMaxLength(), "too long " + h);
-                    assertTrue(exitsUsed.computeIfAbsent(h.a.id, k -> new HashSet<>()).add(h.exitA.toString()),
+                    // one highway per crossing (a corner has two exits, one per direction)
+                    assertTrue(exitsUsed.computeIfAbsent(h.a.id, k -> new HashSet<>()).add(h.exitA.i() + "," + h.exitA.j()),
                             "exit used twice");
-                    assertTrue(exitsUsed.computeIfAbsent(h.b.id, k -> new HashSet<>()).add(h.exitB.toString()),
+                    assertTrue(exitsUsed.computeIfAbsent(h.b.id, k -> new HashSet<>()).add(h.exitB.i() + "," + h.exitB.j()),
                             "exit used twice");
                     for (Highway f : finals) {
                         if (f != h) {

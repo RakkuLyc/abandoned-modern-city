@@ -62,7 +62,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `ProfileTest.classificationRunsAreClean` | 2 000 perfis: junções sempre no chão, túneis ≥ 16, pontes secas ≥ 8, toda água fora das junções é ponte |
 | `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (361 cidades 2 × 2 de quarteirões 105 × 60, 205 lotes — parques): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado; com as ruas cortadas desligadas (`MAX_CUTS` = 0) nenhuma cidade tem corte, senão todos os valores de 0 a `MAX_CUTS` aparecem; toda coluna de lote é lote do quarteirão certo e não toca rua |
 | `WorldPlanTest.streetWidthIsConstantOnStraightStreets` | toda rua reta de cidade tem exatamente 17 colunas |
-| `WorldPlanTest.highwayNetworkIsConsistentAndWellConnected` | 21 combinações terreno × seed: Gabriel simétrico, rodovia começa e termina exatamente na entrada de cada cidade, raio de curva ≥ 60, pontos a ~1 bloco, comprimento máximo, entrada nunca usada duas vezes, no máximo 4 rodovias por cidade, nenhum par de rodovias perto demais (sem cruzamentos); limites: plano/colinas ≥ 85% das ligações e ≤ 5% de cidades sem rodovia, montanhas/rios/cânions ≤ 15%, e pelo menos metade das células com cidade (exceto ilhas); gera `network_*.png` |
+| `WorldPlanTest.highwayNetworkIsConsistentAndWellConnected` | 21 combinações terreno × seed: Gabriel simétrico, rodovia começa e termina exatamente na entrada de cada cidade, raio de curva ≥ 60, pontos a ~1 bloco, comprimento máximo, cruzamento de entrada nunca usado duas vezes (um canto tem duas saídas, mas só uma rodovia), no máximo 8 rodovias por cidade, nenhum par de rodovias perto demais (sem cruzamentos); limites: plano/colinas ≥ 85% das ligações e ≤ 5% de cidades sem rodovia, montanhas/rios/cânions ≤ 15%, e pelo menos metade das células com cidade (exceto ilhas); gera `network_*.png` |
 | `WorldPlanTest.removedStreetsAreRenderedAndAudited` | uma cidade para cada quantidade de ruas cortadas (hoje só 0): passa no `PlanAudit` e gera `cuts_N.png` |
 | `PlanAuditTest.citiesAndHighwaysPassThePlanAudit` | `PlanAudit` coluna a coluna em 3 cidades inteiras e 2 rodovias inteiras por terreno × seed (105 auditorias); gera `city_*.png` |
 | `PlanAuditTest.planIsIndependentOfQueryOrderAndThreads` | 3 721 chunks planejados de novo em ordem embaralhada por 8 threads: resultado idêntico, campo a campo |
@@ -173,11 +173,12 @@ No jogo (op):
 - **Unitários:** 9 de 9 passam; `./gradlew build` em ~30 s (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
-  - **Rede (7 terrenos × 3 seeds, 81 células):** 45 a 62 cidades por combinação. Ligações que viram rodovia:
-    94–96% no plano, nas colinas e nos cânions; 85–91% nos rios; 83–84% no terreno misto; 74–84% nas ilhas; 76–86%
-    nas montanhas. Com rodovias de ~300–500 blocos, aparece um motivo novo de ligação perdida: `levels too far apart
-    for the length` (até 21 nas montanhas), porque a rampa de 1 bloco a cada 8 não vence o desnível. Cidades sem
-    rodovia: no máximo 2 (4%, montanhas, seed 42).
+  - **Rede (7 terrenos × 3 seeds, 81 células), com entradas nos cantos (até 8 por cidade):** 45 a 62 cidades por
+    combinação, 119 a 157 ligações candidatas. Rodovias mantidas: 127–144 no plano, nas
+    colinas e nos cânions (88–93%; antes 104–124); 119–137 nos rios; 116–129 no terreno misto; 114–123 nas
+    montanhas; 91–97 nas ilhas. O principal motivo de descarte agora é `conflicts with a shorter highway` (rodovias
+    perto demais umas das outras, até 15 por combinação); nas montanhas ainda caem até 23 por desnível
+    (`levels too far apart for the length`). Cidades sem rodovia: no máximo 1 (2%) por combinação.
 - **Bateria no mundo:**
 
   | Seed | Escopo | Data | Versão | Resultado |

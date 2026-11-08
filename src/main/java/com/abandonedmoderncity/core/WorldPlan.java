@@ -166,13 +166,13 @@ public final class WorldPlan {
 
     private final ConcurrentHashMap<Long, List<City>> links = new ConcurrentHashMap<>();
 
-    /** The (at most 2) nearest Gabriel neighbors. */
+    /** The (at most {@link City#EXITS}) nearest Gabriel neighbors. */
     private List<City> nearest(City a) {
         List<City> nb = neighbors(a);
         return nb.subList(0, Math.min(City.EXITS, nb.size()));
     }
 
-    /** Links of the first round: a and b are linked when each is among the other's two nearest neighbors. */
+    /** Links of the first round: a and b are linked when each is among the other's EXITS nearest neighbors. */
     private List<City> mutual(City a) {
         List<City> out = new ArrayList<>();
         for (City b : nearest(a)) {
@@ -214,8 +214,9 @@ public final class WorldPlan {
     }
 
     /**
-     * Entrance of a for each linked city: a border T crossing on the side of the city that faces it (east, west,
-     * north or south, whichever dominates), chosen by the seed among the crossings of that side.
+     * Entrance of a for each linked city: a border T crossing or a corner on the side of the city that faces it (east,
+     * west, north or south, whichever dominates); among those, the one that lies farthest toward the other city (a city
+     * to the north-east leaves by the north-east corner), and the seed picks among ties. A crossing serves one highway.
      */
     private Map<Long, City.Exit> computeExits(City a) {
         Map<Long, City.Exit> out = new HashMap<>();
@@ -241,12 +242,25 @@ public final class WorldPlan {
             if (facing.isEmpty()) {
                 continue;
             }
+            // the crossings of that side lying farthest toward the other city
+            double far = -Double.MAX_VALUE;
+            for (City.Exit e : facing) {
+                far = Math.max(far, toward(a, e, dx / l, dz / l));
+            }
+            final double top = far;
+            facing.removeIf(e -> toward(a, e, dx / l, dz / l) < top - 0.5);
             facing.sort(java.util.Comparator.comparingLong(e -> Hash.of(a.seed, b.id, e.i(), e.j())));
             City.Exit pick = facing.get(0);
             out.put(b.id, pick);
-            free.remove(pick);
+            free.removeIf(e -> e.i() == pick.i() && e.j() == pick.j());
         }
         return out;
+    }
+
+    /** How far exit e lies from the center of a along the unit direction (ux, uz). */
+    private static double toward(City a, City.Exit e, double ux, double uz) {
+        double[] p = a.exitWorld(e);
+        return (p[0] - a.cx) * ux + (p[1] - a.cz) * uz;
     }
 
     // ------------------------------------------------------------------ highways
