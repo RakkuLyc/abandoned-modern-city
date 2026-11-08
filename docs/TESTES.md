@@ -48,7 +48,7 @@ Alvos repetidos (a mesma cidade em dois critérios) entram uma vez só. Seeds fi
 - `CANYONS` (planalto cortado por cânions estreitos abaixo do nível do mar).
 - `RIVERS` (terra ondulada cortada por rios e salpicada de lagos, como o overworld real perto das seeds da bateria).
 
-Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa área de 9 × 9 células de 512
+Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa área de 9 × 9 células de 576
 (~18 000 × 18 000 blocos).
 
 ## 2. O que é verificado
@@ -60,7 +60,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `ProfileTest.profilesAreFlatOrRampAndJoinTheCities` | 4 000 perfis aleatórios (com penhascos): começa e termina no nível de cada cidade, 48 blocos planos nas pontas, variação ≤ 1/8 de bloco por bloco, trechos planos sempre em altura inteira, nunca abaixo do mínimo, superfície (meio-bloco) nunca muda mais de 0,5 entre vizinhos |
 | `ProfileTest.halfBlockStepsAreEvenlySpaced` | numa subida, os degraus de meia-laje ficam a pelo menos 4 blocos um do outro |
 | `ProfileTest.classificationRunsAreClean` | 2 000 perfis: junções sempre no chão, túneis ≥ 16, pontes secas ≥ 8, toda água fora das junções é ponte |
-| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (361 cidades 2 × 2 de quarteirões 105 × 60, 205 lotes — parques): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado; com as ruas cortadas desligadas (`MAX_CUTS` = 0) nenhuma cidade tem corte, senão todos os valores de 0 a `MAX_CUTS` aparecem; toda coluna de lote é lote do quarteirão certo e não toca rua |
+| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (359 cidades 2 × 2 de quarteirões 140 × 90, 199 lotes — parques): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado; com as ruas cortadas desligadas (`MAX_CUTS` = 0) nenhuma cidade tem corte, senão todos os valores de 0 a `MAX_CUTS` aparecem; toda coluna de lote é lote do quarteirão certo e não toca rua |
 | `WorldPlanTest.streetWidthIsConstantOnStraightStreets` | toda rua reta de cidade tem exatamente 17 colunas |
 | `WorldPlanTest.highwayNetworkIsConsistentAndWellConnected` | 21 combinações terreno × seed: Gabriel simétrico, rodovia começa e termina exatamente na entrada de cada cidade, raio de curva ≥ 60, pontos a ~1 bloco, comprimento máximo, cruzamento de entrada nunca usado duas vezes (um canto tem duas saídas, mas só uma rodovia), no máximo 8 rodovias por cidade, nenhum par de rodovias perto demais (sem cruzamentos); limites: plano/colinas ≥ 85% das ligações e ≤ 5% de cidades sem rodovia, montanhas/rios/cânions ≤ 15%, e pelo menos metade das células com cidade (exceto ilhas); gera `network_*.png` |
 | `WorldPlanTest.removedStreetsAreRenderedAndAudited` | uma cidade para cada quantidade de ruas cortadas (hoje só 0): passa no `PlanAudit` e gera `cuts_N.png` |
@@ -168,17 +168,16 @@ No jogo (op):
   - para comparar, o próprio Minecraft gasta dezenas de ms por chunk.
 - **Testes unitários:** ~2 min no total (sem o teste dos prédios, que levava ~8 min).
 
-## 6. Resultados atuais (7 nov 2026, cidades 2 × 2 de quarteirões 105 × 60 em células de 512)
+## 6. Resultados atuais (8 nov 2026, cidades 2 × 2 de quarteirões 140 × 90 em células de 576)
 
-- **Unitários:** 9 de 9 passam; `./gradlew build` em ~30 s (a área dos testes encolheu com a célula).
+- **Unitários:** 9 de 9 passam; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
-  - **Rede (7 terrenos × 3 seeds, 81 células), com entradas nos cantos (até 8 por cidade):** 45 a 62 cidades por
-    combinação, 119 a 157 ligações candidatas. Rodovias mantidas: 127–144 no plano, nas
-    colinas e nos cânions (88–93%; antes 104–124); 119–137 nos rios; 116–129 no terreno misto; 114–123 nas
-    montanhas; 91–97 nas ilhas. O principal motivo de descarte agora é `conflicts with a shorter highway` (rodovias
-    perto demais umas das outras, até 15 por combinação); nas montanhas ainda caem até 23 por desnível
-    (`levels too far apart for the length`). Cidades sem rodovia: no máximo 1 (2%) por combinação.
+  - **Rede (7 terrenos × 3 seeds, 81 células), com entradas nos cantos (até 8 por cidade):** 42 a 62 cidades por
+    combinação, 108 a 158 ligações candidatas. Rodovias mantidas: 129–147 no plano, nas colinas e nos cânions
+    (90–93%); 117–133 nas montanhas; 126–134 nos rios; 117–126 no terreno misto; 79–91 nas ilhas. O principal
+    motivo de descarte é `conflicts with a shorter highway` (até 12 por combinação); nas montanhas caem até 18 por
+    desnível (`levels too far apart for the length`). Cidades sem rodovia: no máximo 1 (2%) por combinação.
 - **Bateria no mundo:**
 
   | Seed | Escopo | Data | Versão | Resultado |
@@ -186,6 +185,6 @@ No jogo (op):
   | `20261027` | `quick` | 7 nov | cópia sem prédios | PASS: 4 alvos, uma cidade 4 × 4 com 2 lotes (parques) e 37 765 colunas de chão livre conferidas, 18 953 colunas de via, 2,25 ms por chunk |
 
   A bateria ainda não rodou depois da remoção das cidades octogonais e 3 × 2 (o alvo "cidade 3 × 2 mais próxima do
-  spawn" saiu) nem depois da troca para 2 × 2 de quarteirões 105 × 60 em células de 512. Vale rodar a bateria completa quando houver mudanças: `tools/selftest.sh full`.
+  spawn" saiu) nem depois da troca para quarteirões 105 × 60 (células de 512) e 140 × 90 (células de 576). Em 8 nov, no Linux (CachyOS, JDK 21), a bateria `-PselfTest` passou 8 de 8 alvos com os quarteirões 105 × 60 num mundo novo (um mundo de teste velho, gerado antes das mudanças, dá falhas falsas no alvo do spawn: renomeie `run/selftest_world_*`). Vale rodar a bateria completa quando houver mudanças: `tools/selftest.sh full`.
 - Em nenhuma rodada houve degrau, buraco, obstáculo, pilar flutuante, rodovia sem conexão, bloco indestrutível ou
   loot nas vias, pontes e túneis depois das correções 4 e 5.
