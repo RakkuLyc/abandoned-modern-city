@@ -769,15 +769,16 @@ public final class City {
     public static final double PARK_BLOCK_CHANCE = 0.125;
     /**
      * The lots of block (bi, bj), inside its free rectangle x0..x1, z0..z1 (whose outline touches the sidewalks, and
-     * reaches across removed streets): some blocks are a single park; the others have no lots yet, all their ground is
-     * the city's free ground (gray concrete powder). No buildings: they will be designed anew.
+     * reaches across removed streets): some blocks are a single park; the others get a ring of structures against the
+     * sidewalks ({@link Ring}, prototype: drawn at random), and the rest of their ground is the city's free ground
+     * (gray concrete powder).
      */
     private List<Lot> blockLots(int bi, int bj, int x0, int z0, int x1, int z1) {
         long rs = Hash.of(seed, 0x52494E47L, bi, bj);
         if (Hash.unit(rs) < PARK_BLOCK_CHANCE) {
             return List.of(Lot.park(x0, z0, x1, z1, Hash.next(rs, 1)));
         }
-        return List.of();
+        return Ring.lots(x0, z0, x1, z1, Hash.next(rs, 2));
     }
 
     /** 0 at the outskirts, 1 at the center. */

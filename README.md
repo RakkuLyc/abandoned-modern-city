@@ -1,7 +1,8 @@
 # Abandoned Modern City — NeoForge 1.21.1
 
 Cidades modernas abandonadas geradas proceduralmente: ruas, rodovias, túneis, pontes, quarteirões e parques.
-Por enquanto **sem prédios**: eles serão projetados de novo neste mod.
+Os prédios são as 33 estruturas `.nbt` do usuário (`structures/`), sorteadas ao acaso num anel em volta de cada
+quarteirão (protótipo: o sorteio será ajustado depois).
 
 > Começou em 7 nov 2026 como cópia do Abandoned Simple City (repositório `abandoned-simple-city`), sem os prédios e
 > sem o histórico de commits. O Abandoned Modern City original (pasta `AbandonedModernCity-Deprecated`) está
@@ -33,8 +34,25 @@ estruturas de `structures/`).
 - Cada cidade fica numa única altura: água é aterrada, morro é cortado, e um talude 1:1 faz a transição.
 - Ruas cortadas estão desligadas (`City.MAX_CUTS` = 0); o código que corta trechos sem criar beco sem saída
   continua lá.
-- **Quarteirões:** cerca de 1 em 8 quarteirões é um parque inteiro; os outros são só chão da cidade
-  (`gray_concrete_powder`), à espera dos prédios novos.
+- **Quarteirões:** cerca de 1 em 8 quarteirões é um parque inteiro; nos outros as estruturas formam um anel
+  encostado nas calçadas, com a frente (lado -Z do `.nbt`) virada para a rua; o resto é chão da cidade
+  (`gray_concrete_powder`).
+- **Estruturas (33 arquivos, 10 tipos):**
+
+  | Tipo | Arquivos | Caixa (frente × profundidade × altura) |
+  |---|---|---|
+  | Farmácia | 5 cores | 19 × 28 × 16 |
+  | Farmácia grande | 5 | 25 × 40 × 15 |
+  | Oficina média | 4 | 35 × 26 × 17 |
+  | Oficina pequena | 5 | 22 × 33 × 16 |
+  | Posto padrão | 5 | 45 × 37 × 18 |
+  | Posto pequeno | 5 | 25 × 20 × 18 |
+  | Prédio apartamento | 1 | 31 × 29 × 37 |
+  | Prédio azulado | 1 | 66 × 46 × 106 |
+  | Torre | 1 | 62 × 53 × 118 |
+  | Prédio tombado com vinhas | 1 | 33 × 45 × 97 |
+
+  A pasta `Casas` do usuário está vazia. Containers e demais block entities (baús, barris, suportes de poção, vasos, atris, fornalhas, camas, fogueiras, sensor de luz, jukebox) saem vazios, sem loot.
 - **Parques:**
   - grama, flores e caminhos de `dirt_path` (grade ou cata-vento), escalados com o tamanho do parque;
   - fonte `waterfall.nbt` no centro, com baú vazio em 50% delas.
@@ -65,8 +83,8 @@ estruturas de `structures/`).
 
 | Regra | Como é garantida |
 |---|---|
-| Nada indestrutível | Todos os blocos estão em `gen/Palette`. `Palette.validate()` roda na inicialização e derruba o jogo se algum for indestrutível ou tiver block entity (exceção: o baú vazio da fonte). Qualquer dureza é permitida. A auditoria no mundo (`hard_block`) confere os blocos gerados. |
-| Sem loot | Nenhum contêiner com loot table; o único contêiner é o baú vazio de metade das fontes. A auditoria (`loot_in_city`, `container_in_city`) confere. |
+| Nada indestrutível | Todos os blocos estão em `gen/Palette`. `Palette.validate()` roda na inicialização e derruba o jogo se algum for indestrutível ou tiver block entity (exceção: o baú da fonte e os containers vazios das estruturas). Qualquer dureza é permitida. A auditoria no mundo (`hard_block`) confere os blocos gerados. |
+| Sem loot | Nenhum contêiner com loot table; os únicos contêineres são o baú vazio de metade das fontes e os containers vazios das estruturas (`structure_containers`). A auditoria (`loot_in_city`, `container_in_city`) confere. |
 | Ruas planas e conectadas | Cada cidade tem uma única altura (`City.level`). Ruas cortadas nunca criam beco sem saída nem separam a cidade (`PlanAudit`: `dead_end`, `city_split`). |
 | Superfície certa | A auditoria no mundo (`surface_block`) confere bloco a bloco a superfície das vias. |
 | Determinismo | Tudo é função pura da semente e do terreno natural: dois chunks vizinhos nunca discordam, em qualquer ordem e thread (`PlanAuditTest.planIsIndependentOfQueryOrderAndThreads`). |
@@ -79,7 +97,9 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
   Params         toda a geometria fixa (larguras, quarteirões, rampas, túneis, pontes) + valores da config
   Terrain        interface: altura natural do chão e água por coluna
   City           estágio 1 (existe? centro, altura) e estágio 2 (ruas, quarteirões, lotes)
-  Lot            lotes: por enquanto só o parque inteiro de quarteirão
+  Lot            lotes: parque inteiro de quarteirão ou uma estrutura
+  Ring           anel de estruturas em volta do quarteirão (norte e sul inteiros, oeste e leste no que sobra)
+  Structures     as 33 estruturas: caixa dos blocos sólidos, rotação, código de cada bloco
   Park           parques com caminhos e fonte
   Template       estruturas .nbt do usuário (fonte waterfall.nbt)
   Highway        curva entre duas entradas de cidade, pontos a cada bloco, projeção de colunas
@@ -90,7 +110,7 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
 gen/    camada do jogo
   CityFeature    feature por chunk (passo top_layer_modification, via biome modifier)
   ChunkBuilder   escreve o plano do chunk em blocos; veda líquidos; limpa vizinhos
-  Palette        todos os blocos usados (inclui os 8 estilos de material herdados, ainda sem uso) + validação
+  Palette        todos os blocos usados (inclui as estruturas, giradas por `BlockState.rotate`, e os 8 estilos de material herdados, sem uso) + validação
   McTerrain      Terrain sobre ChunkGenerator.getBaseHeight (ruído, igual em qualquer thread)
   Plans          um WorldPlan por dimensão (só o overworld)
 command/  /amcs, auditoria dos blocos (WorldAudit), renders do mundo, bateria automática (SelfTest)

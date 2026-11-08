@@ -73,4 +73,9 @@ public final class BlockCode {
     public static final int BUILDING_STAIR_END = BUILDING_STAIR + 4;
     /** Block {@code TEMPLATE + i}: entry i of the palette of {@link Template#WATERFALL}. */
     public static final int TEMPLATE = 1000;
+    /**
+     * Block of a building structure ({@link Structures}): {@code STRUCT + 4 * state + rotation}, the state being an index
+     * into {@link Structures#STATES} and the rotation in quarter turns clockwise.
+     */
+    public static final int STRUCT = 100_000;
 }

@@ -535,8 +535,11 @@ final class ChunkBuilder {
                         }
                         if (kind == ChunkPlan.LOT) {
                             Lot lot = np.lot[i];
+                            // a structure is put back over its whole height near the border (ore blobs of the chunk
+                            // decorated later reach it at any height)
+                            int above = near && lot != null ? Math.max(LOT_REPAIR_ABOVE, lot.heightAboveBase()) : LOT_REPAIR_ABOVE;
                             repairLot(region, nc, p, n, x, z, np.h2[i] / 2 - 1, lot,
-                                    np.city != null ? np.city.yardCode() : BlockCode.GRASS);
+                                    np.city != null ? np.city.yardCode() : BlockCode.GRASS, above);
                             continue;
                         }
                         if (kind != ChunkPlan.ROAD) {
@@ -609,7 +612,7 @@ final class ChunkBuilder {
      * of buildings, park trees and plazas are put back, and liquids are removed (with the liquid next to them sealed).
      */
     private static void repairLot(WorldGenRegion region, ChunkAccess nc, BlockPos.MutableBlockPos p,
-                                  BlockPos.MutableBlockPos n, int x, int z, int base, Lot lot, int yard) {
+                                  BlockPos.MutableBlockPos n, int x, int z, int base, Lot lot, int yard, int above) {
         boolean paved = yard != BlockCode.GRASS;
         for (int y = base - 3; y < base; y++) {
             BlockState s = nc.getBlockState(p.set(x, y, z));
@@ -617,7 +620,7 @@ final class ChunkBuilder {
                 region.setBlock(p, Palette.DIRT, Block.UPDATE_CLIENTS);
             }
         }
-        for (int y = base; y <= base + LOT_REPAIR_ABOVE; y++) {
+        for (int y = base; y <= base + above; y++) {
             int code = lot == null ? (y == base ? yard : BlockCode.KEEP) : lot.code(x, y, z, base);
             BlockState s = nc.getBlockState(p.set(x, y, z));
             boolean liquid = !s.getFluidState().isEmpty();
@@ -651,7 +654,7 @@ final class ChunkBuilder {
         }
         // crowns of trees from chunks decorated later, hanging over the lot (their trunk is usually cut afterwards,
         // when that chunk builds its own part of the city)
-        for (int y = base + LOT_REPAIR_ABOVE + 1; y <= Math.min(nc.getMaxBuildHeight() - 1, base + OVERHANG); y++) {
+        for (int y = base + above + 1; y <= Math.min(nc.getMaxBuildHeight() - 1, base + Math.max(OVERHANG, above)); y++) {
             var section = nc.getSection(nc.getSectionIndex(y));
             if (section.hasOnlyAir()) {
                 y |= 15;

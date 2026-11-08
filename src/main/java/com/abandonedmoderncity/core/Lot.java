@@ -7,7 +7,7 @@ import java.util.List;
  * Lots never touch a street: {@link City#computeLots} only keeps rectangles whose every column is buildable.
  */
 public final class Lot {
-    public enum Type { PARK, PLAZA, EMPTY }
+    public enum Type { PARK, PLAZA, EMPTY, BUILDING }
 
     public final int x0;
     public final int z0;
@@ -18,6 +18,9 @@ public final class Lot {
     public final Park park;
     public final List<Tree> trees;
     public final long seed;
+    /** The structure standing on a BUILDING lot (its footprint is the lot), turned {@link #rot} quarter turns; else null. */
+    public final Structures.Def building;
+    public final int rot;
 
     /** A small tree: trunk at (x, z), {@code height} logs from the ground, leaves around the top. */
     public record Tree(int x, int z, int height) {
@@ -25,6 +28,13 @@ public final class Lot {
     }
 
     private Lot(int x0, int z0, int x1, int z1, Type type, Park park, List<Tree> trees, long seed) {
+        this(x0, z0, x1, z1, type, park, trees, seed, null, 0);
+    }
+
+    private Lot(int x0, int z0, int x1, int z1, Type type, Park park, List<Tree> trees, long seed,
+                Structures.Def building, int rot) {
+        this.building = building;
+        this.rot = rot;
         this.park = park;
         this.x0 = x0;
         this.z0 = z0;
@@ -37,6 +47,12 @@ public final class Lot {
 
     public boolean contains(int x, int z) {
         return x >= x0 && x <= x1 && z >= z0 && z <= z1;
+    }
+
+    /** A structure with its box corner at (x0, z0), turned {@code rot} quarter turns. */
+    static Lot building(int x0, int z0, Structures.Def def, int rot, long seed) {
+        return new Lot(x0, z0, x0 + def.sizeX(rot) - 1, z0 + def.sizeZ(rot) - 1, Type.BUILDING, null, List.of(), seed,
+                def, rot);
     }
 
     /** A whole park: grass, weeds, flowers, trees, dirt paths and the fountain in the middle. */
@@ -52,6 +68,14 @@ public final class Lot {
     public int code(int x, int y, int z, int base) {
         if (park != null) {
             return park.code(x, y, z, base);
+        }
+        if (building != null) {
+            if (y < base) {
+                return BlockCode.KEEP;
+            }
+            int c = building.code(x - x0, y - base, z - z0, rot);
+            // the floor layer replaces the ground; where the structure has no block at it, the city ground stays
+            return y == base && (c == BlockCode.KEEP || c == BlockCode.AIR) ? BlockCode.CITY_GROUND : c;
         }
         if (y == base) {
             return switch (type) {
@@ -96,6 +120,9 @@ public final class Lot {
     /** Highest y this lot places anything at, relative to its base. */
     public int heightAboveBase() {
         int h = 2;
+        if (building != null) {
+            return building.h();
+        }
         if (park != null) {
             h = Math.max(h, park.heightAboveBase());
         }

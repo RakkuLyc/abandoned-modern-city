@@ -124,6 +124,37 @@ public final class Palette {
         return fountain;
     }
 
+    /** Block states of the building structures turned 0..3 quarter turns clockwise: [state * 4 + rotation]. */
+    private static volatile BlockState[] structures;
+
+    /** The block state of a structure block code (minus {@link BlockCode#STRUCT}): state index * 4 + rotation. */
+    static BlockState structure(int k) {
+        BlockState[] all = structures;
+        if (all == null) {
+            synchronized (Palette.class) {
+                if (structures == null) {
+                    List<String> names = com.abandonedmoderncity.core.Structures.STATES;
+                    BlockState[] out = new BlockState[names.size() * 4];
+                    for (int i = 0; i < names.size(); i++) {
+                        BlockState s;
+                        try {
+                            s = BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK.asLookup(), names.get(i), false).blockState();
+                        } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
+                            throw new IllegalStateException("bad block state in a structure: " + names.get(i), e);
+                        }
+                        out[4 * i] = s;
+                        out[4 * i + 1] = s.rotate(net.minecraft.world.level.block.Rotation.CLOCKWISE_90);
+                        out[4 * i + 2] = s.rotate(net.minecraft.world.level.block.Rotation.CLOCKWISE_180);
+                        out[4 * i + 3] = s.rotate(net.minecraft.world.level.block.Rotation.COUNTERCLOCKWISE_90);
+                    }
+                    structures = out;
+                }
+                all = structures;
+            }
+        }
+        return all[k];
+    }
+
     /** Yards of paved cities. */
     public static final BlockState CITY_GROUND = Blocks.GRAY_CONCRETE_POWDER.defaultBlockState();
     public static final BlockState ROOF_MOSS = Blocks.MOSS_CARPET.defaultBlockState();
@@ -182,6 +213,9 @@ public final class Palette {
     /** Block for a building/lot code, or null for {@link BlockCode#KEEP}. */
     public static BlockState of(int code, int style, BlockState naturalTop) {
         BlockState[] s = STYLES[Math.floorMod(style, STYLES.length)];
+        if (code >= BlockCode.STRUCT) {
+            return structure(code - BlockCode.STRUCT);
+        }
         if (code >= BlockCode.TEMPLATE) {
             return fountain()[code - BlockCode.TEMPLATE];
         }
@@ -269,9 +303,22 @@ public final class Palette {
         return h >= 0 && (!s.hasBlockEntity() || exempt(s));
     }
 
-    /** The one block entity allowed (asked for by the user): the empty chest of the park fountain. */
+    /**
+     * The block entities allowed (asked for by the user): the empty chest of the park fountain and what the building
+     * structures bring, always empty and without loot: chests, barrels, brewing stands, decorated pots, lecterns,
+     * furnaces (blast furnace, smoker), beds, campfires, daylight detectors and jukeboxes.
+     */
     public static boolean exempt(BlockState s) {
-        return s.getBlock() instanceof ChestBlock;
+        Block b = s.getBlock();
+        return b instanceof ChestBlock || b instanceof net.minecraft.world.level.block.BarrelBlock
+                || b instanceof net.minecraft.world.level.block.BrewingStandBlock
+                || b instanceof net.minecraft.world.level.block.DecoratedPotBlock
+                || b instanceof net.minecraft.world.level.block.LecternBlock
+                || b instanceof net.minecraft.world.level.block.AbstractFurnaceBlock
+                || b instanceof net.minecraft.world.level.block.BedBlock
+                || b instanceof net.minecraft.world.level.block.CampfireBlock
+                || b instanceof net.minecraft.world.level.block.DaylightDetectorBlock
+                || b instanceof net.minecraft.world.level.block.JukeboxBlock;
     }
 
     /** All fixed states the generator places (natural surface blocks reused for slopes are checked when used). */
@@ -331,10 +378,20 @@ public final class Palette {
                 bad.add(BuiltInRegistries.BLOCK.getKey(s.getBlock()) + " (replaced by ore blobs)");
             }
         }
+        // the building structures: breakable, and no block entity but the empty containers
+        int nStructure = com.abandonedmoderncity.core.Structures.STATES.size();
+        for (int i = 0; i < nStructure; i++) {
+            BlockState s = structure(4 * i);
+            if (!allowed(s)) {
+                bad.add(BuiltInRegistries.BLOCK.getKey(s.getBlock()) + " (structure, hardness "
+                        + s.getDestroySpeed(EmptyBlockGetter.INSTANCE, BlockPos.ZERO) + ")");
+            }
+        }
         if (!bad.isEmpty()) {
             throw new IllegalStateException("[AMCS] Palette contains forbidden blocks: " + bad);
         }
-        AMCSimple.LOGGER.info("[AMCS] Palette validated: {} block states, all breakable, no block entities but the fountain chest", all().size());
+        AMCSimple.LOGGER.info("[AMCS] Palette validated: {} block states and {} structure states, all breakable, no block entities but empty containers",
+                all().size(), nStructure);
     }
 
     /** Natural surface block reused on slopes, if soft enough; otherwise stone. */

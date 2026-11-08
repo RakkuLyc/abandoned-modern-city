@@ -24,7 +24,7 @@ Abandoned Modern City (mod id `abandonedmoderncity`, pacote `com.abandonedmodern
 `RakkuLyc/abandoned-modern-city`, pasta `Projetos Claude/AbandonedModernCity`). Começou em 7 nov 2026 como cópia do
 Abandoned Simple City (`RakkuLyc/abandoned-simple-city`, pasta `AbandonedModernCity-Simple`) com o mesmo sistema de
 rodovias, túneis, pontes, quarteirões, parques e plantações, **sem os prédios** (e sem as casinhas das cidades
-3 × 2) e sem o histórico de commits. Os prédios serão projetados de novo aqui. O Abandoned Modern City original
+3 × 2) e sem o histórico de commits. Os prédios são as estruturas `.nbt` do usuário (`structures/`), em protótipo. O Abandoned Modern City original
 (pasta `AbandonedModernCity-Deprecated`) está descontinuado. Ainda em 7 nov 2026 o usuário mandou remover as cidades
 octogonais e as cidades 3 × 2 das rodovias (com o padrão rural_highway perto delas e as plantações), e depois trocar
 o grid 4 × 4 por 2 × 2 com células de 1024, depois os quarteirões para 105 × 60 com células de 512, e em 8 nov 2026 os quarteirões para 140 × 90 com células de 576
@@ -63,9 +63,9 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   ligadas, cada cidade perde de 0 a `MAX_CUTS` trechos de rua (sorteio uniforme),
   internos ou da borda; nunca cria beco sem saída e a cidade continua toda conectada. O espaço vira grama, unindo
   os quarteirões. Entradas não são protegidas (só ficam conectadas).
-- Quarteirões: sem prédios por enquanto. ~1 em 8 quarteirões é um parque
-  inteiro (`City.PARK_BLOCK_CHANCE`); os demais não têm lotes e todo o chão é `gray_concrete_powder` (o chão da
-  cidade). Rua cortada = quarteirões juntados: cada um avança até o meio da faixa; na borda da cidade o quarteirão
+- Quarteirões: ~1 em 8 quarteirões é um parque
+  inteiro (`City.PARK_BLOCK_CHANCE`); os demais recebem um anel de estruturas (ver abaixo) e o resto do chão é
+  `gray_concrete_powder` (o chão da cidade). Rua cortada = quarteirões juntados: cada um avança até o meio da faixa; na borda da cidade o quarteirão
   cobre a faixa até a beira.
 - Parques (`Park`): grama com mato, tall grass e flores (papoula, dente-de-leão, azure bluet, tulipas, oxeye daisy,
   cornflower); caminhos de `dirt_path` de 3 blocos com ~8% de falhas, em duas variantes (50%): grade "jogo da velha"
@@ -74,7 +74,15 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   fonte `waterfall.nbt` (do usuário, em `resources/amcs/`) cercada de `smooth_stone_slab` (meio bloco) do anel até a
   cerca de folhas da fonte.
   Baú vazio em 50% das fontes (senão `mossy_cobblestone`).
+- Estruturas (protótipo de 8 nov 2026): as 33 `.nbt` de `structures/` (cópias em `src/main/resources/amcs/buildings/`
+  com `index.txt`; farmácia, farmácia grande, oficina média e pequena, posto padrão e pequeno, apartamento, prédio
+  azulado, torre e prédio tombado) entram nos quarteirões por `core/Ring` (`Structures` carrega, mede e gira). Regras
+  decididas pelo usuário: a frente de toda estrutura é o lado -Z do `.nbt` e fica virada para a rua; sorteio por
+  arquivo, sem padrão (a ser ajustado); encostadas na calçada, formando um anel; a caixa usada é a dos blocos
+  sólidos (sem margem vazia) e a primeira camada sólida fica no chão da cidade. As linhas norte e sul ocupam o lado
+  inteiro, as linhas oeste e leste o que sobra entre elas (`Ring.GAP` = 2 entre estruturas). Tamanho do quarteirão
+  escolhido pelo usuário em função delas: 140 × 90 (a mais funda tem 53 de profundidade, a mais rasa 20).
 - Dureza: qualquer dureza é permitida (regra antiga removida pelo usuário); só blocos indestrutíveis são proibidos.
-  O único block entity permitido é o baú vazio da fonte (`Palette.exempt`).
+  Os block entities permitidos são o baú vazio da fonte e os containers vazios das estruturas (baús, barris, suportes de poção, vasos decorados, atris, fornalhas, camas, fogueiras, sensores de luz e jukeboxes; `Palette.exempt`), sem loot e sem o conteúdo salvo no `.nbt`.
 - Paleta (`gen/Palette`): os 8 estilos de material dos prédios do Abandoned Simple City (paredes, janelas, pisos,
   acabamento, escadas, sacadas) continuam na paleta, sem uso, para os prédios novos.

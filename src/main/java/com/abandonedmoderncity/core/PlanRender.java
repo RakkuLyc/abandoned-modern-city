@@ -106,7 +106,7 @@ public final class PlanRender {
                 int base = cp.h2[i] / 2 - 1;
                 for (int y = base + lot.heightAboveBase(); y > base; y--) {
                     int c = lot.code(x, y, z, base);
-                    if (c >= BlockCode.TEMPLATE) {
+                    if (c >= BlockCode.TEMPLATE && c < BlockCode.STRUCT) {
                         String st = Template.WATERFALL.palette.get(c - BlockCode.TEMPLATE);
                         if (st.contains("air")) {
                             continue;
@@ -135,6 +135,10 @@ public final class PlanRender {
                     }
                 }
                 return switch (lot.type) {
+                    case BUILDING -> {
+                        int g = 90 + (int) (Hash.unit(Hash.of(lot.seed, 0x42L, 0, 0)) * 70);
+                        yield rgb(g + 40, g, g - 20);
+                    }
                     case PARK -> lot.code(x, base, z, base) == BlockCode.PATH ? rgb(150, 115, 70) : rgb(70, 160, 70);
                     case PLAZA -> rgb(200, 195, 175);
                     case EMPTY -> rgb(170, 150, 110);

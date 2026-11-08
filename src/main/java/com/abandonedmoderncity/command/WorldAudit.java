@@ -309,6 +309,16 @@ public final class WorldAudit {
             if (bp.getY() < floor - 1 || bp.getY() > ceiling) {
                 continue;
             }
+            if (cp.kind[i] == ChunkPlan.LOT && cp.lot[i] != null && cp.lot[i].building != null
+                    && Palette.exempt(c.getBlockState(bp))
+                    && cp.lot[i].code(bp.getX(), bp.getY(), bp.getZ(), cp.h2[i] / 2 - 1) >= BlockCode.STRUCT) {
+                // an empty container of a building structure (asked for by the user)
+                r.stat("structure_containers", 1);
+                if (loot) {
+                    r.fail("loot_in_city", bp.toShortString() + " structure container with a loot table");
+                }
+                continue;
+            }
             if (cp.kind[i] == ChunkPlan.LOT && cp.lot[i] != null && cp.lot[i].park != null
                     && Palette.exempt(c.getBlockState(bp))
                     && cp.lot[i].code(bp.getX(), bp.getY(), bp.getZ(), cp.h2[i] / 2 - 1) >= BlockCode.TEMPLATE) {
