@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {"type": "minecraft:item", "name": "mts:mts.jumperpack", "weight": 10},
+        {"type": "minecraft:item", "name": "mts:mtsofficialpack.blowtorch", "weight": 6},
+        {"type": "minecraft:item", "name": "mts:mtsofficialpack.repairkit", "weight": 4},
+        {"type": "minecraft:empty", "weight": 10}
+      ]
+    }
+  ]
+}

@@ -15,7 +15,7 @@ quarteirão (protótipo: o sorteio será ajustado depois).
 - Testes unitários: `./gradlew test` (renders em `build/test-renders/`)
 - Bateria no mundo: `tools/selftest.sh [full|quick] [seed...]` (relatórios em `run/selftest/<seed>/`); detalhes em
   `docs/TESTES.md`
-- Nenhuma dependência opcional: sem Immersive Vehicles, Zombie Extreme, Big Lost City, loot tables ou mixins.
+- Nenhuma dependência opcional: sem Immersive Vehicles, Zombie Extreme, Big Lost City ou mixins.
 - A especificação completa e atual (aprovada pelo usuário) fica em `CLAUDE.md`.
 
 ## O que é gerado
@@ -52,7 +52,9 @@ estruturas de `structures/`).
   | Torre | 1 | 62 × 53 × 118 |
   | Prédio tombado com vinhas | 1 | 33 × 45 × 97 |
 
-  A pasta `Casas` do usuário está vazia. Containers e demais block entities (baús, barris, suportes de poção, vasos, atris, fornalhas, camas, fogueiras, sensor de luz, jukebox) saem vazios, sem loot.
+  A pasta `Casas` do usuário está vazia. Containers (baús, barris, suportes de poção, vasos decorados, atris, fornalhas, camas, fogueiras, sensor de luz, jukebox) recebem loot tables:
+  - **Todas as estruturas exceto oficinas:** loot table `lostcities:chests/lostcitychest` (do mod Apocalypse Loot / Lost Cities), com munição TACZ, armas, itens médicos, comida, recursos e raridades.
+  - **Oficinas (médias e pequenas):** baús recebem `oficina_vehicle_parts` (rodas, assentos e motores compatíveis com Camaro e Escargot do OAmP); demais containers recebem `oficina_vehicle_tools` (jumperpack, blowtorch, repairkit).
 - **Parques:**
   - grama, flores e caminhos de `dirt_path` (grade ou cata-vento), escalados com o tamanho do parque;
   - fonte `waterfall.nbt` no centro, com baú vazio em 50% delas.
@@ -84,7 +86,7 @@ estruturas de `structures/`).
 | Regra | Como é garantida |
 |---|---|
 | Nada indestrutível | Todos os blocos estão em `gen/Palette`. `Palette.validate()` roda na inicialização e derruba o jogo se algum for indestrutível ou tiver block entity (exceção: o baú da fonte e os containers vazios das estruturas). Qualquer dureza é permitida. A auditoria no mundo (`hard_block`) confere os blocos gerados. |
-| Sem loot | Nenhum contêiner com loot table; os únicos contêineres são o baú vazio de metade das fontes e os containers vazios das estruturas (`structure_containers`). A auditoria (`loot_in_city`, `container_in_city`) confere. |
+| Sem loot | Containers das estruturas **têm loot tables**: exceto oficinas usam `lostcities:chests/lostcitychest`; oficinas usam `oficina_vehicle_parts` (baús) e `oficina_vehicle_tools` (outros). Baú da fonte do parque continua vazio (50%) ou `mossy_cobblestone` (50%). A auditoria (`loot_in_city`, `container_in_city`) confere. |
 | Ruas planas e conectadas | Cada cidade tem uma única altura (`City.level`). Ruas cortadas nunca criam beco sem saída nem separam a cidade (`PlanAudit`: `dead_end`, `city_split`). |
 | Superfície certa | A auditoria no mundo (`surface_block`) confere bloco a bloco a superfície das vias. |
 | Determinismo | Tudo é função pura da semente e do terreno natural: dois chunks vizinhos nunca discordam, em qualquer ordem e thread (`PlanAuditTest.planIsIndependentOfQueryOrderAndThreads`). |

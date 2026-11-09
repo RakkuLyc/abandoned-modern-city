@@ -5,11 +5,15 @@ import com.abandonedmoderncity.core.ChunkPlan;
 import com.abandonedmoderncity.core.Lot;
 import com.abandonedmoderncity.core.Params;
 import com.abandonedmoderncity.core.Profile;
+import com.abandonedmoderncity.core.Structures;
 import com.abandonedmoderncity.core.WorldPlan;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
@@ -313,6 +317,75 @@ final class ChunkBuilder {
             BlockState s = Palette.of(lot.code(x, y, z, base), 0, natural);
             if (s != null) {
                 set(x, y, z, s);
+            }
+        }
+        // Apply loot tables to containers in this structure
+        if (lot.building != null) {
+            applyLootTables(lot, base);
+        }
+    }
+
+    /**
+     * Applies the appropriate loot table to all container block entities within a structure lot.
+     * Called after all structure blocks have been placed.
+     */
+    private void applyLootTables(Lot lot, int base) {
+        Structures.Def def = lot.building;
+        String structureType = def.type(); // e.g., "farmacia", "oficina_de_carros_medio", "posto_de_gasolina_padrao"
+        
+        // Oficinas get vehicle parts + tools loot tables (for Camaro/Escargot compatible parts)
+        if (structureType.startsWith("oficina_de_carros")) {
+            // Apply vehicle parts to chests, tools to other containers
+            applyLootTableToContainers(lot, base, 
+                ResourceLocation.parse("abandonedmoderncity:chests/oficina_vehicle_parts"), 
+                ResourceLocation.parse("abandonedmoderncity:chests/oficina_vehicle_tools"));
+        } else {
+            // All other structures get Lost Cities loot
+            applyLootTableToContainers(lot, base, 
+                ResourceLocation.parse("abandonedmoderncity:chests/lostcitychest"));
+        }
+    }
+
+    /**
+     * Applies a single loot table to all containers in the lot area.
+     */
+    private void applyLootTableToContainers(Lot lot, int base, ResourceLocation lootTable) {
+        applyLootTableToContainers(lot, base, lootTable, lootTable);
+    }
+
+    /**
+     * Applies two different loot tables: chests get the first, other containers get the second.
+     */
+    private void applyLootTableToContainers(Lot lot, int base, ResourceLocation chestLootTable, ResourceLocation otherLootTable) {
+        int x0 = lot.x0;
+        int z0 = lot.z0;
+        int x1 = lot.x1;
+        int z1 = lot.z1;
+        int y0 = base;
+        int y1 = base + lot.heightAboveBase();
+        
+        for (int x = x0; x <= x1; x++) {
+            for (int z = z0; z <= z1; z++) {
+                for (int y = y0; y <= y1; y++) {
+                    BlockState state = chunk.getBlockState(pos.set(x, y, z));
+                    if (state.hasBlockEntity()) {
+                        var be = chunk.getBlockEntity(pos);
+                        if (be != null) {
+                            CompoundTag tag = be.saveWithoutMetadata(region.registryAccess());
+                            // Chest gets chest loot table, others get other loot table
+                            if (state.is(Blocks.CHEST) || state.is(Blocks.TRAPPED_CHEST)) {
+                                tag.putString("LootTable", chestLootTable.toString());
+                            } else {
+                                tag.putString("LootTable", otherLootTable.toString());
+                            }
+                            // Also set the seed so it's not re-rolled
+                            tag.putLong("LootTableSeed", lot.seed);
+                            // Load the updated tag back into the block entity
+                            be.loadWithComponents(tag, region.registryAccess());
+                            chunk.setBlockEntity(be);
+                        }
+                    }
+                }
             }
         }
     }

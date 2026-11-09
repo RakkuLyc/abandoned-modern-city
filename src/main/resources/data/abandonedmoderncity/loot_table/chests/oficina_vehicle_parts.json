@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {"type": "minecraft:item", "name": "mts:oamp.wheelvintage_sinty", "weight": 10, "functions": [{"function": "minecraft:set_count", "count": {"type": "minecraft:uniform", "min": 1, "max": 2}}]},
+        {"type": "minecraft:item", "name": "mts:oamp.wheelvintage_mint", "weight": 8, "functions": [{"function": "minecraft:set_count", "count": {"type": "minecraft:uniform", "min": 1, "max": 2}}]},
+        {"type": "minecraft:item", "name": "mts:oamp.wheelvintage_lightblue", "weight": 8, "functions": [{"function": "minecraft:set_count", "count": {"type": "minecraft:uniform", "min": 1, "max": 2}}]},
+        {"type": "minecraft:item", "name": "mts:oamp.wheeloffroad_default", "weight": 6, "functions": [{"function": "minecraft:set_count", "count": {"type": "minecraft:uniform", "min": 1, "max": 2}}]},
+
+        {"type": "minecraft:item", "name": "mts:oamp.vintageseat_gray", "weight": 8},
+        {"type": "minecraft:item", "name": "mts:oamp.vintageseat_brown", "weight": 8},
+        {"type": "minecraft:item", "name": "mts:oamp.vintageseat_beige", "weight": 6},
+        {"type": "minecraft:item", "name": "mts:oamp.sportseat_gray", "weight": 6},
+        {"type": "minecraft:item", "name": "mts:oamp.sportseat_brown", "weight": 4},
+
+        {"type": "minecraft:item", "name": "mts:oamp.engineescargoti6", "weight": 6},
+        {"type": "minecraft:item", "name": "mts:oamp.enginecamarov8", "weight": 5}
+      ]
+    }
+  ]
+}

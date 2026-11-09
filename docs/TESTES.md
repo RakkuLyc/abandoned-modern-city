@@ -103,8 +103,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
     costuras entre chunks apareceriam aqui).
 - **Regras gerais:**
   - `hard_block` (bloco indestrutível em via, ponte, túnel ou lote; qualquer dureza é permitida);
-  - `loot_in_city` e `container_in_city` (exceto o baú vazio planejado da fonte dos parques, contado em
-    `fountain_chests`);
+  - `loot_in_city` e `container_in_city` (agora containers têm loot tables: exceto oficinas usam `lostcities:chests/lostcitychest`; oficinas usam `oficina_vehicle_parts` em baús e `oficina_vehicle_tools` em outros containers; baú da fonte do parque continua vazio 50% / `mossy_cobblestone` 50%, contado em `fountain_chests`);
   - `orphan_road` (conectividade medida nos blocos).
 
 ## 3. Problemas encontrados e corrigidos
@@ -190,5 +189,4 @@ No jogo (op):
 
   A bateria ainda não rodou depois da remoção das cidades octogonais e 3 × 2 (o alvo "cidade 3 × 2 mais próxima do
   spawn" saiu) nem depois da troca para quarteirões 105 × 60 (células de 512) e 140 × 90 (células de 576). Em 8 nov, no Linux (CachyOS, JDK 21), a bateria `-PselfTest` passou 8 de 8 alvos com os quarteirões 105 × 60 num mundo novo (um mundo de teste velho, gerado antes das mudanças, dá falhas falsas no alvo do spawn: renomeie `run/selftest_world_*`). Vale rodar a bateria completa quando houver mudanças: `tools/selftest.sh full`.
-- Em nenhuma rodada houve degrau, buraco, obstáculo, pilar flutuante, rodovia sem conexão, bloco indestrutível ou
-  loot nas vias, pontes e túneis depois das correções 4 e 5.
+- Em nenhuma rodada houve degrau, buraco, obstáculo, pilar flutuante, rodovia sem conexão, bloco indestrutível nas vias, pontes e túneis depois das correções 4 e 5. Containers das estruturas agora têm loot tables (exceto oficinas: vehicle parts/tools; demais: Lost Cities), auditados por `loot_in_city` / `container_in_city`.
