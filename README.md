@@ -16,6 +16,11 @@ quarteirão (protótipo: o sorteio será ajustado depois).
 - Bateria no mundo: `tools/selftest.sh [full|quick] [seed...]` (relatórios em `run/selftest/<seed>/`); detalhes em
   `docs/TESTES.md`
 - Nenhuma dependência opcional: sem Immersive Vehicles, Zombie Extreme, Big Lost City ou mixins.
+- `libs/` **não é versionada** (está no `.gitignore`) e **não é necessária para compilar**: `./gradlew build` funciona
+  sem ela. A pasta guarda jars de mods de terceiros usados só como fonte de consulta (loot tables do Apocalypse Loot,
+  peças de veículos do OAmP, Immersive Vehicles e MTS Official Pack). Quem clonar o repositório e quiser refazer esse
+  levantamento deve copiar os jars para `libs/` à mão: `ApocalypseLoot-1.1.1.jar`,
+  `Immersive Vehicles-1.21.1-24.0.0.jar`, `MTS Official Pack-1.21.1-V29.jar` e `OAmP-1.21.1-V3.jar`.
 - A especificação completa e atual (aprovada pelo usuário) fica em `CLAUDE.md`.
 
 ## O que é gerado
