@@ -132,6 +132,15 @@ class FloraTest {
                         }
                         int c = park.code(ox + x, BASE + y, oz + z, BASE);
                         boolean chestSwap = idx == Park.CHEST && !p.chest && c == BlockCode.TEMPLATE + Park.MOSSY;
+                        String name = t.palette.get(idx);
+                        if (y == 0 && (name.equals("minecraft:stone") || name.equals("minecraft:cobblestone"))) {
+                            assertEquals(BlockCode.TEMPLATE + Park.MOSSY, c, "floor not mossy at " + x + "," + z);
+                            continue;
+                        }
+                        if (y == 0 && (name.equals("minecraft:stone_bricks") || name.equals("minecraft:cracked_stone_bricks"))) {
+                            assertEquals(BlockCode.TEMPLATE + Park.MOSSY_BRICKS, c, "floor not mossy at " + x + "," + z);
+                            continue;
+                        }
                         boolean ringSlab = y == 1 && (c == BlockCode.MOSSY_SLAB || c == BlockCode.MOSSY_COBBLE_SLAB);
                         assertTrue(c == BlockCode.TEMPLATE + idx || chestSwap || ringSlab,
                                 "fountain block changed at " + x + "," + y + "," + z + ": " + c);

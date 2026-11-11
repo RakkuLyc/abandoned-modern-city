@@ -96,7 +96,10 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   fonte `waterfall.nbt` (do usuário, em `resources/amcs/`) cercada de lajes musgosas (meio bloco) do anel até a
   cerca de folhas da fonte: só `mossy_stone_brick_slab` e `mossy_cobblestone_slab` (metade cada), 10% faltam (11 nov
   2026). Nenhum bloco da fonte é removido: em 55% das colunas com lugar para vinha (ar ao lado das folhas ou pedras
-  dela) pende um cacho de 2 a 6 blocos a partir do ponto mais alto (`Park.VINE_MIN`/`VINE_MAX`).
+  dela) pende um cacho de 2 a 6 blocos a partir do ponto mais alto (`Park.VINE_MIN`/`VINE_MAX`). O piso de pedra em
+  volta da bacia (camada 0 do molde) fica musgoso (11 nov 2026, `Park.FLOOR_SWAP`): `stone` e `cobblestone` →
+  `mossy_cobblestone`, `stone_bricks` e `cracked_stone_bricks` → `mossy_stone_bricks`; a bacia, a água, as escadas,
+  as lanternas e o baú não mudam.
   Baú vazio em 50% das fontes (senão `mossy_cobblestone`).
 - Estruturas (protótipo de 8 nov 2026): os `.nbt` listados em `src/main/resources/amcs/buildings/index.txt`
   (`tipo|arquivo`) entram nos quarteirões por `core/Ring` (`Structures` carrega, mede e gira). **Em 10 nov 2026 o

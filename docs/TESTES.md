@@ -65,7 +65,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `WorldPlanTest.highwayNetworkIsConsistentAndWellConnected` | 21 combinações terreno × seed: Gabriel simétrico, rodovia começa e termina exatamente na entrada de cada cidade, raio de curva ≥ 60, pontos a ~1 bloco, comprimento máximo, cruzamento de entrada nunca usado duas vezes (um canto tem duas saídas, mas só uma rodovia), no máximo 8 rodovias por cidade, nenhum par de rodovias perto demais (sem cruzamentos); limites: plano/colinas ≥ 85% das ligações e ≤ 5% de cidades sem rodovia, montanhas/rios/cânions ≤ 15%, e pelo menos metade das células com cidade (exceto ilhas); gera `network_*.png` |
 | `WorldPlanTest.removedStreetsAreRenderedAndAudited` | uma cidade para cada quantidade de ruas cortadas (hoje só 0): passa no `PlanAudit` e gera `cuts_N.png` |
 | `FloraTest.overgrownBlocksAreConsistent` | 6 miolos de 140 × 90: mais de 120 árvores cada, copas dentro do quarteirão, toda vinha presa em folha/tronco ou embaixo de outra vinha, toda folha com distância de 1 a 6 e um vizinho um passo mais perto da madeira (regra do leaf decay do vanilla), plantas só a 1 bloco do chão e só em solo (grama, musgo, terra grossa), metades de cima das plantas altas certas, entulho nunca flutua; nenhuma árvore entra numa estrutura; gera `wild_block.png` |
-| `FloraTest.parksAreOvergrownAndKeepTheirFountain` | 6 parques: as mesmas regras de plantas e vinhas, todo bloco da fonte no lugar (só a troca baú → pedregulho musgoso e as lajes musgosas do anel), cachos de vinha na fonte; gera `wild_park.png` |
+| `FloraTest.parksAreOvergrownAndKeepTheirFountain` | 6 parques: as mesmas regras de plantas e vinhas, todo bloco da fonte no lugar (só a troca baú → pedregulho musgoso, as lajes musgosas do anel e o piso de pedra virado musgoso), cachos de vinha na fonte; gera `wild_park.png` |
 | `RingTest.withoutStructuresBlocksStayEmpty` | com `index.txt` vazio (hoje): nenhum estado de estrutura e o anel não cria lotes |
 | `RingTest.structuresHaveSolidBoxesWithAFloorLayer` | (pulado sem estruturas) toda estrutura tem caixa não vazia e blocos na primeira camada |
 | `RingTest.rotationKeepsEveryBlockAndTurnsTheFrontToTheStreet` | (pulado sem estruturas) as 4 rotações têm o mesmo número de blocos em todas as estruturas; a rotação de 90, 180 e 270 graus confere célula a célula com a fórmula da transformação |
@@ -150,6 +150,7 @@ e a regra de escada e apoio no mesmo chunk.
 | 29 | `FloraTest` (natureza, 11 nov) | vinha sem apoio onde duas copas se encontram | a copa de uma árvore corta o cacho de vinhas da outra | o índice de árvores descarta a vinha que não está presa em folha/tronco nem embaixo da mesma vinha |
 | 30 | `FloraTest` (natureza, 11 nov) | `ArrayIndexOutOfBounds` em `Park.code` | consulta de vinha da fonte acima da altura do molde (as árvores do parque são mais altas que a fonte) | limite de altura na consulta |
 | 31 | `FloraTest` (natureza, 11 nov) | grama sobre o piso da fonte onde falta uma laje do anel | a falha da laje punha grama sem olhar o bloco de baixo | sem grama nas falhas sobre a fonte |
+| 32 | `FloraTest` (piso musgoso, 11 nov) | o piso de pedra da fonte virou grama | a tabela de troca era montada antes do índice do `mossy_cobblestone` existir (ordem da inicialização estática: valia 0) | tabela declarada depois do índice |
 | — | Bateria (infraestrutura) | servidores falhando com "Address already in use" | um servidor de uma bateria interrompida ainda terminava | o script usa a porta 25591 e se recusa a começar com um servidor de desenvolvimento vivo |
 
 ## 4. Como reproduzir
@@ -195,6 +196,7 @@ No jogo (op):
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 11 nov | piso da fonte musgoso | PASS: 8 de 8, 0 erros de geração, 1 fonte conferida, 2,93 ms por chunk |
   | `20261027` | padrão (8 alvos) | 11 nov | 4 entradas, células de 648, faixas de pedestres, árvores reais, anel musgoso, vinhas longas | PASS: 8 de 8, 0 erros de geração, 7 948 chunks, 2,91 ms por chunk, 231 s |
   | `20261027` | padrão (8 alvos) | 11 nov | miolos e parques tomados pela natureza | PASS: 8 de 8, 0 erros de geração, 952 433 blocos de lote conferidos só no alvo do spawn, 9 096 chunks, 9,28 ms por chunk, 352 s |
   | `20261027` | padrão (8 alvos) | 10 nov | ruas e rodovias de 33, sem estruturas | PASS: 8 de 8 (cidade do spawn, mais alta, mais acidentada, túnel de 282, ponte de 645, viaduto de 172, rampa de 480, rodovia inteira), 0 erros de geração, 9 096 chunks, 8,49 ms por chunk, 324 s |

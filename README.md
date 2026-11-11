@@ -61,7 +61,8 @@ cidades foram para o meio de células de 648 (rodovias de ~269 a ~369 blocos) e 
   - a mesma natureza (árvores ~1 a cada 60 colunas), algumas flores, e caminhos de `dirt_path` (grade ou cata-vento)
     com 30% de falhas, escalados com o tamanho do parque;
   - fonte `waterfall.nbt` no centro, intacta, com cachos de vinha de 2 a 6 blocos e baú vazio em 50% delas; o anel
-    é só de lajes musgosas (`mossy_stone_brick_slab` e `mossy_cobblestone_slab`), com 10% de falhas.
+    é só de lajes musgosas (`mossy_stone_brick_slab` e `mossy_cobblestone_slab`), com 10% de falhas; o piso de
+    pedra em volta da bacia é musgoso (`mossy_cobblestone` e `mossy_stone_bricks`).
 
 ### Ruas e rodovias
 

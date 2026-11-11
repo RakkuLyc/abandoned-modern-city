@@ -183,6 +183,10 @@ public final class Park {
             if (!chest && idx == CHEST) {
                 idx = MOSSY;
             }
+            if (dy == 0) {
+                // the stone floor around the basin turns mossy (the fountain's own blocks stay)
+                idx = FLOOR_SWAP[idx];
+            }
             return BlockCode.TEMPLATE + idx;
         }
         boolean path = path(x, z);
@@ -348,6 +352,25 @@ public final class Park {
 
     static final int CHEST = indexOf("minecraft:chest");
     static final int MOSSY = Template.WATERFALL.indexOf("minecraft:mossy_cobblestone");
+    static final int MOSSY_BRICKS = indexOf("minecraft:mossy_stone_bricks");
+
+    /**
+     * Palette index that replaces each entry on the fountain's floor layer (11 nov 2026, asked by the user): stone and
+     * cobblestone become mossy cobblestone, stone bricks and cracked stone bricks mossy stone bricks; the rest stays.
+     * These four only lie on the floor outside the basin.
+     */
+    static final int[] FLOOR_SWAP = floorSwap();
+
+    private static int[] floorSwap() {
+        List<String> p = Template.WATERFALL.palette;
+        int[] out = new int[p.size()];
+        for (int i = 0; i < out.length; i++) {
+            String b = p.get(i);
+            out[i] = b.equals("minecraft:stone") || b.equals("minecraft:cobblestone") ? MOSSY
+                    : b.equals("minecraft:stone_bricks") || b.equals("minecraft:cracked_stone_bricks") ? MOSSY_BRICKS : i;
+        }
+        return out;
+    }
 
     private static int indexOf(String prefix) {
         List<String> p = Template.WATERFALL.palette;
