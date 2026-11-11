@@ -72,7 +72,7 @@ public final class City {
         this.level = level;
         this.influence = Params.influence(radius);
         this.warp = warp;
-        // street centerlines on block centers (x + 0.5), so a 17-wide street covers exactly 17 columns
+        // street centerlines on block centers (x + 0.5), so a 33-wide street covers exactly 33 columns
         // the grid (blocks FIRST..LAST) is centered on the city center
         this.u0 = cx - (int) Math.floor((FIRST + LAST + 1) / 2.0 * SX) + 0.5;
         this.v0 = cz - (int) Math.floor((FIRST + LAST + 1) / 2.0 * SZ) + 0.5;
@@ -589,7 +589,7 @@ public final class City {
         int iHi = (int) Math.floor((u + SEARCH - u0) / SX);
         int jLo = (int) Math.ceil((v - SEARCH - v0) / SZ);
         int jHi = (int) Math.floor((v + SEARCH - v0) / SZ);
-        // crossings: a 17 x 17 square of lanes, smooth stone 2 x 2 in the corners, and sidewalk along the sides
+        // crossings: a 33 x 33 square of lanes, smooth stone 3 x 3 in the corners, and sidewalk along the sides
         // that have no street (the border of the city)
         for (int j = jLo; j <= jHi; j++) {
             for (int i = iLo; i <= iHi; i++) {

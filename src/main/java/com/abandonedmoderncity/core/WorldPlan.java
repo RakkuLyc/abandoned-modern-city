@@ -592,17 +592,10 @@ public final class WorldPlan {
                     }
                     int k = Math.max(0, Math.min(r.h.length, pr.index()));
                     double edge = r.h.edgeWidth(k);
-                    // lanes narrow near the ends; where they step in, the edge (wall) also covers the old width so the
-                    // walls of both widths meet side by side
                     boolean side = pr.d > 0;
                     double lane = r.h.laneHalf(k, side);
-                    double laneMax = lane;
-                    if (!r.h.junction(k)) {
-                        for (int dk = -2; dk <= 2; dk++) {
-                            laneMax = Math.max(laneMax, r.h.laneHalf(k + dk, side));
-                        }
-                    }
-                    double bandLimit = laneMax + edge;
+                    // lanes, then the smooth stone shoulder, then the edge strip with the wall
+                    double bandLimit = lane + Params.HIGHWAY_SHOULDER + edge;
                     if (ad <= bandLimit) {
                         if (ad < bandAbs) {
                             bandAbs = ad;
@@ -638,8 +631,7 @@ public final class WorldPlan {
                     }
                     cp.zone[i] = zone;
                 } else if (cLot) {
-                    // lots win over the highway band: a highway (21 wide) narrows to the 17-wide street where it
-                    // enters a city
+                    // lots win over the highway band (both are 33 wide, so this only trims the curve's outside)
                     cp.kind[i] = ChunkPlan.LOT;
                     cp.h2[i] = (short) (2 * city.level);
                     cp.lot[i] = city.lotAt(hit.bi, hit.bj, bx + lx, bz + lz);
@@ -656,6 +648,8 @@ public final class WorldPlan {
                         zone = ChunkPlan.MARK_HIGHWAY;
                     } else if (bandAbs <= bandLane) {
                         zone = ChunkPlan.LANE;
+                    } else if (bandAbs <= bandLane + Params.HIGHWAY_SHOULDER) {
+                        zone = ChunkPlan.SHOULDER;
                     } else {
                         // edge with a wall on top, open where the highway meets the city street
                         boolean junction = band.h.junction(k);

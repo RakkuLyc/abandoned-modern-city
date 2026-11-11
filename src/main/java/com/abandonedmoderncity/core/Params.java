@@ -19,18 +19,18 @@ package com.abandonedmoderncity.core;
 public record Params(int cellSize, double cityChance, int minRadius, int maxRadius, int maxCityLevel,
                      int highwayMaxLength, boolean highways) {
 
-    public static final Params DEFAULT = new Params(576, 0.7, 128, 166, 150, 4000, true);
+    public static final Params DEFAULT = new Params(640, 0.7, 128, 190, 150, 4000, true);
 
     // ------------------------------------------------------------------ city grid
 
     /**
      * City blocks are BLOCK_LONG_RUN x BLOCK_SHORT_RUN (140 x 90) of free ground between the sidewalks; their street
-     * centerlines are a street width further apart (157 and 107). Each city rolls whether the long side runs east-west.
+     * centerlines are a street width further apart (173 and 123). Each city rolls whether the long side runs east-west.
      */
     public static final int BLOCK_LONG_RUN = 140;
     public static final int BLOCK_SHORT_RUN = 90;
-    public static final int BLOCK_LONG = BLOCK_LONG_RUN + 17;
-    public static final int BLOCK_SHORT = BLOCK_SHORT_RUN + 17;
+    public static final int BLOCK_LONG = BLOCK_LONG_RUN + 33;
+    public static final int BLOCK_SHORT = BLOCK_SHORT_RUN + 33;
     /** Every city is GRID x GRID blocks ((GRID + 1) x (GRID + 1) streets). */
     public static final int GRID = 2;
     /** Dash / gap of the street center marking. */
@@ -46,17 +46,22 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
 
     // ------------------------------------------------------------------ cross sections (half widths from the centerline)
 
-    /** City street: smooth stone sidewalk 2 + polished blackstone 13 (center mark on the 9th block) + sidewalk 2 = 17. */
-    public static final double STREET_HW = 8.5;
-    public static final double STREET_LANE_HW = 6.5;
+    /** City street: smooth stone sidewalk 3 + polished blackstone 27 (center mark on the 17th block) + sidewalk 3 = 33. */
+    public static final double STREET_HW = 16.5;
+    public static final double STREET_LANE_HW = 13.5;
     /** There are no wider avenues any more: same section as the streets. */
     public static final double AVENUE_HW = STREET_HW;
     public static final double AVENUE_LANE_HW = STREET_LANE_HW;
-    /** Highway: smooth stone + wall 1 + polished blackstone 19 (yellow center mark) + smooth stone + wall 1 = 21. */
-    public static final double HIGHWAY_HW = 10.5;
-    public static final double HIGHWAY_LANE_HW = 9.5;
+    /**
+     * Highway, as wide as a city street (33): smooth stone 3 (the outer one with a wall on top) + polished blackstone 27
+     * (yellow center mark) + smooth stone 3 (the outer one with a wall).
+     */
+    public static final double HIGHWAY_HW = STREET_HW;
+    public static final double HIGHWAY_LANE_HW = STREET_LANE_HW;
+    /** Smooth stone columns between the lanes and the edge column with the wall. */
+    public static final int HIGHWAY_SHOULDER = 2;
     /** Tunnel side walls: the column just outside the highway band. */
-    public static final double TUNNEL_WALL_HW = 11.5;
+    public static final double TUNNEL_WALL_HW = HIGHWAY_HW + 1;
     /** Center marking half width. */
     public static final double MARK_HW = 0.5;
 
@@ -110,7 +115,7 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
 
     /**
      * Farthest distance from a city center at which the city changes anything (lots, streets, slopes): the corner of
-     * the rectangular city (half diagonal: 202.5 for 166 x 116), then waves and slopes. Cities of another radius
+     * the rectangular city (half diagonal: 236 for 190 x 140), then waves and slopes. Cities of another radius
      * (config) use 1.2 x radius.
      */
     public static double influence(int radius) {
@@ -118,7 +123,7 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
         return corner + MAX_WARP + CITY_SKIRT + 4;
     }
 
-    /** Half the long side of a city, streets included: 166 for the 2 x 2 grid (the short side: 116). */
+    /** Half the long side of a city, streets included: 190 for the 2 x 2 grid (the short side: 140). */
     public static final int GRID_RADIUS = GRID * BLOCK_LONG / 2 + (int) STREET_HW + 1;
     public static final int GRID_HALF_SHORT = GRID * BLOCK_SHORT / 2 + (int) STREET_HW + 1;
 

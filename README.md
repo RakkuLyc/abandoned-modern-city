@@ -29,12 +29,12 @@ Os prédios serão estruturas `.nbt` do usuário, sorteadas ao acaso num anel em
 
 | Tipo | Onde | Forma |
 |---|---|---|
-| Cidade 2 × 2 | uma por célula de 576 blocos (70% das células) | grid rígido de 2 × 2 quarteirões de 140 × 90 (eixos a 157 e a 107, ~331 × ~231 blocos com as ruas, 3 × 3 ruas; o lado comprido fica leste-oeste ou norte-sul, sorteado por cidade), até 8 entradas de rodovia (o cruzamento do meio de cada lado e os 4 cantos) |
+| Cidade 2 × 2 | uma por célula de 640 blocos (70% das células) | grid rígido de 2 × 2 quarteirões de 140 × 90 (eixos a 173 e a 123, ~379 × ~279 blocos com as ruas, 3 × 3 ruas; o lado comprido fica leste-oeste ou norte-sul, sorteado por cidade), até 8 entradas de rodovia (o cruzamento do meio de cada lado e os 4 cantos) |
 
 Só existe esse tipo de cidade: as cidades octogonais e as cidades 3 × 2 das rodovias (com o padrão rural_highway e
 as plantações) foram removidas em 7 nov 2026; o grid passou de 4 × 4 quarteirões de 186 (células de 2 048) para
 2 × 2 quarteirões de 105 × 60 (células de 512) e, em 8 nov 2026, para 140 × 90 (células de 576, para caber as
-estruturas de `structures/`).
+estruturas de `structures/`); em 10 nov 2026 ruas e rodovias passaram a 33 de largura (células de 640).
 
 - Cada cidade fica numa única altura: água é aterrada, morro é cortado, e um talude 1:1 faz a transição.
 - Ruas cortadas estão desligadas (`City.MAX_CUTS` = 0); o código que corta trechos sem criar beco sem saída
@@ -59,17 +59,17 @@ estruturas de `structures/`).
 
 | Via | Largura | Seção |
 |---|---|---|
-| Rua da cidade | 17 | `smooth_stone` 2 · `polished_blackstone` 13 (faixa `white_concrete` tracejada no 9º bloco) · `smooth_stone` 2 |
-| Rodovia | 21 | `smooth_stone` + `stone_brick_wall` 1 · `polished_blackstone` 19 (faixa `yellow_terracotta`) · `smooth_stone` + muro 1 |
+| Rua da cidade | 33 | `smooth_stone` 3 · `polished_blackstone` 27 (faixa `white_concrete` tracejada no 17º bloco) · `smooth_stone` 3 |
+| Rodovia | 33 | `smooth_stone` 3 (o de fora com `stone_brick_wall`) · `polished_blackstone` 27 (faixa `yellow_terracotta`) · `smooth_stone` 3 (o de fora com muro) |
 
-- **Faixa central:** traços de 11 com intervalo de 6. Cada cruzamento tem um quadrado 2 × 2 de `smooth_stone` em
+- **Faixa central:** traços de 11 com intervalo de 6. Cada cruzamento tem um quadrado 3 × 3 de `smooth_stone` em
   cada esquina.
 - **Rede de rodovias:** grafo de Gabriel entre os centros das cidades. É planar e conexo, e as rodovias nunca se
   cruzam.
   - Cada ligação é combinada pelas duas cidades. A entrada fica no lado voltado para a cidade de destino: no
     cruzamento do meio ou num canto, o que estiver mais deslocado na direção dela (sorteio entre empatados). Do
     canto a rodovia sai reta, continuando uma das ruas da borda. Até 8 rodovias por cidade, uma por cruzamento.
-  - Perto de cada cidade, a rodovia afunila de 21 para 17, perdendo 1 bloco a cada 8.
+  - A rodovia tem a largura da rua e chega a ela sem afunilar; o muro termina na junção.
 - **Perfil "plano ou rampa"** (`core/Profile`): trechos planos em alturas inteiras e rampas de 1 bloco a cada 8, com
   meia-laje a cada 4.
 - **Túneis:** só onde há 11+ blocos de terreno acima da pista. Têm 7 blocos de altura livre, revestimento de `stone`
@@ -117,7 +117,7 @@ command/  /amcs, auditoria dos blocos (WorldAudit), renders do mundo, bateria au
 ### Estágios
 
 1. **Existe cidade?**
-   - O mundo é dividido em células de `cellSize` (576). Cada célula tem uma cidade com chance `cityChance`
+   - O mundo é dividido em células de `cellSize` (640). Cada célula tem uma cidade com chance `cityChance`
      (70%), longe das bordas.
    - A célula tenta até 10 posições e fica com a primeira em que o terreno não é majoritariamente água e a altura
      (mediana de 9 amostras, mínimo nível do mar + 2) não passa de `maxCityLevel`.
@@ -137,7 +137,7 @@ command/  /amcs, auditoria dos blocos (WorldAudit), renders do mundo, bateria au
 
 `enabled`, `cellSize`, `cityChance`, `minRadius`, `maxRadius`, `maxCityLevel`, `highways`, `highwayMaxLength`.
 A geometria (larguras, quarteirões, rampas, túneis, pontes) fica em `core/Params` e as cidades em `core/City`. Mudanças valem para chunks novos e mudam o plano: use um mundo novo.
-Padrões: `cellSize` = 576 e `maxRadius` = 166. Um arquivo de config antigo (com 2048/288, 1024/212 ou 512/131) mantém os
+Padrões: `cellSize` = 640 e `maxRadius` = 190. Um arquivo de config antigo (com 2048/288, 1024/212, 512/131 ou 576/166) mantém os
 valores velhos: apague-o ou ajuste os dois valores.
 
 ## Comandos (op 2)

@@ -142,13 +142,13 @@ class WorldPlanTest {
                     int z = (int) Math.floor(c.V(j) + c.SZ / 2.0);
                     int xc = (int) Math.floor(c.U(i));
                     int width = 0;
-                    for (int x = xc - 12; x <= xc + 12; x++) {
+                    for (int x = xc - 24; x <= xc + 24; x++) {
                         c.query(x + 0.5, z + 0.5, hit);
                         if (hit.road) {
                             width++;
                         }
                     }
-                    assertEquals(17, width, c + " line " + i + " row " + j);
+                    assertEquals(33, width, c + " line " + i + " row " + j);
                     checked++;
                 }
             }

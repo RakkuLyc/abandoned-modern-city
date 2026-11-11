@@ -28,23 +28,25 @@ rodovias, túneis, pontes, quarteirões, parques e plantações, **sem os prédi
 (pasta `AbandonedModernCity-Deprecated`) está descontinuado. Ainda em 7 nov 2026 o usuário mandou remover as cidades
 octogonais e as cidades 3 × 2 das rodovias (com o padrão rural_highway perto delas e as plantações), e depois trocar
 o grid 4 × 4 por 2 × 2 com células de 1024, depois os quarteirões para 105 × 60 com células de 512, e em 8 nov 2026 os quarteirões para 140 × 90 com células de 576
-(para caber as estruturas da pasta `structures/`): hoje só
+(para caber as estruturas da pasta `structures/`); em 10 nov 2026 ruas e rodovias passaram a ter 33 de largura
+(células de 640): hoje só
 existem as cidades 2 × 2 de quarteirões retangulares.
 
 ## Especificação das ruas e cidades (atual)
 
 - Grid rígido, ruas retas e cantos em ângulo reto: cidade = 2 × 2 quarteirões de 140 × 90 de área livre
-  (`Params.GRID` = 2, `Params.BLOCK_LONG_RUN` / `BLOCK_SHORT_RUN`; eixos das ruas a 157 e a 107, `BLOCK_LONG` /
-  `BLOCK_SHORT`), 3 × 3 ruas e 9 cruzamentos, ~331 × ~231 blocos com as ruas. Cada cidade sorteia (50%) se o lado
+  (`Params.GRID` = 2, `Params.BLOCK_LONG_RUN` / `BLOCK_SHORT_RUN`; eixos das ruas a 173 e a 123, `BLOCK_LONG` /
+  `BLOCK_SHORT`), 3 × 3 ruas e 9 cruzamentos, ~379 × ~279 blocos com as ruas. Cada cidade sorteia (50%) se o lado
   comprido dos quarteirões fica leste-oeste ou norte-sul (`City.longX`); todos os quarteirões da cidade seguem a mesma
   orientação. Todas as cidades são assim (não há mais variantes).
-- Água é aterrada, morro é cortado. Cidades a ~580 blocos umas das outras (célula 576, `Params.DEFAULT`). O
-  `maxRadius` padrão é 166 (metade do lado comprido da cidade). A área de influência (`Params.influence`) é a
-  meia-diagonal exata do retângulo da cidade (166 × 116 → 202,5) + 10 + talude de 32 + 4 = ~249; com ela o centro de
-  cada cidade varia ~75 blocos dentro da célula.
-- Rua com 17 de largura: 2 `smooth_stone` (calçada) + 13 `polished_blackstone` (pista) + 2 `smooth_stone`.
-- Trecho de rua de 140 ou 90 blocos (o lado do quarteirão) + 17 de cruzamento; quadrado 2 × 2 de `smooth_stone` em cada esquina de cruzamento.
-- Faixa central no 9º bloco da largura, traços de 11 com intervalo de 6 (quantos couberem, centrados); `white_concrete` na cidade,
+- Água é aterrada, morro é cortado. Cidades a ~640 blocos umas das outras (célula 640, `Params.DEFAULT`). O
+  `maxRadius` padrão é 190 (metade do lado comprido da cidade). A área de influência (`Params.influence`) é a
+  meia-diagonal exata do retângulo da cidade (190 × 140 → 236) + 10 + talude de 32 + 4 = ~282; com ela o centro de
+  cada cidade varia ~70 blocos dentro da célula.
+- Rua com 33 de largura (10 nov 2026): 3 `smooth_stone` (calçada) + 27 `polished_blackstone` (pista) + 3
+  `smooth_stone` (`Params.STREET_HW` = 16,5, `STREET_LANE_HW` = 13,5).
+- Trecho de rua de 140 ou 90 blocos (o lado do quarteirão) + 33 de cruzamento; quadrado 3 × 3 de `smooth_stone` em cada esquina de cruzamento.
+- Faixa central no 17º bloco da largura (o do meio), traços de 11 com intervalo de 6 (quantos couberem, centrados); `white_concrete` na cidade,
   `yellow_terracotta` nas rodovias.
 - Até 8 entradas por cidade (`City.EXITS`): os 4 cruzamentos de 3 vias do meio dos lados e os 4 cantos. No canto a
   rodovia continua, para fora, uma das duas ruas da borda (sai reta, nunca a 45°); cada cruzamento recebe no máximo
@@ -52,11 +54,11 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   (a direção que mais aponta para ela) e, entre os candidatos desse lado (canto, meio, canto), no que está mais
   deslocado na direção dela (vizinha a nordeste → canto NE); a seed sorteia entre os empatados. Ligam-se as vizinhas
   de Gabriel que estão entre as 8 mais próximas uma da outra.
-- Rodovias com 21: 1 `smooth_stone` + `stone_brick_wall` em cima, 19 `polished_blackstone` (faixa `yellow_terracotta`
-  no meio), 1 `smooth_stone` + muro. Muros conectados pelo plano (não pelo vanilla). Dentro das cidades os lotes têm
-  prioridade: a rodovia estreita para a rua de 17 nas entradas. As rodovias vão direto de uma cidade à outra.
-- Afunilamento: perto de cada cidade a rodovia perde 1 bloco de largura a cada 8 (`Highway.TAPER_STEP`), alternando
-  os lados, de 21 até 17 (largura de rua), logo depois da junção com a rua.
+- Rodovias com a mesma largura das ruas, 33 (10 nov 2026): 3 `smooth_stone` (o de fora com `stone_brick_wall` em
+  cima; `Params.HIGHWAY_SHOULDER` = 2 de acostamento), 27 `polished_blackstone` (faixa `yellow_terracotta` no meio), 3
+  `smooth_stone` (o de fora com muro). Muros conectados pelo plano (não pelo vanilla); na junção com a rua não há
+  muro. Dentro das cidades os lotes têm prioridade. As rodovias vão direto de uma cidade à outra. O afunilamento
+  perto das cidades foi removido (as larguras são iguais).
 - Túneis com 7 blocos de altura livre (`Params.CLEARANCE`); só há túnel com 11+ blocos de terreno acima da pista
   (`Params.TUNNEL_COVER`).
 - Ruas cortadas: **desligadas** (`City.MAX_CUTS` = 0, pedido do usuário para o 2 × 2; o código continua). Quando

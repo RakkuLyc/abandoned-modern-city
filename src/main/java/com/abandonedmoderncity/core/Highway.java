@@ -135,45 +135,24 @@ public final class Highway {
         return pz[k];
     }
 
-    /**
-     * Width of the edge strip at point k: 1 block where the highway runs along an axis, up to 1.41 on a diagonal, so the
-     * edge columns always touch by a side (walls only connect sideways).
-     */
-    /** Width of the highway (21) and of a city street (17), which it narrows to next to cities. */
-    public static final int FULL_WIDTH = (int) Math.round(2 * Params.HIGHWAY_HW);
-    public static final int NARROW_WIDTH = (int) Math.round(2 * Params.STREET_HW);
-    /** The highway loses 1 block of width every TAPER_STEP blocks as it nears a city ... */
-    public static final int TAPER_STEP = 8;
-    /**
-     * ... down to NARROW_WIDTH this far from the end: just past the junction with the city street (whose edges have
-     * no walls), so that no step of the walls falls on the place where they start.
-     */
-    public static final int TAPER_START = (int) Math.ceil(Params.HIGHWAY_HW + Params.STREET_HW + 4) + 3;
-
     /** Whether index k is where the highway meets a city street: open edges, no walls. */
     public boolean junction(int k) {
         double jl = Params.HIGHWAY_HW + Params.STREET_HW + 4;
         return k < jl || k > length - jl;
     }
 
-    /** Blocks along the path from k to the nearest end of the highway. */
-    int endDistance(int k) {
-        return Math.max(0, Math.min(k, length - k));
+    /**
+     * Half width of the lanes on one side of the centerline at index k: the same all along (13.5), the highway being as
+     * wide as the city streets it joins (the old narrowing near the cities was removed).
+     */
+    public double laneHalf(int k, boolean positiveSide) {
+        return Params.HIGHWAY_LANE_HW;
     }
 
     /**
-     * Half width of the lanes on one side of the centerline at index k (9.5 for the full 21 blocks). Near the ends
-     * the width shrinks one block at a time, alternating sides, so the center marking stays in the middle.
+     * Width of the edge strip at point k: 1 block where the highway runs along an axis, up to 1.41 on a diagonal, so the
+     * edge columns always touch by a side (walls only connect sideways).
      */
-    public double laneHalf(int k, boolean positiveSide) {
-        k = Math.max(0, Math.min(length, k));
-        int over = endDistance(k) - TAPER_START;
-        int w = over <= 0 ? NARROW_WIDTH : Math.min(FULL_WIDTH, NARROW_WIDTH + (over + TAPER_STEP - 1) / TAPER_STEP);
-        int removed = FULL_WIDTH - w;
-        int r = positiveSide ? (removed + 1) / 2 : removed / 2;
-        return Params.HIGHWAY_LANE_HW - r;
-    }
-
     public double edgeWidth(int k) {
         int a = Math.max(0, k - 1);
         int b = Math.min(length, k + 1);

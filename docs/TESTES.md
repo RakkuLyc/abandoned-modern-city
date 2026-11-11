@@ -48,7 +48,7 @@ Alvos repetidos (a mesma cidade em dois critérios) entram uma vez só. Seeds fi
 - `CANYONS` (planalto cortado por cânions estreitos abaixo do nível do mar).
 - `RIVERS` (terra ondulada cortada por rios e salpicada de lagos, como o overworld real perto das seeds da bateria).
 
-Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa área de 9 × 9 células de 576
+Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa área de 9 × 9 células de 640
 (~18 000 × 18 000 blocos).
 
 ## 2. O que é verificado
@@ -60,8 +60,8 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `ProfileTest.profilesAreFlatOrRampAndJoinTheCities` | 4 000 perfis aleatórios (com penhascos): começa e termina no nível de cada cidade, 48 blocos planos nas pontas, variação ≤ 1/8 de bloco por bloco, trechos planos sempre em altura inteira, nunca abaixo do mínimo, superfície (meio-bloco) nunca muda mais de 0,5 entre vizinhos |
 | `ProfileTest.halfBlockStepsAreEvenlySpaced` | numa subida, os degraus de meia-laje ficam a pelo menos 4 blocos um do outro |
 | `ProfileTest.classificationRunsAreClean` | 2 000 perfis: junções sempre no chão, túneis ≥ 16, pontes secas ≥ 8, toda água fora das junções é ponte |
-| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (359 cidades 2 × 2 de quarteirões 140 × 90, 199 lotes — só parques, sem estruturas; com as 33 estruturas eram 11 833): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado; com as ruas cortadas desligadas (`MAX_CUTS` = 0) nenhuma cidade tem corte, senão todos os valores de 0 a `MAX_CUTS` aparecem; toda coluna de lote é lote do quarteirão certo e não toca rua |
-| `WorldPlanTest.streetWidthIsConstantOnStraightStreets` | toda rua reta de cidade tem exatamente 17 colunas |
+| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (359 cidades 2 × 2 de quarteirões 140 × 90, 202 lotes — só parques, sem estruturas): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado; com as ruas cortadas desligadas (`MAX_CUTS` = 0) nenhuma cidade tem corte, senão todos os valores de 0 a `MAX_CUTS` aparecem; toda coluna de lote é lote do quarteirão certo e não toca rua |
+| `WorldPlanTest.streetWidthIsConstantOnStraightStreets` | toda rua reta de cidade tem exatamente 33 colunas |
 | `WorldPlanTest.highwayNetworkIsConsistentAndWellConnected` | 21 combinações terreno × seed: Gabriel simétrico, rodovia começa e termina exatamente na entrada de cada cidade, raio de curva ≥ 60, pontos a ~1 bloco, comprimento máximo, cruzamento de entrada nunca usado duas vezes (um canto tem duas saídas, mas só uma rodovia), no máximo 8 rodovias por cidade, nenhum par de rodovias perto demais (sem cruzamentos); limites: plano/colinas ≥ 85% das ligações e ≤ 5% de cidades sem rodovia, montanhas/rios/cânions ≤ 15%, e pelo menos metade das células com cidade (exceto ilhas); gera `network_*.png` |
 | `WorldPlanTest.removedStreetsAreRenderedAndAudited` | uma cidade para cada quantidade de ruas cortadas (hoje só 0): passa no `PlanAudit` e gera `cuts_N.png` |
 | `RingTest.withoutStructuresBlocksStayEmpty` | com `index.txt` vazio (hoje): nenhum estado de estrutura e o anel não cria lotes |
@@ -172,20 +172,22 @@ No jogo (op):
   - para comparar, o próprio Minecraft gasta dezenas de ms por chunk.
 - **Testes unitários:** ~2 min no total (sem o teste dos prédios, que levava ~8 min).
 
-## 6. Resultados atuais (8 nov 2026, cidades 2 × 2 de quarteirões 140 × 90 em células de 576)
+## 6. Resultados atuais (10 nov 2026, quarteirões 140 × 90, ruas e rodovias de 33, células de 640)
 
 - **Unitários:** 10 passam e 4 são pulados sem estruturas (10 nov 2026, `index.txt` vazio); `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
-  - **Rede (7 terrenos × 3 seeds, 81 células), com entradas nos cantos (até 8 por cidade):** 42 a 62 cidades por
-    combinação, 108 a 158 ligações candidatas. Rodovias mantidas: 129–147 no plano, nas colinas e nos cânions
-    (90–93%); 117–133 nas montanhas; 126–134 nos rios; 117–126 no terreno misto; 79–91 nas ilhas. O principal
-    motivo de descarte é `conflicts with a shorter highway` (até 12 por combinação); nas montanhas caem até 18 por
-    desnível (`levels too far apart for the length`). Cidades sem rodovia: no máximo 1 (2%) por combinação.
+  - **Rede (7 terrenos × 3 seeds, 81 células), rodovias de 33:** 42 a 62 cidades por combinação, 103 a 168 ligações
+    candidatas. Rodovias mantidas: 126–150 no plano, nas colinas e nos cânions (89–95%); 116–143 nas montanhas
+    (85–89%); 117–133 nos rios (82–89%); 120–131 no terreno misto (82–92%); 74–89 nas ilhas (72–75%). Principais
+    descartes: `conflicts with a shorter highway` (até 13 por combinação; a separação mínima subiu para 39 com a
+    largura nova), `mostly water` nas ilhas (até 26) e desnível nas montanhas (até 10). Nenhuma cidade sem rodovia.
 - **Bateria no mundo:**
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 10 nov | ruas e rodovias de 33, sem estruturas | PASS: 8 de 8 (cidade do spawn, mais alta, mais acidentada, túnel de 282, ponte de 645, viaduto de 172, rampa de 480, rodovia inteira), 0 erros de geração, 9 096 chunks, 8,49 ms por chunk, 324 s |
+  | `20261027` | padrão (8 alvos) | 8 nov | quarteirões 140 × 90 com as 33 estruturas | PASS: 8 de 8, 13,53 ms por chunk (depois de estender o reparo de vizinhos à altura inteira das estruturas) |
   | `20261027` | `quick` | 7 nov | cópia sem prédios | PASS: 4 alvos, uma cidade 4 × 4 com 2 lotes (parques) e 37 765 colunas de chão livre conferidas, 18 953 colunas de via, 2,25 ms por chunk |
 
   A bateria ainda não rodou depois da remoção das cidades octogonais e 3 × 2 (o alvo "cidade 3 × 2 mais próxima do
