@@ -12,7 +12,6 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.tags.BlockTags;
@@ -313,80 +312,33 @@ final class ChunkBuilder {
             return;
         }
         int maxH = base + lot.heightAboveBase();
-        for (int y = base; y <= maxH; y++) {
+        for (int y = base - lot.depthBelowBase(); y <= maxH; y++) {
             BlockState s = Palette.of(lot.code(x, y, z, base), 0, natural);
             if (s != null) {
                 set(x, y, z, s);
-            }
-        }
-        // Apply loot tables to containers in this structure
-        if (lot.building != null) {
-            applyLootTables(lot, base);
-        }
-    }
-
-    /**
-     * Applies the appropriate loot table to all container block entities within a structure lot.
-     * Called after all structure blocks have been placed.
-     */
-    private void applyLootTables(Lot lot, int base) {
-        Structures.Def def = lot.building;
-        String structureType = def.type(); // e.g., "farmacia", "oficina_de_carros_medio", "posto_de_gasolina_padrao"
-        
-        // Oficinas get vehicle parts + tools loot tables (for Camaro/Escargot compatible parts)
-        if (structureType.startsWith("oficina_de_carros")) {
-            // Apply vehicle parts to chests, tools to other containers
-            applyLootTableToContainers(lot, base, 
-                ResourceLocation.parse("abandonedmoderncity:chests/oficina_vehicle_parts"), 
-                ResourceLocation.parse("abandonedmoderncity:chests/oficina_vehicle_tools"));
-        } else {
-            // All other structures get Lost Cities loot
-            applyLootTableToContainers(lot, base, 
-                ResourceLocation.parse("abandonedmoderncity:chests/lostcitychest"));
-        }
-    }
-
-    /**
-     * Applies a single loot table to all containers in the lot area.
-     */
-    private void applyLootTableToContainers(Lot lot, int base, ResourceLocation lootTable) {
-        applyLootTableToContainers(lot, base, lootTable, lootTable);
-    }
-
-    /**
-     * Applies two different loot tables: chests get the first, other containers get the second.
-     */
-    private void applyLootTableToContainers(Lot lot, int base, ResourceLocation chestLootTable, ResourceLocation otherLootTable) {
-        int x0 = lot.x0;
-        int z0 = lot.z0;
-        int x1 = lot.x1;
-        int z1 = lot.z1;
-        int y0 = base;
-        int y1 = base + lot.heightAboveBase();
-        
-        for (int x = x0; x <= x1; x++) {
-            for (int z = z0; z <= z1; z++) {
-                for (int y = y0; y <= y1; y++) {
-                    BlockState state = chunk.getBlockState(pos.set(x, y, z));
-                    if (state.hasBlockEntity()) {
-                        var be = chunk.getBlockEntity(pos);
-                        if (be != null) {
-                            CompoundTag tag = be.saveWithoutMetadata(region.registryAccess());
-                            // Chest gets chest loot table, others get other loot table
-                            if (state.is(Blocks.CHEST) || state.is(Blocks.TRAPPED_CHEST)) {
-                                tag.putString("LootTable", chestLootTable.toString());
-                            } else {
-                                tag.putString("LootTable", otherLootTable.toString());
-                            }
-                            // Also set the seed so it's not re-rolled
-                            tag.putLong("LootTableSeed", lot.seed);
-                            // Load the updated tag back into the block entity
-                            be.loadWithComponents(tag, region.registryAccess());
-                            chunk.setBlockEntity(be);
-                        }
-                    }
+                if (lot.building != null && s.hasBlockEntity()) {
+                    loot(lot, s);
                 }
             }
+        }
+    }
+
+    private static final ResourceLocation LOOT_CITY = ResourceLocation.parse("abandonedmoderncity:chests/lostcitychest");
+    private static final ResourceLocation LOOT_PARTS = ResourceLocation.parse("abandonedmoderncity:chests/oficina_vehicle_parts");
+    private static final ResourceLocation LOOT_TOOLS = ResourceLocation.parse("abandonedmoderncity:chests/oficina_vehicle_tools");
+
+    /**
+     * Loot table of the container just placed at {@link #pos} in a structure: the car workshops get vehicle parts in
+     * their chests and tools in their other containers, every other structure the Lost Cities loot. Set through the
+     * region, like vanilla structures do (the block entity of a chunk being generated only exists once asked for), with
+     * a seed from the lot and the position.
+     */
+    private void loot(Lot lot, BlockState s) {
+        boolean workshop = lot.building.type().startsWith("oficina");
+        ResourceLocation table = workshop ? (s.is(Blocks.CHEST) || s.is(Blocks.TRAPPED_CHEST) ? LOOT_PARTS : LOOT_TOOLS) : LOOT_CITY;
+        if (region.getBlockEntity(pos) instanceof net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity c) {
+            long seed = com.abandonedmoderncity.core.Hash.of(lot.seed, 0x4C4F4F54L, pos.getX(), pos.getY() * 31L + pos.getZ());
+            c.setLootTable(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE, table), seed);
         }
     }
 
@@ -687,16 +639,24 @@ final class ChunkBuilder {
     private static void repairLot(WorldGenRegion region, ChunkAccess nc, BlockPos.MutableBlockPos p,
                                   BlockPos.MutableBlockPos n, int x, int z, int base, Lot lot, int yard, int above) {
         boolean paved = yard != BlockCode.GRASS;
-        for (int y = base - 3; y < base; y++) {
+        int depth = lot == null ? 0 : lot.depthBelowBase();
+        for (int y = base - 3; y < base - depth; y++) {
             BlockState s = nc.getBlockState(p.set(x, y, z));
             if (s.isAir() || !s.getFluidState().isEmpty()) {
                 region.setBlock(p, Palette.DIRT, Block.UPDATE_CLIENTS);
             }
         }
-        for (int y = base; y <= base + above; y++) {
+        for (int y = base - depth; y <= base + above; y++) {
             int code = lot == null ? (y == base ? yard : BlockCode.KEEP) : lot.code(x, y, z, base);
             BlockState s = nc.getBlockState(p.set(x, y, z));
             boolean liquid = !s.getFluidState().isEmpty();
+            if (y < base && code == BlockCode.KEEP) {
+                // ground between the buried blocks of a structure: refilled like the ground under any lot
+                if (s.isAir() || liquid) {
+                    region.setBlock(p, Palette.DIRT, Block.UPDATE_CLIENTS);
+                }
+                continue;
+            }
             if (code == BlockCode.KEEP || code == BlockCode.AIR || code == BlockCode.SHRUB) {
                 // inside a building everything that is not the building goes; over a yard only liquids do
                 boolean rock = paved && s.is(Blocks.MOSSY_COBBLESTONE);

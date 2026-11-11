@@ -1,1 +1,16 @@
-# type|file (without .nbt), one structure per line; the .nbt files go in this folder
+# type|file (without .nbt)|ground: the template layer (from its lowest solid one) that lies at the city ground
+# (1 = the lowest layer is buried). The originals are in structures/ at the repo root.
+casas|casa_abandonada|0
+casas|casa_moderna_abandonada|0
+casas|mansao_abandonada|1
+casas|mansao_pos_apocaliptica|0
+farmacia|farmacia_vermelho|0
+farmacia_grande|farmacia_grande_amarela|0
+oficina_de_carros_medio|oficina_media_azul_preto|0
+oficina_de_carros_pequena|oficina_pequena_verde|0
+posto_de_gasolina_padrao|posto_vermelho|0
+posto_de_gasolina_pequeno|posto_pequeno_vermelho|0
+predios_pequenos|predio_apartamento|1
+predios_grandes|predio_azulado|1
+predios_grandes|torre|1
+predios_medios|predio_apocaliptico_57x45|0

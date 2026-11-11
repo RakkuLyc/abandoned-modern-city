@@ -53,24 +53,28 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 
 ## 2. O que é verificado
 
-### Unitários (16 testes)
+### Unitários (20 testes)
 
 | Teste | Verifica |
 |---|---|
 | `ProfileTest.profilesAreFlatOrRampAndJoinTheCities` | 4 000 perfis aleatórios (com penhascos): começa e termina no nível de cada cidade, 48 blocos planos nas pontas, variação ≤ 1/8 de bloco por bloco, trechos planos sempre em altura inteira, nunca abaixo do mínimo, superfície (meio-bloco) nunca muda mais de 0,5 entre vizinhos |
 | `ProfileTest.halfBlockStepsAreEvenlySpaced` | numa subida, os degraus de meia-laje ficam a pelo menos 4 blocos um do outro |
 | `ProfileTest.classificationRunsAreClean` | 2 000 perfis: junções sempre no chão, túneis ≥ 16, pontes secas ≥ 8, toda água fora das junções é ponte |
-| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (359 cidades 2 × 2 de quarteirões 140 × 90, 1 436 lotes — parques e miolos tomados pela natureza, sem estruturas): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado; com as ruas cortadas desligadas (`MAX_CUTS` = 0) nenhuma cidade tem corte, senão todos os valores de 0 a `MAX_CUTS` aparecem; toda coluna de lote é lote do quarteirão certo e não toca rua |
+| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (355 cidades 2 × 2 de quarteirões 140 × 90, 9 630 lotes — estruturas, parques e miolos tomados pela natureza; em cada cidade no máximo 3 farmácias, 2 oficinas e 2 postos): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado; com as ruas cortadas desligadas (`MAX_CUTS` = 0) nenhuma cidade tem corte, senão todos os valores de 0 a `MAX_CUTS` aparecem; toda coluna de lote é lote do quarteirão certo e não toca rua |
 | `WorldPlanTest.streetWidthIsConstantOnStraightStreets` | toda rua reta de cidade tem exatamente 33 colunas; a zebra fica nas linhas 2 a 4 do trecho, com 14 listras, e não existe nas outras linhas |
 | `WorldPlanTest.highwayNetworkIsConsistentAndWellConnected` | 21 combinações terreno × seed: Gabriel simétrico, rodovia começa e termina exatamente na entrada de cada cidade, raio de curva ≥ 60, pontos a ~1 bloco, comprimento máximo, cruzamento de entrada nunca usado duas vezes (um canto tem duas saídas, mas só uma rodovia), no máximo 8 rodovias por cidade, nenhum par de rodovias perto demais (sem cruzamentos); limites: plano/colinas ≥ 85% das ligações e ≤ 5% de cidades sem rodovia, montanhas/rios/cânions ≤ 15%, e pelo menos metade das células com cidade (exceto ilhas); gera `network_*.png` |
 | `WorldPlanTest.removedStreetsAreRenderedAndAudited` | uma cidade para cada quantidade de ruas cortadas (hoje só 0): passa no `PlanAudit` e gera `cuts_N.png` |
 | `FloraTest.overgrownBlocksAreConsistent` | 6 miolos de 140 × 90: mais de 120 árvores cada, copas dentro do quarteirão, toda vinha presa em folha/tronco ou embaixo de outra vinha, toda folha com distância de 1 a 6 e um vizinho um passo mais perto da madeira (regra do leaf decay do vanilla), plantas só a 1 bloco do chão e só em solo (grama, musgo, terra grossa), metades de cima das plantas altas certas, entulho nunca flutua; nenhuma árvore entra numa estrutura; gera `wild_block.png` |
 | `FloraTest.parksAreOvergrownAndKeepTheirFountain` | 6 parques: as mesmas regras de plantas e vinhas, todo bloco da fonte no lugar (só a troca baú → pedregulho musgoso, as lajes musgosas do anel e o piso de pedra virado musgoso), cachos de vinha na fonte; gera `wild_park.png` |
-| `RingTest.withoutStructuresBlocksStayEmpty` | com `index.txt` vazio (hoje): nenhum estado de estrutura e o anel não cria lotes |
-| `RingTest.structuresHaveSolidBoxesWithAFloorLayer` | (pulado sem estruturas) toda estrutura tem caixa não vazia e blocos na primeira camada |
-| `RingTest.rotationKeepsEveryBlockAndTurnsTheFrontToTheStreet` | (pulado sem estruturas) as 4 rotações têm o mesmo número de blocos em todas as estruturas; a rotação de 90, 180 e 270 graus confere célula a célula com a fórmula da transformação |
-| `RingTest.ringsFitTheirBlockTouchTheSidewalksAndDoNotOverlap` | (pulado sem estruturas) 6 000 anéis em quarteirões 140 × 90 e 90 × 140: dentro do quarteirão, sem sobreposição, cada estrutura encosta na calçada para onde a frente aponta, determinístico, as 33 aparecem e os 4 lados são usados |
-| `RingTest.everyStructureFitsNextToTheShallowestInA90Block` | (pulado sem estruturas) cada estrutura cabe ao lado da mais rasa (20) num lado de 90, e na largura de 140 |
+| `RingTest.withoutStructuresBlocksStayEmpty` | (pulado com estruturas) com `index.txt` vazio: nenhum estado de estrutura e o anel não cria lotes |
+| `RingTest.groundLayerAndBuriedLayers` | as estruturas com camada enterrada têm blocos embaixo do chão e nada mais fundo; nenhum ar enterrado; mansão abandonada, torre, azulado e apartamento descem 1 |
+| `RingTest.frontsMeetTheSidewalk` | a fileira da frente, no nível do chão, é toda de blocos em 13 das 14 (o apartamento tem 22 de 31: as falhas viram o chão da cidade, nivelado) |
+| `RingTest.structureTreesHaveRealLeaves` | toda folha não persistente das estruturas tem distância 1 a 6 e um vizinho tronco ou folha mais perto (regra do leaf decay); mais de 1 000 folhas reais |
+| `RingTest.spawnLimitsHoldOverACity` | 300 cidades de 4 quarteirões sorteados em sequência: no máximo 3 farmácias, 2 oficinas, 2 postos |
+| `RingTest.structuresHaveSolidBoxesWithAFloorLayer` | toda estrutura tem caixa não vazia e blocos na primeira camada |
+| `RingTest.rotationKeepsEveryBlockAndTurnsTheFrontToTheStreet` | as 4 rotações têm o mesmo número de blocos em todas as estruturas; a rotação de 90, 180 e 270 graus confere célula a célula com a fórmula da transformação |
+| `RingTest.ringsFitTheirBlockTouchTheSidewalksAndDoNotOverlap` | 6 000 anéis em quarteirões 140 × 90 e 90 × 140: dentro do quarteirão, sem sobreposição, cada estrutura encosta na calçada para onde a frente aponta, determinístico, as 33 aparecem e os 4 lados são usados |
+| `RingTest.everyStructureFitsNextToTheShallowestInA90Block` | cada estrutura cabe ao lado da mais rasa (20) num lado de 90, e na largura de 140 |
 | `PlanAuditTest.citiesAndHighwaysPassThePlanAudit` | `PlanAudit` coluna a coluna em 3 cidades inteiras e 2 rodovias inteiras por terreno × seed (105 auditorias); gera `city_*.png` |
 | `PlanAuditTest.planIsIndependentOfQueryOrderAndThreads` | 3 721 chunks planejados de novo em ordem embaralhada por 8 threads: resultado idêntico, campo a campo |
 
@@ -99,7 +103,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
   - `vegetation_over_road` (até 48 acima).
 - **Estruturas:** `parapet`, `tunnel_ceiling` (`stone` ou `glowstone`), `tunnel_wall` e `pillar_floating`.
 - **Lotes:**
-  - `lot_hole`;
+  - `lot_hole` (água que a estrutura põe no nível do chão, a piscina da mansão, não conta);
   - `yard_ground` (chão livre de cidade que não é `gray_concrete_powder`; desde 11 nov não há mais chão livre: o
     miolo é um lote `WILD`);
   - `building_mismatch` (nome herdado: bloco de lote — parque, fonte, miolo tomado pela natureza com árvores,
@@ -107,7 +111,10 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
     costuras entre chunks apareceriam aqui).
 - **Regras gerais:**
   - `hard_block` (bloco indestrutível em via, ponte, túnel ou lote; qualquer dureza é permitida);
-  - `loot_in_city` e `container_in_city` (agora containers têm loot tables: exceto oficinas usam `lostcities:chests/lostcitychest`; oficinas usam `oficina_vehicle_parts` em baús e `oficina_vehicle_tools` em outros containers; baú da fonte do parque continua vazio 50% / `mossy_cobblestone` 50%, contado em `fountain_chests`);
+  - `structure_without_loot` (contêiner de estrutura — baú, barril, dispenser, dropper — sem loot table; os block
+    entities das estruturas são contados em `structure_block_entities` e os contêineres em
+    `structure_loot_containers`), `loot_in_city` e `container_in_city` (fora das estruturas; baú da fonte vazio,
+    contado em `fountain_chests`);
   - `orphan_road` (conectividade medida nos blocos).
 
 ## 3. Problemas encontrados e corrigidos
@@ -151,6 +158,10 @@ e a regra de escada e apoio no mesmo chunk.
 | 30 | `FloraTest` (natureza, 11 nov) | `ArrayIndexOutOfBounds` em `Park.code` | consulta de vinha da fonte acima da altura do molde (as árvores do parque são mais altas que a fonte) | limite de altura na consulta |
 | 31 | `FloraTest` (natureza, 11 nov) | grama sobre o piso da fonte onde falta uma laje do anel | a falha da laje punha grama sem olhar o bloco de baixo | sem grama nas falhas sobre a fonte |
 | 32 | `FloraTest` (piso musgoso, 11 nov) | o piso de pedra da fonte virou grama | a tabela de troca era montada antes do índice do `mossy_cobblestone` existir (ordem da inicialização estática: valia 0) | tabela declarada depois do índice |
+| 33 | Testes, 12 nov (estruturas) | todas as classes de estrutura falhavam ao carregar (`NullPointerException`) | a lista de blocos que não são piso e a fração mínima de piso eram declaradas depois do bloco estático que carrega as estruturas | o bloco de carga foi para o fim da classe |
+| 34 | `RingTest`, 12 nov | os lados curtos dos quarteirões 140 × 90 ficavam quase sempre vazios (9% das estruturas em cada) | as linhas dos lados compridos iam de canto a canto e as estruturas fundas (até 57) não deixavam espaço | os lados curtos vão de canto a canto; agora ~25% por lado |
+| 35 | Revisão, 12 nov | loot das estruturas (código de outra sessão) varria o volume inteiro da estrutura a cada coluna e lia o block entity direto do chunk em geração, onde ele ainda não existe | — | o loot é posto quando cada contêiner é colocado, pela região (como as estruturas vanilla); a auditoria passou a exigir loot nos contêineres das estruturas |
+| 36 | Bateria, 12 nov | `lot_hole` (até 200 por alvo): água e seagrass no nível do chão | a piscina da mansão abandonada, que desceu 1 bloco, fica no nível do chão | água planejada pela estrutura não conta como buraco |
 | — | Bateria (infraestrutura) | servidores falhando com "Address already in use" | um servidor de uma bateria interrompida ainda terminava | o script usa a porta 25591 e se recusa a começar com um servidor de desenvolvimento vivo |
 
 ## 4. Como reproduzir
@@ -183,7 +194,7 @@ No jogo (op):
 
 ## 6. Resultados atuais (11 nov 2026, quarteirões 140 × 90 tomados pela natureza, ruas e rodovias de 33, cidades no meio de células de 648, 4 entradas)
 
-- **Unitários:** 12 passam e 4 são pulados sem estruturas (11 nov 2026, `index.txt` vazio); `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
+- **Unitários:** 19 passam e 1 é pulado (o teste sem estruturas), 12 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
   - **Rede (7 terrenos × 3 seeds, 81 células), cidades no meio da célula de 648, 4 entradas (uma por lado):** 40 a
@@ -196,6 +207,7 @@ No jogo (op):
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 12 nov | 14 estruturas, limites por cidade, chão alinhado, piso até a calçada, folhas reais nas estruturas | PASS: 8 de 8, 0 erros de geração; só na cidade do spawn 1 261 block entities de estrutura e 744 contêineres com loot table conferidos; 2,93 ms por chunk, 227 s |
   | `20261027` | padrão (8 alvos) | 11 nov | piso da fonte musgoso | PASS: 8 de 8, 0 erros de geração, 1 fonte conferida, 2,93 ms por chunk |
   | `20261027` | padrão (8 alvos) | 11 nov | 4 entradas, células de 648, faixas de pedestres, árvores reais, anel musgoso, vinhas longas | PASS: 8 de 8, 0 erros de geração, 7 948 chunks, 2,91 ms por chunk, 231 s |
   | `20261027` | padrão (8 alvos) | 11 nov | miolos e parques tomados pela natureza | PASS: 8 de 8, 0 erros de geração, 952 433 blocos de lote conferidos só no alvo do spawn, 9 096 chunks, 9,28 ms por chunk, 352 s |

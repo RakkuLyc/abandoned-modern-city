@@ -84,7 +84,7 @@ public final class Lot {
             return wild.code(x, y, z, base);
         }
         if (building != null) {
-            if (y < base) {
+            if (y < base - building.ground()) {
                 return BlockCode.KEEP;
             }
             int c = building.code(x - x0, y - base, z - z0, rot);
@@ -131,11 +131,16 @@ public final class Lot {
         return BlockCode.KEEP;
     }
 
+    /** Layers under its base this lot places blocks in (the buried layers of a structure). */
+    public int depthBelowBase() {
+        return building != null ? building.ground() : 0;
+    }
+
     /** Highest y this lot places anything at, relative to its base. */
     public int heightAboveBase() {
         int h = 2;
         if (building != null) {
-            return building.h();
+            return building.above();
         }
         if (wild != null) {
             return wild.heightAboveBase();

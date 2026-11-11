@@ -370,7 +370,8 @@ public final class Palette {
     /**
      * The block entities allowed (asked for by the user): the empty chest of the park fountain and what the building
      * structures bring, always empty and without loot: chests, barrels, brewing stands, decorated pots, lecterns,
-     * furnaces (blast furnace, smoker), beds, campfires, daylight detectors and jukeboxes.
+     * furnaces (blast furnace, smoker), beds, campfires, daylight detectors, jukeboxes, banners, skulls, dispensers
+     * and droppers. The structures' containers get a loot table when placed (ChunkBuilder.loot).
      */
     public static boolean exempt(BlockState s) {
         Block b = s.getBlock();
@@ -382,7 +383,10 @@ public final class Palette {
                 || b instanceof net.minecraft.world.level.block.BedBlock
                 || b instanceof net.minecraft.world.level.block.CampfireBlock
                 || b instanceof net.minecraft.world.level.block.DaylightDetectorBlock
-                || b instanceof net.minecraft.world.level.block.JukeboxBlock;
+                || b instanceof net.minecraft.world.level.block.JukeboxBlock
+                || b instanceof net.minecraft.world.level.block.AbstractBannerBlock
+                || b instanceof net.minecraft.world.level.block.AbstractSkullBlock
+                || b instanceof net.minecraft.world.level.block.DispenserBlock;
     }
 
     /** All fixed states the generator places (natural surface blocks reused for slopes are checked when used). */

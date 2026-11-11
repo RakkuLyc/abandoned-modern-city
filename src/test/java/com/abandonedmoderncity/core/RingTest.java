@@ -141,4 +141,121 @@ class RingTest {
             assertTrue(d.w() <= 140, d.name());
         }
     }
+
+    @Test
+    void groundLayerAndBuriedLayers() {
+        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        for (Structures.Def d : Structures.ALL) {
+            int buried = 0;
+            int below = 0;
+            for (int x = 0; x < d.w(); x++) {
+                for (int z = 0; z < d.d(); z++) {
+                    if (d.code(x, -1, z, 0) >= BlockCode.STRUCT) {
+                        buried++;
+                    }
+                    if (d.code(x, -1 - d.ground(), z, 0) != BlockCode.KEEP || d.code(x, -1, z, 0) == BlockCode.AIR) {
+                        below++;
+                    }
+                }
+            }
+            // a structure with a buried layer has blocks under the ground; nothing lies deeper, and no air is dug
+            assertEquals(d.ground() > 0, buried > 0, d.name() + " buried blocks " + buried);
+            assertEquals(0, below, d.name() + " blocks below its box or air underground");
+            assertEquals(d.h(), d.above() + d.ground(), d.name());
+        }
+        // the four the user named are one layer lower than their template's lowest layer
+        for (String n : List.of("mansao_abandonada", "torre", "predio_azulado", "predio_apartamento")) {
+            assertEquals(1, Structures.ALL.stream().filter(d -> d.name().equals(n)).findFirst().orElseThrow().ground(), n);
+        }
+    }
+
+    @Test
+    void frontsMeetTheSidewalk() {
+        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        for (Structures.Def d : Structures.ALL) {
+            int front = 0;
+            for (int x = 0; x < d.w(); x++) {
+                if (d.code(x, 0, 0, 0) >= BlockCode.STRUCT) {
+                    front++;
+                }
+            }
+            System.out.println("[RingTest] " + d.name() + " front row on the ground " + front + "/" + d.w());
+            // the floor reaches the front row (vines and banners in front of the floor are kept, the floor under them
+            // is filled); only the apartment has gaps there (empty cells become the city ground, level with it)
+            assertTrue(front >= 0.7 * d.w(), d.name() + " front row " + front + "/" + d.w());
+            if (!d.name().equals("predio_apartamento")) {
+                assertEquals(d.w(), front, d.name() + " front row");
+            }
+        }
+    }
+
+    @Test
+    void structureTreesHaveRealLeaves() {
+        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        int[][] six = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+        long real = 0;
+        for (Structures.Def d : Structures.ALL) {
+            for (int y = -d.ground(); y < d.above(); y++) {
+                for (int z = 0; z < d.d(); z++) {
+                    for (int x = 0; x < d.w(); x++) {
+                        int dist = leafDistance(d.code(x, y, z, 0));
+                        if (dist <= 0) {
+                            continue;
+                        }
+                        real++;
+                        assertTrue(dist <= Flora.LEAF_REACH, d.name() + " distance " + dist);
+                        boolean ok = false;
+                        for (int[] q : six) {
+                            int n = d.code(x + q[0], y + q[1], z + q[2], 0);
+                            ok |= isLog(n) || leafDistance(n) > 0 && leafDistance(n) < dist;
+                        }
+                        assertTrue(ok, d.name() + " leaf cut off from the wood at " + x + "," + y + "," + z);
+                    }
+                }
+            }
+        }
+        assertTrue(real > 1000, "real leaves " + real);
+    }
+
+    /** Distance of a non-persistent leaf of a structure code, else 0. */
+    private static int leafDistance(int c) {
+        if (c < BlockCode.STRUCT) {
+            return 0;
+        }
+        String s = Structures.STATES.get((c - BlockCode.STRUCT) / 4);
+        if (!s.contains("_leaves") || !s.contains("persistent=false")) {
+            return 0;
+        }
+        int i = s.indexOf("distance=") + 9;
+        return s.charAt(i) - '0';
+    }
+
+    private static boolean isLog(int c) {
+        if (c < BlockCode.STRUCT) {
+            return false;
+        }
+        String b = Structures.blockOf(Structures.STATES.get((c - BlockCode.STRUCT) / 4));
+        return Structures.isLogName(b);
+    }
+
+    @Test
+    void spawnLimitsHoldOverACity() {
+        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        for (long seed = 0; seed < 300; seed++) {
+            java.util.Map<String, Integer> used = new java.util.HashMap<>();
+            java.util.Map<String, Integer> seen = new java.util.HashMap<>();
+            // four blocks of one city, one after the other
+            for (int b = 0; b < 4; b++) {
+                for (Lot l : Ring.lots(0, 0, 139, 89, Hash.of(seed, 11L, b), used)) {
+                    if (l.building.group() != null) {
+                        seen.merge(l.building.group(), 1, Integer::sum);
+                    }
+                }
+            }
+            for (var e : seen.entrySet()) {
+                assertTrue(e.getValue() <= Structures.LIMITS.get(e.getKey()), e.getKey() + " " + e.getValue());
+            }
+            assertEquals(seen, used);
+        }
+    }
 }

@@ -55,6 +55,20 @@ class WorldPlanTest {
                 int n = c.gridHalf();
                 assertTrue(c.isCityBlock(0, 0), "center block");
                 cutHistogram[c.streetCuts()]++;
+                // spawn limits per city (pharmacies 3, workshops 2, gas stations 2)
+                java.util.Map<String, Integer> groups = new java.util.HashMap<>();
+                for (int bj = -n; bj <= n; bj++) {
+                    for (int bi = -n; bi <= n; bi++) {
+                        for (Lot l : c.lots(bi, bj)) {
+                            if (l.building != null && l.building.group() != null) {
+                                groups.merge(l.building.group(), 1, Integer::sum);
+                            }
+                        }
+                    }
+                }
+                for (var e : groups.entrySet()) {
+                    assertTrue(e.getValue() <= Structures.LIMITS.get(e.getKey()), c + " " + e);
+                }
                 assertEquals(c.streetCuts(), countRemoved(c), c + " removed segments");
                 for (int j = -n - 1; j <= n + 2; j++) {
                     for (int i = -n - 1; i <= n + 2; i++) {

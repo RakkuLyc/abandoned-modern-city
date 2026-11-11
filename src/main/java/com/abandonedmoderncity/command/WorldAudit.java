@@ -36,7 +36,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  *   <li>{@code vegetation_over_road}: leaves, logs, plants hanging over a road (up to 48 blocks).</li>
  *   <li>{@code tunnel_ceiling} / {@code tunnel_wall}: missing tunnel lining.</li>
  *   <li>{@code pillar_floating}: a bridge pillar that ends in the air.</li>
- *   <li>{@code lot_hole}: a lot without ground.</li>
+ *   <li>{@code lot_hole}: a lot without ground (water a structure plans at the ground, a pool, is not one).</li>
  *   <li>{@code building_mismatch}: a building block that differs from the building's definition (seams between
  *   chunks would show up here).</li>
  *   <li>{@code hard_block}: an unbreakable block in a street, bridge, tunnel or building (any hardness is allowed).</li>
@@ -249,7 +249,11 @@ public final class WorldAudit {
         int base = cp.h2[i] / 2 - 1;
         BlockState ground = at(c, p, x, base, z);
         Lot lot = cp.lot[i];
-        if (ground.isAir() || !ground.getFluidState().isEmpty()) {
+        // a structure may have water at the ground level (a pool): that is its plan, checked block by block below
+        int planned = lot == null ? BlockCode.KEEP : lot.code(x, base, z, base);
+        BlockState plannedState = planned >= BlockCode.STRUCT ? Palette.of(planned, 0, null) : null;
+        boolean plannedFluid = plannedState != null && !plannedState.getFluidState().isEmpty();
+        if ((ground.isAir() || !ground.getFluidState().isEmpty()) && !plannedFluid) {
             r.fail("lot_hole", x + "," + base + "," + z + " " + id(ground));
         }
         if (lot == null) {
@@ -263,7 +267,7 @@ public final class WorldAudit {
             return;
         }
         int top = base + lot.heightAboveBase();
-        for (int y = base; y <= top; y++) {
+        for (int y = base - lot.depthBelowBase(); y <= top; y++) {
             BlockState s = at(c, p, x, y, z);
             r.stat("blocks_checked_for_hardness", 1);
             if (!s.isAir() && hard(s)) {
@@ -312,10 +316,13 @@ public final class WorldAudit {
             if (cp.kind[i] == ChunkPlan.LOT && cp.lot[i] != null && cp.lot[i].building != null
                     && Palette.exempt(c.getBlockState(bp))
                     && cp.lot[i].code(bp.getX(), bp.getY(), bp.getZ(), cp.h2[i] / 2 - 1) >= BlockCode.STRUCT) {
-                // an empty container of a building structure (asked for by the user)
-                r.stat("structure_containers", 1);
-                if (loot) {
-                    r.fail("loot_in_city", bp.toShortString() + " structure container with a loot table");
+                // a block entity of a building structure: its containers carry the structure's loot table
+                r.stat("structure_block_entities", 1);
+                if (be instanceof RandomizableContainerBlockEntity) {
+                    r.stat("structure_loot_containers", 1);
+                    if (!loot) {
+                        r.fail("structure_without_loot", bp.toShortString() + " " + id(c.getBlockState(bp)));
+                    }
                 }
                 continue;
             }

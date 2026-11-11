@@ -1,8 +1,8 @@
 # Abandoned Modern City — NeoForge 1.21.1
 
 Cidades modernas abandonadas geradas proceduralmente: ruas, rodovias, túneis, pontes, quarteirões e parques.
-Os prédios serão estruturas `.nbt` do usuário, sorteadas ao acaso num anel em volta de cada quarteirão
-(protótipo). No momento o mod não tem nenhuma estrutura: as 33 primeiras foram removidas em 10 nov 2026.
+Os prédios são as 14 estruturas `.nbt` do usuário, sorteadas ao acaso num anel em volta de cada quarteirão, com
+limites por cidade para farmácias, oficinas e postos.
 
 > Começou em 7 nov 2026 como cópia do Abandoned Simple City (repositório `abandoned-simple-city`), sem os prédios e
 > sem o histórico de commits. O Abandoned Modern City original (pasta `AbandonedModernCity-Deprecated`) está
@@ -42,12 +42,32 @@ cidades foram para o meio de células de 648 (rodovias de ~269 a ~369 blocos) e 
   continua lá.
 - **Quarteirões:** cerca de 1 em 8 quarteirões é um parque inteiro; nos outros as estruturas formam um anel
   encostado nas calçadas, com a frente (lado -Z do `.nbt`) virada para a rua; o resto (o miolo) é tomado pela natureza.
-- **Estruturas:** nenhuma no momento. As 33 primeiras (farmácias, oficinas, postos, apartamento, prédio azulado,
-  torre, prédio tombado) foram removidas do mod em 10 nov 2026, a pedido do usuário; o anel, a rotação e as loot
-  tables continuam prontos. Para adicionar: copiar os `.nbt` para `src/main/resources/amcs/buildings/` e listar
-  cada um em `index.txt` (`tipo|arquivo`). Sem estruturas, o quarteirão inteiro fica tomado pela natureza.
+- **Estruturas (14, `structures/`):** sorteadas ao acaso no anel, com limite por cidade: farmácias 3, oficinas 2,
+  postos 2.
 
-  Containers (baús, barris, suportes de poção, vasos decorados, atris, fornalhas, camas, fogueiras, sensor de luz, jukebox) recebem loot tables:
+  | Estrutura | Tipo | Caixa (frente × fundo × altura) | Chão |
+  |---|---|---|---|
+  | Casa abandonada | casas | 29 × 46 × 20 | camada 0 |
+  | Casa moderna abandonada | casas | 30 × 29 × 15 | camada 0 |
+  | Mansão abandonada | casas | 41 × 57 × 21 | camada 1 (desce 1) |
+  | Mansão pós-apocalíptica | casas | 37 × 41 × 18 | camada 0 |
+  | Farmácia | farmácia (limite 3 com a grande) | 19 × 28 × 16 | camada 0 |
+  | Farmácia grande | farmácia | 26 × 40 × 15 | camada 0 |
+  | Oficina média | oficina (limite 2 com a pequena) | 35 × 26 × 17 | camada 0 |
+  | Oficina pequena | oficina | 22 × 33 × 16 | camada 0 |
+  | Posto padrão | posto (limite 2 com o pequeno) | 45 × 37 × 18 | camada 0 |
+  | Posto pequeno | posto | 25 × 20 × 18 | camada 0 |
+  | Prédio apartamento | prédio | 31 × 29 × 37 | camada 1 (desce 1) |
+  | Prédio azulado | prédio | 66 × 46 × 106 | camada 1 (desce 1) |
+  | Torre | prédio | 62 × 53 × 118 | camada 1 (desce 1) |
+  | Prédio apocalíptico | prédio | 57 × 45 × 110 | camada 0 |
+
+  - Encostadas na calçada sem vão: as fileiras da borda sem piso recebem o piso da primeira fileira que tem.
+  - As árvores das estruturas têm leaf decay (folhas ligadas a um tronco); sebes sem tronco continuam persistentes.
+  - As árvores dos miolos não entram nas estruturas, e as estruturas nunca se sobrepõem.
+
+  Os contêineres (baús, barris, dispensers, droppers) recebem a loot table quando são colocados; os outros block
+  entities (fornalhas, camas, banners, crânios etc.) saem vazios:
   - **Todas as estruturas exceto oficinas (tipo que começa com `oficina`):** loot table `lostcities:chests/lostcitychest` (do mod Apocalypse Loot / Lost Cities), com munição TACZ, armas, itens médicos, comida, recursos e raridades.
   - **Oficinas (médias e pequenas):** baús recebem `oficina_vehicle_parts` (rodas, assentos e motores compatíveis com Camaro e Escargot do OAmP); demais containers recebem `oficina_vehicle_tools` (jumperpack, blowtorch, repairkit).
 - **Natureza tomando a cidade** (`core/Flora`, `core/Wild`):
@@ -92,8 +112,8 @@ cidades foram para o meio de células de 648 (rodovias de ~269 a ~369 blocos) e 
 
 | Regra | Como é garantida |
 |---|---|
-| Nada indestrutível | Todos os blocos estão em `gen/Palette`. `Palette.validate()` roda na inicialização e derruba o jogo se algum for indestrutível ou tiver block entity (exceção: o baú da fonte e os containers vazios das estruturas). Qualquer dureza é permitida. A auditoria no mundo (`hard_block`) confere os blocos gerados. |
-| Sem loot | Containers das estruturas **têm loot tables**: exceto oficinas usam `lostcities:chests/lostcitychest`; oficinas usam `oficina_vehicle_parts` (baús) e `oficina_vehicle_tools` (outros). Baú da fonte do parque continua vazio (50%) ou `mossy_cobblestone` (50%). A auditoria (`loot_in_city`, `container_in_city`) confere. |
+| Nada indestrutível | Todos os blocos estão em `gen/Palette`. `Palette.validate()` roda na inicialização e derruba o jogo se algum for indestrutível ou tiver block entity (exceção: o baú da fonte e os block entities das estruturas). Qualquer dureza é permitida. A auditoria no mundo (`hard_block`) confere os blocos gerados. |
+| Sem loot | Containers das estruturas **têm loot tables**: exceto oficinas usam `lostcities:chests/lostcitychest`; oficinas usam `oficina_vehicle_parts` (baús) e `oficina_vehicle_tools` (outros). Baú da fonte do parque continua vazio (50%) ou `mossy_cobblestone` (50%). A auditoria confere: contêiner de estrutura sem loot table é `structure_without_loot`; fora das estruturas, `loot_in_city` e `container_in_city`. |
 | Ruas planas e conectadas | Cada cidade tem uma única altura (`City.level`). Ruas cortadas nunca criam beco sem saída nem separam a cidade (`PlanAudit`: `dead_end`, `city_split`). |
 | Superfície certa | A auditoria no mundo (`surface_block`) confere bloco a bloco a superfície das vias. |
 | Determinismo | Tudo é função pura da semente e do terreno natural: dois chunks vizinhos nunca discordam, em qualquer ordem e thread (`PlanAuditTest.planIsIndependentOfQueryOrderAndThreads`). |
@@ -109,8 +129,8 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
   Lot            lotes: parque inteiro de quarteirão, uma estrutura ou o miolo tomado pela natureza (WILD)
   Flora          árvores (4 espécies, vinhas), chão em manchas, plantas e entulho; índice de árvores por baldes
   Wild           o miolo do quarteirão: chão, árvores e vegetação, sem entrar nas estruturas
-  Ring           anel de estruturas em volta do quarteirão (norte e sul inteiros, oeste e leste no que sobra)
-  Structures     estruturas de `amcs/buildings/index.txt` (hoje vazio): caixa dos blocos sólidos, rotação, código de cada bloco
+  Ring           anel de estruturas em volta do quarteirão (lados curtos inteiros, compridos no que sobra), limites por cidade
+  Structures     as 14 estruturas de `amcs/buildings/index.txt`: caixa, camada do chão, piso até a borda, folhas reais, rotação
   Park           parques tomados pela natureza, com caminhos e fonte
   Template       estruturas .nbt do usuário (fonte waterfall.nbt)
   Highway        curva entre duas entradas de cidade, pontos a cada bloco, projeção de colunas

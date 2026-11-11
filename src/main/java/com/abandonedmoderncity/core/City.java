@@ -2,7 +2,9 @@ package com.abandonedmoderncity.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 /**
@@ -782,6 +784,12 @@ public final class City {
     }
 
     private List<Lot> computeLots(int bi, int bj) {
+        int[] r = freeRect(bi, bj);
+        return blockLots(bi, bj, r[0], r[1], r[2], r[3]);
+    }
+
+    /** Free rectangle {x0, z0, x1, z1} of block (bi, bj). */
+    private int[] freeRect(int bi, int bj) {
         // the free rectangle of a grid block: from the sidewalks; across a removed street up to its middle (the
         // two blocks join), or over the whole band of a removed street on the border of the city
         Layout L = layout();
@@ -800,7 +808,45 @@ public final class City {
         if (!buildable(h, bi, bj, x0, z1, false) || !buildable(h, bi, bj, x1, z1, false)) {
             z1 = (int) Math.round(V(bj + 1) - hw - 1);
         }
-        return blockLots(bi, bj, x0, z0, x1, z1);
+        return new int[]{x0, z0, x1, z1};
+    }
+
+    /** Whether block (bi, bj) is a whole park. */
+    private boolean parkBlock(int bi, int bj) {
+        return Hash.unit(Hash.of(seed, 0x52494E47L, bi, bj)) < PARK_BLOCK_CHANCE;
+    }
+
+    /** The rings of structures of all the blocks of the city, keyed by {@link Cache#key} of the block (lazy). */
+    private volatile Map<Long, List<Lot>> rings;
+
+    /**
+     * Rings of the whole city at once, block by block in a fixed order (north to south, west to east), so that the
+     * spawn limits per city ({@link Structures#LIMITS}) hold whatever block is asked for first.
+     */
+    private Map<Long, List<Lot>> rings() {
+        Map<Long, List<Lot>> r = rings;
+        if (r != null) {
+            return r;
+        }
+        synchronized (this) {
+            if (rings == null) {
+                Layout L = layout();
+                Map<String, Integer> used = new HashMap<>();
+                Map<Long, List<Lot>> out = new HashMap<>();
+                for (int bj = -L.n; bj <= L.n; bj++) {
+                    for (int bi = -L.n; bi <= L.n; bi++) {
+                        if (!L.isCity(bi, bj) || parkBlock(bi, bj)) {
+                            continue;
+                        }
+                        int[] f = freeRect(bi, bj);
+                        long rs = Hash.of(seed, 0x52494E47L, bi, bj);
+                        out.put(Cache.key(bi, bj), Ring.lots(f[0], f[1], f[2], f[3], Hash.next(rs, 2), used));
+                    }
+                }
+                rings = Map.copyOf(out);
+            }
+            return rings;
+        }
     }
 
     /** Share of the city blocks that are one whole park (grass and trees, no buildings). */
@@ -808,14 +854,15 @@ public final class City {
     /**
      * The lots of block (bi, bj), inside its free rectangle x0..x1, z0..z1 (whose outline touches the sidewalks, and
      * reaches across removed streets): some blocks are a single park; the others get a ring of structures against the
-     * sidewalks ({@link Ring}, prototype: drawn at random), and the rest is left to nature ({@link Wild}).
+     * sidewalks ({@link Ring}, drawn at random under the per-city limits of {@link Structures#LIMITS}), and the rest is
+     * left to nature ({@link Wild}).
      */
     private List<Lot> blockLots(int bi, int bj, int x0, int z0, int x1, int z1) {
         long rs = Hash.of(seed, 0x52494E47L, bi, bj);
-        if (Hash.unit(rs) < PARK_BLOCK_CHANCE) {
+        if (parkBlock(bi, bj)) {
             return List.of(Lot.park(x0, z0, x1, z1, Hash.next(rs, 1)));
         }
-        List<Lot> ring = Ring.lots(x0, z0, x1, z1, Hash.next(rs, 2));
+        List<Lot> ring = rings().getOrDefault(Cache.key(bi, bj), List.of());
         // the rest of the block is left to nature (listed last: the structures win where they stand)
         List<Lot> out = new java.util.ArrayList<>(ring);
         out.add(Lot.wild(x0, z0, x1, z1, Hash.next(rs, 3), ring));

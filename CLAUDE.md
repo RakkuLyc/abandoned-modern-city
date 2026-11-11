@@ -24,7 +24,7 @@ Abandoned Modern City (mod id `abandonedmoderncity`, pacote `com.abandonedmodern
 `RakkuLyc/abandoned-modern-city`, pasta `Projetos Claude/AbandonedModernCity`). Começou em 7 nov 2026 como cópia do
 Abandoned Simple City (`RakkuLyc/abandoned-simple-city`, pasta `AbandonedModernCity-Simple`) com o mesmo sistema de
 rodovias, túneis, pontes, quarteirões, parques e plantações, **sem os prédios** (e sem as casinhas das cidades
-3 × 2) e sem o histórico de commits. Os prédios serão estruturas `.nbt` do usuário, em protótipo (hoje nenhuma: as 33 primeiras foram removidas em 10 nov 2026). O Abandoned Modern City original
+3 × 2) e sem o histórico de commits. Os prédios são as estruturas `.nbt` do usuário (14 desde 12 nov 2026; as 33 primeiras foram removidas em 10 nov). O Abandoned Modern City original
 (pasta `AbandonedModernCity-Deprecated`) está descontinuado. Ainda em 7 nov 2026 o usuário mandou remover as cidades
 octogonais e as cidades 3 × 2 das rodovias (com o padrão rural_highway perto delas e as plantações), e depois trocar
 o grid 4 × 4 por 2 × 2 com células de 1024, depois os quarteirões para 105 × 60 com células de 512, e em 8 nov 2026 os quarteirões para 140 × 90 com células de 576
@@ -72,7 +72,7 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   internos ou da borda; nunca cria beco sem saída e a cidade continua toda conectada. O espaço vira grama, unindo
   os quarteirões. Entradas não são protegidas (só ficam conectadas).
 - Quarteirões: ~1 em 8 quarteirões é um parque
-  inteiro (`City.PARK_BLOCK_CHANCE`); os demais recebem um anel de estruturas (ver abaixo; hoje não há nenhuma) e o resto (o miolo) é tomado
+  inteiro (`City.PARK_BLOCK_CHANCE`); os demais recebem um anel de estruturas (ver abaixo) e o resto (o miolo) é tomado
   pela natureza (ver "Natureza"). Rua cortada = quarteirões juntados: cada um avança até o meio da faixa; na borda da cidade o quarteirão
   cobre a faixa até a beira.
 - Natureza (11 nov 2026, `core/Flora` + `core/Wild`, lote `WILD` que cobre o quarteirão inteiro por baixo das
@@ -101,18 +101,34 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   `mossy_cobblestone`, `stone_bricks` e `cracked_stone_bricks` → `mossy_stone_bricks`; a bacia, a água, as escadas,
   as lanternas e o baú não mudam.
   Baú vazio em 50% das fontes (senão `mossy_cobblestone`).
-- Estruturas (protótipo de 8 nov 2026): os `.nbt` listados em `src/main/resources/amcs/buildings/index.txt`
-  (`tipo|arquivo`) entram nos quarteirões por `core/Ring` (`Structures` carrega, mede e gira). **Em 10 nov 2026 o
-  usuário mandou remover as 33 estruturas atuais (farmácias, oficinas, postos, apartamento, prédio azulado, torre e
-  prédio tombado) só do mod**: `index.txt` está vazio, o anel devolve zero lotes e o resto continua pronto; a pasta
-  `structures/` da raiz é do usuário e não foi mexida. Regras
-  decididas pelo usuário: a frente de toda estrutura é o lado -Z do `.nbt` e fica virada para a rua; sorteio por
-  arquivo, sem padrão (a ser ajustado); encostadas na calçada, formando um anel; a caixa usada é a dos blocos
-  sólidos (sem margem vazia) e a primeira camada sólida fica no chão da cidade. As linhas norte e sul ocupam o lado
-  inteiro, as linhas oeste e leste o que sobra entre elas (`Ring.GAP` = 2 entre estruturas). Tamanho do quarteirão
-  escolhido pelo usuário em função das 33 primeiras: 140 × 90 (a mais funda tinha 53 de profundidade, a mais rasa 20).
+- Estruturas (12 nov 2026, `core/Structures` carrega, mede e gira; `core/Ring` monta o anel): as 14 `.nbt` de
+  `structures/` (cópias em `src/main/resources/amcs/buildings/`, listadas em `index.txt` como `tipo|arquivo|chão`):
+  4 casas (casa abandonada, casa moderna abandonada, mansão abandonada, mansão pós-apocalíptica), farmácia,
+  farmácia grande, oficina média, oficina pequena, posto padrão, posto pequeno, prédio apartamento, prédio azulado,
+  torre, prédio apocalíptico. Regras decididas pelo usuário:
+  - frente = lado -Z do `.nbt`, virada para a rua; encostadas na calçada, formando um anel; sorteio por arquivo,
+    sem padrão;
+  - limites por cidade (`Structures.LIMITS`): farmácias 3 (as duas), oficinas 2 (as duas), postos 2 (os dois); os
+    anéis da cidade inteira são sorteados de uma vez (`City.rings`, quarteirões de norte a sul, oeste a leste), e um
+    grupo no limite é sorteado de novo;
+  - caixa = a dos blocos sólidos; a camada `chão` do índice fica no nível do chão da cidade e as de baixo ficam
+    enterradas: mansão abandonada, torre, prédio azulado e prédio apartamento descem 1 bloco (pedido do usuário; ar
+    enterrado vira terra);
+  - sem vão até a calçada: na camada do chão, as fileiras da borda sem piso de verdade (menos de 25% de piso, só
+    vinhas, banners ou lajes soltas) recebem o bloco de piso da primeira fileira que tem piso, nos 4 lados
+    (`Structures.floorFill`); os enfeites (banners da farmácia, vinhas das oficinas) ficam;
+  - árvores das estruturas com leaf decay: folhas a até 6 (pelas folhas) de um tronco do molde viram não
+    persistentes com a distância certa; folhas sem tronco perto (sebes, arbustos) continuam persistentes;
+  - as árvores dos miolos não entram nas estruturas (1 bloco de folga) e as estruturas nunca se sobrepõem
+    (`Ring.GAP` = 2 entre vizinhas; as árvores de cada estrutura ficam dentro da caixa dela);
+  - as linhas dos lados curtos do quarteirão vão de canto a canto e as dos lados compridos preenchem o que sobra
+    entre elas (o contrário deixava os lados curtos quase sempre vazios); ~7,9 estruturas por quarteirão, 72% da
+    área livre coberta. Tamanho do quarteirão escolhido em 8 nov: 140 × 90 (a mais funda tem 57, a mais rasa 20).
 - Dureza: qualquer dureza é permitida (regra antiga removida pelo usuário); só blocos indestrutíveis são proibidos.
-  Os block entities permitidos são o baú vazio da fonte e os containers das estruturas (baús, barris, suportes de poção, vasos decorados, atris, fornalhas, camas, fogueiras, sensores de luz e jukeboxes; `Palette.exempt`).
-  **Loot tables:** exceto oficinas usam `lostcities:chests/lostcitychest` (do Apocalypse Loot / Lost Cities); oficinas usam `oficina_vehicle_parts` (baús: rodas, assentos, motores compatíveis com Camaro/Escargot do OAmP) e `oficina_vehicle_tools` (outros containers: jumperpack, blowtorch, repairkit). Baú da fonte do parque continua vazio (50%) ou `mossy_cobblestone` (50%).
+  Os block entities permitidos são o baú vazio da fonte e os containers das estruturas (baús, barris, suportes de poção, vasos decorados, atris, fornalhas, camas, fogueiras, sensores de luz, jukeboxes,
+  banners, crânios, dispensers e droppers; `Palette.exempt`). Banners e placas saem lisos (o molde não guarda os
+  desenhos).
+  **Loot tables** (postas quando cada contêiner é colocado, pela região, como nas estruturas vanilla; semente por
+  lote e posição; `ChunkBuilder.loot`): exceto oficinas usam `lostcities:chests/lostcitychest` (do Apocalypse Loot / Lost Cities); oficinas usam `oficina_vehicle_parts` (baús: rodas, assentos, motores compatíveis com Camaro/Escargot do OAmP) e `oficina_vehicle_tools` (outros containers: jumperpack, blowtorch, repairkit). Baú da fonte do parque continua vazio (50%) ou `mossy_cobblestone` (50%).
 - Paleta (`gen/Palette`): os 8 estilos de material dos prédios do Abandoned Simple City (paredes, janelas, pisos,
   acabamento, escadas, sacadas) continuam na paleta, sem uso, para os prédios novos.

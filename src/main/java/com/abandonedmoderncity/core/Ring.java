@@ -5,7 +5,8 @@ import java.util.List;
 
 /**
  * A ring of structures along the four sidewalks of a block (prototype: the structures are drawn at random, no pattern).
- * The north and south rows run along the whole width; the west and east rows fill what is left between them. Every
+ * The rows along the short sides of the block run corner to corner; those along the long sides fill what is left
+ * between them. Every
  * structure touches its sidewalk with its front (the -Z side of the template) turned to the street. Rows are filled
  * left to right (or top to bottom) with a {@link #GAP} between structures; a structure that does not fit in what is
  * left of its row, or whose depth would not leave room for the opposite row, is redrawn.
@@ -19,8 +20,16 @@ public final class Ring {
     /** Draws of a structure for a row before the row is closed. */
     static final int TRIES = 40;
 
-    /** The lots of the free rectangle x0..x1, z0..z1 of a block. */
+    /** The lots of the free rectangle x0..x1, z0..z1 of a block, with no spawn limit. */
     public static List<Lot> lots(int x0, int z0, int x1, int z1, long seed) {
+        return lots(x0, z0, x1, z1, seed, new java.util.HashMap<>());
+    }
+
+    /**
+     * The lots of the free rectangle x0..x1, z0..z1 of a block; {@code used} counts the structures of each limited
+     * group ({@link Structures#LIMITS}) already placed in the city, and is updated (a group at its limit is redrawn).
+     */
+    public static List<Lot> lots(int x0, int z0, int x1, int z1, long seed, java.util.Map<String, Integer> used) {
         if (Structures.ALL.isEmpty()) {
             // no structures in resources/amcs/buildings: the block stays free city ground
             return List.of();
@@ -31,32 +40,38 @@ public final class Ring {
         // random order inside each pair of opposite rows: the one drawn first may be the deeper one
         boolean northFirst = Hash.unit(Hash.next(seed, 1)) < 0.5;
         boolean westFirst = Hash.unit(Hash.next(seed, 2)) < 0.5;
+        // the rows along the short sides run corner to corner, those along the long sides fill what is left between
+        // them (the other way round, deep structures on the long sides left the short sides almost always empty)
+        boolean shortX = w <= h;
         int dN = 0;
         int dS = 0;
-        for (int k = 0; k < 2; k++) {
-            boolean north = (k == 0) == northFirst;
-            int other = north ? dS : dN;
-            int depth = row(out, x0, x1, z0, z1, north ? Structures.NORTH : Structures.SOUTH, h - Math.max(other, Structures.MIN_DEPTH),
-                    Hash.next(seed, 10 + k));
-            if (north) {
-                dN = depth;
-            } else {
-                dS = depth;
-            }
-        }
-        int zs0 = z0 + dN;
-        int zs1 = z1 - dS;
         int dW = 0;
         int dE = 0;
-        for (int k = 0; k < 2; k++) {
-            boolean west = (k == 0) == westFirst;
-            int other = west ? dE : dW;
-            int depth = row(out, x0, x1, zs0, zs1, west ? Structures.WEST : Structures.EAST, w - Math.max(other, Structures.MIN_DEPTH),
-                    Hash.next(seed, 20 + k));
-            if (west) {
-                dW = depth;
-            } else {
-                dE = depth;
+        for (int pass = 0; pass < 2; pass++) {
+            boolean ns = (pass == 0) == shortX;
+            for (int k = 0; k < 2; k++) {
+                long rs = Hash.next(seed, (ns ? 10 : 20) + k);
+                if (ns) {
+                    boolean north = (k == 0) == northFirst;
+                    int other = north ? dS : dN;
+                    int depth = row(out, x0 + dW, x1 - dE, z0, z1, north ? Structures.NORTH : Structures.SOUTH,
+                            h - Math.max(other, Structures.MIN_DEPTH), rs, used);
+                    if (north) {
+                        dN = depth;
+                    } else {
+                        dS = depth;
+                    }
+                } else {
+                    boolean west = (k == 0) == westFirst;
+                    int other = west ? dE : dW;
+                    int depth = row(out, x0, x1, z0 + dN, z1 - dS, west ? Structures.WEST : Structures.EAST,
+                            w - Math.max(other, Structures.MIN_DEPTH), rs, used);
+                    if (west) {
+                        dW = depth;
+                    } else {
+                        dE = depth;
+                    }
+                }
             }
         }
         return out;
@@ -66,7 +81,8 @@ public final class Ring {
      * One row along the {@code side} edge of the rectangle x0..x1, z0..z1 (for the west and east rows the z range is
      * the part between the north and south rows). Returns the depth of its deepest structure (0 for none).
      */
-    private static int row(List<Lot> out, int x0, int x1, int z0, int z1, int side, int maxDepth, long seed) {
+    private static int row(List<Lot> out, int x0, int x1, int z0, int z1, int side, int maxDepth, long seed,
+                           java.util.Map<String, Integer> used) {
         boolean alongX = side == Structures.NORTH || side == Structures.SOUTH;
         int length = alongX ? x1 - x0 + 1 : z1 - z0 + 1;
         int at = 0;
@@ -76,9 +92,14 @@ public final class Ring {
         while (length - at >= Structures.MIN_WIDTH && failures < TRIES) {
             h = Hash.next(h, 1);
             Structures.Def def = Structures.ALL.get(Hash.range(h, 0, Structures.ALL.size() - 1));
-            if (def.d() > maxDepth || def.w() > length - at) {
+            boolean full = def.group() != null
+                    && used.getOrDefault(def.group(), 0) >= Structures.LIMITS.get(def.group());
+            if (full || def.d() > maxDepth || def.w() > length - at) {
                 failures++;
                 continue;
+            }
+            if (def.group() != null) {
+                used.merge(def.group(), 1, Integer::sum);
             }
             int rot = Structures.rotationFor(side);
             int sx = def.sizeX(rot);
