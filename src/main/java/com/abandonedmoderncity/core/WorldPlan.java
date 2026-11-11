@@ -624,7 +624,7 @@ public final class WorldPlan {
                     cp.h2[i] = (short) (2 * city.level);
                     cp.struct[i] = Profile.GROUND;
                     cp.flags[i] = ChunkPlan.F_CITY;
-                    byte zone = cLane ? (cMark ? ChunkPlan.MARK : ChunkPlan.LANE) : ChunkPlan.SIDEWALK;
+                    byte zone = cLane ? (cMark ? ChunkPlan.MARK : hit.crosswalk ? ChunkPlan.CROSSWALK : ChunkPlan.LANE) : ChunkPlan.SIDEWALK;
                     if (band != null && bandAbs <= bandLane && zone == ChunkPlan.SIDEWALK) {
                         // where a highway joins the street, the sidewalk opens into lanes (markings stay)
                         zone = ChunkPlan.LANE;

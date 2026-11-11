@@ -48,7 +48,7 @@ public final class Wild {
             return BlockCode.KEEP;
         }
         if (dy == 0) {
-            return trees.trunk(x, z) ? BlockCode.LAWN : Flora.ground(seed, x, z);
+            return trees.trunk(x, z) ? BlockCode.LAWN : Flora.groundUnder(seed, x, z, Flora.ground(seed, x, z), RUBBLE);
         }
         int t = trees.code(x, y, z, base);
         if (t != BlockCode.KEEP) {

@@ -106,10 +106,23 @@ public final class Palette {
     public static final BlockState TALL_GRASS_UPPER = Blocks.TALL_GRASS.defaultBlockState()
             .setValue(DoublePlantBlock.HALF, DoubleBlockHalf.UPPER);
     // ------------------------------------------------------------------ overgrowth (core/Flora)
-    /** Logs and persistent leaves of oak, birch, dark oak and spruce. */
+    /** Logs of oak, birch, dark oak and spruce. */
     public static final BlockState[] WILD_LOGS = {b(Blocks.OAK_LOG), b(Blocks.BIRCH_LOG), b(Blocks.DARK_OAK_LOG), b(Blocks.SPRUCE_LOG)};
-    public static final BlockState[] WILD_LEAVES = {leaves(Blocks.OAK_LEAVES), leaves(Blocks.BIRCH_LEAVES),
-            leaves(Blocks.DARK_OAK_LEAVES), leaves(Blocks.SPRUCE_LEAVES)};
+    /**
+     * Real leaves of the same species, [8 * species + distance]: not persistent, with their distance to a log, so they
+     * stay while the tree stands and decay once cut off from the wood.
+     */
+    public static final BlockState[] WILD_LEAVES = new BlockState[32];
+
+    static {
+        Block[] kinds = {Blocks.OAK_LEAVES, Blocks.BIRCH_LEAVES, Blocks.DARK_OAK_LEAVES, Blocks.SPRUCE_LEAVES};
+        for (int sp = 0; sp < 4; sp++) {
+            for (int d = 1; d <= 7; d++) {
+                WILD_LEAVES[8 * sp + d] = kinds[sp].defaultBlockState().setValue(LeavesBlock.PERSISTENT, false)
+                        .setValue(LeavesBlock.DISTANCE, d);
+            }
+        }
+    }
     /** Vines hanging on the block to the west, east, north, south. */
     public static final BlockState[] VINES = {
             Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.WEST, true),
@@ -123,12 +136,9 @@ public final class Palette {
     public static final BlockState LARGE_FERN_UPPER = Blocks.LARGE_FERN.defaultBlockState()
             .setValue(DoublePlantBlock.HALF, DoubleBlockHalf.UPPER);
     public static final BlockState MOSSY_SLAB = Blocks.MOSSY_STONE_BRICK_SLAB.defaultBlockState();
+    public static final BlockState MOSSY_COBBLE_SLAB = Blocks.MOSSY_COBBLESTONE_SLAB.defaultBlockState();
     public static final BlockState[] RUBBLE = {b(Blocks.MOSSY_COBBLESTONE), b(Blocks.COBBLESTONE),
             b(Blocks.CRACKED_STONE_BRICKS), b(Blocks.GRAY_CONCRETE)};
-
-    private static BlockState leaves(Block block) {
-        return block.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true);
-    }
 
     /** Palette of the fountain template, as block states. */
     private static BlockState[] fountain;
@@ -250,7 +260,7 @@ public final class Palette {
         if (code >= BlockCode.WILD_LOG && code < BlockCode.WILD_LOG + 4) {
             return WILD_LOGS[code - BlockCode.WILD_LOG];
         }
-        if (code >= BlockCode.WILD_LEAVES && code < BlockCode.WILD_LEAVES + 4) {
+        if (code >= BlockCode.WILD_LEAVES && code < BlockCode.WILD_LEAVES_END) {
             return WILD_LEAVES[code - BlockCode.WILD_LEAVES];
         }
         if (code >= BlockCode.VINE && code < BlockCode.VINE + 4) {
@@ -270,6 +280,8 @@ public final class Palette {
                 return LARGE_FERN_UPPER;
             case BlockCode.MOSSY_SLAB:
                 return MOSSY_SLAB;
+            case BlockCode.MOSSY_COBBLE_SLAB:
+                return MOSSY_COBBLE_SLAB;
             default:
                 break;
         }
@@ -337,6 +349,7 @@ public final class Palette {
         return switch (zone) {
             case ChunkPlan.PARAPET -> SIDEWALK;
             case ChunkPlan.MARK -> slab ? LANE_SLAB : CITY_MARK;
+            case ChunkPlan.CROSSWALK -> slab ? LANE_SLAB : CITY_MARK;
             case ChunkPlan.MARK_HIGHWAY -> slab ? LANE_SLAB : HIGHWAY_MARK;
             case ChunkPlan.LANE -> slab ? LANE_SLAB : LANE;
             default -> slab ? SIDEWALK_SLAB : SIDEWALK;
@@ -345,7 +358,7 @@ public final class Palette {
 
     /** Full block under a slab, or the second deck layer. */
     public static BlockState roadBase(byte zone) {
-        return zone == ChunkPlan.LANE || zone == ChunkPlan.MARK || zone == ChunkPlan.MARK_HIGHWAY ? LANE : SIDEWALK;
+        return zone == ChunkPlan.LANE || zone == ChunkPlan.MARK || zone == ChunkPlan.MARK_HIGHWAY || zone == ChunkPlan.CROSSWALK ? LANE : SIDEWALK;
     }
 
     /** Whether the generator may place this block (breakable, no block entity but the fountain chest). */
@@ -392,10 +405,14 @@ public final class Palette {
         set.addAll(List.of(PATH, RING_SLAB, TALL_GRASS_LOWER, TALL_GRASS_UPPER));
         set.addAll(List.of(FLOWERS));
         set.addAll(List.of(WILD_LOGS));
-        set.addAll(List.of(WILD_LEAVES));
+        for (BlockState l : WILD_LEAVES) {
+            if (l != null) {
+                set.add(l);
+            }
+        }
         set.addAll(List.of(VINES));
         set.addAll(List.of(RUBBLE));
-        set.addAll(List.of(MOSS_BLOCK, FERN, LARGE_FERN_LOWER, LARGE_FERN_UPPER, MOSSY_SLAB));
+        set.addAll(List.of(MOSS_BLOCK, FERN, LARGE_FERN_LOWER, LARGE_FERN_UPPER, MOSSY_SLAB, MOSSY_COBBLE_SLAB));
         for (BlockState f : fountain()) {
             // flowing water of the fountain is a fluid, not a block to break
             if (!(f.getBlock() instanceof net.minecraft.world.level.block.LiquidBlock)) {

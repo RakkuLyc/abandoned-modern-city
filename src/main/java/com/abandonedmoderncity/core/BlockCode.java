@@ -74,7 +74,12 @@ public final class BlockCode {
     // overgrowth ({@link Flora}): logs and leaves + species (oak, birch, dark oak, spruce), vines + the direction of
     // the block they hang on (west, east, north, south)
     public static final int WILD_LOG = 200;
-    public static final int WILD_LEAVES = 204;
+    /**
+     * Leaves that decay like a real tree's: {@code WILD_LEAVES + 8 * species + distance}, the distance (1..6) being the
+     * number of steps through leaves to a log, as vanilla keeps it (not persistent).
+     */
+    public static final int WILD_LEAVES = 240;
+    public static final int WILD_LEAVES_END = WILD_LEAVES + 32;
     public static final int VINE = 208;
     public static final int MOSS_BLOCK = 212;
     public static final int FERN = 213;
@@ -82,6 +87,8 @@ public final class BlockCode {
     public static final int LARGE_FERN_UPPER = 215;
     /** Bottom slab of mossy stone bricks (rubble, the mossy parts of the fountain ring). */
     public static final int MOSSY_SLAB = 216;
+    /** Bottom slab of mossy cobblestone (the fountain ring). */
+    public static final int MOSSY_COBBLE_SLAB = 217;
     /** Rubble {@code RUBBLE + k}, k < RUBBLES: mossy cobblestone, cobblestone, cracked stone bricks, gray concrete. */
     public static final int RUBBLE = 220;
     public static final int RUBBLES = 4;

@@ -36,11 +36,15 @@ public final class Park {
     static final int TREE_AREA = 60;
     /** Share of path columns taken over by grass, moss or coarse dirt. */
     static final double PATH_GAPS = 0.30;
-    /** Share of the ring slabs that are mossy, and that are missing. */
-    static final double RING_MOSSY = 0.28;
+    /** Share of the ring slabs that are missing (the others: half mossy stone bricks, half mossy cobblestone). */
     static final double RING_GAPS = 0.10;
-    /** Share of the free spots next to the fountain's leaves and stone that get a vine. */
-    static final double FOUNTAIN_VINES = 0.40;
+    /**
+     * Share of the fountain's columns with a place for a vine (air next to its leaves or stone) that get a strand,
+     * hanging from the highest such place, {@link #VINE_MIN} to {@link #VINE_MAX} blocks long.
+     */
+    static final double FOUNTAIN_VINES = 0.55;
+    static final int VINE_MIN = 2;
+    static final int VINE_MAX = 6;
     static final double RUBBLE = 0.006;
 
     public final int x0;
@@ -166,10 +170,11 @@ public final class Park {
         if (inFountain(x, z)) {
             Template t = Template.WATERFALL;
             int idx = t.at(x - ox, dy, z - oz);
-            if (dy > 0 && dy < t.sy && (idx < 0 || t.palette.get(idx).equals("minecraft:air"))) {
-                int face = VINE_FACE[(x - ox) + t.sx * ((z - oz) + t.sz * dy)];
-                if (face >= 0 && rnd(x, z * 977 + dy, 0x46564EL) < FOUNTAIN_VINES) {
-                    return BlockCode.VINE + face;
+            int col = (x - ox) + (z - oz) * t.sx;
+            if (dy > 0 && dy <= VINE_TOP[col] && dy >= VINE_LOW[col]) {
+                long hv = Hash.of(seed, 0x46564EL, x, z);
+                if (Hash.unit(hv) < FOUNTAIN_VINES && dy > VINE_TOP[col] - Hash.range(Hash.next(hv, 1), VINE_MIN, VINE_MAX)) {
+                    return BlockCode.VINE + VINE_TOP_FACE[col];
                 }
             }
             if (idx < 0) {
@@ -185,7 +190,12 @@ public final class Park {
         boolean gap = path && rnd(x, z, 0x50L) < PATH_GAPS;
         int ground = path && !gap ? BlockCode.PATH : gapGround(x, z, gap);
         if (dy == 0) {
-            return trees.trunk(x, z) ? BlockCode.LAWN : ground;
+            if (trees.trunk(x, z)) {
+                return BlockCode.LAWN;
+            }
+            // the log hidden under a bush
+            boolean open = !(path && !gap) && !onRing(x, z);
+            return open && Flora.isLeaves(plantAt(x, z, 1, ground, gap)) ? Flora.groundUnder(seed, x, z, ground, RUBBLE) : ground;
         }
         if (onRing(x, z)) {
             return dy == 1 ? ringSlab(x, z) : BlockCode.KEEP;
@@ -197,11 +207,7 @@ public final class Park {
         if (path && !gap || dy > 2 || trees.trunk(x, z)) {
             return BlockCode.KEEP;
         }
-        // a few flowers left from the old park
-        if (!gap && ground == BlockCode.LAWN && rnd(x, z, 0x53L) < 0.05) {
-            return dy == 1 ? BlockCode.FLOWER + Hash.range(Hash.of(seed, 0x54L, x, z), 0, BlockCode.FLOWERS - 1) : BlockCode.KEEP;
-        }
-        int plant = Flora.plant(seed, x, z, dy, ground, RUBBLE);
+        int plant = plantAt(x, z, dy, ground, gap);
         if (plant != BlockCode.KEEP && dy == 2 && trees.code(x, y - 1, z, base) != BlockCode.KEEP) {
             return BlockCode.KEEP;
         }
@@ -210,6 +216,15 @@ public final class Park {
             return BlockCode.SHRUB;
         }
         return plant;
+    }
+
+    /** Plant (or flower, or rubble) dy above the ground of an open park column. */
+    private int plantAt(int x, int z, int dy, int ground, boolean gap) {
+        // a few flowers left from the old park
+        if (!gap && ground == BlockCode.LAWN && rnd(x, z, 0x53L) < 0.05) {
+            return dy == 1 ? BlockCode.FLOWER + Hash.range(Hash.of(seed, 0x54L, x, z), 0, BlockCode.FLOWERS - 1) : BlockCode.KEEP;
+        }
+        return Flora.plant(seed, x, z, dy, ground, RUBBLE);
     }
 
     /** Ground of a park column off the paths (or of a path column taken over). */
@@ -225,13 +240,13 @@ public final class Park {
         return g;
     }
 
-    /** A slab of the ring around the fountain: smooth stone, mossy stone bricks, or missing (KEEP over the lawn). */
+    /** A slab of the ring around the fountain: mossy stone bricks or mossy cobblestone, or missing (over the lawn). */
     private int ringSlab(int x, int z) {
         double r = rnd(x, z, 0x52534CL);
         if (r < RING_GAPS) {
             return rnd(x, z, 0x52534DL) < 0.5 ? BlockCode.SHRUB : BlockCode.KEEP;
         }
-        return r < RING_GAPS + RING_MOSSY ? BlockCode.MOSSY_SLAB : BlockCode.RING_SLAB;
+        return r < RING_GAPS + (1 - RING_GAPS) / 2 ? BlockCode.MOSSY_SLAB : BlockCode.MOSSY_COBBLE_SLAB;
     }
 
     /** Radius of the fountain's hedge (its leaves stand 10.8 to 11.4 from the center; it has 4 openings). */
@@ -293,6 +308,42 @@ public final class Park {
         String b = state.contains("[") ? state.substring(0, state.indexOf('[')) : state;
         return b.endsWith("_leaves") || b.endsWith("cobblestone") || b.endsWith("stone_bricks") || b.equals("minecraft:stone")
                 || b.endsWith("_planks") || b.endsWith("_log");
+    }
+
+    /**
+     * Per template column: the highest place for a vine ({@link #VINE_FACE} set; 0 if none), its direction, and the
+     * lowest y (at least 1) down to which the column is air below it, so a strand hangs freely.
+     */
+    static final int[] VINE_TOP = new int[Template.WATERFALL.sx * Template.WATERFALL.sz];
+    static final int[] VINE_TOP_FACE = new int[VINE_TOP.length];
+    static final int[] VINE_LOW = new int[VINE_TOP.length];
+
+    static {
+        Template t = Template.WATERFALL;
+        for (int z = 0; z < t.sz; z++) {
+            for (int x = 0; x < t.sx; x++) {
+                int col = x + z * t.sx;
+                VINE_LOW[col] = Integer.MAX_VALUE;
+                for (int y = t.sy - 1; y >= 1; y--) {
+                    int f = VINE_FACE[x + t.sx * (z + t.sz * y)];
+                    if (f >= 0) {
+                        VINE_TOP[col] = y;
+                        VINE_TOP_FACE[col] = f;
+                        int low = y;
+                        while (low - 1 >= 1 && air(t, x, low - 1, z)) {
+                            low--;
+                        }
+                        VINE_LOW[col] = low;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean air(Template t, int x, int y, int z) {
+        int idx = t.at(x, y, z);
+        return idx < 0 || t.palette.get(idx).equals("minecraft:air");
     }
 
     static final int CHEST = indexOf("minecraft:chest");

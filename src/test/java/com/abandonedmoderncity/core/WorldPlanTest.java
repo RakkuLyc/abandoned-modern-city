@@ -149,6 +149,19 @@ class WorldPlanTest {
                         }
                     }
                     assertEquals(33, width, c + " line " + i + " row " + j);
+                    // zebra crossing: 3 rows starting 2 rows from the crossing, 14 white stripes across the 27 lanes
+                    for (int t = 0; t <= 6; t++) {
+                        int zt = (int) Math.round(c.V(j) - 0.5) + (int) Params.STREET_HW + 1 + t;
+                        int stripes = 0;
+                        for (int x = xc - 24; x <= xc + 24; x++) {
+                            c.query(x + 0.5, zt + 0.5, hit);
+                            if (hit.crosswalk) {
+                                stripes++;
+                            }
+                        }
+                        boolean row = t >= City.CROSSWALK_GAP && t < City.CROSSWALK_GAP + City.CROSSWALK_DEPTH;
+                        assertEquals(row ? 14 : 0, stripes, c + " crosswalk row " + t + " line " + i + " row " + j);
+                    }
                     checked++;
                 }
             }

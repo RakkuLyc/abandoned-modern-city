@@ -53,14 +53,15 @@ cidades foram para o meio de células de 648 (rodovias de ~269 a ~369 blocos) e 
 - **Natureza tomando a cidade** (`core/Flora`, `core/Wild`):
   - chão em manchas: grama, musgo, terra grossa e restos do concreto (`gray_concrete_powder`);
   - árvores do mod, ~1 a cada 55 colunas: carvalho, bétula, carvalho escuro e abeto, pequenas e grandes, com vinhas
-    penduradas nas copas;
-  - grama alta, samambaias, tapete de musgo, arbustos e entulho (pedregulho musgoso, pedregulho, tijolos rachados,
+    penduradas nas copas; são árvores reais: as folhas guardam a distância até o tronco e caem quando o tronco é
+    cortado (leaf decay);
+  - grama alta, samambaias, tapete de musgo, arbustos (folhas sobre um tronco enterrado) e entulho (pedregulho musgoso, pedregulho, tijolos rachados,
     concreto e lajes musgosas).
 - **Parques:**
   - a mesma natureza (árvores ~1 a cada 60 colunas), algumas flores, e caminhos de `dirt_path` (grade ou cata-vento)
     com 30% de falhas, escalados com o tamanho do parque;
-  - fonte `waterfall.nbt` no centro, intacta, com vinhas e baú vazio em 50% delas; o anel de lajes tem lajes
-    musgosas (28%) e falhas (10%).
+  - fonte `waterfall.nbt` no centro, intacta, com cachos de vinha de 2 a 6 blocos e baú vazio em 50% delas; o anel
+    é só de lajes musgosas (`mossy_stone_brick_slab` e `mossy_cobblestone_slab`), com 10% de falhas.
 
 ### Ruas e rodovias
 
@@ -71,6 +72,8 @@ cidades foram para o meio de células de 648 (rodovias de ~269 a ~369 blocos) e 
 
 - **Faixa central:** traços de 11 com intervalo de 6. Cada cruzamento tem um quadrado 3 × 3 de `smooth_stone` em
   cada esquina.
+- **Faixas de pedestres:** zebra de `white_concrete` (listras de 1 com intervalo de 1, 3 linhas) 2 linhas antes de
+  cada cruzamento, nas duas pontas de todo trecho de rua.
 - **Rede de rodovias:** grafo de Gabriel entre os centros das cidades. É planar e conexo, e as rodovias nunca se
   cruzam.
   - Cada cidade tem 4 entradas, uma por lado, sorteadas entre o cruzamento do meio e os dois cantos do lado. Cada

@@ -50,6 +50,10 @@ existem as cidades 2 × 2 de quarteirões retangulares.
 - Trecho de rua de 140 ou 90 blocos (o lado do quarteirão) + 33 de cruzamento; quadrado 3 × 3 de `smooth_stone` em cada esquina de cruzamento.
 - Faixa central no 17º bloco da largura (o do meio), traços de 11 com intervalo de 6 (quantos couberem, centrados); `white_concrete` na cidade,
   `yellow_terracotta` nas rodovias.
+- Faixas de pedestres (11 nov 2026, `City.crosswalk`): em cada ponta de todo trecho de rua, 2 linhas de pista depois
+  do quadrado do cruzamento, zebra de 3 linhas (`CROSSWALK_GAP` = 2, `CROSSWALK_DEPTH` = 3) com listras de
+  `white_concrete` de 1 bloco e intervalo de 1, paralelas à rua, nos 27 de pista (14 listras, as duas de fora
+  brancas); zona `ChunkPlan.CROSSWALK`.
 - 4 entradas por cidade (`City.EXITS`), uma por lado, sorteadas: cada lado usa o cruzamento de 3 vias do meio ou um
   dos dois cantos daquele lado (nunca o mesmo cruzamento duas vezes). O sorteio de 4 quaisquer das 8 posições foi
   testado e rejeitado (perdia 23% das rodovias por curva fechada). No canto a rodovia continua, para fora, uma das duas ruas da borda (sai reta, nunca a 45°); cada cruzamento recebe no máximo
@@ -75,10 +79,12 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   estruturas, que ganham onde estão): aspecto de abandonado. Chão em manchas (ruído de valor): grama (`grass_block`)
   na maior parte, `moss_block`, `coarse_dirt` e o concreto antigo (`gray_concrete_powder`) aparecendo. Árvores do
   próprio mod, ~1 a cada 55 colunas com troncos a 5+ blocos: carvalho (38%), bétula (24%), carvalho escuro (18%) e
-  abeto (20%), 30% grandes (copa de raio 3–4, abeto cônico até 12 de altura), folhas persistentes com bordas
-  irregulares, vinhas penduradas (35% das colunas da borda da copa, 1 a 4 blocos; só ficam se presas em folha ou
-  vinha). Copas e vinhas não saem do quarteirão nem entram nas estruturas. Vegetação no solo (nunca no concreto):
-  grama, tall grass, samambaia, samambaia grande, tapete de musgo sobre o musgo, arbustos (folhas no chão).
+  abeto (20%), 30% grandes (copa de raio 3–4, abeto cônico até 12 de altura), copas com bordas irregulares.
+  Árvores reais (11 nov 2026): folhas **não persistentes**, cada uma com a distância até o tronco (1 a 6, contada
+  pelas folhas como no vanilla, `Flora.Tree.dist`); folhas da forma que ficariam a mais de 6 da madeira não são
+  colocadas. Cortado o tronco, as folhas caem sozinhas (leaf decay). Arbustos: folhas (distância 1 e 2) sobre um
+  tronco escondido no chão. Vinhas penduradas (35% das colunas da borda da copa, 1 a 4 blocos; só ficam se presas em folha ou vinha). Copas e vinhas não saem do quarteirão nem entram nas estruturas. Vegetação no solo (nunca no concreto):
+  grama, tall grass, samambaia, samambaia grande, tapete de musgo sobre o musgo, arbustos (folhas sobre tronco enterrado).
   Entulho: `mossy_cobblestone`, `cobblestone`, `cracked_stone_bricks`, `gray_concrete` (1 ou 2 de altura) e laje de
   `mossy_stone_bricks`, 1,2% das colunas na grama e 4 × isso no concreto.
 - Parques (`Park`): tomados pela mesma natureza (árvores variadas com vinhas, ~1 a cada 60 colunas, sem tronco em
@@ -87,9 +93,10 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   com 30% de falhas (grama, musgo ou terra grossa), em duas variantes (50%): grade "jogo da velha"
   (2 + 2 caminhos retos a 16 do centro) ou cata-vento (círculo de raio 16 + 4 braços em espiral); distâncias escaladas
   com o tamanho do parque (base `Park.BASE_SIZE` = 68 no lado menor; escala pelo lado menor: nos quarteirões de 140 × 90 é ×1,32). Centro sem árvores:
-  fonte `waterfall.nbt` (do usuário, em `resources/amcs/`) cercada de `smooth_stone_slab` (meio bloco) do anel até a
-  cerca de folhas da fonte; 28% das lajes são de `mossy_stone_brick_slab` e 10% faltam. Nenhum bloco da fonte é
-  removido: 40% dos espaços de ar ao lado das folhas e das pedras dela ganham vinha.
+  fonte `waterfall.nbt` (do usuário, em `resources/amcs/`) cercada de lajes musgosas (meio bloco) do anel até a
+  cerca de folhas da fonte: só `mossy_stone_brick_slab` e `mossy_cobblestone_slab` (metade cada), 10% faltam (11 nov
+  2026). Nenhum bloco da fonte é removido: em 55% das colunas com lugar para vinha (ar ao lado das folhas ou pedras
+  dela) pende um cacho de 2 a 6 blocos a partir do ponto mais alto (`Park.VINE_MIN`/`VINE_MAX`).
   Baú vazio em 50% das fontes (senão `mossy_cobblestone`).
 - Estruturas (protótipo de 8 nov 2026): os `.nbt` listados em `src/main/resources/amcs/buildings/index.txt`
   (`tipo|arquivo`) entram nos quarteirões por `core/Ring` (`Structures` carrega, mede e gira). **Em 10 nov 2026 o

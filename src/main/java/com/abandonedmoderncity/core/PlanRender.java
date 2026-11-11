@@ -77,7 +77,7 @@ public final class PlanRender {
                     return rgb(255, 255, 120);
                 }
                 int base = switch (cp.zone[i]) {
-                    case ChunkPlan.MARK -> rgb(235, 235, 235);
+                    case ChunkPlan.MARK, ChunkPlan.CROSSWALK -> rgb(235, 235, 235);
                     case ChunkPlan.SIDEWALK -> rgb(165, 165, 165);
                     case ChunkPlan.MARK_HIGHWAY -> rgb(230, 190, 40);
                     case ChunkPlan.SHOULDER, ChunkPlan.PARAPET -> rgb(120, 120, 120);
@@ -180,8 +180,8 @@ public final class PlanRender {
 
     /** Color of an overgrowth block seen from above; -2 for see-through plants and vines, -1 for anything else. */
     private static int overgrowth(int c) {
-        if (c >= BlockCode.WILD_LEAVES && c < BlockCode.WILD_LEAVES + 4) {
-            int k = c - BlockCode.WILD_LEAVES;
+        if (Flora.isLeaves(c)) {
+            int k = (c - BlockCode.WILD_LEAVES) / 8;
             return k == 1 ? rgb(95, 150, 60) : k == 3 ? rgb(35, 85, 55) : k == 2 ? rgb(30, 90, 30) : rgb(50, 125, 45);
         }
         if (c >= BlockCode.WILD_LOG && c < BlockCode.WILD_LOG + 4) {
@@ -190,7 +190,7 @@ public final class PlanRender {
         if (c >= BlockCode.RUBBLE && c < BlockCode.RUBBLE + BlockCode.RUBBLES) {
             return rgb(120, 120, 115);
         }
-        if (c == BlockCode.MOSSY_SLAB) {
+        if (c == BlockCode.MOSSY_SLAB || c == BlockCode.MOSSY_COBBLE_SLAB) {
             return rgb(150, 165, 140);
         }
         if (c >= BlockCode.VINE && c < BlockCode.VINE + 4 || c == BlockCode.FERN || c == BlockCode.LARGE_FERN_LOWER

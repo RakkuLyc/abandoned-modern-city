@@ -24,6 +24,8 @@ public final class ChunkPlan {
     public static final byte PARAPET = 5;
     /** Highway center marking (yellow); city marks are {@link #MARK} (white). */
     public static final byte MARK_HIGHWAY = 6;
+    /** White stripe of a zebra crossing (a city lane). */
+    public static final byte CROSSWALK = 7;
 
     /** Whether a road zone carries a wall. */
     public static boolean walled(byte zone) {

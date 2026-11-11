@@ -17,11 +17,91 @@ public final class Flora {
     public static final int DARK_OAK = 2;
     public static final int SPRUCE = 3;
 
+    /** Whether a code is a log / leaves of the overgrowth. */
+    public static boolean isLog(int c) {
+        return c >= BlockCode.WILD_LOG && c < BlockCode.WILD_LOG + 4;
+    }
+
+    public static boolean isLeaves(int c) {
+        return c >= BlockCode.WILD_LEAVES && c < BlockCode.WILD_LEAVES_END;
+    }
+
+    public static boolean isVine(int c) {
+        return c >= BlockCode.VINE && c < BlockCode.VINE + 4;
+    }
+
+    /** Leaves code of a species at a distance (1..6) from a log. */
+    public static int leaves(int species, int distance) {
+        return BlockCode.WILD_LEAVES + 8 * species + distance;
+    }
+
+    /** Vanilla leaves farther than this (through leaves) from a log decay. */
+    public static final int LEAF_REACH = 6;
+
     /**
      * A tree: trunk at (x, z), {@code height} logs from the ground, a crown of {@code radius} (round, or a cone for
-     * the spruce), vines hanging from the bottom of the crown.
+     * the spruce), vines hanging from the bottom of the crown. Its leaves are real ones: each knows its distance to
+     * the trunk ({@code dist}, steps through leaves, as vanilla counts it), and leaves of the shape that would be more
+     * than {@link #LEAF_REACH} away are left out (they would decay).
      */
-    public record Tree(int x, int z, int height, int species, int radius, long seed) {
+    public record Tree(int x, int z, int height, int species, int radius, long seed, byte[] dist) {
+        static Tree of(int x, int z, int height, int species, int radius, long seed) {
+            Tree shape = new Tree(x, z, height, species, radius, seed, null);
+            return new Tree(x, z, height, species, radius, seed, shape.distances());
+        }
+
+        private int side() {
+            return 2 * radius + 1;
+        }
+
+        private int index(int dx, int dy, int dz) {
+            return (dx + radius) + side() * ((dz + radius) + side() * dy);
+        }
+
+        /** Breadth-first search from the logs through the leaves of the shape. */
+        private byte[] distances() {
+            int n = side();
+            int ny = height + 2;
+            byte[] d = new byte[n * n * ny];
+            java.util.ArrayDeque<int[]> q = new java.util.ArrayDeque<>();
+            for (int dy = 1; dy <= height; dy++) {
+                q.add(new int[]{0, dy, 0, 0});
+            }
+            int[][] step = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+            while (!q.isEmpty()) {
+                int[] c = q.poll();
+                if (c[3] >= LEAF_REACH) {
+                    continue;
+                }
+                for (int[] st : step) {
+                    int dx = c[0] + st[0];
+                    int dy = c[1] + st[1];
+                    int dz = c[2] + st[2];
+                    if (Math.abs(dx) > radius || Math.abs(dz) > radius || dy < 1 || dy >= ny || !shapeLeaf(dx, dy, dz)) {
+                        continue;
+                    }
+                    int k = index(dx, dy, dz);
+                    if (d[k] == 0) {
+                        d[k] = (byte) (c[3] + 1);
+                        q.add(new int[]{dx, dy, dz, c[3] + 1});
+                    }
+                }
+            }
+            return d;
+        }
+
+        /** Distance to the trunk of a leaf at (dx, dy, dz), 0 when there is no leaf there. */
+        int distance(int dx, int dy, int dz) {
+            if (Math.abs(dx) > radius || Math.abs(dz) > radius || dy < 1 || dy > height + 1) {
+                return 0;
+            }
+            return dist[index(dx, dy, dz)];
+        }
+
+        /** Whether (dx, dy, dz) is a leaf that stays (close enough to the trunk). */
+        boolean leaf(int dx, int dy, int dz) {
+            return distance(dx, dy, dz) > 0;
+        }
         /** Farthest column (from the trunk) the tree touches: crown plus its vines. */
         public int reach() {
             return radius + 1;
@@ -37,8 +117,8 @@ public final class Flora {
             return species == SPRUCE ? 3 : height - (radius >= 3 ? 3 : 2);
         }
 
-        /** Whether (dx, dy, dz) from the base of the trunk is a leaf (dy above the ground). */
-        boolean leaf(int dx, int dy, int dz) {
+        /** Whether (dx, dy, dz) from the base of the trunk is a leaf of the crown's shape (dy above the ground). */
+        boolean shapeLeaf(int dx, int dy, int dz) {
             if (dy < crownBottom() || dy > height + 1 || dx == 0 && dz == 0 && dy <= height) {
                 return false;
             }
@@ -73,8 +153,9 @@ public final class Flora {
             if (dx == 0 && dz == 0 && dy <= height) {
                 return BlockCode.WILD_LOG + species;
             }
-            if (leaf(dx, dy, dz)) {
-                return BlockCode.WILD_LEAVES + species;
+            int d = distance(dx, dy, dz);
+            if (d > 0) {
+                return leaves(species, d);
             }
             return vine(dx, dy, dz);
         }
@@ -157,7 +238,7 @@ public final class Flora {
             if (c >= BlockCode.VINE && c < BlockCode.VINE + 4) {
                 int[] d = SIDE[c - BlockCode.VINE];
                 int held = raw(x + d[0], y, z + d[1], base);
-                boolean onWood = held != BlockCode.KEEP && held < BlockCode.VINE;
+                boolean onWood = isLog(held) || isLeaves(held);
                 if (!onWood && code(x, y + 1, z, base) != c) {
                     return BlockCode.KEEP;
                 }
@@ -177,11 +258,11 @@ public final class Flora {
                 if (c == BlockCode.KEEP) {
                     continue;
                 }
-                if (c < BlockCode.WILD_LEAVES) {
+                if (isLog(c)) {
                     return c; // a log wins
                 }
-                if (best == BlockCode.KEEP || c < best) {
-                    best = c; // leaves before vines
+                if (best == BlockCode.KEEP || isLeaves(c) && (!isLeaves(best) || c % 8 < best % 8)) {
+                    best = c; // leaves before vines, the closest to a trunk first
                 }
             }
             return best;
@@ -253,7 +334,7 @@ public final class Flora {
                 }
             }
             if (free) {
-                out.add(new Tree(x, z, height, species, radius, Hash.next(h, 5)));
+                out.add(Tree.of(x, z, height, species, radius, Hash.next(h, 5)));
             }
         }
         return new Trees(out, x0, z0, x1, z1);
@@ -313,6 +394,22 @@ public final class Flora {
         if (dy < 1 || dy > 2) {
             return BlockCode.KEEP;
         }
+        return plantAbove(seed, x, z, dy, ground, rubbleChance);
+    }
+
+    /**
+     * The ground block under {@link #plant}: the log of a bush (hidden in the ground, under its leaves), else the
+     * given ground.
+     */
+    public static int groundUnder(long seed, int x, int z, int ground, double rubbleChance) {
+        return isLeaves(plantAbove(seed, x, z, 1, ground, rubbleChance)) ? BlockCode.WILD_LOG + bushSpecies(seed, x, z) : ground;
+    }
+
+    private static int bushSpecies(long seed, int x, int z) {
+        return Hash.unit(Hash.next(Hash.of(seed, 0x4255L, x, z), 1)) < 0.5 ? OAK : DARK_OAK;
+    }
+
+    private static int plantAbove(long seed, int x, int z, int dy, int ground, double rubbleChance) {
         double r = Hash.unit(Hash.of(seed, 0x504CL, x, z));
         // rubble: on the old concrete mostly, now and then in the grass
         double rubble = ground == BlockCode.CITY_GROUND ? rubbleChance * 4 : rubbleChance;
@@ -346,11 +443,11 @@ public final class Flora {
             return dy == 1 ? BlockCode.LARGE_FERN_LOWER : BlockCode.LARGE_FERN_UPPER;
         }
         if (p < 0.645) {
-            // a bush: a leaf block on the ground (sometimes two)
+            // a bush: leaves on a log hidden in the ground, so they do not decay (sometimes two blocks high)
             long h = Hash.of(seed, 0x4255L, x, z);
             boolean two = Hash.unit(h) < 0.25;
-            int leaves = BlockCode.WILD_LEAVES + (Hash.unit(Hash.next(h, 1)) < 0.5 ? OAK : DARK_OAK);
-            return dy == 1 || two ? leaves : BlockCode.KEEP;
+            int species = Hash.unit(Hash.next(h, 1)) < 0.5 ? OAK : DARK_OAK;
+            return dy == 1 ? leaves(species, 1) : two ? leaves(species, 2) : BlockCode.KEEP;
         }
         return BlockCode.KEEP;
     }

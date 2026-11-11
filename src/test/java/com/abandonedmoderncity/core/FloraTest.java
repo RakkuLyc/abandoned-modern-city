@@ -14,7 +14,7 @@ class FloraTest {
     static final int BASE = 64;
 
     private static boolean leafOrLog(int c) {
-        return c >= BlockCode.WILD_LOG && c < BlockCode.WILD_LEAVES + 4 || c >= BlockCode.TEMPLATE && c < BlockCode.STRUCT;
+        return Flora.isLog(c) || Flora.isLeaves(c) || c >= BlockCode.TEMPLATE && c < BlockCode.STRUCT;
     }
 
     private static boolean soil(int c) {
@@ -64,6 +64,17 @@ class FloraTest {
                         n[3]++;
                     } else if (c >= BlockCode.WILD_LOG && c < BlockCode.WILD_LOG + 4) {
                         n[0]++;
+                    } else if (Flora.isLeaves(c)) {
+                        // real leaves: distance 1..6, and a neighbour one step closer to a log (as vanilla checks)
+                        int dist = (c - BlockCode.WILD_LEAVES) % 8;
+                        assertTrue(dist >= 1 && dist <= Flora.LEAF_REACH, "leaf distance " + dist + " at " + at);
+                        boolean ok = false;
+                        int[][] six = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+                        for (int[] q : six) {
+                            int nc = lot.code(x + q[0], y + q[1], z + q[2], BASE);
+                            ok |= Flora.isLog(nc) || Flora.isLeaves(nc) && (nc - BlockCode.WILD_LEAVES) % 8 <= dist - 1;
+                        }
+                        assertTrue(ok, "leaf cut off from the wood at " + at);
                     }
                 }
             }
@@ -121,7 +132,7 @@ class FloraTest {
                         }
                         int c = park.code(ox + x, BASE + y, oz + z, BASE);
                         boolean chestSwap = idx == Park.CHEST && !p.chest && c == BlockCode.TEMPLATE + Park.MOSSY;
-                        boolean ringSlab = y == 1 && (c == BlockCode.RING_SLAB || c == BlockCode.MOSSY_SLAB);
+                        boolean ringSlab = y == 1 && (c == BlockCode.MOSSY_SLAB || c == BlockCode.MOSSY_COBBLE_SLAB);
                         assertTrue(c == BlockCode.TEMPLATE + idx || chestSwap || ringSlab,
                                 "fountain block changed at " + x + "," + y + "," + z + ": " + c);
                     }
@@ -172,8 +183,8 @@ class FloraTest {
     private static int color(Lot lot, int x, int z) {
         for (int y = BASE + lot.heightAboveBase(); y > BASE; y--) {
             int c = lot.code(x, y, z, BASE);
-            if (c >= BlockCode.WILD_LEAVES && c < BlockCode.WILD_LEAVES + 4) {
-                int k = c - BlockCode.WILD_LEAVES;
+            if (Flora.isLeaves(c)) {
+                int k = (c - BlockCode.WILD_LEAVES) / 8;
                 return k == 1 ? 0x5F963C : k == 3 ? 0x235537 : k == 2 ? 0x1E5A1E : 0x327D2D;
             }
             if (c >= BlockCode.WILD_LOG && c < BlockCode.WILD_LOG + 4) {
@@ -185,7 +196,7 @@ class FloraTest {
             if (c >= BlockCode.RUBBLE && c < BlockCode.RUBBLE + BlockCode.RUBBLES) {
                 return 0x787873;
             }
-            if (c == BlockCode.MOSSY_SLAB) {
+            if (c == BlockCode.MOSSY_SLAB || c == BlockCode.MOSSY_COBBLE_SLAB) {
                 return 0x96A58C;
             }
             if (c == BlockCode.RING_SLAB) {
@@ -204,7 +215,11 @@ class FloraTest {
                 return 0x78B446;
             }
         }
-        return switch (lot.code(x, BASE, z, BASE)) {
+        int g = lot.code(x, BASE, z, BASE);
+        if (Flora.isLog(g)) {
+            return 0x327D2D;
+        }
+        return switch (g) {
             case BlockCode.CITY_GROUND -> 0x9B9B96;
             case BlockCode.MOSS_BLOCK -> 0x557D2D;
             case BlockCode.COARSE_DIRT -> 0x7D644B;

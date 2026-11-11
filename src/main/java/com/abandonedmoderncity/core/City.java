@@ -556,6 +556,8 @@ public final class City {
         public boolean lane;
         /** On a dash of the center marking (only outside intersections). */
         public boolean mark;
+        /** On a white stripe of a crosswalk (only outside intersections). */
+        public boolean crosswalk;
         /** Number of street bands covering the column (2+ = intersection). */
         public int count;
         /** Buildable ground of a city block (not street, inside the rounded corners). */
@@ -570,6 +572,7 @@ public final class City {
             road = false;
             lane = false;
             mark = false;
+            crosswalk = false;
             count = 0;
             lot = false;
             edge = Double.POSITIVE_INFINITY;
@@ -631,6 +634,7 @@ public final class City {
             }
         }
         boolean markCandidate = false;
+        boolean crossCandidate = false;
         double markAlong = 0;
         int markRun = 0;
         // north-south streets (only the segment of block row bj can contain v)
@@ -641,6 +645,7 @@ public final class City {
                     markAlong = v - V(bj) - hw;
                     markRun = SZ - (int) (2 * hw);
                 }
+                crossCandidate |= crosswalk(u - U(i), v - V(bj) - hw, SZ - (int) (2 * hw));
             }
         }
         // east-west streets
@@ -651,9 +656,11 @@ public final class City {
                     markAlong = u - U(bi) - hw;
                     markRun = SX - (int) (2 * hw);
                 }
+                crossCandidate |= crosswalk(v - V(j), u - U(bi) - hw, SX - (int) (2 * hw));
             }
         }
         h.mark = h.count == 1 && markCandidate && dash((int) Math.floor(markAlong), markRun);
+        h.crosswalk = h.count == 1 && crossCandidate && !h.mark;
         if (!h.road && L.isCity(bi, bj)) {
             h.lot = true;
         } else if (!h.road) {
@@ -695,6 +702,26 @@ public final class City {
         int len = n * Params.DASH + (n - 1) * Params.DASH_GAP;
         int k = t - (run - len) / 2;
         return k >= 0 && k < len && k % (Params.DASH + Params.DASH_GAP) < Params.DASH;
+    }
+
+    /** Rows of a crosswalk along the street, and lane rows between it and the crossing. */
+    public static final int CROSSWALK_DEPTH = 3;
+    public static final int CROSSWALK_GAP = 2;
+
+    /**
+     * Whether a column at signed distance {@code across} from a street's centerline, {@code along} blocks into a
+     * segment {@code run} long (from the edge of the crossing), is a white stripe of the zebra crossing that each end
+     * of the segment has: {@link #CROSSWALK_DEPTH} rows starting {@link #CROSSWALK_GAP} rows from the crossing,
+     * stripes of 1 block with gaps of 1 across the 27 lanes (both outer lanes white).
+     */
+    static boolean crosswalk(double across, double along, int run) {
+        if (Math.abs(across) > Params.STREET_LANE_HW) {
+            return false;
+        }
+        int t = (int) Math.floor(along);
+        boolean row = t >= CROSSWALK_GAP && t < CROSSWALK_GAP + CROSSWALK_DEPTH
+                || t >= run - CROSSWALK_GAP - CROSSWALK_DEPTH && t < run - CROSSWALK_GAP;
+        return row && Math.floorMod((int) Math.round(across), 2) == 1;
     }
 
     /** Registers one street primitive at world distance d; returns true if the column is on its center marking. */
