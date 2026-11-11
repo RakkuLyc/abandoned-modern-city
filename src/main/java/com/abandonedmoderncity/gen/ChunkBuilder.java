@@ -308,12 +308,18 @@ final class ChunkBuilder {
         int decay = RoadDecay.surface(plan.seed, x, z, zone, cp.struct[i], slab);
         switch (cp.struct[i]) {
             case Profile.BRIDGE -> {
-                clear(i, x, z, ys + 1, top);
-                set(x, ys, z, surface);
-                set(x, ys - 1, z, base);
+                if ((flags & ChunkPlan.F_HOLE) != 0) {
+                    // a hole through the deck: nothing at all
+                    clear(i, x, z, ys - 1, top);
+                } else {
+                    clear(i, x, z, ys + 1, top);
+                    set(x, ys, z, surface);
+                    // the old slab: mossy and cracked stones under the surface
+                    set(x, ys - 1, z, Palette.BRIDGE_STONES[RoadDecay.bridgeStone(plan.seed, x, ys - 1, z)]);
+                }
                 if ((flags & ChunkPlan.F_PILLAR) != 0) {
                     for (int y = ys - 2; y > groundY; y--) {
-                        set(x, y, z, Palette.STONE);
+                        set(x, y, z, Palette.BRIDGE_STONES[RoadDecay.bridgeStone(plan.seed, x, y, z)]);
                     }
                 }
             }
@@ -335,7 +341,7 @@ final class ChunkBuilder {
                 }
             }
         }
-        if (decay != BlockCode.KEEP) {
+        if (decay != BlockCode.KEEP && (flags & ChunkPlan.F_HOLE) == 0) {
             // plants of a taken-over column (on the ground or on a bridge)
             for (int dy = 1; dy <= 2; dy++) {
                 int plant = RoadDecay.plant(plan.seed, x, z, dy, decay);
@@ -653,9 +659,15 @@ final class ChunkBuilder {
                         int ys = ChunkPlan.surfaceY(h2);
                         byte zone = np.zone[i];
                         boolean tunnel = np.struct[i] == Profile.TUNNEL;
+                        boolean bridge = np.struct[i] == Profile.BRIDGE;
+                        if ((np.flags[i] & ChunkPlan.F_HOLE) != 0) {
+                            // a hole through a bridge: left as built
+                            continue;
+                        }
                         int decay = RoadDecay.surface(plan.seed, x, z, zone, np.struct[i], ChunkPlan.isSlab(h2));
                         restore(region, nc, p.set(x, ys, z), Palette.roadSurfaceAt(plan.seed, x, z, zone, np.struct[i], ChunkPlan.isSlab(h2)));
-                        restore(region, nc, p.set(x, ys - 1, z), Palette.roadBase(zone));
+                        restore(region, nc, p.set(x, ys - 1, z), bridge
+                                ? Palette.BRIDGE_STONES[RoadDecay.bridgeStone(plan.seed, x, ys - 1, z)] : Palette.roadBase(zone));
                         if (ChunkPlan.walled(zone)) {
                             for (int y = ys + 1; y <= wallTop(plan, x, z); y++) {
                                 restore(region, nc, p.set(x, y, z), wallState(plan, x, y, z));
@@ -669,7 +681,8 @@ final class ChunkBuilder {
                             }
                         }
                         // free height above the lanes
-                        int free0 = ChunkPlan.walled(zone) ? wallTop(plan, x, z) + 1 : ys + 1;
+                        int wall = ChunkPlan.walled(zone) ? wallTop(plan, x, z) : Integer.MIN_VALUE;
+                        int free0 = wall != Integer.MIN_VALUE ? wall + 1 : ys + 1;
                         int free1 = ys + (tunnel ? Params.CLEARANCE : 4);
                         for (int y = free0; y <= free1 && y < maxY; y++) {
                             BlockState s = nc.getBlockState(p.set(x, y, z));
@@ -795,7 +808,13 @@ final class ChunkBuilder {
     private static int edgeSurface(WorldPlan plan, int x, int z) {
         ChunkPlan cp = plan.chunk(x >> 4, z >> 4);
         int i = ChunkPlan.idx(x & 15, z & 15);
-        return cp.kind[i] == ChunkPlan.ROAD && ChunkPlan.walled(cp.zone[i]) ? ChunkPlan.surfaceY(cp.h2[i]) : Integer.MIN_VALUE;
+        boolean wall = cp.kind[i] == ChunkPlan.ROAD && ChunkPlan.walled(cp.zone[i]) && !wallGap(plan, cp, i, x, z);
+        return wall ? ChunkPlan.surfaceY(cp.h2[i]) : Integer.MIN_VALUE;
+    }
+
+    /** Whether the wall of an edge column has fallen (on the bridges only). */
+    static boolean wallGap(WorldPlan plan, ChunkPlan cp, int i, int x, int z) {
+        return cp.struct[i] == Profile.BRIDGE && RoadDecay.wallGap(plan.seed, x, z);
     }
 
     private static final int[][] SIDES = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
@@ -805,7 +824,12 @@ final class ChunkBuilder {
      * starts higher, so that the two walls share a level and connect.
      */
     static int wallTop(WorldPlan plan, int x, int z) {
-        int top = edgeSurface(plan, x, z) + 1;
+        int own = edgeSurface(plan, x, z);
+        if (own == Integer.MIN_VALUE) {
+            // no wall here (a fallen stretch of a bridge wall): Integer.MIN_VALUE, nothing to build or to keep free
+            return Integer.MIN_VALUE;
+        }
+        int top = own + 1;
         for (int[] d : SIDES) {
             int n = edgeSurface(plan, x + d[0], z + d[1]);
             if (n != Integer.MIN_VALUE) {
@@ -829,7 +853,9 @@ final class ChunkBuilder {
         }
         boolean straight = c[0] && c[2] && !c[1] && !c[3] || c[1] && c[3] && !c[0] && !c[2];
         boolean up = !straight || y < wallTop(plan, x, z);
-        return Palette.WALL
+        ChunkPlan cp = plan.chunk(x >> 4, z >> 4);
+        boolean mossy = cp.struct[ChunkPlan.idx(x & 15, z & 15)] == Profile.BRIDGE && RoadDecay.mossyWall(plan.seed, x, z);
+        return (mossy ? Palette.MOSSY_WALL : Palette.WALL)
                 .setValue(WallBlock.NORTH_WALL, c[0] ? WallSide.LOW : WallSide.NONE)
                 .setValue(WallBlock.EAST_WALL, c[1] ? WallSide.LOW : WallSide.NONE)
                 .setValue(WallBlock.SOUTH_WALL, c[2] ? WallSide.LOW : WallSide.NONE)

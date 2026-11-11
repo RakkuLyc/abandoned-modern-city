@@ -53,7 +53,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 
 ## 2. O que é verificado
 
-### Unitários (28 testes)
+### Unitários (29 testes)
 
 | Teste | Verifica |
 |---|---|
@@ -69,6 +69,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `RoadDecayTest.aboutThreeColumnsInTenAreTakenInPatches` | 1,9 milhão de colunas em 3 seeds: 29,8% tomadas, determinístico, em manchas (73% das tomadas têm a vizinha tomada), os 6 tipos aparecem |
 | `RoadDecayTest.tunnelsRampStepsAndWallsStayClean` | túneis, degraus de meia-laje e a coluna do muro nunca são tomados (pontes podem ser); calçadas racham em pedregulho, nunca em asfalto |
 | `RoadDecayTest.wornTextureAndMarkings` | 250 000 colunas: textura gasta sempre de uma das variantes da pista, da calçada ou das lajes; `polished_deepslate` é a mais comum (54%) e todas as variantes aparecem; 20% das faixas apagadas; a coluna do muro não muda |
+| `WreckTest.holesAreAboutOnePerEightyBlocksOfBridgeInTheMiddleOfTheLanes` | 2 000 perfis de ponte de 60 a 460 blocos: 1 buraco a cada ~85 blocos de ponte, sempre na ponte, longe das pontas, dentro das 27 faixas, do tamanho pedido; nenhum fora das pontes |
 | `RoadDecayTest.plantsOnlyOnGrassAndMossAndWithoutCollision` | plantas só sobre grama e musgo, sempre sem colisão (grama baixa, alta, samambaia), metade de cima da grama alta certa |
 | `RingTest.withoutStructuresBlocksStayEmpty` | (pulado com estruturas) com `index.txt` vazio: nenhum estado de estrutura e o anel não cria lotes |
 | `RingTest.groundLayerAndBuriedLayers` | as estruturas com camada enterrada têm blocos embaixo do chão e nada mais fundo; nenhum ar enterrado; mansão abandonada, torre, azulado e apartamento descem 1 |
@@ -119,6 +120,8 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
     costuras entre chunks apareceriam aqui).
 - **Regras gerais:**
   - `hard_block` (bloco indestrutível em via, ponte, túnel ou lote; qualquer dureza é permitida);
+  - `hole_filled` (buraco de ponte com bloco na superfície ou na laje; contados em `bridge_hole_columns`),
+    `parapet` (muro de ponte: `stone_brick_wall` ou `mossy_stone_brick_wall`, ou ar num trecho caído; `wall_gap_columns`);
   - `road_plant` (planta planejada numa coluna de via tomada que falta ou mudou; as colunas tomadas são contadas em
     `taken_road_columns`, as plantas em `road_plants`; a superfície tomada é conferida em `surface_block`);
   - `banner_without_design` (banner de estrutura sem o desenho do molde; contados em `structure_banners`);
@@ -177,6 +180,8 @@ e a regra de escada e apoio no mesmo chunk.
 | 38 | Teste no jogo pelo usuário, 12 nov | a mansão pós-apocalíptica de costas para a rua; teias flutuando nela | frente no +Z do molde; teias sem apoio no molde | giro de 180° no índice; teias soltas viram ar em todas as estruturas (18) |
 | 39 | Teste no jogo pelo usuário, 12 nov | banners das farmácias lisos | o leitor de moldes ignorava os dados de block entity, onde ficam os desenhos | `Template.banners` guarda os padrões, aplicados quando o banner é colocado (geração e `/amcs spawn`); auditoria `banner_without_design` |
 | 40 | Bateria, 12 nov (quarteirões 180 × 120) | `building_mismatch` (3): folhas de bétula planejadas viraram ar | a limpeza de folhas órfãs (árvores naturais cortadas pela cidade) considerava toda folha não persistente; as das árvores reais do mod ficaram assim, e com o tronco num chunk ainda não gerado pareciam órfãs | a limpeza nunca remove folhas que o plano coloca (`ChunkBuilder.plannedLeaves`) |
+| 41 | `PlanAuditTest`, 12 nov (buracos nas pontes e desabamentos nos túneis, estes depois retirados) | `orphan_road` (18 de 105 auditorias): colunas de pista isoladas | a borda irregular, sorteada coluna a coluna, cercava colunas de pista | contorno irregular mas suave em volta do centro (ondas do ângulo) sem ilhas; 105 de 105 passam |
+| 42 | Bateria, 12 nov (pontes velhas) | servidor travado no viaduto e avisos `Detected setBlock in a far chunk` | nos trechos de muro caído, `wallTop` devolvia `Integer.MIN_VALUE + 1` e o laço da altura livre do reparo de vizinhos percorria ~2 bilhões de alturas; o muro também era posto nos trechos caídos (altura do vizinho) | `wallTop` devolve `Integer.MIN_VALUE` quando a coluna não tem muro e a altura livre começa na superfície |
 | — | Bateria (infraestrutura) | servidores falhando com "Address already in use" | um servidor de uma bateria interrompida ainda terminava | o script usa a porta 25591 e se recusa a começar com um servidor de desenvolvimento vivo |
 
 ## 4. Como reproduzir
@@ -223,7 +228,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
 ## 6. Resultados atuais (12 nov 2026, quarteirões 180 × 120 com anel de estruturas com vãos e miolo tomado pela natureza, ruas e rodovias de 33, cidades no meio de células de 736, 4 entradas)
 
-- **Unitários:** 27 passam e 1 é pulado (o teste sem estruturas), 12 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
+- **Unitários:** 28 passam e 1 é pulado (o teste sem estruturas), 12 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
   - **Rede (7 terrenos × 3 seeds, 81 células), cidades no meio da célula de 736, 4 entradas (uma por lado):** 35 a
@@ -239,6 +244,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 12 nov | asfalto gasto (`polished_deepslate`), 30% tomado, pontes velhas (laje e pilares musgosos, muro quebrado e musgoso, buracos), sem desabamentos nos túneis | PASS: 8 de 8, 0 erros de geração; na ponte mais longa 87 colunas de buraco, 53 de muro caído e 5976 tomadas; 2,74 ms por chunk, 268 s |
   | `20261027` | padrão (8 alvos) | 12 nov | ruas abandonadas e vinhas das pontes | PASS: 8 de 8, 0 erros de geração; na cidade do spawn 7 717 de 76 027 colunas de via no chão tomadas (10,2%) e 2 413 plantas conferidas; 2,86 ms por chunk, 279 s |
   | `20261027` | padrão (8 alvos) | 12 nov | vãos de 4 a 17 | PASS: 8 de 8, 0 erros de geração, 2,82 ms por chunk |
   | `20261027` | padrão (8 alvos) | 12 nov | quarteirões 180 × 120, vãos de 10 a 19 e bosque de 20 a 30 | PASS: 8 de 8, 0 erros de geração; na cidade mais acidentada 1 180 contêineres com loot e 45 banners conferidos; 8 346 chunks, 2,74 ms por chunk, 267 s |

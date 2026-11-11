@@ -83,6 +83,15 @@ existem as cidades 2 × 2 de quarteirões retangulares.
 - Vinhas das pontes (12 nov 2026, pedido do usuário): em 35% das colunas logo fora da borda de uma ponte (a do muro),
   um cacho de vinha preso na laje desce da superfície até o primeiro bloco que não é ar (chão ou água); feito em
   todo chunk, também nos sem nada planejado (`ChunkBuilder.bridgeVines`).
+- Pontes abandonadas (12 nov 2026): pista tomada e gasta como as ruas; a laje (o bloco sob a superfície) e os
+  pilares em manchas de `mossy_stone_bricks`, `cracked_stone_bricks`, `mossy_cobblestone` e `stone_bricks`
+  (`RoadDecay.bridgeStone`); o muro quebrado em trechos de 1 a 3 blocos (`RoadDecay.wallGap`, ruído de 2,5 acima de
+  0,8) e musgoso em trechos (`mossy_stone_brick_wall`, ~metade); buracos atravessando a laje, ~1 a cada 80 blocos de
+  ponte (`Wreck.holes`), de 5 a 7 blocos na largura e 4 a 5 no comprimento, contorno irregular e suave (sem ilhas de
+  pista), com o meio a até 6 do eixo, a 8+ blocos das pontas da ponte.
+- Túneis sem obstáculos: desabamentos (monte de pedra com buraco no teto) foram testados em 12 nov 2026 e retirados
+  a pedido do usuário; a pista dos túneis fica livre. As colunas dos buracos das pontes não são trafegáveis
+  (`ChunkPlan.drivable`).
 - Túneis com 7 blocos de altura livre (`Params.CLEARANCE`); só há túnel com 11+ blocos de terreno acima da pista
   (`Params.TUNNEL_COVER`).
 - Ruas cortadas: **desligadas** (`City.MAX_CUTS` = 0, pedido do usuário para o 2 × 2; o código continua). Quando

@@ -579,6 +579,7 @@ public final class WorldPlan {
                 double bandAbs = Double.POSITIVE_INFINITY;
                 double bandLane = Params.HIGHWAY_LANE_HW;
                 double bandS = 0;
+                double bandD = 0;
                 HighwayRef wall = null;
                 double wallS = 0;
                 int n = 0;
@@ -601,6 +602,7 @@ public final class WorldPlan {
                             bandAbs = ad;
                             band = r;
                             bandS = pr.s;
+                            bandD = pr.d;
                             bandLane = lane;
                         }
                         continue;
@@ -661,6 +663,10 @@ public final class WorldPlan {
                     if (st == Profile.TUNNEL && bandAbs <= Params.MARK_HW
                             && Math.floorMod(k, Params.LIGHT_EVERY) == Params.LIGHT_EVERY / 2) {
                         flags |= ChunkPlan.F_LIGHT;
+                    }
+                    // the wreck of an abandoned highway: holes through the bridges
+                    if (st == Profile.BRIDGE && zone != ChunkPlan.PARAPET && Wreck.inHole(band.d.holes, k, bandD)) {
+                        flags |= ChunkPlan.F_HOLE;
                     }
                     cp.zone[i] = zone;
                     cp.flags[i] = flags;

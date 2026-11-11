@@ -279,8 +279,12 @@ public final class Highway {
         public final boolean[] water;
         public final boolean valid;
         public final String reason;
+        /** Holes through the bridges ({@link Wreck}). */
+        public final Wreck.Site[] holes;
 
-        Detail(int[] he, byte[] type, boolean[] pillar, double[] ground, boolean[] water, boolean valid, String reason) {
+        Detail(int[] he, byte[] type, boolean[] pillar, double[] ground, boolean[] water, boolean valid, String reason,
+               long key) {
+            this.holes = Wreck.holes(key, type);
             this.he = he;
             this.type = type;
             this.pillar = pillar;
@@ -376,7 +380,7 @@ public final class Highway {
             valid = false;
             reason = "water crossing of " + longestWet * SAMPLE + " blocks";
         }
-        return new Detail(he, type, pillar, ground, water, valid, reason);
+        return new Detail(he, type, pillar, ground, water, valid, reason, key);
     }
 
     @Override

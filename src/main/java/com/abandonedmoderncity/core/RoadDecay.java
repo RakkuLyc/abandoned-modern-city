@@ -122,6 +122,31 @@ public final class RoadDecay {
         return BlockCode.KEEP;
     }
 
+    /** Gaps 1 to 3 blocks long in the walls of the bridges (value noise over cells of 2.5 above this). */
+    static final double WALL_GAP = 0.80;
+
+    /** Whether the wall of a bridge edge column at (x, z) has fallen. */
+    public static boolean wallGap(long seed, int x, int z) {
+        return Flora.noise(seed, SALT + 11, x, z, 2.5) > WALL_GAP;
+    }
+
+    /** Whether the wall of a bridge edge column at (x, z) is mossy (in stretches, about half of them). */
+    public static boolean mossyWall(long seed, int x, int z) {
+        return Flora.noise(seed, SALT + 12, x, z, 6) > 0.5 || Hash.unit(Hash.of(seed, SALT + 13, x, z)) < 0.15;
+    }
+
+    /** Stones of the bridges' slab and pillars: mossy stone bricks, cracked stone bricks, mossy cobblestone, stone bricks. */
+    public static final int BRIDGE_STONES = 4;
+
+    /** Stone (0..3) of the bridge slab or pillar block at (x, y, z), in patches. */
+    public static int bridgeStone(long seed, int x, int y, int z) {
+        double k = Flora.noise(seed, SALT + 14, x + 0.37 * y, z - 0.29 * y, 3);
+        if (Hash.unit(Hash.of(seed, SALT + 15, x, y * 31L + z)) < 0.2) {
+            k = Hash.unit(Hash.of(seed, SALT + 16, x, y * 31L + z));
+        }
+        return Math.min(BRIDGE_STONES - 1, (int) (k * BRIDGE_STONES));
+    }
+
     /** Share of the bridge edge columns from which a vine hangs down to the ground (asked by the user). */
     public static final double BRIDGE_VINES = 0.35;
 

@@ -102,6 +102,8 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
   plantas sem colisão por cima. O resto do asfalto (`polished_deepslate`) e das calçadas tem textura gasta, com
   manchas de outras pedras, e 20% das faixas pintadas estão apagadas. Os túneis ficam limpos; das pontes pendem
   vinhas até o chão.
+- **Pontes velhas:** laje e pilares de pedra musgosa e rachada, muro quebrado em trechos e musgoso, e buracos
+  irregulares (5 a 7 × 4 a 5) atravessando a laje, ~1 a cada 80 blocos de ponte.
 - **Faixas de pedestres:** zebra de `white_concrete` (listras de 1 com intervalo de 1, 3 linhas) 2 linhas antes de
   cada cruzamento, nas duas pontas de todo trecho de rua.
 - **Rede de rodovias:** grafo de Gabriel entre os centros das cidades. É planar e conexo, e as rodovias nunca se
@@ -137,7 +139,8 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
   City           estágio 1 (existe? centro, altura) e estágio 2 (ruas, quarteirões, lotes)
   Lot            lotes: parque inteiro de quarteirão, uma estrutura ou o miolo tomado pela natureza (WILD)
   Flora          árvores (4 espécies, vinhas), chão em manchas, plantas e entulho; índice de árvores por baldes
-  RoadDecay      ruas abandonadas: que colunas de via são tomadas, por quê e com que planta
+  RoadDecay      ruas abandonadas: colunas tomadas, textura gasta, plantas; pedras e muros das pontes velhas
+  Wreck          buracos nas pontes, por posição ao longo da rodovia
   Wild           o miolo do quarteirão: chão, árvores e vegetação, sem entrar nas estruturas
   Ring           anel de estruturas em volta do quarteirão (lados curtos inteiros, compridos no que sobra), vãos, limites
   Structures     as 14 estruturas de `amcs/buildings/index.txt`: caixa, camada do chão, piso até a borda, folhas reais, rotação

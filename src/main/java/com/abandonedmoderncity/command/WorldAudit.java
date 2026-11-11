@@ -111,6 +111,19 @@ public final class WorldAudit {
         return r;
     }
 
+    /** A block of a bridge pillar: stone (old worlds) or the old bridge stones. */
+    private static boolean isPillar(BlockState s) {
+        if (s.is(Blocks.STONE)) {
+            return true;
+        }
+        for (BlockState b : Palette.BRIDGE_STONES) {
+            if (s.is(b.getBlock())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static BlockState at(LevelChunk c, BlockPos.MutableBlockPos p, int x, int y, int z) {
         return c.getBlockState(p.set(x, y, z));
     }
@@ -153,6 +166,14 @@ public final class WorldAudit {
         if (slab) {
             r.stat("slab_columns", 1);
         }
+        if ((cp.flags[i] & ChunkPlan.F_HOLE) != 0) {
+            // a hole through the deck of a bridge: nothing at the surface nor under it
+            r.stat("bridge_hole_columns", 1);
+            if (!at(c, p, x, ys, z).isAir() || !at(c, p, x, ys - 1, z).isAir()) {
+                r.fail("hole_filled", where + " " + id(at(c, p, x, ys, z)) + " / " + id(at(c, p, x, ys - 1, z)));
+            }
+            return Double.NaN;
+        }
         BlockState surface = at(c, p, x, ys, z);
         int decay = com.abandonedmoderncity.core.RoadDecay.surface(plan.seed, x, z, zone, st, slab);
         BlockState expected = Palette.roadSurfaceAt(plan.seed, x, z, zone, st, slab);
@@ -178,7 +199,15 @@ public final class WorldAudit {
         }
         double m = measure(c, p, x, z, ys);
         if (!cp.drivable(i)) {
-            if (!at(c, p, x, ys + 1, z).is(Blocks.STONE_BRICK_WALL)) {
+            BlockState w = at(c, p, x, ys + 1, z);
+            boolean gap = st == Profile.BRIDGE && com.abandonedmoderncity.core.RoadDecay.wallGap(plan.seed, x, z);
+            if (gap) {
+                // a fallen stretch of a bridge wall
+                r.stat("wall_gap_columns", 1);
+                if (!w.isAir()) {
+                    r.fail("parapet", where + " fallen wall " + id(w));
+                }
+            } else if (!w.is(Blocks.STONE_BRICK_WALL) && !w.is(Blocks.MOSSY_STONE_BRICK_WALL)) {
                 r.fail("parapet", where);
             }
             return m;
@@ -232,7 +261,7 @@ public final class WorldAudit {
         }
         if ((cp.flags[i] & ChunkPlan.F_PILLAR) != 0) {
             int y = ys - 2;
-            while (y > c.getMinBuildHeight() && at(c, p, x, y, z).is(Blocks.STONE)) {
+            while (y > c.getMinBuildHeight() && isPillar(at(c, p, x, y, z))) {
                 y--;
             }
             BlockState below = at(c, p, x, y, z);

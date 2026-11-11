@@ -149,6 +149,10 @@ public final class Palette {
             .setValue(DoublePlantBlock.HALF, DoubleBlockHalf.UPPER);
     public static final BlockState MOSSY_SLAB = Blocks.MOSSY_STONE_BRICK_SLAB.defaultBlockState();
     public static final BlockState MOSSY_COBBLE_SLAB = Blocks.MOSSY_COBBLESTONE_SLAB.defaultBlockState();
+    /** Old bridges (core/RoadDecay): slab and pillar stones, mossy wall. */
+    public static final BlockState[] BRIDGE_STONES = {b(Blocks.MOSSY_STONE_BRICKS), b(Blocks.CRACKED_STONE_BRICKS),
+            b(Blocks.MOSSY_COBBLESTONE), b(Blocks.STONE_BRICKS)};
+    public static final BlockState MOSSY_WALL = Blocks.MOSSY_STONE_BRICK_WALL.defaultBlockState();
     /** Taken-over road surfaces (core/RoadDecay). */
     public static final BlockState GRAVEL = Blocks.GRAVEL.defaultBlockState();
     public static final BlockState BLACKSTONE = Blocks.BLACKSTONE.defaultBlockState();
@@ -507,6 +511,8 @@ public final class Palette {
         set.addAll(List.of(MOSS_BLOCK, FERN, LARGE_FERN_LOWER, LARGE_FERN_UPPER, MOSSY_SLAB, MOSSY_COBBLE_SLAB, GRAVEL, BLACKSTONE,
                 COBBLED_DEEPSLATE));
         set.addAll(List.of(LANE_TEX));
+        set.addAll(List.of(BRIDGE_STONES));
+        set.add(MOSSY_WALL);
         set.addAll(List.of(SIDEWALK_TEX));
         set.addAll(List.of(LANE_SLAB_TEX));
         set.addAll(List.of(SIDEWALK_SLAB_TEX));
