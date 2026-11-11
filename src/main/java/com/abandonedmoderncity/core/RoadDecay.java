@@ -1,9 +1,10 @@
 package com.abandonedmoderncity.core;
 
 /**
- * Abandoned roads (asked by the user, 12 nov 2026): about one road column in ten is taken over, in patches and cracks
- * that are a pure function of the position (and the world seed), on city streets, sidewalks and highways on the
- * ground (not on bridges, in tunnels, on the half-slab steps of ramps or under the highway walls). A taken column
+ * Abandoned roads (asked by the user, 12 nov 2026): about 30% of the road columns are taken over, in patches and
+ * cracks that are a pure function of the position (and the world seed), on city streets, sidewalks, highways and
+ * bridges (not in tunnels, on the half-slab steps of ramps or under the highway walls); the other columns get a worn
+ * texture ({@link #texture}). A taken column
  * keeps its height (no step for vehicles); only plants without collision grow on it:
  * <ul>
  *   <li>grass ({@code grass_block}) with short grass, tall grass or a fern;</li>
@@ -18,13 +19,53 @@ public final class RoadDecay {
 
     /** Patches: value noise over cells of this size above {@link #PATCH}; cracks: single columns at {@link #CRACK}. */
     static final double PATCH_CELL = 5;
-    static final double PATCH = 0.82;
-    static final double CRACK = 0.03;
+    static final double PATCH = 0.66;
+    static final double CRACK = 0.06;
     private static final long SALT = 0x524F4144L;
 
-    /** Whether a road column with this zone and structure can be taken over. */
+    /** Whether a road column with this zone and structure can be taken over (bridges too, since 12 nov 2026). */
     public static boolean eligible(byte zone, byte struct, boolean slab) {
-        return !slab && struct == Profile.GROUND && zone != ChunkPlan.PARAPET;
+        return !slab && struct != Profile.TUNNEL && zone != ChunkPlan.PARAPET;
+    }
+
+    /** Worn variants of the road surface: lanes (polished deepslate first), sidewalks (smooth stone first). */
+    public static final int LANE_VARIANTS = 7;
+    public static final int SIDEWALK_VARIANTS = 5;
+    public static final int SLAB_VARIANTS = 4;
+    /** Share of the columns of a patch of worn texture, and of single worn columns; share of worn markings. */
+    static final double WORN_PATCH = 0.55;
+    static final double WORN_SINGLE = 0.08;
+    static final double WORN_MARK = 0.20;
+
+    /**
+     * Worn texture of a road column that is not taken over: patches and single columns of other dark stones in the
+     * lanes ({@link BlockCode#LANE_TEX} + variant: polished deepslate, polished blackstone, cobbled deepslate,
+     * deepslate tiles, cracked deepslate tiles, blackstone, smooth basalt), of other light stones on the sidewalks
+     * ({@link BlockCode#SIDEWALK_TEX} + variant: smooth stone, andesite, cracked stone bricks, stone bricks,
+     * cobblestone), the same in slabs on the ramps; a fifth of the markings worn off. KEEP: the plain marking or the
+     * wall column.
+     */
+    public static int texture(long seed, int x, int z, byte zone) {
+        return texture(seed, x, z, zone, false);
+    }
+
+    public static int texture(long seed, int x, int z, byte zone, boolean slab) {
+        boolean mark = zone == ChunkPlan.MARK || zone == ChunkPlan.MARK_HIGHWAY || zone == ChunkPlan.CROSSWALK;
+        if (zone == ChunkPlan.PARAPET || mark && Hash.unit(Hash.of(seed, SALT + 6, x, z)) >= WORN_MARK) {
+            return BlockCode.KEEP;
+        }
+        boolean lane = mark || zone == ChunkPlan.LANE;
+        int n = slab ? SLAB_VARIANTS : lane ? LANE_VARIANTS : SIDEWALK_VARIANTS;
+        int variant = 0;
+        boolean patch = Flora.noise(seed, SALT + 7, x, z, 4) > WORN_PATCH;
+        if (patch || Hash.unit(Hash.of(seed, SALT + 8, x, z)) < WORN_SINGLE) {
+            // a patch mostly of one stone, a single column of any
+            double k = patch ? Flora.noise(seed, SALT + 9, x, z, 7) : Hash.unit(Hash.of(seed, SALT + 10, x, z));
+            variant = 1 + Math.min(n - 2, (int) (k * (n - 1)));
+        }
+        int base = slab ? (lane ? BlockCode.LANE_SLAB_TEX : BlockCode.SIDEWALK_SLAB_TEX)
+                : lane ? BlockCode.LANE_TEX : BlockCode.SIDEWALK_TEX;
+        return base + variant;
     }
 
     /** Whether (x, z) is taken over (the column being eligible). */

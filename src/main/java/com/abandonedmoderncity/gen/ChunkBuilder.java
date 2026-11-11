@@ -302,13 +302,10 @@ final class ChunkBuilder {
         int ys = ChunkPlan.surfaceY(h2);
         byte zone = cp.zone[i];
         byte flags = cp.flags[i];
-        BlockState surface = Palette.roadSurface(zone, slab);
+        // abandoned roads: some columns taken over by grass, moss, dirt or cracks, the others worn (core/RoadDecay)
+        BlockState surface = Palette.roadSurfaceAt(plan.seed, x, z, zone, cp.struct[i], slab);
         BlockState base = Palette.roadBase(zone);
-        // abandoned roads: some columns taken over by grass, moss, dirt or cracks (core/RoadDecay)
         int decay = RoadDecay.surface(plan.seed, x, z, zone, cp.struct[i], slab);
-        if (decay != BlockCode.KEEP) {
-            surface = Palette.of(decay, 0, null);
-        }
         switch (cp.struct[i]) {
             case Profile.BRIDGE -> {
                 clear(i, x, z, ys + 1, top);
@@ -336,13 +333,14 @@ final class ChunkBuilder {
                 for (int y = ys - 2; y > groundY; y--) {
                     set(x, y, z, Palette.STONE);
                 }
-                if (decay != BlockCode.KEEP) {
-                    for (int dy = 1; dy <= 2; dy++) {
-                        int plant = RoadDecay.plant(plan.seed, x, z, dy, decay);
-                        if (plant != BlockCode.KEEP) {
-                            set(x, ys + dy, z, Palette.of(plant, 0, null));
-                        }
-                    }
+            }
+        }
+        if (decay != BlockCode.KEEP) {
+            // plants of a taken-over column (on the ground or on a bridge)
+            for (int dy = 1; dy <= 2; dy++) {
+                int plant = RoadDecay.plant(plan.seed, x, z, dy, decay);
+                if (plant != BlockCode.KEEP) {
+                    set(x, ys + dy, z, Palette.of(plant, 0, null));
                 }
             }
         }
@@ -656,8 +654,7 @@ final class ChunkBuilder {
                         byte zone = np.zone[i];
                         boolean tunnel = np.struct[i] == Profile.TUNNEL;
                         int decay = RoadDecay.surface(plan.seed, x, z, zone, np.struct[i], ChunkPlan.isSlab(h2));
-                        restore(region, nc, p.set(x, ys, z), decay != BlockCode.KEEP ? Palette.of(decay, 0, null)
-                                : Palette.roadSurface(zone, ChunkPlan.isSlab(h2)));
+                        restore(region, nc, p.set(x, ys, z), Palette.roadSurfaceAt(plan.seed, x, z, zone, np.struct[i], ChunkPlan.isSlab(h2)));
                         restore(region, nc, p.set(x, ys - 1, z), Palette.roadBase(zone));
                         if (ChunkPlan.walled(zone)) {
                             for (int y = ys + 1; y <= wallTop(plan, x, z); y++) {

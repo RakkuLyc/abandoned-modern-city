@@ -155,7 +155,7 @@ public final class WorldAudit {
         }
         BlockState surface = at(c, p, x, ys, z);
         int decay = com.abandonedmoderncity.core.RoadDecay.surface(plan.seed, x, z, zone, st, slab);
-        BlockState expected = decay != BlockCode.KEEP ? Palette.of(decay, 0, null) : Palette.roadSurface(zone, slab);
+        BlockState expected = Palette.roadSurfaceAt(plan.seed, x, z, zone, st, slab);
         if (decay != BlockCode.KEEP) {
             r.stat("taken_road_columns", 1);
         }

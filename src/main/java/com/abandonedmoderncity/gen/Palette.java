@@ -40,8 +40,20 @@ public final class Palette {
 
     // ------------------------------------------------------------------ roads
     /** Lanes: polished blackstone (a slab on highway ramps). */
-    public static final BlockState LANE = Blocks.POLISHED_BLACKSTONE.defaultBlockState();
-    public static final BlockState LANE_SLAB = Blocks.POLISHED_BLACKSTONE_SLAB.defaultBlockState();
+    /** The asphalt: polished deepslate (asked by the user, 12 nov 2026; was polished blackstone). */
+    public static final BlockState LANE = Blocks.POLISHED_DEEPSLATE.defaultBlockState();
+    public static final BlockState LANE_SLAB = Blocks.POLISHED_DEEPSLATE_SLAB.defaultBlockState();
+    /** Worn road textures, by variant (core/RoadDecay.texture). */
+    public static final BlockState[] LANE_TEX = {LANE, b(Blocks.POLISHED_BLACKSTONE), b(Blocks.COBBLED_DEEPSLATE),
+            b(Blocks.DEEPSLATE_TILES), b(Blocks.CRACKED_DEEPSLATE_TILES), b(Blocks.BLACKSTONE), b(Blocks.SMOOTH_BASALT)};
+    public static final BlockState[] SIDEWALK_TEX = {b(Blocks.SMOOTH_STONE), b(Blocks.ANDESITE), b(Blocks.CRACKED_STONE_BRICKS),
+            b(Blocks.STONE_BRICKS), b(Blocks.COBBLESTONE)};
+    public static final BlockState[] LANE_SLAB_TEX = {b(Blocks.POLISHED_DEEPSLATE_SLAB), b(Blocks.POLISHED_BLACKSTONE_SLAB),
+            b(Blocks.COBBLED_DEEPSLATE_SLAB), b(Blocks.DEEPSLATE_TILE_SLAB)};
+    public static final BlockState[] SIDEWALK_SLAB_TEX = {b(Blocks.SMOOTH_STONE_SLAB), b(Blocks.ANDESITE_SLAB),
+            b(Blocks.STONE_BRICK_SLAB), b(Blocks.COBBLESTONE_SLAB)};
+
+
     /** Sidewalks, highway edges and the 2 x 2 squares at the crossings: smooth stone. */
     public static final BlockState SIDEWALK = Blocks.SMOOTH_STONE.defaultBlockState();
     public static final BlockState SIDEWALK_SLAB = Blocks.SMOOTH_STONE_SLAB.defaultBlockState();
@@ -270,6 +282,18 @@ public final class Palette {
         if (code >= BlockCode.VINE && code < BlockCode.VINE + 4) {
             return VINES[code - BlockCode.VINE];
         }
+        if (code >= BlockCode.LANE_TEX && code < BlockCode.LANE_TEX + LANE_TEX.length) {
+            return LANE_TEX[code - BlockCode.LANE_TEX];
+        }
+        if (code >= BlockCode.SIDEWALK_TEX && code < BlockCode.SIDEWALK_TEX + SIDEWALK_TEX.length) {
+            return SIDEWALK_TEX[code - BlockCode.SIDEWALK_TEX];
+        }
+        if (code >= BlockCode.LANE_SLAB_TEX && code < BlockCode.LANE_SLAB_TEX + LANE_SLAB_TEX.length) {
+            return LANE_SLAB_TEX[code - BlockCode.LANE_SLAB_TEX];
+        }
+        if (code >= BlockCode.SIDEWALK_SLAB_TEX && code < BlockCode.SIDEWALK_SLAB_TEX + SIDEWALK_SLAB_TEX.length) {
+            return SIDEWALK_SLAB_TEX[code - BlockCode.SIDEWALK_SLAB_TEX];
+        }
         if (code >= BlockCode.RUBBLE && code < BlockCode.RUBBLE + BlockCode.RUBBLES) {
             return RUBBLE[code - BlockCode.RUBBLE];
         }
@@ -367,6 +391,19 @@ public final class Palette {
     }
 
     /** Full block under a slab, or the second deck layer. */
+    /**
+     * Surface block of a road column at (x, z): taken over (grass, moss, dirt, gravel, cracks), else a worn texture,
+     * else the plain surface (markings, the wall column). Generation, neighbour repair and audit use this.
+     */
+    public static BlockState roadSurfaceAt(long seed, int x, int z, byte zone, byte struct, boolean slab) {
+        int decay = com.abandonedmoderncity.core.RoadDecay.surface(seed, x, z, zone, struct, slab);
+        if (decay != BlockCode.KEEP) {
+            return of(decay, 0, null);
+        }
+        int tex = com.abandonedmoderncity.core.RoadDecay.texture(seed, x, z, zone, slab);
+        return tex != BlockCode.KEEP ? of(tex, 0, null) : roadSurface(zone, slab);
+    }
+
     public static BlockState roadBase(byte zone) {
         return zone == ChunkPlan.LANE || zone == ChunkPlan.MARK || zone == ChunkPlan.MARK_HIGHWAY || zone == ChunkPlan.CROSSWALK ? LANE : SIDEWALK;
     }
@@ -469,6 +506,10 @@ public final class Palette {
         set.addAll(List.of(RUBBLE));
         set.addAll(List.of(MOSS_BLOCK, FERN, LARGE_FERN_LOWER, LARGE_FERN_UPPER, MOSSY_SLAB, MOSSY_COBBLE_SLAB, GRAVEL, BLACKSTONE,
                 COBBLED_DEEPSLATE));
+        set.addAll(List.of(LANE_TEX));
+        set.addAll(List.of(SIDEWALK_TEX));
+        set.addAll(List.of(LANE_SLAB_TEX));
+        set.addAll(List.of(SIDEWALK_SLAB_TEX));
         for (BlockState f : fountain()) {
             // flowing water of the fountain is a fluid, not a block to break
             if (!(f.getBlock() instanceof net.minecraft.world.level.block.LiquidBlock)) {

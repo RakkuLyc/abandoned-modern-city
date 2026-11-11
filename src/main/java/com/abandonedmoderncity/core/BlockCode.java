@@ -96,6 +96,11 @@ public final class BlockCode {
     public static final int GRAVEL = 230;
     public static final int BLACKSTONE = 231;
     public static final int COBBLED_DEEPSLATE = 232;
+    /** Worn road textures ({@link RoadDecay#texture}): + variant. */
+    public static final int LANE_TEX = 300;
+    public static final int SIDEWALK_TEX = 320;
+    public static final int LANE_SLAB_TEX = 340;
+    public static final int SIDEWALK_SLAB_TEX = 360;
     /** Block {@code TEMPLATE + i}: entry i of the palette of {@link Template#WATERFALL}. */
     public static final int TEMPLATE = 1000;
     /**

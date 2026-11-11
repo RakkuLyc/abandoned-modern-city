@@ -92,14 +92,16 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
 
 | Via | Largura | Seção |
 |---|---|---|
-| Rua da cidade | 33 | `smooth_stone` 3 · `polished_blackstone` 27 (faixa `white_concrete` tracejada no 17º bloco) · `smooth_stone` 3 |
-| Rodovia | 33 | `smooth_stone` 3 (o de fora com `stone_brick_wall`) · `polished_blackstone` 27 (faixa `yellow_terracotta`) · `smooth_stone` 3 (o de fora com muro) |
+| Rua da cidade | 33 | `smooth_stone` 3 · `polished_deepslate` 27 (faixa `white_concrete` tracejada no 17º bloco) · `smooth_stone` 3 |
+| Rodovia | 33 | `smooth_stone` 3 (o de fora com `stone_brick_wall`) · `polished_deepslate` 27 (faixa `yellow_terracotta`) · `smooth_stone` 3 (o de fora com muro) |
 
 - **Faixa central:** traços de 11 com intervalo de 6. Cada cruzamento tem um quadrado 3 × 3 de `smooth_stone` em
   cada esquina.
-- **Ruas abandonadas:** ~10% das colunas de ruas, calçadas e rodovias no chão são tomadas, em manchas e rachaduras:
+- **Ruas abandonadas:** ~30% das colunas de ruas, calçadas, rodovias e pontes são tomadas, em manchas e rachaduras:
   grama com mato, musgo, terra grossa, cascalho ou asfalto rachado, sempre no mesmo nível (sem degraus) e só com
-  plantas sem colisão por cima. Pontes e túneis ficam limpos; das pontes pendem vinhas até o chão.
+  plantas sem colisão por cima. O resto do asfalto (`polished_deepslate`) e das calçadas tem textura gasta, com
+  manchas de outras pedras, e 20% das faixas pintadas estão apagadas. Os túneis ficam limpos; das pontes pendem
+  vinhas até o chão.
 - **Faixas de pedestres:** zebra de `white_concrete` (listras de 1 com intervalo de 1, 3 linhas) 2 linhas antes de
   cada cruzamento, nas duas pontas de todo trecho de rua.
 - **Rede de rodovias:** grafo de Gabriel entre os centros das cidades. É planar e conexo, e as rodovias nunca se

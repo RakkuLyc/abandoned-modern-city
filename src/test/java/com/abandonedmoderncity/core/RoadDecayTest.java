@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 class RoadDecayTest {
 
     @Test
-    void aboutOneColumnInTenIsTakenInPatches() {
+    void aboutThreeColumnsInTenAreTakenInPatches() {
         long taken = 0;
         long total = 0;
         long neighbours = 0;
@@ -36,7 +36,7 @@ class RoadDecayTest {
         double share = taken / (double) total;
         System.out.println("[RoadDecayTest] taken " + String.format("%.3f", share) + ", next one taken too "
                 + String.format("%.2f", neighbours / (double) taken) + ", kinds " + kinds);
-        assertTrue(share > 0.07 && share < 0.13, "share " + share);
+        assertTrue(share > 0.27 && share < 0.33, "share " + share);
         // patches: most taken columns have a taken neighbour
         assertTrue(neighbours > 0.4 * taken, "patches");
         assertTrue(kinds.containsKey(BlockCode.LAWN) && kinds.containsKey(BlockCode.MOSS_BLOCK)
@@ -45,10 +45,9 @@ class RoadDecayTest {
     }
 
     @Test
-    void bridgesTunnelsRampStepsAndWallsStayClean() {
+    void tunnelsRampStepsAndWallsStayClean() {
         for (int x = 0; x < 300; x++) {
             for (int z = 0; z < 300; z++) {
-                assertEquals(BlockCode.KEEP, RoadDecay.surface(1, x, z, ChunkPlan.LANE, Profile.BRIDGE, false));
                 assertEquals(BlockCode.KEEP, RoadDecay.surface(1, x, z, ChunkPlan.LANE, Profile.TUNNEL, false));
                 assertEquals(BlockCode.KEEP, RoadDecay.surface(1, x, z, ChunkPlan.LANE, Profile.GROUND, true));
                 assertEquals(BlockCode.KEEP, RoadDecay.surface(1, x, z, ChunkPlan.PARAPET, Profile.GROUND, false));
@@ -77,5 +76,34 @@ class RoadDecayTest {
                 assertEquals(p1 == BlockCode.TALL_GRASS_LOWER ? BlockCode.TALL_GRASS_UPPER : BlockCode.KEEP, p2);
             }
         }
+    }
+
+    @Test
+    void wornTextureAndMarkings() {
+        int[] lane = new int[RoadDecay.LANE_VARIANTS];
+        int marks = 0;
+        int worn = 0;
+        for (int x = 0; x < 500; x++) {
+            for (int z = 0; z < 500; z++) {
+                int t = RoadDecay.texture(3, x, z, ChunkPlan.LANE);
+                assertTrue(t >= BlockCode.LANE_TEX && t < BlockCode.LANE_TEX + RoadDecay.LANE_VARIANTS);
+                lane[t - BlockCode.LANE_TEX]++;
+                int s = RoadDecay.texture(3, x, z, ChunkPlan.SIDEWALK);
+                assertTrue(s >= BlockCode.SIDEWALK_TEX && s < BlockCode.SIDEWALK_TEX + RoadDecay.SIDEWALK_VARIANTS);
+                int sl = RoadDecay.texture(3, x, z, ChunkPlan.LANE, true);
+                assertTrue(sl >= BlockCode.LANE_SLAB_TEX && sl < BlockCode.LANE_SLAB_TEX + RoadDecay.SLAB_VARIANTS);
+                assertEquals(BlockCode.KEEP, RoadDecay.texture(3, x, z, ChunkPlan.PARAPET));
+                marks++;
+                if (RoadDecay.texture(3, x, z, ChunkPlan.MARK) != BlockCode.KEEP) {
+                    worn++;
+                }
+            }
+        }
+        System.out.println("[RoadDecayTest] lane variants " + java.util.Arrays.toString(lane) + ", worn marks " + worn + "/" + marks);
+        // polished deepslate stays the most common; every variant shows up
+        for (int v = 1; v < lane.length; v++) {
+            assertTrue(lane[v] > 0 && lane[v] < lane[0], "variant " + v);
+        }
+        assertTrue(worn > 0.15 * marks && worn < 0.25 * marks);
     }
 }

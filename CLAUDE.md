@@ -47,7 +47,8 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   `maxRadius` padrão é 230 (metade do lado comprido da cidade). A área de influência (`Params.influence`) é a
   meia-diagonal exata do retângulo da cidade (230 × 170 → 286) + 10 + talude de 32 + 4 = ~332; com ela a célula
   precisa de pelo menos 2 × 334 + 64 = 732.
-- Rua com 33 de largura (10 nov 2026): 3 `smooth_stone` (calçada) + 27 `polished_blackstone` (pista) + 3
+- Rua com 33 de largura (10 nov 2026): 3 `smooth_stone` (calçada) + 27 `polished_deepslate` (pista; até 12 nov era
+  `polished_blackstone`) + 3
   `smooth_stone` (`Params.STREET_HW` = 16,5, `STREET_LANE_HW` = 13,5).
 - Trecho de rua de 180 ou 120 blocos (o lado do quarteirão) + 33 de cruzamento; quadrado 3 × 3 de `smooth_stone` em cada esquina de cruzamento.
 - Faixa central no 17º bloco da largura (o do meio), traços de 11 com intervalo de 6 (quantos couberem, centrados); `white_concrete` na cidade,
@@ -63,14 +64,18 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   (a direção que mais aponta para ela) (a entrada sorteada daquele lado; se ela já serve outra rodovia, a próxima melhor direção). Ligam-se as
   vizinhas de Gabriel que estão entre as 4 mais próximas uma da outra.
 - Rodovias com a mesma largura das ruas, 33 (10 nov 2026): 3 `smooth_stone` (o de fora com `stone_brick_wall` em
-  cima; `Params.HIGHWAY_SHOULDER` = 2 de acostamento), 27 `polished_blackstone` (faixa `yellow_terracotta` no meio), 3
+  cima; `Params.HIGHWAY_SHOULDER` = 2 de acostamento), 27 `polished_deepslate` (faixa `yellow_terracotta` no meio), 3
   `smooth_stone` (o de fora com muro). Muros conectados pelo plano (não pelo vanilla); na junção com a rua não há
   muro. Dentro das cidades os lotes têm prioridade. As rodovias vão direto de uma cidade à outra. O afunilamento
   perto das cidades foi removido (as larguras são iguais).
-- Ruas abandonadas (12 nov 2026, `core/RoadDecay`): ~10% das colunas de via tomadas, em manchas (ruído de valor,
-  células de 5, acima de 0,82) e rachaduras soltas (3%), função pura da posição e da seed. Valem para ruas, faixas,
-  faixas de pedestres, calçadas e acostamentos das cidades e das rodovias no chão; ficam limpos pontes, túneis, os
-  degraus de meia-laje das rampas e a coluna do muro. A coluna tomada fica na mesma altura (sem degrau para os
+- Ruas abandonadas (12 nov 2026, `core/RoadDecay`): ~30% das colunas de via tomadas (eram 10%), em manchas (ruído de
+  valor, células de 5, acima de 0,66) e rachaduras soltas (6%), função pura da posição e da seed. Valem para ruas,
+  faixas, faixas de pedestres, calçadas e acostamentos das cidades, das rodovias e das pontes; ficam limpos os túneis,
+  os degraus de meia-laje das rampas e a coluna do muro. As colunas não tomadas têm textura gasta
+  (`RoadDecay.texture`): na pista, manchas e blocos soltos de `polished_blackstone`, `cobbled_deepslate`,
+  `deepslate_tiles`, `cracked_deepslate_tiles`, `blackstone` e `smooth_basalt` sobre o `polished_deepslate` (que fica
+  em ~54%); na calçada, `andesite`, `cracked_stone_bricks`, `stone_bricks` e `cobblestone` sobre o `smooth_stone`; nas
+  rampas, lajes das mesmas pedras; 20% das faixas pintadas (central, de pedestres, amarela) apagadas. A coluna tomada fica na mesma altura (sem degrau para os
   veículos) e só recebe plantas sem colisão: grama (`grass_block`) com grama baixa, alta ou samambaia; musgo
   (`moss_block`), às vezes com grama baixa (sem tapete de musgo, que tem colisão); `coarse_dirt` ou `gravel`;
   asfalto rachado (`blackstone` ou `cobbled_deepslate` na pista, `cobblestone` na calçada). O reparo de vizinhos e a
