@@ -204,7 +204,7 @@ public final class Structures {
         int[] state = new int[t.palette.size()];
         boolean[] solid = new boolean[state.length];
         for (int p = 0; p < state.length; p++) {
-            String s = t.palette.get(p);
+            String s = swap(t.palette.get(p));
             String block = blockOf(s);
             if (block.equals("minecraft:air") || block.equals("minecraft:cave_air") || block.equals("minecraft:void_air")) {
                 state[p] = AIR_STATE;
@@ -417,6 +417,21 @@ public final class Structures {
                 }
             }
         }
+    }
+
+    /**
+     * Blocks of the templates placed as another block (asked by the user, 13 nov 2026): lightning rods become lit
+     * redstone torches, standing when the rod points up or down, on the wall when it points sideways (the torch
+     * faces the same way, away from the block it hangs on).
+     */
+    static String swap(String state) {
+        if (!blockOf(state).equals("minecraft:lightning_rod")) {
+            return state;
+        }
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("facing=(\\w+)").matcher(state);
+        String facing = m.find() ? m.group(1) : "up";
+        return facing.equals("up") || facing.equals("down") ? "minecraft:redstone_torch[lit=true]"
+                : "minecraft:redstone_wall_torch[facing=" + facing + ",lit=true]";
     }
 
     /** The leaves state string with persistent=false and the given distance. */

@@ -77,6 +77,8 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
     entre os fundos de lados opostos. As árvores dos miolos não entram nas estruturas.
   - Os banners mantêm o desenho do molde: as farmácias têm as letras DRUGSTORE.
   - Teias soltas (sem nada em que se prender) são removidas.
+  - Para-raios viram tochas de redstone acesas (5: no topo da casa com torre, da mansão pós-apocalíptica, do prédio
+    apartamento, do prédio apocalíptico e da torre).
 
   Os contêineres (baús, barris, dispensers, droppers) recebem a loot table quando são colocados; os banners recebem
   o desenho do molde; os outros block entities (fornalhas, camas, crânios, estantes entalhadas etc.) saem vazios:

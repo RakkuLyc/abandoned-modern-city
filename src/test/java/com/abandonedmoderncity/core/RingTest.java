@@ -345,6 +345,29 @@ class RingTest {
         assertTrue(webs > 2000, "cobwebs " + webs);
     }
 
+    @Test
+    void lightningRodsBecomeRedstoneTorches() {
+        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertTrue(Structures.STATES.stream().noneMatch(st -> st.startsWith("minecraft:lightning_rod")), "lightning rod state left");
+        int torches = 0;
+        for (Structures.Def d : Structures.ALL) {
+            for (int y = -d.ground(); y < d.above(); y++) {
+                for (int z = 0; z < d.d(); z++) {
+                    for (int x = 0; x < d.w(); x++) {
+                        String n = name(d.code(x, y, z, 0));
+                        assertFalse(n.equals("minecraft:lightning_rod"), d.name());
+                        torches += n.equals("minecraft:redstone_torch") ? 1 : 0;
+                    }
+                }
+            }
+        }
+        // one on top of each: casa_torre_abandonada, mansao_pos_apocaliptica, predio_apartamento, predio_apocaliptico, torre
+        assertEquals(5, torches, "redstone torches");
+        assertEquals("minecraft:redstone_wall_torch[facing=east,lit=true]",
+                Structures.swap("minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]"));
+        assertEquals("minecraft:stone", Structures.swap("minecraft:stone"));
+    }
+
     private static String name(int code) {
         return code < BlockCode.STRUCT ? "" : Structures.blockOf(Structures.STATES.get((code - BlockCode.STRUCT) / 4));
     }

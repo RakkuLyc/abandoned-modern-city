@@ -53,7 +53,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 
 ## 2. O que é verificado
 
-### Unitários (29 testes)
+### Unitários (30 testes)
 
 | Teste | Verifica |
 |---|---|
@@ -77,6 +77,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `RingTest.structureTreesHaveRealLeaves` | toda folha não persistente das estruturas tem distância 1 a 6 e um vizinho tronco ou folha mais perto (regra do leaf decay); mais de 1 000 folhas reais |
 | `RingTest.housesWithTheirFrontOnPlusZFaceTheStreet` | a casa moderna e a mansão pós-apocalíptica têm giro de 180° no índice e, com a rua ao norte, a fileira encostada na rua é a última fileira (+Z) do molde, bloco a bloco; as outras não têm giro |
 | `RingTest.pharmacyBannersKeepTheirLetters` | nas 4 rotações, a farmácia tem 9 banners e a farmácia grande 18 com desenho (listras e borda), todos em blocos de banner |
+| `RingTest.lightningRodsBecomeRedstoneTorches` | nenhum estado de para-raios sobra nas estruturas; 5 tochas de redstone de pé (uma no topo de cada estrutura que tinha para-raios); para-raios de lado vira tocha de parede com a mesma direção |
 | `RingTest.noFloatingCobwebs` | nenhuma teia das estruturas fica sem um bloco em que se prender (o chão conta); mais de 2 000 teias conferidas |
 | `RingTest.spawnLimitsHoldOverACity` | 300 cidades de 4 quarteirões sorteados em sequência: no máximo 3 farmácias, 2 oficinas, 2 postos |
 | `RingTest.structuresHaveSolidBoxesWithAFloorLayer` | toda estrutura tem caixa não vazia e blocos na primeira camada |
@@ -228,7 +229,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
 ## 6. Resultados atuais (12 nov 2026, quarteirões 180 × 120 com anel de estruturas com vãos e miolo tomado pela natureza, ruas e rodovias de 33, cidades no meio de células de 736, 4 entradas)
 
-- **Unitários:** 28 passam e 1 é pulado (o teste sem estruturas), 12 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
+- **Unitários:** 29 passam e 1 é pulado (o teste sem estruturas), 13 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
   - **Rede (7 terrenos × 3 seeds, 81 células), cidades no meio da célula de 736, 4 entradas (uma por lado):** 35 a
@@ -244,6 +245,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 13 nov | para-raios trocados por tochas de redstone | PASS: 8 de 8, 0 erros de geração, 2,72 ms por chunk, 261 s |
   | `20261027` | padrão (8 alvos) | 13 nov | 7 estruturas novas (6 casas e o prédio esqueleto, 21 no total), mansão pós-apocalíptica atualizada, estantes entalhadas liberadas | PASS: 8 de 8, 0 erros de geração, 2,71 ms por chunk, 253 s |
   | `20261027` | padrão (8 alvos) | 13 nov | parque de 110 × 64 num canto, estruturas em L | PASS: 8 de 8, 0 erros de geração, 1 fonte conferida, 2,69 ms por chunk, 252 s |
   | `20261027` | padrão (8 alvos) | 12 nov | asfalto gasto (`polished_deepslate`), 30% tomado, pontes velhas (laje e pilares musgosos, muro quebrado e musgoso, buracos), sem desabamentos nos túneis | PASS: 8 de 8, 0 erros de geração; na ponte mais longa 87 colunas de buraco, 53 de muro caído e 5976 tomadas; 2,74 ms por chunk, 268 s |

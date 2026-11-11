@@ -146,6 +146,10 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   - teias soltas (que só encostam em ar, teia, vinha, planta ou carpete) são removidas de todas as estruturas
     (pedido do usuário para a mansão pós-apocalíptica; 41 no total: 23 na casa grande, 13 na mansão
     pós-apocalíptica, 3 na mansão abandonada, 1 na casa abandonada, 1 no prédio apocalíptico);
+  - para-raios viram tochas de redstone acesas (13 nov 2026, pedido do usuário; `Structures.swap`, na carga dos
+    moldes, vale para qualquer estrutura): de pé quando o para-raios aponta para cima ou para baixo, na parede quando
+    aponta para o lado; hoje são 5, um no topo de cada: casa com torre, mansão pós-apocalíptica, prédio apartamento,
+    prédio apocalíptico e torre;
   - banners com o desenho salvo no molde (`Template.banners`, aplicado quando o banner é colocado,
     `Palette.applyBanner`): as letras D R U G S T O R E das farmácias (9 na farmácia, 18 na farmácia grande); encostadas na calçada, formando um anel; sorteio por arquivo,
     sem padrão;
