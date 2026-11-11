@@ -163,8 +163,8 @@ class RingTest {
             assertEquals(0, below, d.name() + " blocks below its box or air underground");
             assertEquals(d.h(), d.above() + d.ground(), d.name());
         }
-        // the four the user named are one layer lower than their template's lowest layer
-        for (String n : List.of("mansao_abandonada", "torre", "predio_azulado", "predio_apartamento")) {
+        // the four the user named (and the big house, whose lowest layer is all dirt) are one layer lower than their template's lowest layer
+        for (String n : List.of("mansao_abandonada", "casa_grande_abandonada", "torre", "predio_azulado", "predio_apartamento")) {
             assertEquals(1, Structures.ALL.stream().filter(d -> d.name().equals(n)).findFirst().orElseThrow().ground(), n);
         }
     }

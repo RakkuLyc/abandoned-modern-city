@@ -1,7 +1,7 @@
 # Abandoned Modern City — NeoForge 1.21.1
 
 Cidades modernas abandonadas geradas proceduralmente: ruas, rodovias, túneis, pontes, quarteirões e parques.
-Os prédios são as 14 estruturas `.nbt` do usuário, sorteadas ao acaso num anel em volta de cada quarteirão, com
+Os prédios são as 21 estruturas `.nbt` do usuário, sorteadas ao acaso num anel em volta de cada quarteirão, com
 limites por cidade para farmácias, oficinas e postos.
 
 > Começou em 7 nov 2026 como cópia do Abandoned Simple City (repositório `abandoned-simple-city`), sem os prédios e
@@ -44,8 +44,8 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
 - **Quarteirões:** as estruturas formam um anel encostado nas calçadas, com a frente (lado -Z do `.nbt`) virada para
   a rua; o resto (o miolo) é tomado pela natureza. Cerca de 1 em 8 quarteirões tem um parque de 110 × 64 num canto,
   com as estruturas em L nas outras duas ruas.
-- **Estruturas (14, `structures/`):** sorteadas ao acaso no anel, com limite por cidade: farmácias 3, oficinas 2,
-  postos 2.
+- **Estruturas (21, `structures/`):** sorteadas ao acaso no anel (cada arquivo com a mesma chance: as 10 casas
+  dão ~43% das estruturas), com limite por cidade: farmácias 3, oficinas 2, postos 2.
 
   | Estrutura | Tipo | Caixa (frente × fundo × altura) | Chão |
   |---|---|---|---|
@@ -53,6 +53,12 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
   | Casa moderna abandonada (frente no lado +Z do molde: girada 180°) | casas | 30 × 29 × 15 | camada 0 |
   | Mansão abandonada | casas | 41 × 57 × 21 | camada 1 (desce 1) |
   | Mansão pós-apocalíptica (frente no lado +Z do molde: girada 180°) | casas | 37 × 41 × 18 | camada 0 |
+  | Casa com garagem abandonada | casas | 32 × 28 × 17 | camada 0 |
+  | Casa grande abandonada | casas | 41 × 47 × 23 | camada 1 (desce 1) |
+  | Casa com piscina abandonada | casas | 34 × 45 × 23 | camada 0 |
+  | Casa de subúrbio abandonada | casas | 51 × 43 × 20 | camada 0 |
+  | Casa com torre abandonada | casas | 40 × 44 × 24 | camada 0 |
+  | Casa vitoriana abandonada | casas | 42 × 47 × 23 | camada 0 |
   | Farmácia | farmácia (limite 3 com a grande) | 19 × 28 × 16 | camada 0 |
   | Farmácia grande | farmácia | 26 × 40 × 15 | camada 0 |
   | Oficina média | oficina (limite 2 com a pequena) | 35 × 26 × 17 | camada 0 |
@@ -60,6 +66,7 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
   | Posto padrão | posto (limite 2 com o pequeno) | 45 × 37 × 18 | camada 0 |
   | Posto pequeno | posto | 25 × 20 × 18 | camada 0 |
   | Prédio apartamento | prédio | 31 × 29 × 37 | camada 1 (desce 1) |
+  | Prédio esqueleto (`predio_esqueleto_31x29`) | prédio | 31 × 29 × 43 | camada 0 |
   | Prédio azulado | prédio | 66 × 46 × 106 | camada 1 (desce 1) |
   | Torre | prédio | 62 × 53 × 118 | camada 1 (desce 1) |
   | Prédio apocalíptico | prédio | 57 × 45 × 110 | camada 0 |
@@ -72,7 +79,7 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
   - Teias soltas (sem nada em que se prender) são removidas.
 
   Os contêineres (baús, barris, dispensers, droppers) recebem a loot table quando são colocados; os banners recebem
-  o desenho do molde; os outros block entities (fornalhas, camas, crânios etc.) saem vazios:
+  o desenho do molde; os outros block entities (fornalhas, camas, crânios, estantes entalhadas etc.) saem vazios:
   - **Todas as estruturas exceto oficinas (tipo que começa com `oficina`):** loot table `lostcities:chests/lostcitychest` (do mod Apocalypse Loot / Lost Cities), com munição TACZ, armas, itens médicos, comida, recursos e raridades.
   - **Oficinas (médias e pequenas):** baús recebem `oficina_vehicle_parts` (rodas, assentos e motores compatíveis com Camaro e Escargot do OAmP); demais containers recebem `oficina_vehicle_tools` (jumperpack, blowtorch, repairkit).
 - **Natureza tomando a cidade** (`core/Flora`, `core/Wild`):
@@ -144,7 +151,7 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
   Wreck          buracos nas pontes, por posição ao longo da rodovia
   Wild           o miolo do quarteirão: chão, árvores e vegetação, sem entrar nas estruturas
   Ring           anel de estruturas em volta do quarteirão (lados curtos inteiros, compridos no que sobra), vãos, limites
-  Structures     as 14 estruturas de `amcs/buildings/index.txt`: caixa, camada do chão, piso até a borda, folhas reais, rotação
+  Structures     as 21 estruturas de `amcs/buildings/index.txt`: caixa, camada do chão, piso até a borda, folhas reais, rotação
   Park           parques tomados pela natureza, com caminhos e fonte
   Template       estruturas .nbt do usuário (fonte waterfall.nbt)
   Highway        curva entre duas entradas de cidade, pontos a cada bloco, projeção de colunas

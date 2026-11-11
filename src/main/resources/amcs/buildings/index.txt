@@ -1,11 +1,17 @@
 # type|file (without .nbt)|ground|front
 # ground: the template layer (from its lowest solid one) that lies at the city ground (1 = the lowest layer is buried)
 # front (optional, default 0): degrees clockwise that turn the template's front to its -Z side (180: front on +Z)
-# The originals are in structures/ at the repo root.
+# The originals are in structures/ at the repo root (file names here are ASCII: prédio_esqueleto -> predio_esqueleto).
 casas|casa_abandonada|0
 casas|casa_moderna_abandonada|0|180
 casas|mansao_abandonada|1
 casas|mansao_pos_apocaliptica|0|180
+casas|casa_garagem_abandonada|0
+casas|casa_grande_abandonada|1
+casas|casa_piscina_abandonada|0
+casas|casa_suburbio_abandonada|0
+casas|casa_torre_abandonada|0
+casas|casa_vitoriana_abandonada|0
 farmacia|farmacia_vermelho|0
 farmacia_grande|farmacia_grande_amarela|0
 oficina_de_carros_medio|oficina_media_azul_preto|0
@@ -13,6 +19,7 @@ oficina_de_carros_pequena|oficina_pequena_verde|0
 posto_de_gasolina_padrao|posto_vermelho|0
 posto_de_gasolina_pequeno|posto_pequeno_vermelho|0
 predios_pequenos|predio_apartamento|1
+predios_pequenos|predio_esqueleto_31x29|0
 predios_grandes|predio_azulado|1
 predios_grandes|torre|1
 predios_medios|predio_apocaliptico_57x45|0

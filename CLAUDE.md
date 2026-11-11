@@ -24,7 +24,7 @@ Abandoned Modern City (mod id `abandonedmoderncity`, pacote `com.abandonedmodern
 `RakkuLyc/abandoned-modern-city`, pasta `Projetos Claude/AbandonedModernCity`). Começou em 7 nov 2026 como cópia do
 Abandoned Simple City (`RakkuLyc/abandoned-simple-city`, pasta `AbandonedModernCity-Simple`) com o mesmo sistema de
 rodovias, túneis, pontes, quarteirões, parques e plantações, **sem os prédios** (e sem as casinhas das cidades
-3 × 2) e sem o histórico de commits. Os prédios são as estruturas `.nbt` do usuário (14 desde 12 nov 2026; as 33 primeiras foram removidas em 10 nov). O Abandoned Modern City original
+3 × 2) e sem o histórico de commits. Os prédios são as estruturas `.nbt` do usuário (21 desde 13 nov 2026: 14 em 12 nov e mais 7 em 13 nov; as 33 primeiras foram removidas em 10 nov). O Abandoned Modern City original
 (pasta `AbandonedModernCity-Deprecated`) está descontinuado. Ainda em 7 nov 2026 o usuário mandou remover as cidades
 octogonais e as cidades 3 × 2 das rodovias (com o padrão rural_highway perto delas e as plantações), e depois trocar
 o grid 4 × 4 por 2 × 2 com células de 1024, depois os quarteirões para 105 × 60 com células de 512, e em 8 nov 2026 os quarteirões para 140 × 90 com células de 576
@@ -130,17 +130,22 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   `mossy_cobblestone`, `stone_bricks` e `cracked_stone_bricks` → `mossy_stone_bricks`; a bacia, a água, as escadas,
   as lanternas e o baú não mudam.
   Baú vazio em 50% das fontes (senão `mossy_cobblestone`).
-- Estruturas (12 nov 2026, `core/Structures` carrega, mede e gira; `core/Ring` monta o anel): as 14 `.nbt` de
+- Estruturas (12 nov 2026, `core/Structures` carrega, mede e gira; `core/Ring` monta o anel): as 21 `.nbt` de
   `structures/` (cópias em `src/main/resources/amcs/buildings/`, listadas em `index.txt` como `tipo|arquivo|chão|frente`):
-  4 casas (casa abandonada, casa moderna abandonada, mansão abandonada, mansão pós-apocalíptica), farmácia,
-  farmácia grande, oficina média, oficina pequena, posto padrão, posto pequeno, prédio apartamento, prédio azulado,
-  torre, prédio apocalíptico. Regras decididas pelo usuário:
+  10 casas (casa abandonada, casa moderna abandonada, mansão abandonada, mansão pós-apocalíptica e, desde 13 nov
+  2026, casa com garagem, casa grande, casa com piscina, casa de subúrbio, casa com torre e casa vitoriana, todas
+  abandonadas), farmácia, farmácia grande, oficina média, oficina pequena, posto padrão, posto pequeno, prédio
+  apartamento, prédio esqueleto (13 nov 2026; o arquivo `prédio_esqueleto_31x29.nbt` vira `predio_esqueleto_31x29`,
+  sem acento, porque o argumento de `/amcs spawn` só aceita ASCII), prédio azulado, torre, prédio apocalíptico. A
+  mansão pós-apocalíptica foi atualizada em 13 nov com a versão nova da pasta (só o estado de 12 portas mudou). As
+  casas são 10 dos 21 arquivos e, com o sorteio por arquivo, ~43% das estruturas. Regras decididas pelo usuário:
   - frente = lado -Z do `.nbt`, virada para a rua; o campo `frente` do índice gira o molde quando a frente é
     outro lado: a casa moderna abandonada e a mansão pós-apocalíptica têm a frente no +Z (180°, achado pelo usuário
-    no jogo em 12 nov 2026);
+    no jogo em 12 nov 2026); as 7 de 13 nov têm a frente no -Z (caminho e degraus de entrada no lado norte do
+    molde);
   - teias soltas (que só encostam em ar, teia, vinha, planta ou carpete) são removidas de todas as estruturas
-    (pedido do usuário para a mansão pós-apocalíptica; 18 no total: 13 nela, 3 na mansão abandonada, 1 na casa
-    abandonada, 1 no prédio apocalíptico);
+    (pedido do usuário para a mansão pós-apocalíptica; 41 no total: 23 na casa grande, 13 na mansão
+    pós-apocalíptica, 3 na mansão abandonada, 1 na casa abandonada, 1 no prédio apocalíptico);
   - banners com o desenho salvo no molde (`Template.banners`, aplicado quando o banner é colocado,
     `Palette.applyBanner`): as letras D R U G S T O R E das farmácias (9 na farmácia, 18 na farmácia grande); encostadas na calçada, formando um anel; sorteio por arquivo,
     sem padrão;
@@ -149,7 +154,8 @@ existem as cidades 2 × 2 de quarteirões retangulares.
     grupo no limite é sorteado de novo;
   - caixa = a dos blocos sólidos; a camada `chão` do índice fica no nível do chão da cidade e as de baixo ficam
     enterradas: mansão abandonada, torre, prédio azulado e prédio apartamento descem 1 bloco (pedido do usuário; ar
-    enterrado vira terra);
+    enterrado vira terra); a casa grande também (13 nov 2026: a camada 0 dela é só terra e a grama do quintal está
+    na camada 1); as outras casas novas têm o quintal de grama na camada 0, que fica no nível do chão;
   - sem vão até a calçada: na camada do chão, as fileiras da borda sem piso de verdade (menos de 25% de piso, só
     vinhas, banners ou lajes soltas) recebem o bloco de piso da primeira fileira que tem piso, nos 4 lados
     (`Structures.floorFill`); os enfeites (banners da farmácia, vinhas das oficinas) ficam;
@@ -170,7 +176,7 @@ existem as cidades 2 × 2 de quarteirões retangulares.
     executa, centralizada, frente virada para ele, chão no bloco em que ele pisa; mesmas regras da cidade, com loot).
 - Dureza: qualquer dureza é permitida (regra antiga removida pelo usuário); só blocos indestrutíveis são proibidos.
   Os block entities permitidos são o baú vazio da fonte e os containers das estruturas (baús, barris, suportes de poção, vasos decorados, atris, fornalhas, camas, fogueiras, sensores de luz, jukeboxes,
-  banners, crânios, dispensers e droppers; `Palette.exempt`). Os banners recebem o desenho salvo no molde; placas
+  banners, crânios, dispensers, droppers e estantes entalhadas, vazias, desde 13 nov 2026 por causa da casa grande; `Palette.exempt`). Os banners recebem o desenho salvo no molde; placas
   saem sem texto.
   **Loot tables** (postas quando cada contêiner é colocado, pela região, como nas estruturas vanilla; semente por
   lote e posição; `ChunkBuilder.loot`): exceto oficinas usam `lostcities:chests/lostcitychest` (do Apocalypse Loot / Lost Cities); oficinas usam `oficina_vehicle_parts` (baús: rodas, assentos, motores compatíveis com Camaro/Escargot do OAmP) e `oficina_vehicle_tools` (outros containers: jumperpack, blowtorch, repairkit). Baú da fonte do parque continua vazio (50%) ou `mossy_cobblestone` (50%).
