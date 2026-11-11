@@ -36,6 +36,15 @@ public final class Ring {
      * group ({@link Structures#LIMITS}) already placed in the city, and is updated (a group at its limit is redrawn).
      */
     public static List<Lot> lots(int x0, int z0, int x1, int z1, long seed, java.util.Map<String, Integer> used) {
+        return lots(x0, z0, x1, z1, seed, used, null);
+    }
+
+    /**
+     * The same, keeping out of the rectangle {@code keepOut} = {x0, z0, x1, z1} (a park in a corner of the block) and
+     * {@link #GAP_MIN} or more blocks away from it: the rows skip past it.
+     */
+    public static List<Lot> lots(int x0, int z0, int x1, int z1, long seed, java.util.Map<String, Integer> used,
+                                 int[] keepOut) {
         if (Structures.ALL.isEmpty()) {
             // no structures in resources/amcs/buildings: the block stays free city ground
             return List.of();
@@ -68,7 +77,7 @@ public final class Ring {
                     boolean north = (k == 0) == northFirst;
                     int other = north ? dS : dN;
                     int depth = row(out, x0 + dW + gW, x1 - dE - gE, z0, z1, north ? Structures.NORTH : Structures.SOUTH,
-                            h - coreNS - Math.max(other, Structures.MIN_DEPTH), rs, used);
+                            h - coreNS - Math.max(other, Structures.MIN_DEPTH), rs, used, keepOut);
                     int g = depth > 0 ? Hash.range(Hash.next(rs, 7), GAP_MIN, GAP_MAX) : 0;
                     if (north) {
                         dN = depth;
@@ -81,7 +90,7 @@ public final class Ring {
                     boolean west = (k == 0) == westFirst;
                     int other = west ? dE : dW;
                     int depth = row(out, x0, x1, z0 + dN + gN, z1 - dS - gS, west ? Structures.WEST : Structures.EAST,
-                            w - coreWE - Math.max(other, Structures.MIN_DEPTH), rs, used);
+                            w - coreWE - Math.max(other, Structures.MIN_DEPTH), rs, used, keepOut);
                     int g = depth > 0 ? Hash.range(Hash.next(rs, 7), GAP_MIN, GAP_MAX) : 0;
                     if (west) {
                         dW = depth;
@@ -101,7 +110,7 @@ public final class Ring {
      * the part between the north and south rows). Returns the depth of its deepest structure (0 for none).
      */
     private static int row(List<Lot> out, int x0, int x1, int z0, int z1, int side, int maxDepth, long seed,
-                           java.util.Map<String, Integer> used) {
+                           java.util.Map<String, Integer> used, int[] keepOut) {
         boolean alongX = side == Structures.NORTH || side == Structures.SOUTH;
         int length = alongX ? x1 - x0 + 1 : z1 - z0 + 1;
         int at = 0;
@@ -117,9 +126,6 @@ public final class Ring {
                 failures++;
                 continue;
             }
-            if (def.group() != null) {
-                used.merge(def.group(), 1, Integer::sum);
-            }
             int rot = Structures.rotationFor(side);
             int sx = def.sizeX(rot);
             int sz = def.sizeZ(rot);
@@ -133,6 +139,20 @@ public final class Ring {
                 case Structures.SOUTH -> z1 - sz + 1;
                 default -> z0 + at;
             };
+            if (keepOut != null && x <= keepOut[2] + GAP_MIN && x + sx - 1 >= keepOut[0] - GAP_MIN
+                    && z <= keepOut[3] + GAP_MIN && z + sz - 1 >= keepOut[1] - GAP_MIN) {
+                // the park: the row goes on past it (or stops, if the park reaches the end of the row)
+                int past = alongX ? keepOut[2] + GAP_MIN + 1 - x0 : keepOut[3] + GAP_MIN + 1 - z0;
+                if (past > at) {
+                    at = past;
+                    continue;
+                }
+                failures++;
+                continue;
+            }
+            if (def.group() != null) {
+                used.merge(def.group(), 1, Integer::sum);
+            }
             out.add(Lot.building(x, z, def, rot, Hash.next(h, 2)));
             at += def.front() + Hash.range(Hash.next(h, 3), GAP_MIN, GAP_MAX);
             deepest = Math.max(deepest, def.depth());

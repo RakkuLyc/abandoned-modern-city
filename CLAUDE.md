@@ -98,9 +98,11 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   ligadas, cada cidade perde de 0 a `MAX_CUTS` trechos de rua (sorteio uniforme),
   internos ou da borda; nunca cria beco sem saída e a cidade continua toda conectada. O espaço vira grama, unindo
   os quarteirões. Entradas não são protegidas (só ficam conectadas).
-- Quarteirões: ~1 em 8 quarteirões é um parque
-  inteiro (`City.PARK_BLOCK_CHANCE`); os demais recebem um anel de estruturas (ver abaixo) e o resto (o miolo) é tomado
-  pela natureza (ver "Natureza"). Rua cortada = quarteirões juntados: cada um avança até o meio da faixa; na borda da cidade o quarteirão
+- Quarteirões: todos recebem um anel de estruturas (ver abaixo) e o resto (o miolo) é tomado pela natureza (ver
+  "Natureza"). ~1 em 8 quarteirões (`City.PARK_BLOCK_CHANCE`) tem um parque num canto (13 nov 2026, pedido do
+  usuário; antes o parque ocupava o quarteirão inteiro): 110 × 64 (`City.PARK_LONG`/`PARK_SHORT`, o lado comprido
+  junto ao lado comprido do quarteirão), canto sorteado; as estruturas ficam nas duas outras ruas, em L, e nunca a
+  menos de 4 blocos do parque (`Ring.lots` com `keepOut`); ~5 estruturas por quarteirão de parque. Rua cortada = quarteirões juntados: cada um avança até o meio da faixa; na borda da cidade o quarteirão
   cobre a faixa até a beira.
 - Natureza (11 nov 2026, `core/Flora` + `core/Wild`, lote `WILD` que cobre o quarteirão inteiro por baixo das
   estruturas, que ganham onde estão): aspecto de abandonado. Chão em manchas (ruído de valor): grama (`grass_block`)
@@ -119,7 +121,7 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   (papoula, dente-de-leão, azure bluet, tulipas, oxeye daisy, cornflower, 5%); caminhos de `dirt_path` de 3 blocos
   com 30% de falhas (grama, musgo ou terra grossa), em duas variantes (50%): grade "jogo da velha"
   (2 + 2 caminhos retos a 16 do centro) ou cata-vento (círculo de raio 16 + 4 braços em espiral); distâncias escaladas
-  com o tamanho do parque (base `Park.BASE_SIZE` = 68 no lado menor; escala pelo lado menor: nos quarteirões de 180 × 120 é ×1,76). Centro sem árvores:
+  com o tamanho do parque (base `Park.BASE_SIZE` = 68 no lado menor; escala pelo lado menor: o parque de 110 × 64 fica em ×1). Centro sem árvores:
   fonte `waterfall.nbt` (do usuário, em `resources/amcs/`) cercada de lajes musgosas (meio bloco) do anel até a
   cerca de folhas da fonte: só `mossy_stone_brick_slab` e `mossy_cobblestone_slab` (metade cada), 10% faltam (11 nov
   2026). Nenhum bloco da fonte é removido: em 55% das colunas com lugar para vinha (ar ao lado das folhas ou pedras

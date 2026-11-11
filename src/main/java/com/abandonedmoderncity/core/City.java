@@ -811,7 +811,23 @@ public final class City {
         return new int[]{x0, z0, x1, z1};
     }
 
-    /** Whether block (bi, bj) is a whole park. */
+    /** Size of the park of a park block (13 nov 2026, asked by the user): along the block's long and short sides. */
+    public static final int PARK_LONG = 110;
+    public static final int PARK_SHORT = 64;
+
+    /** The park of a park block, in a corner of its free rectangle f drawn from rs: {x0, z0, x1, z1}. */
+    static int[] parkRect(int[] f, long rs) {
+        int w = f[2] - f[0] + 1;
+        int h = f[3] - f[1] + 1;
+        int pw = Math.min(w, w >= h ? PARK_LONG : PARK_SHORT);
+        int ph = Math.min(h, w >= h ? PARK_SHORT : PARK_LONG);
+        int corner = Hash.range(Hash.next(rs, 4), 0, 3);
+        int x0 = (corner & 1) == 0 ? f[0] : f[2] - pw + 1;
+        int z0 = (corner & 2) == 0 ? f[1] : f[3] - ph + 1;
+        return new int[]{x0, z0, x0 + pw - 1, z0 + ph - 1};
+    }
+
+    /** Whether block (bi, bj) has a park (in a corner, since 13 nov 2026). */
     private boolean parkBlock(int bi, int bj) {
         return Hash.unit(Hash.of(seed, 0x52494E47L, bi, bj)) < PARK_BLOCK_CHANCE;
     }
@@ -835,12 +851,13 @@ public final class City {
                 Map<Long, List<Lot>> out = new HashMap<>();
                 for (int bj = -L.n; bj <= L.n; bj++) {
                     for (int bi = -L.n; bi <= L.n; bi++) {
-                        if (!L.isCity(bi, bj) || parkBlock(bi, bj)) {
+                        if (!L.isCity(bi, bj)) {
                             continue;
                         }
                         int[] f = freeRect(bi, bj);
                         long rs = Hash.of(seed, 0x52494E47L, bi, bj);
-                        out.put(Cache.key(bi, bj), Ring.lots(f[0], f[1], f[2], f[3], Hash.next(rs, 2), used));
+                        int[] park = parkBlock(bi, bj) ? parkRect(f, rs) : null;
+                        out.put(Cache.key(bi, bj), Ring.lots(f[0], f[1], f[2], f[3], Hash.next(rs, 2), used, park));
                     }
                 }
                 rings = Map.copyOf(out);
@@ -849,23 +866,27 @@ public final class City {
         }
     }
 
-    /** Share of the city blocks that are one whole park (grass and trees, no buildings). */
+    /** Share of the city blocks with a park in a corner (grass, trees, paths, the fountain). */
     public static final double PARK_BLOCK_CHANCE = 0.125;
     /**
      * The lots of block (bi, bj), inside its free rectangle x0..x1, z0..z1 (whose outline touches the sidewalks, and
-     * reaches across removed streets): some blocks are a single park; the others get a ring of structures against the
-     * sidewalks ({@link Ring}, drawn at random under the per-city limits of {@link Structures#LIMITS}), and the rest is
-     * left to nature ({@link Wild}).
+     * reaches across removed streets): a ring of structures against the sidewalks ({@link Ring}, drawn at random
+     * under the per-city limits of {@link Structures#LIMITS}); some blocks have a park of {@link #PARK_LONG} x
+     * {@link #PARK_SHORT} in a corner, the structures then only along the two other streets; the rest is left to
+     * nature ({@link Wild}).
      */
     private List<Lot> blockLots(int bi, int bj, int x0, int z0, int x1, int z1) {
         long rs = Hash.of(seed, 0x52494E47L, bi, bj);
-        if (parkBlock(bi, bj)) {
-            return List.of(Lot.park(x0, z0, x1, z1, Hash.next(rs, 1)));
-        }
         List<Lot> ring = rings().getOrDefault(Cache.key(bi, bj), List.of());
-        // the rest of the block is left to nature (listed last: the structures win where they stand)
         List<Lot> out = new java.util.ArrayList<>(ring);
-        out.add(Lot.wild(x0, z0, x1, z1, Hash.next(rs, 3), ring));
+        if (parkBlock(bi, bj)) {
+            // the park in a corner of the block, the structures along the two other streets (asked by the user)
+            int[] p = parkRect(new int[]{x0, z0, x1, z1}, rs);
+            out.add(Lot.park(p[0], p[1], p[2], p[3], Hash.next(rs, 1)));
+        }
+        // the rest of the block is left to nature (listed last: the structures and the park win where they stand)
+        List<Lot> obstacles = List.copyOf(out);
+        out.add(Lot.wild(x0, z0, x1, z1, Hash.next(rs, 3), obstacles));
         return List.copyOf(out);
     }
 

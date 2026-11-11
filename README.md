@@ -41,8 +41,9 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
 - Cada cidade fica numa única altura: água é aterrada, morro é cortado, e um talude 1:1 faz a transição.
 - Ruas cortadas estão desligadas (`City.MAX_CUTS` = 0); o código que corta trechos sem criar beco sem saída
   continua lá.
-- **Quarteirões:** cerca de 1 em 8 quarteirões é um parque inteiro; nos outros as estruturas formam um anel
-  encostado nas calçadas, com a frente (lado -Z do `.nbt`) virada para a rua; o resto (o miolo) é tomado pela natureza.
+- **Quarteirões:** as estruturas formam um anel encostado nas calçadas, com a frente (lado -Z do `.nbt`) virada para
+  a rua; o resto (o miolo) é tomado pela natureza. Cerca de 1 em 8 quarteirões tem um parque de 110 × 64 num canto,
+  com as estruturas em L nas outras duas ruas.
 - **Estruturas (14, `structures/`):** sorteadas ao acaso no anel, com limite por cidade: farmácias 3, oficinas 2,
   postos 2.
 
@@ -137,7 +138,7 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
   Params         toda a geometria fixa (larguras, quarteirões, rampas, túneis, pontes) + valores da config
   Terrain        interface: altura natural do chão e água por coluna
   City           estágio 1 (existe? centro, altura) e estágio 2 (ruas, quarteirões, lotes)
-  Lot            lotes: parque inteiro de quarteirão, uma estrutura ou o miolo tomado pela natureza (WILD)
+  Lot            lotes: parque (num canto do quarteirão), uma estrutura ou o miolo tomado pela natureza (WILD)
   Flora          árvores (4 espécies, vinhas), chão em manchas, plantas e entulho; índice de árvores por baldes
   RoadDecay      ruas abandonadas: colunas tomadas, textura gasta, plantas; pedras e muros das pontes velhas
   Wreck          buracos nas pontes, por posição ao longo da rodovia

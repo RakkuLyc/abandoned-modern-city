@@ -43,9 +43,11 @@ class WorldPlanTest {
     }
 
     @Test
-    void cityStreetsHaveNoDeadEndsAndLotsAreBuildable() {
+    void cityStreetsHaveNoDeadEndsAndLotsAreBuildable() throws java.io.IOException {
         int cities = 0;
         int lots = 0;
+        int parks = 0;
+        int parkStructures = 0;
         int[] cutHistogram = new int[City.MAX_CUTS + 1];
         for (TestTerrain.Kind kind : TestTerrain.Kind.values()) {
             WorldPlan p = plan(SEEDS[0], kind);
@@ -68,6 +70,40 @@ class WorldPlanTest {
                 }
                 for (var e : groups.entrySet()) {
                     assertTrue(e.getValue() <= Structures.LIMITS.get(e.getKey()), c + " " + e);
+                }
+                // park blocks: a park of 110 x 64 in a corner, structures 4+ blocks away from it
+                for (int bj = -n; bj <= n; bj++) {
+                    for (int bi = -n; bi <= n; bi++) {
+                        List<Lot> ls = c.lots(bi, bj);
+                        Lot park = ls.stream().filter(l -> l.type == Lot.Type.PARK).findFirst().orElse(null);
+                        if (park == null) {
+                            continue;
+                        }
+                        parks++;
+                        if (parks == 1) {
+                            // a picture of a park block (detail of its chunks)
+                            PlanRender.write(PlanRender.detail(p, (wildX0(ls) >> 4) - 1, (wildZ0(ls) >> 4) - 1,
+                                    (ls.get(ls.size() - 1).x1 >> 4) + 1, (ls.get(ls.size() - 1).z1 >> 4) + 1),
+                                    new File(renderDir(), "park_block.png"));
+                        }
+                        int pw = park.x1 - park.x0 + 1;
+                        int ph = park.z1 - park.z0 + 1;
+                        assertTrue(pw == City.PARK_LONG && ph == City.PARK_SHORT || pw == City.PARK_SHORT && ph == City.PARK_LONG,
+                                c + " park " + pw + " x " + ph);
+                        Lot wild = ls.get(ls.size() - 1);
+                        assertEquals(Lot.Type.WILD, wild.type);
+                        boolean corner = (park.x0 == wild.x0 || park.x1 == wild.x1) && (park.z0 == wild.z0 || park.z1 == wild.z1);
+                        assertTrue(corner, c + " park not in a corner");
+                        for (Lot l : ls) {
+                            if (l.building == null) {
+                                continue;
+                            }
+                            parkStructures++;
+                            int gx = Math.max(l.x0, park.x0) - Math.min(l.x1, park.x1) - 1;
+                            int gz = Math.max(l.z0, park.z0) - Math.min(l.z1, park.z1) - 1;
+                            assertTrue(Math.max(gx, gz) >= Ring.GAP_MIN, c + " structure " + l.building.name() + " touches the park");
+                        }
+                    }
                 }
                 assertEquals(c.streetCuts(), countRemoved(c), c + " removed segments");
                 for (int j = -n - 1; j <= n + 2; j++) {
@@ -100,6 +136,7 @@ class WorldPlanTest {
                 }
             }
         }
+        System.out.println("[WorldPlanTest] parks " + parks + " with " + parkStructures + " structures");
         System.out.println("[WorldPlanTest] cities " + cities + ", lots " + lots + ", removed segments per city "
                 + java.util.Arrays.toString(cutHistogram));
         int withCuts = 0;
@@ -272,5 +309,13 @@ class WorldPlanTest {
 
     private static void union(Map<Long, Long> p, long a, long b) {
         p.put(find(p, a), find(p, b));
+    }
+
+    private static int wildX0(List<Lot> ls) {
+        return ls.get(ls.size() - 1).x0;
+    }
+
+    private static int wildZ0(List<Lot> ls) {
+        return ls.get(ls.size() - 1).z0;
     }
 }
