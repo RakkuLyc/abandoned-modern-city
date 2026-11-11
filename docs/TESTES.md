@@ -177,7 +177,16 @@ cat run/selftest/<seed>/report.txt               # termina com RESULT: PASS ou F
 No jogo (op):
 - `/amcs locate city` (ou `highway`, `tunnel`, `bridge`);
 - `/amcs info`, que mostra o que o plano quer na coluna;
-- `/amcs audit 6` e `/amcs plan 12`.
+- `/amcs audit 6` e `/amcs plan 12`;
+- `/amcs locate structure <nome|tipo|grupo>` e `/amcs spawn <nome>`.
+
+Teste dos comandos de estrutura (12 nov 2026, servidor de desenvolvimento via RCON, seed 20261027, a partir de
+0 70 0): `locate structure torre` → 1 707 blocos; `farmacia` (grupo) → `farmacia_vermelho` a 290; `casas` (tipo) →
+`casa_abandonada` a 331; nome inválido lista os nomes aceitos. No mundo gerado, a coordenada da farmácia cai na
+calçada (`smooth_stone`) e a coluna atrás é o lote da estrutura (`/amcs info`: BUILDING). `spawn torre` olhando
+para o sul: caixa 2 blocos à frente, 62 de largura centralizada, chão no bloco do terreno, 311 793 blocos e 178
+contêineres com loot; `spawn farmacia_vermelho` olhando para o oeste: frente virada para o leste (para quem
+executou).
 
 ## 5. Desempenho medido
 

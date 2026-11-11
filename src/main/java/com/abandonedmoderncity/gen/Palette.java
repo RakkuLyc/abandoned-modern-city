@@ -389,6 +389,25 @@ public final class Palette {
                 || b instanceof net.minecraft.world.level.block.DispenserBlock;
     }
 
+    private static final net.minecraft.resources.ResourceLocation LOOT_CITY =
+            net.minecraft.resources.ResourceLocation.parse("abandonedmoderncity:chests/lostcitychest");
+    private static final net.minecraft.resources.ResourceLocation LOOT_PARTS =
+            net.minecraft.resources.ResourceLocation.parse("abandonedmoderncity:chests/oficina_vehicle_parts");
+    private static final net.minecraft.resources.ResourceLocation LOOT_TOOLS =
+            net.minecraft.resources.ResourceLocation.parse("abandonedmoderncity:chests/oficina_vehicle_tools");
+
+    /**
+     * Loot table of a container {@code s} of a structure: the car workshops get vehicle parts in their chests and
+     * tools in their other containers, every other structure the Lost Cities loot (generation and /amcs spawn).
+     */
+    public static net.minecraft.resources.ResourceKey<net.minecraft.world.level.storage.loot.LootTable> lootTable(
+            com.abandonedmoderncity.core.Structures.Def def, BlockState s) {
+        boolean workshop = def.type().startsWith("oficina");
+        net.minecraft.resources.ResourceLocation table = workshop
+                ? (s.is(Blocks.CHEST) || s.is(Blocks.TRAPPED_CHEST) ? LOOT_PARTS : LOOT_TOOLS) : LOOT_CITY;
+        return net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE, table);
+    }
+
     /** All fixed states the generator places (natural surface blocks reused for slopes are checked when used). */
     public static List<BlockState> all() {
         Set<BlockState> set = new LinkedHashSet<>(List.of(LANE, LANE_SLAB, SIDEWALK, SIDEWALK_SLAB, CITY_MARK, HIGHWAY_MARK, WALL, STONE, LIGHT, DIRT, GRASS, SANDSTONE,

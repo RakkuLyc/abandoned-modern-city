@@ -1,0 +1,229 @@
+package com.abandonedmoderncity.command;
+
+import com.abandonedmoderncity.core.BlockCode;
+import com.abandonedmoderncity.core.City;
+import com.abandonedmoderncity.core.Hash;
+import com.abandonedmoderncity.core.Lot;
+import com.abandonedmoderncity.core.Structures;
+import com.abandonedmoderncity.core.WorldPlan;
+import com.abandonedmoderncity.gen.Palette;
+import com.abandonedmoderncity.gen.Plans;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.ArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import java.util.TreeSet;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+
+/**
+ * Commands for the building structures ({@link Structures}):
+ * <ul>
+ *   <li>{@code /amcs locate structure <name|type|group>}: the nearest one the plan put in a city (a file name such as
+ *   {@code torre}, a type such as {@code predios_grandes}, or a limit group: {@code farmacia}, {@code oficina},
+ *   {@code posto}); the clickable coordinates are on the sidewalk in front of it.</li>
+ *   <li>{@code /amcs spawn <name>}: places the structure 2 blocks in front of you, centered on where you look, its
+ *   front turned to you, its ground layer level with the block you stand on. Same rules as in the cities: buried
+ *   layers, floor filled to the edge, real leaves, loot tables.</li>
+ * </ul>
+ */
+public final class StructureCommands {
+    private StructureCommands() {
+    }
+
+    /** Names, types and groups the commands accept. */
+    static TreeSet<String> names(boolean groupsAndTypes) {
+        TreeSet<String> out = new TreeSet<>();
+        for (Structures.Def d : Structures.ALL) {
+            out.add(d.name());
+            if (groupsAndTypes) {
+                out.add(d.type());
+                if (d.group() != null) {
+                    out.add(d.group());
+                }
+            }
+        }
+        return out;
+    }
+
+    static boolean matches(Structures.Def d, String q) {
+        return d.name().equals(q) || d.type().equals(q) || q.equals(d.group());
+    }
+
+    /** {@code structure <query>} under {@code /amcs locate}. */
+    static ArgumentBuilder<CommandSourceStack, ?> locateNode() {
+        return Commands.literal("structure").then(Commands.argument("query", StringArgumentType.word())
+                .suggests((c, b) -> {
+                    names(true).forEach(b::suggest);
+                    return b.buildFuture();
+                })
+                .executes(c -> locate(c, StringArgumentType.getString(c, "query"))));
+    }
+
+    /** {@code spawn <name>} under {@code /amcs}. */
+    static ArgumentBuilder<CommandSourceStack, ?> spawnNode() {
+        return Commands.literal("spawn").then(Commands.argument("name", StringArgumentType.word())
+                .suggests((c, b) -> {
+                    names(false).forEach(b::suggest);
+                    return b.buildFuture();
+                })
+                .executes(c -> spawn(c, StringArgumentType.getString(c, "name"))));
+    }
+
+    private static int locate(CommandContext<CommandSourceStack> c, String q) {
+        if (Structures.ALL.stream().noneMatch(d -> matches(d, q))) {
+            c.getSource().sendFailure(Component.literal("[AMCS] unknown structure '" + q + "' (" + String.join(", ", names(true)) + ")"));
+            return 0;
+        }
+        WorldPlan plan = Plans.get(c.getSource().getLevel());
+        if (plan == null) {
+            c.getSource().sendFailure(Component.literal("No cities in this dimension (or disabled in the config)"));
+            return 0;
+        }
+        double px = c.getSource().getPosition().x;
+        double pz = c.getSource().getPosition().z;
+        double best = Double.MAX_VALUE;
+        Lot found = null;
+        City foundCity = null;
+        int[] radii = {2, 4, 8, 16};
+        for (int cells : radii) {
+            double r = cells * plan.params.cellSize();
+            for (City city : plan.citiesIn(px - r, pz - r, px + r, pz + r)) {
+                int n = city.gridHalf();
+                for (int bj = -n; bj <= n; bj++) {
+                    for (int bi = -n; bi <= n; bi++) {
+                        for (Lot lot : city.lots(bi, bj)) {
+                            if (lot.building == null || !matches(lot.building, q)) {
+                                continue;
+                            }
+                            double d = Math.hypot((lot.x0 + lot.x1) / 2.0 - px, (lot.z0 + lot.z1) / 2.0 - pz);
+                            if (d < best) {
+                                best = d;
+                                found = lot;
+                                foundCity = city;
+                            }
+                        }
+                    }
+                }
+            }
+            if (found != null && best <= r) {
+                break;
+            }
+        }
+        if (found == null) {
+            c.getSource().sendSuccess(() -> Component.literal("[AMCS] no " + q + " found within "
+                    + radii[radii.length - 1] * plan.params.cellSize() + " blocks"), false);
+            return 0;
+        }
+        // on the sidewalk, 2 blocks in front of the middle of its front
+        int cx = (found.x0 + found.x1) / 2;
+        int cz = (found.z0 + found.z1) / 2;
+        int[] at = switch (found.rot) {
+            case Structures.NORTH -> new int[]{cx, found.z0 - 2};
+            case Structures.EAST -> new int[]{found.x1 + 2, cz};
+            case Structures.SOUTH -> new int[]{cx, found.z1 + 2};
+            default -> new int[]{found.x0 - 2, cz};
+        };
+        String coords = at[0] + " " + foundCity.level + " " + at[1];
+        Component link = Component.literal("[" + coords + "]").withStyle(style -> style
+                .withColor(ChatFormatting.GREEN)
+                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tp @s " + coords))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to teleport"))));
+        String what = found.building.name() + " (" + found.building.type() + ")";
+        final double dist = best;
+        Component msg = Component.literal("[AMCS] " + what + " at ").append(link)
+                .append(Component.literal(" (" + Math.round(dist) + " blocks; box " + found.x0 + "," + found.z0 + " .. "
+                        + found.x1 + "," + found.z1 + ")"));
+        c.getSource().sendSuccess(() -> msg, false);
+        return 1;
+    }
+
+    private static int spawn(CommandContext<CommandSourceStack> c, String name) {
+        Structures.Def def = Structures.ALL.stream().filter(d -> d.name().equals(name)).findFirst().orElse(null);
+        if (def == null) {
+            c.getSource().sendFailure(Component.literal("[AMCS] unknown structure '" + name + "' (" + String.join(", ", names(false)) + ")"));
+            return 0;
+        }
+        ServerLevel level = c.getSource().getLevel();
+        Vec3 p = c.getSource().getPosition();
+        // the direction you look at; the structure's front (its -Z side) faces back toward you
+        Direction look = Direction.fromYRot(c.getSource().getRotation().y);
+        int rot = switch (look.getOpposite()) {
+            case NORTH -> Structures.NORTH;
+            case EAST -> Structures.EAST;
+            case SOUTH -> Structures.SOUTH;
+            default -> Structures.WEST;
+        };
+        int sx = def.sizeX(rot);
+        int sz = def.sizeZ(rot);
+        int px = (int) Math.floor(p.x);
+        int pz = (int) Math.floor(p.z);
+        int x0;
+        int z0;
+        switch (look) {
+            case NORTH -> {
+                x0 = px - sx / 2;
+                z0 = pz - 2 - sz + 1;
+            }
+            case SOUTH -> {
+                x0 = px - sx / 2;
+                z0 = pz + 2;
+            }
+            case EAST -> {
+                x0 = px + 2;
+                z0 = pz - sz / 2;
+            }
+            default -> {
+                x0 = px - 2 - sx + 1;
+                z0 = pz - sz / 2;
+            }
+        }
+        // the ground layer replaces the block you stand on
+        int base = (int) Math.floor(p.y) - 1;
+        long seed = Hash.of(System.nanoTime(), 0x5350574EL, x0, z0);
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        int placed = 0;
+        int containers = 0;
+        for (int ry = -def.ground(); ry < def.above(); ry++) {
+            for (int rz = 0; rz < sz; rz++) {
+                for (int rx = 0; rx < sx; rx++) {
+                    int code = def.code(rx, ry, rz, rot);
+                    // nothing in the template, or its air at / under the ground: the world stays as it is
+                    if (code == BlockCode.KEEP || code == BlockCode.AIR && ry <= 0) {
+                        continue;
+                    }
+                    BlockState s = Palette.of(code, 0, null);
+                    if (s == null) {
+                        continue;
+                    }
+                    pos.set(x0 + rx, base + ry, z0 + rz);
+                    // no shape updates while placing: a vine or a pane must not react to a neighbour not placed yet
+                    level.setBlock(pos, s, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+                    placed++;
+                    if (s.hasBlockEntity() && level.getBlockEntity(pos) instanceof RandomizableContainerBlockEntity rc) {
+                        rc.setLootTable(Palette.lootTable(def, s), Hash.of(seed, 0x4C4F4F54L, pos.getX(), pos.getY() * 31L + pos.getZ()));
+                        containers++;
+                    }
+                }
+            }
+        }
+        final int n = placed;
+        final int k = containers;
+        final int fx = x0;
+        final int fz = z0;
+        c.getSource().sendSuccess(() -> Component.literal("[AMCS] " + def.name() + " placed: box " + fx + "," + fz + " .. "
+                + (fx + sx - 1) + "," + (fz + sz - 1) + ", ground y " + base + ", " + n + " blocks, " + k
+                + " containers with loot"), true);
+        return 1;
+    }
+}

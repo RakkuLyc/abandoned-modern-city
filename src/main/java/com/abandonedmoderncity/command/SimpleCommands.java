@@ -28,6 +28,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  * <ul>
  *   <li>{@code info}: plan of the column under you (kind, height, structure, city, highway).</li>
  *   <li>{@code locate city|highway|tunnel|bridge}: nearest one.</li>
+ *   <li>{@code locate structure <name|type|group>} and {@code spawn <name>}: see {@link StructureCommands}.</li>
  *   <li>{@code plan [radius]}: plan audit of the chunks around you (nothing is generated) + PNG.</li>
  *   <li>{@code audit [radius]}: generates the chunks around you, audits plan and blocks, writes PNGs.</li>
  *   <li>{@code network [radius]}: PNG of cities and highways (blocks, 8 per pixel).</li>
@@ -41,9 +42,10 @@ public final class SimpleCommands {
     public static void register(RegisterCommandsEvent e) {
         e.getDispatcher().register(Commands.literal("amcs").requires(s -> s.hasPermission(2))
                 .then(Commands.literal("info").executes(SimpleCommands::info))
-                .then(Commands.literal("locate").then(Commands.argument("what", StringArgumentType.word())
+                .then(StructureCommands.spawnNode())
+                .then(Commands.literal("locate").then(StructureCommands.locateNode()).then(Commands.argument("what", StringArgumentType.word())
                         .suggests((c, b) -> {
-                            for (String s : List.of("city", "highway", "tunnel", "bridge")) {
+                            for (String s : List.of("city", "highway", "tunnel", "bridge", "structure")) {
                                 b.suggest(s);
                             }
                             return b.buildFuture();

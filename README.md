@@ -144,7 +144,7 @@ gen/    camada do jogo
   Palette        todos os blocos usados (inclui as estruturas, giradas por `BlockState.rotate`, e os 8 estilos de material herdados, sem uso) + validação
   McTerrain      Terrain sobre ChunkGenerator.getBaseHeight (ruído, igual em qualquer thread)
   Plans          um WorldPlan por dimensão (só o overworld)
-command/  /amcs, auditoria dos blocos (WorldAudit), renders do mundo, bateria automática (SelfTest)
+command/  /amcs (StructureCommands: locate structure e spawn), auditoria dos blocos (WorldAudit), renders, bateria (SelfTest)
 ```
 
 ### Estágios
@@ -177,6 +177,13 @@ valores velhos: apague-o ou ajuste os dois valores.
 
 - `/amcs info` — o que o plano quer na coluna onde você está (tipo, altura, estrutura, cidade, rodovia, lote).
 - `/amcs locate city|highway|tunnel|bridge` — o mais próximo, com coordenadas clicáveis (sugerem um `/tp`).
+- `/amcs locate structure <nome|tipo|grupo>` — a estrutura mais próxima já planejada nas cidades: pelo arquivo
+  (`torre`, `farmacia_vermelho`...), pelo tipo (`casas`, `predios_grandes`...) ou pelo grupo (`farmacia`, `oficina`,
+  `posto`), com autocompletar. A coordenada clicável fica na calçada, 2 blocos em frente ao meio da fachada.
+- `/amcs spawn <nome>` — coloca a estrutura 2 blocos à sua frente, centralizada na direção em que você olha, com a
+  frente virada para você e o chão no nível do bloco em que você pisa. Mesmas regras da cidade: camada enterrada,
+  piso até a borda, folhas reais e loot tables nos contêineres. O ar do molde limpa o terreno dentro da caixa (acima
+  do chão).
 - `/amcs plan [raio]` — auditoria do plano em volta (não gera nada) + PNG.
 - `/amcs audit [raio]` — gera os chunks em volta, audita plano e blocos, PNG do mundo.
 - `/amcs network [raio]` — PNG da rede de cidades e rodovias.

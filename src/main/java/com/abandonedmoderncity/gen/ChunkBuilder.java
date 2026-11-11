@@ -12,7 +12,6 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
@@ -323,10 +322,6 @@ final class ChunkBuilder {
         }
     }
 
-    private static final ResourceLocation LOOT_CITY = ResourceLocation.parse("abandonedmoderncity:chests/lostcitychest");
-    private static final ResourceLocation LOOT_PARTS = ResourceLocation.parse("abandonedmoderncity:chests/oficina_vehicle_parts");
-    private static final ResourceLocation LOOT_TOOLS = ResourceLocation.parse("abandonedmoderncity:chests/oficina_vehicle_tools");
-
     /**
      * Loot table of the container just placed at {@link #pos} in a structure: the car workshops get vehicle parts in
      * their chests and tools in their other containers, every other structure the Lost Cities loot. Set through the
@@ -334,11 +329,9 @@ final class ChunkBuilder {
      * a seed from the lot and the position.
      */
     private void loot(Lot lot, BlockState s) {
-        boolean workshop = lot.building.type().startsWith("oficina");
-        ResourceLocation table = workshop ? (s.is(Blocks.CHEST) || s.is(Blocks.TRAPPED_CHEST) ? LOOT_PARTS : LOOT_TOOLS) : LOOT_CITY;
         if (region.getBlockEntity(pos) instanceof net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity c) {
             long seed = com.abandonedmoderncity.core.Hash.of(lot.seed, 0x4C4F4F54L, pos.getX(), pos.getY() * 31L + pos.getZ());
-            c.setLootTable(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE, table), seed);
+            c.setLootTable(Palette.lootTable(lot.building, s), seed);
         }
     }
 

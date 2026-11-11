@@ -124,6 +124,9 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   - as linhas dos lados curtos do quarteirão vão de canto a canto e as dos lados compridos preenchem o que sobra
     entre elas (o contrário deixava os lados curtos quase sempre vazios); ~7,9 estruturas por quarteirão, 72% da
     área livre coberta. Tamanho do quarteirão escolhido em 8 nov: 140 × 90 (a mais funda tem 57, a mais rasa 20).
+  - comandos (12 nov 2026, `command/StructureCommands`): `/amcs locate structure <nome|tipo|grupo>` (a mais
+    próxima já planejada; coordenada na calçada em frente) e `/amcs spawn <nome>` (2 blocos à frente de quem
+    executa, centralizada, frente virada para ele, chão no bloco em que ele pisa; mesmas regras da cidade, com loot).
 - Dureza: qualquer dureza é permitida (regra antiga removida pelo usuário); só blocos indestrutíveis são proibidos.
   Os block entities permitidos são o baú vazio da fonte e os containers das estruturas (baús, barris, suportes de poção, vasos decorados, atris, fornalhas, camas, fogueiras, sensores de luz, jukeboxes,
   banners, crânios, dispensers e droppers; `Palette.exempt`). Banners e placas saem lisos (o molde não guarda os
