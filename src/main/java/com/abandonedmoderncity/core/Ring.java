@@ -4,19 +4,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A ring of structures along the four sidewalks of a block (prototype: the structures are drawn at random, no pattern).
- * The rows along the short sides of the block run corner to corner; those along the long sides fill what is left
- * between them. Every
- * structure touches its sidewalk with its front (the -Z side of the template) turned to the street. Rows are filled
- * left to right (or top to bottom) with a {@link #GAP} between structures; a structure that does not fit in what is
- * left of its row, or whose depth would not leave room for the opposite row, is redrawn.
+ * A ring of structures along the four sidewalks of a block (the structures are drawn at random, no pattern). The rows
+ * along the short sides of the block run corner to corner; those along the long sides fill what is left between
+ * them. Every structure touches its sidewalk with its front turned to the street. Structures never touch (asked by
+ * the user, 12 nov 2026): a gap of {@link #GAP_MIN}..{@link #GAP_MAX} blocks is drawn between two structures of a
+ * row, and between the deepest structure of a short row and the long rows. The forest of the core always keeps
+ * {@link #CORE_MIN}..{@link #CORE_MAX} blocks (drawn per pair of opposite rows) between the backs of opposite
+ * structures. A structure that does not fit what is left of its row, or whose depth would not leave that room, is
+ * redrawn.
  */
 public final class Ring {
     private Ring() {
     }
 
-    /** Free columns between two structures of a row. */
-    public static final int GAP = 2;
+    /** Free columns between two neighbouring structures (drawn). */
+    public static final int GAP_MIN = 10;
+    public static final int GAP_MAX = 19;
+    /** Forest between the backs of the structures of two opposite rows (drawn per pair). */
+    public static final int CORE_MIN = 20;
+    public static final int CORE_MAX = 30;
     /** Draws of a structure for a row before the row is closed. */
     static final int TRIES = 40;
 
@@ -43,10 +49,17 @@ public final class Ring {
         // the rows along the short sides run corner to corner, those along the long sides fill what is left between
         // them (the other way round, deep structures on the long sides left the short sides almost always empty)
         boolean shortX = w <= h;
+        int coreNS = Hash.range(Hash.next(seed, 3), CORE_MIN, CORE_MAX);
+        int coreWE = Hash.range(Hash.next(seed, 4), CORE_MIN, CORE_MAX);
         int dN = 0;
         int dS = 0;
         int dW = 0;
         int dE = 0;
+        // gaps between the short rows and the long rows that run between them (0 when the short row is empty)
+        int gN = 0;
+        int gS = 0;
+        int gW = 0;
+        int gE = 0;
         for (int pass = 0; pass < 2; pass++) {
             boolean ns = (pass == 0) == shortX;
             for (int k = 0; k < 2; k++) {
@@ -54,22 +67,28 @@ public final class Ring {
                 if (ns) {
                     boolean north = (k == 0) == northFirst;
                     int other = north ? dS : dN;
-                    int depth = row(out, x0 + dW, x1 - dE, z0, z1, north ? Structures.NORTH : Structures.SOUTH,
-                            h - Math.max(other, Structures.MIN_DEPTH), rs, used);
+                    int depth = row(out, x0 + dW + gW, x1 - dE - gE, z0, z1, north ? Structures.NORTH : Structures.SOUTH,
+                            h - coreNS - Math.max(other, Structures.MIN_DEPTH), rs, used);
+                    int g = depth > 0 ? Hash.range(Hash.next(rs, 7), GAP_MIN, GAP_MAX) : 0;
                     if (north) {
                         dN = depth;
+                        gN = g;
                     } else {
                         dS = depth;
+                        gS = g;
                     }
                 } else {
                     boolean west = (k == 0) == westFirst;
                     int other = west ? dE : dW;
-                    int depth = row(out, x0, x1, z0 + dN, z1 - dS, west ? Structures.WEST : Structures.EAST,
-                            w - Math.max(other, Structures.MIN_DEPTH), rs, used);
+                    int depth = row(out, x0, x1, z0 + dN + gN, z1 - dS - gS, west ? Structures.WEST : Structures.EAST,
+                            w - coreWE - Math.max(other, Structures.MIN_DEPTH), rs, used);
+                    int g = depth > 0 ? Hash.range(Hash.next(rs, 7), GAP_MIN, GAP_MAX) : 0;
                     if (west) {
                         dW = depth;
+                        gW = g;
                     } else {
                         dE = depth;
+                        gE = g;
                     }
                 }
             }
@@ -115,7 +134,7 @@ public final class Ring {
                 default -> z0 + at;
             };
             out.add(Lot.building(x, z, def, rot, Hash.next(h, 2)));
-            at += def.front() + GAP;
+            at += def.front() + Hash.range(Hash.next(h, 3), GAP_MIN, GAP_MAX);
             deepest = Math.max(deepest, def.depth());
         }
         return deepest;

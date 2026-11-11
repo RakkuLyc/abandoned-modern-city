@@ -18,7 +18,7 @@ class RingTest {
     @Test
     void withoutStructuresBlocksStayEmpty() {
         assumeTrue(Structures.ALL.isEmpty(), "structures present");
-        assertTrue(Ring.lots(0, 0, 139, 89, 1).isEmpty());
+        assertTrue(Ring.lots(0, 0, 179, 119, 1).isEmpty());
         assertTrue(Structures.STATES.isEmpty());
     }
 
@@ -81,7 +81,7 @@ class RingTest {
     @Test
     void ringsFitTheirBlockTouchTheSidewalksAndDoNotOverlap() {
         assumeFalse(Structures.ALL.isEmpty(), "no structures");
-        int[][] sizes = {{140, 90}, {90, 140}};
+        int[][] sizes = {{180, 120}, {120, 180}};
         long lots = 0;
         long[] bySide = new long[4];
         Set<String> used = new HashSet<>();
@@ -133,12 +133,12 @@ class RingTest {
     }
 
     @Test
-    void everyStructureFitsNextToTheShallowestInA90Block() {
+    void everyStructureFitsNextToTheShallowestInA120Block() {
         assumeFalse(Structures.ALL.isEmpty(), "no structures");
-        // each structure fits a 140 x 90 block next to the shallowest structure (depth 20): 90 - 20 = 70 >= depth
+        // each structure fits a 180 x 120 block next to the shallowest structure (depth 20) and the widest forest (30)
         for (Structures.Def d : Structures.ALL) {
-            assertTrue(d.depth() + Structures.MIN_DEPTH <= 90, d.name() + " is too deep for a 90 block next to the shallowest");
-            assertTrue(d.front() <= 140, d.name());
+            assertTrue(d.depth() + Structures.MIN_DEPTH + Ring.CORE_MAX <= 120, d.name() + " is too deep for a 120 block next to the shallowest and the widest forest");
+            assertTrue(d.front() <= 180, d.name());
         }
     }
 
@@ -246,7 +246,7 @@ class RingTest {
             java.util.Map<String, Integer> seen = new java.util.HashMap<>();
             // four blocks of one city, one after the other
             for (int b = 0; b < 4; b++) {
-                for (Lot l : Ring.lots(0, 0, 139, 89, Hash.of(seed, 11L, b), used)) {
+                for (Lot l : Ring.lots(0, 0, 179, 119, Hash.of(seed, 11L, b), used)) {
                     if (l.building.group() != null) {
                         seen.merge(l.building.group(), 1, Integer::sum);
                     }
@@ -347,5 +347,38 @@ class RingTest {
 
     private static String name(int code) {
         return code < BlockCode.STRUCT ? "" : Structures.blockOf(Structures.STATES.get((code - BlockCode.STRUCT) / 4));
+    }
+
+    @Test
+    void structuresNeverTouchAndLeaveTheForest() {
+        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        long pairs = 0;
+        int minGap = Integer.MAX_VALUE;
+        int minCore = Integer.MAX_VALUE;
+        for (int[] size : new int[][]{{180, 120}, {120, 180}}) {
+            for (long seed = 0; seed < 3000; seed++) {
+                List<Lot> ring = Ring.lots(0, 0, size[0] - 1, size[1] - 1, Hash.of(seed, 13L, 0L));
+                for (int a = 0; a < ring.size(); a++) {
+                    for (int b = a + 1; b < ring.size(); b++) {
+                        Lot p = ring.get(a);
+                        Lot q = ring.get(b);
+                        int gx = Math.max(p.x0, q.x0) - Math.min(p.x1, q.x1) - 1;
+                        int gz = Math.max(p.z0, q.z0) - Math.min(p.z1, q.z1) - 1;
+                        int gap = Math.max(gx, gz);
+                        boolean opposite = (p.rot ^ q.rot) == 2;
+                        if (opposite) {
+                            // backs of opposite rows: the forest of the core in between
+                            assertTrue(gap >= Ring.CORE_MIN, "forest " + gap + " between " + p.building.name() + " and " + q.building.name());
+                            minCore = Math.min(minCore, gap);
+                        } else {
+                            assertTrue(gap >= Ring.GAP_MIN, "gap " + gap + " between " + p.building.name() + " and " + q.building.name());
+                            minGap = Math.min(minGap, gap);
+                        }
+                        pairs++;
+                    }
+                }
+            }
+        }
+        System.out.println("[RingTest] pairs " + pairs + ", smallest gap " + minGap + ", smallest forest " + minCore);
     }
 }

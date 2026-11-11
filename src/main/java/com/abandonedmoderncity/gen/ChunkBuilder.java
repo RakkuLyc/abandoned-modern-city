@@ -386,6 +386,24 @@ final class ChunkBuilder {
         }
     }
 
+    /**
+     * Whether the plan itself puts leaves at (x, y, z) (a tree of a block's core or park, or of a structure): those
+     * are real leaves too, but their trunk may stand in a chunk not built yet, so they are never taken for orphans.
+     */
+    private boolean plannedLeaves(int x, int y, int z) {
+        ChunkPlan p = plan.chunk(x >> 4, z >> 4);
+        int i = ChunkPlan.idx(x & 15, z & 15);
+        if (p.kind[i] != ChunkPlan.LOT || p.lot[i] == null) {
+            return false;
+        }
+        int code = p.lot[i].code(x, y, z, p.h2[i] / 2 - 1);
+        if (code == BlockCode.KEEP || code == BlockCode.AIR) {
+            return false;
+        }
+        BlockState s = Palette.of(code, 0, null);
+        return s != null && s.getBlock() instanceof LeavesBlock;
+    }
+
     /** Whether the plan itself puts a fluid at (x, y, z) (fountain water, field channels): it is never sealed. */
     private boolean plannedFluid(int x, int y, int z) {
         ChunkPlan p = plan.chunk(x >> 4, z >> 4);
@@ -490,7 +508,7 @@ final class ChunkBuilder {
             for (int z = z0; z <= z1; z++) {
                 for (int x = x0; x <= x1; x++) {
                     int k = (x - x0) + w * ((z - z0) + d * (y - y0));
-                    if (!leaf[k] || dist[k] <= LEAF_REACH || !nearCutTrunk(x, z)) {
+                    if (!leaf[k] || dist[k] <= LEAF_REACH || !nearCutTrunk(x, z) || plannedLeaves(x, y, z)) {
                         continue;
                     }
                     region.setBlock(p.set(x, y, z), Palette.AIR, Block.UPDATE_CLIENTS);

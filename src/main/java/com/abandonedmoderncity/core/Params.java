@@ -19,16 +19,16 @@ package com.abandonedmoderncity.core;
 public record Params(int cellSize, double cityChance, int minRadius, int maxRadius, int maxCityLevel,
                      int highwayMaxLength, boolean highways) {
 
-    public static final Params DEFAULT = new Params(648, 0.7, 128, 190, 150, 4000, true);
+    public static final Params DEFAULT = new Params(736, 0.7, 128, 230, 150, 4000, true);
 
     // ------------------------------------------------------------------ city grid
 
     /**
-     * City blocks are BLOCK_LONG_RUN x BLOCK_SHORT_RUN (140 x 90) of free ground between the sidewalks; their street
-     * centerlines are a street width further apart (173 and 123). Each city rolls whether the long side runs east-west.
+     * City blocks are BLOCK_LONG_RUN x BLOCK_SHORT_RUN (180 x 120) of free ground between the sidewalks; their street
+     * centerlines are a street width further apart (213 and 153). Each city rolls whether the long side runs east-west.
      */
-    public static final int BLOCK_LONG_RUN = 140;
-    public static final int BLOCK_SHORT_RUN = 90;
+    public static final int BLOCK_LONG_RUN = 180;
+    public static final int BLOCK_SHORT_RUN = 120;
     public static final int BLOCK_LONG = BLOCK_LONG_RUN + 33;
     public static final int BLOCK_SHORT = BLOCK_SHORT_RUN + 33;
     /** Every city is GRID x GRID blocks ((GRID + 1) x (GRID + 1) streets). */
@@ -115,7 +115,7 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
 
     /**
      * Farthest distance from a city center at which the city changes anything (lots, streets, slopes): the corner of
-     * the rectangular city (half diagonal: 236 for 190 x 140), then waves and slopes. Cities of another radius
+     * the rectangular city (half diagonal: 286 for 230 x 170), then waves and slopes. Cities of another radius
      * (config) use 1.2 x radius.
      */
     public static double influence(int radius) {
@@ -123,7 +123,7 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
         return corner + MAX_WARP + CITY_SKIRT + 4;
     }
 
-    /** Half the long side of a city, streets included: 190 for the 2 x 2 grid (the short side: 140). */
+    /** Half the long side of a city, streets included: 230 for the 2 x 2 grid (the short side: 170). */
     public static final int GRID_RADIUS = GRID * BLOCK_LONG / 2 + (int) STREET_HW + 1;
     public static final int GRID_HALF_SHORT = GRID * BLOCK_SHORT / 2 + (int) STREET_HW + 1;
 

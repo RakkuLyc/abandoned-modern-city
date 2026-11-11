@@ -29,25 +29,27 @@ rodovias, túneis, pontes, quarteirões, parques e plantações, **sem os prédi
 octogonais e as cidades 3 × 2 das rodovias (com o padrão rural_highway perto delas e as plantações), e depois trocar
 o grid 4 × 4 por 2 × 2 com células de 1024, depois os quarteirões para 105 × 60 com células de 512, e em 8 nov 2026 os quarteirões para 140 × 90 com células de 576
 (para caber as estruturas da pasta `structures/`); em 10 nov 2026 ruas e rodovias passaram a ter 33 de largura
-(células de 640); em 11 nov 2026 as cidades passaram ao meio de células de 648 e a 4 entradas: hoje só
+(células de 640); em 11 nov 2026 as cidades passaram ao meio de células de 648 e a 4 entradas; em 12 nov 2026 os
+quarteirões passaram a 180 × 120 (células de 736), com vãos entre as estruturas: hoje só
 existem as cidades 2 × 2 de quarteirões retangulares.
 
 ## Especificação das ruas e cidades (atual)
 
-- Grid rígido, ruas retas e cantos em ângulo reto: cidade = 2 × 2 quarteirões de 140 × 90 de área livre
-  (`Params.GRID` = 2, `Params.BLOCK_LONG_RUN` / `BLOCK_SHORT_RUN`; eixos das ruas a 173 e a 123, `BLOCK_LONG` /
-  `BLOCK_SHORT`), 3 × 3 ruas e 9 cruzamentos, ~379 × ~279 blocos com as ruas. Cada cidade sorteia (50%) se o lado
+- Grid rígido, ruas retas e cantos em ângulo reto: cidade = 2 × 2 quarteirões de 180 × 120 de área livre
+  (`Params.GRID` = 2, `Params.BLOCK_LONG_RUN` / `BLOCK_SHORT_RUN`; eixos das ruas a 213 e a 153, `BLOCK_LONG` /
+  `BLOCK_SHORT`), 3 × 3 ruas e 9 cruzamentos, ~459 × ~339 blocos com as ruas. Cada cidade sorteia (50%) se o lado
   comprido dos quarteirões fica leste-oeste ou norte-sul (`City.longX`); todos os quarteirões da cidade seguem a mesma
   orientação. Todas as cidades são assim (não há mais variantes).
-- Água é aterrada, morro é cortado. Cidades no meio de células de 648 (`Params.DEFAULT`), 648 blocos entre centros vizinhos;
-  o vão entre as bordas (o comprimento da rodovia) fica entre ~269 e ~369, conforme a orientação dos quarteirões
-  (pedido do usuário: 276–360). Sem variação de posição: célula com o meio sobre água ou alto demais fica sem cidade. O
-  `maxRadius` padrão é 190 (metade do lado comprido da cidade). A área de influência (`Params.influence`) é a
-  meia-diagonal exata do retângulo da cidade (190 × 140 → 236) + 10 + talude de 32 + 4 = ~282; com ela o centro de
-  a célula precisa de pelo menos 2 × 285 + 64 = 634.
+- Água é aterrada, morro é cortado. Cidades no meio de células de 736 (`Params.DEFAULT`), 736 blocos entre centros vizinhos;
+  o vão entre as bordas (o comprimento da rodovia) fica entre ~277 e ~397, conforme a orientação dos quarteirões
+  (pedido do usuário em 11 nov: 276–360; com os quarteirões de 180 × 120 a diferença entre os lados da cidade passou
+  a 120). Sem variação de posição: célula com o meio sobre água ou alto demais fica sem cidade. O
+  `maxRadius` padrão é 230 (metade do lado comprido da cidade). A área de influência (`Params.influence`) é a
+  meia-diagonal exata do retângulo da cidade (230 × 170 → 286) + 10 + talude de 32 + 4 = ~332; com ela a célula
+  precisa de pelo menos 2 × 334 + 64 = 732.
 - Rua com 33 de largura (10 nov 2026): 3 `smooth_stone` (calçada) + 27 `polished_blackstone` (pista) + 3
   `smooth_stone` (`Params.STREET_HW` = 16,5, `STREET_LANE_HW` = 13,5).
-- Trecho de rua de 140 ou 90 blocos (o lado do quarteirão) + 33 de cruzamento; quadrado 3 × 3 de `smooth_stone` em cada esquina de cruzamento.
+- Trecho de rua de 180 ou 120 blocos (o lado do quarteirão) + 33 de cruzamento; quadrado 3 × 3 de `smooth_stone` em cada esquina de cruzamento.
 - Faixa central no 17º bloco da largura (o do meio), traços de 11 com intervalo de 6 (quantos couberem, centrados); `white_concrete` na cidade,
   `yellow_terracotta` nas rodovias.
 - Faixas de pedestres (11 nov 2026, `City.crosswalk`): em cada ponta de todo trecho de rua, 2 linhas de pista depois
@@ -92,7 +94,7 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   (papoula, dente-de-leão, azure bluet, tulipas, oxeye daisy, cornflower, 5%); caminhos de `dirt_path` de 3 blocos
   com 30% de falhas (grama, musgo ou terra grossa), em duas variantes (50%): grade "jogo da velha"
   (2 + 2 caminhos retos a 16 do centro) ou cata-vento (círculo de raio 16 + 4 braços em espiral); distâncias escaladas
-  com o tamanho do parque (base `Park.BASE_SIZE` = 68 no lado menor; escala pelo lado menor: nos quarteirões de 140 × 90 é ×1,32). Centro sem árvores:
+  com o tamanho do parque (base `Park.BASE_SIZE` = 68 no lado menor; escala pelo lado menor: nos quarteirões de 180 × 120 é ×1,76). Centro sem árvores:
   fonte `waterfall.nbt` (do usuário, em `resources/amcs/`) cercada de lajes musgosas (meio bloco) do anel até a
   cerca de folhas da fonte: só `mossy_stone_brick_slab` e `mossy_cobblestone_slab` (metade cada), 10% faltam (11 nov
   2026). Nenhum bloco da fonte é removido: em 55% das colunas com lugar para vinha (ar ao lado das folhas ou pedras
@@ -127,10 +129,15 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   - árvores das estruturas com leaf decay: folhas a até 6 (pelas folhas) de um tronco do molde viram não
     persistentes com a distância certa; folhas sem tronco perto (sebes, arbustos) continuam persistentes;
   - as árvores dos miolos não entram nas estruturas (1 bloco de folga) e as estruturas nunca se sobrepõem
-    (`Ring.GAP` = 2 entre vizinhas; as árvores de cada estrutura ficam dentro da caixa dela);
+    (as árvores de cada estrutura ficam dentro da caixa dela);
+  - vãos (12 nov 2026, pedido do usuário): as estruturas não se encostam; entre duas vizinhas de uma linha, e entre a
+    mais funda de uma linha dos lados curtos e as linhas dos lados compridos, sorteia-se um vão de 10 a 19 blocos
+    (`Ring.GAP_MIN`/`GAP_MAX`); entre os fundos de linhas opostas fica sempre o bosque do miolo, com folga sorteada de
+    20 a 30 por par de lados (`Ring.CORE_MIN`/`CORE_MAX`);
   - as linhas dos lados curtos do quarteirão vão de canto a canto e as dos lados compridos preenchem o que sobra
-    entre elas (o contrário deixava os lados curtos quase sempre vazios); ~7,9 estruturas por quarteirão, 72% da
-    área livre coberta. Tamanho do quarteirão escolhido em 8 nov: 140 × 90 (a mais funda tem 57, a mais rasa 20).
+    entre elas (o contrário deixava os lados curtos quase sempre vazios); ~7,7 estruturas por quarteirão (as 4
+    linhas com ~25% cada), 45% da área livre coberta. Tamanho do quarteirão: 180 × 120, recomendado depois de
+    simular os vãos (140 × 90 caía para ~5 estruturas e torre/azulado/prédio apocalíptico ficavam raros).
   - comandos (12 nov 2026, `command/StructureCommands`): `/amcs locate structure <nome|tipo|grupo>` (a mais
     próxima já planejada; coordenada na calçada em frente) e `/amcs spawn <nome>` (2 blocos à frente de quem
     executa, centralizada, frente virada para ele, chão no bloco em que ele pisa; mesmas regras da cidade, com loot).

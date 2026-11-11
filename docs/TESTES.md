@@ -48,23 +48,23 @@ Alvos repetidos (a mesma cidade em dois critérios) entram uma vez só. Seeds fi
 - `CANYONS` (planalto cortado por cânions estreitos abaixo do nível do mar).
 - `RIVERS` (terra ondulada cortada por rios e salpicada de lagos, como o overworld real perto das seeds da bateria).
 
-Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa área de 9 × 9 células de 648
+Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa área de 9 × 9 células de 736
 (~18 000 × 18 000 blocos).
 
 ## 2. O que é verificado
 
-### Unitários (23 testes)
+### Unitários (24 testes)
 
 | Teste | Verifica |
 |---|---|
 | `ProfileTest.profilesAreFlatOrRampAndJoinTheCities` | 4 000 perfis aleatórios (com penhascos): começa e termina no nível de cada cidade, 48 blocos planos nas pontas, variação ≤ 1/8 de bloco por bloco, trechos planos sempre em altura inteira, nunca abaixo do mínimo, superfície (meio-bloco) nunca muda mais de 0,5 entre vizinhos |
 | `ProfileTest.halfBlockStepsAreEvenlySpaced` | numa subida, os degraus de meia-laje ficam a pelo menos 4 blocos um do outro |
 | `ProfileTest.classificationRunsAreClean` | 2 000 perfis: junções sempre no chão, túneis ≥ 16, pontes secas ≥ 8, toda água fora das junções é ponte |
-| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (355 cidades 2 × 2 de quarteirões 140 × 90, 9 630 lotes — estruturas, parques e miolos tomados pela natureza; em cada cidade no máximo 3 farmácias, 2 oficinas e 2 postos): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado; com as ruas cortadas desligadas (`MAX_CUTS` = 0) nenhuma cidade tem corte, senão todos os valores de 0 a `MAX_CUTS` aparecem; toda coluna de lote é lote do quarteirão certo e não toca rua |
+| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (357 cidades 2 × 2 de quarteirões 180 × 120, 10 023 lotes — estruturas, parques e miolos tomados pela natureza; em cada cidade no máximo 3 farmácias, 2 oficinas e 2 postos): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado; com as ruas cortadas desligadas (`MAX_CUTS` = 0) nenhuma cidade tem corte, senão todos os valores de 0 a `MAX_CUTS` aparecem; toda coluna de lote é lote do quarteirão certo e não toca rua |
 | `WorldPlanTest.streetWidthIsConstantOnStraightStreets` | toda rua reta de cidade tem exatamente 33 colunas; a zebra fica nas linhas 2 a 4 do trecho, com 14 listras, e não existe nas outras linhas |
 | `WorldPlanTest.highwayNetworkIsConsistentAndWellConnected` | 21 combinações terreno × seed: Gabriel simétrico, rodovia começa e termina exatamente na entrada de cada cidade, raio de curva ≥ 60, pontos a ~1 bloco, comprimento máximo, cruzamento de entrada nunca usado duas vezes (um canto tem duas saídas, mas só uma rodovia), no máximo 8 rodovias por cidade, nenhum par de rodovias perto demais (sem cruzamentos); limites: plano/colinas ≥ 85% das ligações e ≤ 5% de cidades sem rodovia, montanhas/rios/cânions ≤ 15%, e pelo menos metade das células com cidade (exceto ilhas); gera `network_*.png` |
 | `WorldPlanTest.removedStreetsAreRenderedAndAudited` | uma cidade para cada quantidade de ruas cortadas (hoje só 0): passa no `PlanAudit` e gera `cuts_N.png` |
-| `FloraTest.overgrownBlocksAreConsistent` | 6 miolos de 140 × 90: mais de 120 árvores cada, copas dentro do quarteirão, toda vinha presa em folha/tronco ou embaixo de outra vinha, toda folha com distância de 1 a 6 e um vizinho um passo mais perto da madeira (regra do leaf decay do vanilla), plantas só a 1 bloco do chão e só em solo (grama, musgo, terra grossa), metades de cima das plantas altas certas, entulho nunca flutua; nenhuma árvore entra numa estrutura; gera `wild_block.png` |
+| `FloraTest.overgrownBlocksAreConsistent` | 6 miolos de 140 × 90 (o teste usa esse tamanho fixo): mais de 120 árvores cada, copas dentro do quarteirão, toda vinha presa em folha/tronco ou embaixo de outra vinha, toda folha com distância de 1 a 6 e um vizinho um passo mais perto da madeira (regra do leaf decay do vanilla), plantas só a 1 bloco do chão e só em solo (grama, musgo, terra grossa), metades de cima das plantas altas certas, entulho nunca flutua; nenhuma árvore entra numa estrutura; gera `wild_block.png` |
 | `FloraTest.parksAreOvergrownAndKeepTheirFountain` | 6 parques: as mesmas regras de plantas e vinhas, todo bloco da fonte no lugar (só a troca baú → pedregulho musgoso, as lajes musgosas do anel e o piso de pedra virado musgoso), cachos de vinha na fonte; gera `wild_park.png` |
 | `RingTest.withoutStructuresBlocksStayEmpty` | (pulado com estruturas) com `index.txt` vazio: nenhum estado de estrutura e o anel não cria lotes |
 | `RingTest.groundLayerAndBuriedLayers` | as estruturas com camada enterrada têm blocos embaixo do chão e nada mais fundo; nenhum ar enterrado; mansão abandonada, torre, azulado e apartamento descem 1 |
@@ -76,8 +76,9 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `RingTest.spawnLimitsHoldOverACity` | 300 cidades de 4 quarteirões sorteados em sequência: no máximo 3 farmácias, 2 oficinas, 2 postos |
 | `RingTest.structuresHaveSolidBoxesWithAFloorLayer` | toda estrutura tem caixa não vazia e blocos na primeira camada |
 | `RingTest.rotationKeepsEveryBlockAndTurnsTheFrontToTheStreet` | as 4 rotações têm o mesmo número de blocos em todas as estruturas; a rotação de 90, 180 e 270 graus confere célula a célula com a fórmula da transformação |
-| `RingTest.ringsFitTheirBlockTouchTheSidewalksAndDoNotOverlap` | 6 000 anéis em quarteirões 140 × 90 e 90 × 140: dentro do quarteirão, sem sobreposição, cada estrutura encosta na calçada para onde a frente aponta, determinístico, as 33 aparecem e os 4 lados são usados |
-| `RingTest.everyStructureFitsNextToTheShallowestInA90Block` | cada estrutura cabe ao lado da mais rasa (20) num lado de 90, e na largura de 140 |
+| `RingTest.ringsFitTheirBlockTouchTheSidewalksAndDoNotOverlap` | 6 000 anéis em quarteirões 180 × 120 e 120 × 180: dentro do quarteirão, sem sobreposição, cada estrutura encosta na calçada para onde a frente aponta, determinístico, as 33 aparecem e os 4 lados são usados |
+| `RingTest.everyStructureFitsNextToTheShallowestInA120Block` | cada estrutura cabe num lado de 120 junto da mais rasa (20) e do bosque mais largo (30), e na largura de 180 |
+| `RingTest.structuresNeverTouchAndLeaveTheForest` | 6 000 anéis em 180 × 120 e 120 × 180 (156 327 pares): duas estruturas quaisquer ficam a 10 ou mais blocos; entre lados opostos, 20 ou mais de bosque (menor medido: 10 e 21) |
 | `PlanAuditTest.citiesAndHighwaysPassThePlanAudit` | `PlanAudit` coluna a coluna em 3 cidades inteiras e 2 rodovias inteiras por terreno × seed (105 auditorias); gera `city_*.png` |
 | `PlanAuditTest.planIsIndependentOfQueryOrderAndThreads` | 3 721 chunks planejados de novo em ordem embaralhada por 8 threads: resultado idêntico, campo a campo |
 
@@ -169,6 +170,7 @@ e a regra de escada e apoio no mesmo chunk.
 | 37 | Teste no jogo pelo usuário, 12 nov | a casa moderna abandonada aparecia de costas para a rua | a frente do molde dela é o lado +Z (todas as outras: -Z) | campo `frente` no `index.txt` (180) e giro por estrutura em `Structures.Def` |
 | 38 | Teste no jogo pelo usuário, 12 nov | a mansão pós-apocalíptica de costas para a rua; teias flutuando nela | frente no +Z do molde; teias sem apoio no molde | giro de 180° no índice; teias soltas viram ar em todas as estruturas (18) |
 | 39 | Teste no jogo pelo usuário, 12 nov | banners das farmácias lisos | o leitor de moldes ignorava os dados de block entity, onde ficam os desenhos | `Template.banners` guarda os padrões, aplicados quando o banner é colocado (geração e `/amcs spawn`); auditoria `banner_without_design` |
+| 40 | Bateria, 12 nov (quarteirões 180 × 120) | `building_mismatch` (3): folhas de bétula planejadas viraram ar | a limpeza de folhas órfãs (árvores naturais cortadas pela cidade) considerava toda folha não persistente; as das árvores reais do mod ficaram assim, e com o tronco num chunk ainda não gerado pareciam órfãs | a limpeza nunca remove folhas que o plano coloca (`ChunkBuilder.plannedLeaves`) |
 | — | Bateria (infraestrutura) | servidores falhando com "Address already in use" | um servidor de uma bateria interrompida ainda terminava | o script usa a porta 25591 e se recusa a começar com um servidor de desenvolvimento vivo |
 
 ## 4. Como reproduzir
@@ -209,21 +211,24 @@ topo, meio e base, borda) e D (listras e borda ondulada) — quem olha a fachada
   - para comparar, o próprio Minecraft gasta dezenas de ms por chunk.
 - **Testes unitários:** ~2 min no total (sem o teste dos prédios, que levava ~8 min).
 
-## 6. Resultados atuais (11 nov 2026, quarteirões 140 × 90 tomados pela natureza, ruas e rodovias de 33, cidades no meio de células de 648, 4 entradas)
+## 6. Resultados atuais (12 nov 2026, quarteirões 180 × 120 com anel de estruturas com vãos e miolo tomado pela natureza, ruas e rodovias de 33, cidades no meio de células de 736, 4 entradas)
 
-- **Unitários:** 22 passam e 1 é pulado (o teste sem estruturas), 12 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
+- **Unitários:** 23 passam e 1 é pulado (o teste sem estruturas), 12 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
-  - **Rede (7 terrenos × 3 seeds, 81 células), cidades no meio da célula de 648, 4 entradas (uma por lado):** 40 a
-    62 cidades por combinação, 75 a 121 ligações candidatas. Rodovias mantidas: 99–119 no plano, nas colinas e nos
-    cânions (93–98%); 89–114 nas montanhas (84–94%); 88–101 nos rios (82–89%); 90–104 no terreno misto (88–94%);
-    57–64 nas ilhas (73–82%). Principal descarte: `curve too tight` (até 11), depois `mostly water` e desnível. No
-    máximo 1 cidade sem rodovia por combinação. Com 4 entradas quaisquer das 8 (rejeitado): só 82 de 106 no plano,
-    22 por curva fechada, rede partida em 4 grupos.
+  - **Rede (7 terrenos × 3 seeds, 81 células), cidades no meio da célula de 736, 4 entradas (uma por lado):** 35 a
+    62 cidades por combinação, 76 a 121 ligações candidatas. Rodovias mantidas: 99–119 no plano, nas colinas e nos
+    cânions (93–98%); 97–112 nas montanhas (91–93%); 85–96 nos rios (83–86%); 91–110 no terreno misto (85–92%);
+    59–64 nas ilhas (76–78%). No máximo 2 cidades sem rodovia por combinação. Com 4 entradas quaisquer das 8
+    (rejeitado em 11 nov): só 82 de 106 no plano, 22 por curva fechada, rede partida em 4 grupos.
+  - **Anel (6 000 quarteirões):** ~7,7 estruturas por quarteirão, ~25% em cada lado, 45% da área livre coberta;
+    simulação prévia dos tamanhos com vãos: 140 × 90 → 5,0 por quarteirão, 160 × 110 → 6,5, 180 × 120 → 7,2,
+    200 × 130 → 8,2.
 - **Bateria no mundo:**
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 12 nov | quarteirões 180 × 120, vãos de 10 a 19 e bosque de 20 a 30 | PASS: 8 de 8, 0 erros de geração; na cidade mais acidentada 1 180 contêineres com loot e 45 banners conferidos; 8 346 chunks, 2,74 ms por chunk, 267 s |
   | `20261027` | padrão (8 alvos) | 12 nov | mansão pós-apocalíptica girada, teias soltas removidas, banners com desenho | PASS: 8 de 8, 0 erros de geração, 126 banners de farmácia conferidos com desenho, 3,06 ms por chunk |
   | `20261027` | padrão (8 alvos) | 12 nov | casa moderna girada 180° | PASS: 8 de 8, 0 erros de geração, 2,94 ms por chunk |
   | `20261027` | padrão (8 alvos) | 12 nov | 14 estruturas, limites por cidade, chão alinhado, piso até a calçada, folhas reais nas estruturas | PASS: 8 de 8, 0 erros de geração; só na cidade do spawn 1 261 block entities de estrutura e 744 contêineres com loot table conferidos; 2,93 ms por chunk, 227 s |

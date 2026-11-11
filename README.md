@@ -29,13 +29,14 @@ limites por cidade para farmácias, oficinas e postos.
 
 | Tipo | Onde | Forma |
 |---|---|---|
-| Cidade 2 × 2 | uma no meio de cada célula de 648 blocos (70% das células) | grid rígido de 2 × 2 quarteirões de 140 × 90 (eixos a 173 e a 123, ~379 × ~279 blocos com as ruas, 3 × 3 ruas; o lado comprido fica leste-oeste ou norte-sul, sorteado por cidade), até 8 entradas de rodovia (o cruzamento do meio de cada lado e os 4 cantos) |
+| Cidade 2 × 2 | uma no meio de cada célula de 736 blocos (70% das células) | grid rígido de 2 × 2 quarteirões de 180 × 120 (eixos a 213 e a 153, ~459 × ~339 blocos com as ruas, 3 × 3 ruas; o lado comprido fica leste-oeste ou norte-sul, sorteado por cidade), até 8 entradas de rodovia (o cruzamento do meio de cada lado e os 4 cantos) |
 
 Só existe esse tipo de cidade: as cidades octogonais e as cidades 3 × 2 das rodovias (com o padrão rural_highway e
 as plantações) foram removidas em 7 nov 2026; o grid passou de 4 × 4 quarteirões de 186 (células de 2 048) para
 2 × 2 quarteirões de 105 × 60 (células de 512) e, em 8 nov 2026, para 140 × 90 (células de 576, para caber as
 estruturas de `structures/`); em 10 nov 2026 ruas e rodovias passaram a 33 de largura (células de 640); em 11 nov 2026 as
-cidades foram para o meio de células de 648 (rodovias de ~269 a ~369 blocos) e passaram a ter 4 entradas.
+cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 nov 2026 os quarteirões passaram a
+180 × 120 (células de 736, rodovias de ~277 a ~397 blocos), com vãos entre as estruturas.
 
 - Cada cidade fica numa única altura: água é aterrada, morro é cortado, e um talude 1:1 faz a transição.
 - Ruas cortadas estão desligadas (`City.MAX_CUTS` = 0); o código que corta trechos sem criar beco sem saída
@@ -64,7 +65,8 @@ cidades foram para o meio de células de 648 (rodovias de ~269 a ~369 blocos) e 
 
   - Encostadas na calçada sem vão: as fileiras da borda sem piso recebem o piso da primeira fileira que tem.
   - As árvores das estruturas têm leaf decay (folhas ligadas a um tronco); sebes sem tronco continuam persistentes.
-  - As árvores dos miolos não entram nas estruturas, e as estruturas nunca se sobrepõem.
+  - As estruturas não se encostam: vão sorteado de 10 a 19 blocos entre vizinhas, e sempre 20 a 30 blocos de bosque
+    entre os fundos de lados opostos. As árvores dos miolos não entram nas estruturas.
   - Os banners mantêm o desenho do molde: as farmácias têm as letras DRUGSTORE.
   - Teias soltas (sem nada em que se prender) são removidas.
 
@@ -131,7 +133,7 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
   Lot            lotes: parque inteiro de quarteirão, uma estrutura ou o miolo tomado pela natureza (WILD)
   Flora          árvores (4 espécies, vinhas), chão em manchas, plantas e entulho; índice de árvores por baldes
   Wild           o miolo do quarteirão: chão, árvores e vegetação, sem entrar nas estruturas
-  Ring           anel de estruturas em volta do quarteirão (lados curtos inteiros, compridos no que sobra), limites por cidade
+  Ring           anel de estruturas em volta do quarteirão (lados curtos inteiros, compridos no que sobra), vãos, limites
   Structures     as 14 estruturas de `amcs/buildings/index.txt`: caixa, camada do chão, piso até a borda, folhas reais, rotação
   Park           parques tomados pela natureza, com caminhos e fonte
   Template       estruturas .nbt do usuário (fonte waterfall.nbt)
@@ -152,7 +154,7 @@ command/  /amcs (StructureCommands: locate structure e spawn), auditoria dos blo
 ### Estágios
 
 1. **Existe cidade?**
-   - O mundo é dividido em células de `cellSize` (648). Cada célula tem uma cidade com chance `cityChance`
+   - O mundo é dividido em células de `cellSize` (736). Cada célula tem uma cidade com chance `cityChance`
      (70%), no meio da célula.
    - A cidade só existe se ali o terreno não é majoritariamente água e a altura (mediana de 9 amostras, mínimo
      nível do mar + 2) não passa de `maxCityLevel`.
@@ -172,7 +174,7 @@ command/  /amcs (StructureCommands: locate structure e spawn), auditoria dos blo
 
 `enabled`, `cellSize`, `cityChance`, `minRadius`, `maxRadius`, `maxCityLevel`, `highways`, `highwayMaxLength`.
 A geometria (larguras, quarteirões, rampas, túneis, pontes) fica em `core/Params` e as cidades em `core/City`. Mudanças valem para chunks novos e mudam o plano: use um mundo novo.
-Padrões: `cellSize` = 648 e `maxRadius` = 190. Um arquivo de config antigo (com 2048/288, 1024/212, 512/131 ou 576/166) mantém os
+Padrões: `cellSize` = 736 e `maxRadius` = 230. Um arquivo de config antigo (com 2048/288, 1024/212, 512/131, 576/166, 640/190 ou 648/190) mantém os
 valores velhos: apague-o ou ajuste os dois valores.
 
 ## Comandos (op 2)
