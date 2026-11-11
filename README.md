@@ -48,7 +48,7 @@ cidades foram para o meio de células de 648 (rodovias de ~269 a ~369 blocos) e 
   | Estrutura | Tipo | Caixa (frente × fundo × altura) | Chão |
   |---|---|---|---|
   | Casa abandonada | casas | 29 × 46 × 20 | camada 0 |
-  | Casa moderna abandonada | casas | 30 × 29 × 15 | camada 0 |
+  | Casa moderna abandonada (frente no lado +Z do molde: girada 180°) | casas | 30 × 29 × 15 | camada 0 |
   | Mansão abandonada | casas | 41 × 57 × 21 | camada 1 (desce 1) |
   | Mansão pós-apocalíptica | casas | 37 × 41 × 18 | camada 0 |
   | Farmácia | farmácia (limite 3 com a grande) | 19 × 28 × 16 | camada 0 |

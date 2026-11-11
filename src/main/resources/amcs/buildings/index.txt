@@ -1,7 +1,9 @@
-# type|file (without .nbt)|ground: the template layer (from its lowest solid one) that lies at the city ground
-# (1 = the lowest layer is buried). The originals are in structures/ at the repo root.
+# type|file (without .nbt)|ground|front
+# ground: the template layer (from its lowest solid one) that lies at the city ground (1 = the lowest layer is buried)
+# front (optional, default 0): degrees clockwise that turn the template's front to its -Z side (180: front on +Z)
+# The originals are in structures/ at the repo root.
 casas|casa_abandonada|0
-casas|casa_moderna_abandonada|0
+casas|casa_moderna_abandonada|0|180
 casas|mansao_abandonada|1
 casas|mansao_pos_apocaliptica|0
 farmacia|farmacia_vermelho|0

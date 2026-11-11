@@ -44,17 +44,28 @@ public final class Structures {
      * @param h      height of the box (buried layers included)
      * @param d      size along z before rotation (the depth, from the front to the back)
      * @param ground layers of the box under the city ground
+     * @param turn   quarter turns clockwise that bring the template's front to its -Z side (0 for most; 2 for a
+     *               template whose front is its +Z side, as the user found for casa_moderna_abandonada)
      */
     public record Def(String type, String name, String group, Template t, int ox, int oy, int oz, int w, int h, int d,
-                      int ground, int[] state, int[] fill, Map<Integer, Integer> leaf) {
+                      int ground, int turn, int[] state, int[] fill, Map<Integer, Integer> leaf) {
         /** Footprint size along x after {@code rot} quarter turns. */
         public int sizeX(int rot) {
-            return (rot & 1) == 0 ? w : d;
+            return ((rot + turn) & 1) == 0 ? w : d;
         }
 
         /** Footprint size along z after {@code rot} quarter turns. */
         public int sizeZ(int rot) {
-            return (rot & 1) == 0 ? d : w;
+            return ((rot + turn) & 1) == 0 ? d : w;
+        }
+
+        /** Width of the front (along the street) and depth (from the street back), the front turned to -Z. */
+        public int front() {
+            return sizeX(0);
+        }
+
+        public int depth() {
+            return sizeZ(0);
         }
 
         /** Highest layer above the city ground, plus one. */
@@ -71,6 +82,7 @@ public final class Structures {
             if (rx < 0 || rz < 0 || ry < -ground || ry >= h - ground || rx >= sizeX(rot) || rz >= sizeZ(rot)) {
                 return BlockCode.KEEP;
             }
+            rot = (rot + turn) & 3;
             int x;
             int z;
             switch (rot & 3) {
@@ -167,7 +179,7 @@ public final class Structures {
     /** A floor row counts as real floor from this share of its width up. */
     static final double FLOOR_ROW = 0.25;
 
-    private static Def define(String type, String name, int ground, Map<String, Integer> ids) {
+    private static Def define(String type, String name, int ground, int turn, Map<String, Integer> ids) {
         Template t = Template.load("buildings/" + name);
         int[] state = new int[t.palette.size()];
         boolean[] solid = new boolean[state.length];
@@ -218,7 +230,7 @@ public final class Structures {
                 group = g;
             }
         }
-        return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, state, fill, leaf);
+        return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, turn, state, fill, leaf);
     }
 
     private static int id(Map<String, Integer> ids, String s) {
@@ -398,14 +410,15 @@ public final class Structures {
                     continue;
                 }
                 String[] f = line.trim().split("\\|");
-                defs.add(define(f[0], f[1], f.length > 2 ? Integer.parseInt(f[2].trim()) : 0, ids));
+                int turn = f.length > 3 ? Math.floorMod(Integer.parseInt(f[3].trim()) / 90, 4) : 0;
+                defs.add(define(f[0], f[1], f.length > 2 ? Integer.parseInt(f[2].trim()) : 0, turn, ids));
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
         STATES.addAll(ids.keySet());
         ALL = List.copyOf(defs);
-        MIN_DEPTH = ALL.stream().mapToInt(Def::d).min().orElse(0);
-        MIN_WIDTH = ALL.stream().mapToInt(Def::w).min().orElse(0);
+        MIN_DEPTH = ALL.stream().mapToInt(Def::depth).min().orElse(0);
+        MIN_WIDTH = ALL.stream().mapToInt(Def::front).min().orElse(0);
     }
 }

@@ -102,11 +102,12 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   as lanternas e o baú não mudam.
   Baú vazio em 50% das fontes (senão `mossy_cobblestone`).
 - Estruturas (12 nov 2026, `core/Structures` carrega, mede e gira; `core/Ring` monta o anel): as 14 `.nbt` de
-  `structures/` (cópias em `src/main/resources/amcs/buildings/`, listadas em `index.txt` como `tipo|arquivo|chão`):
+  `structures/` (cópias em `src/main/resources/amcs/buildings/`, listadas em `index.txt` como `tipo|arquivo|chão|frente`):
   4 casas (casa abandonada, casa moderna abandonada, mansão abandonada, mansão pós-apocalíptica), farmácia,
   farmácia grande, oficina média, oficina pequena, posto padrão, posto pequeno, prédio apartamento, prédio azulado,
   torre, prédio apocalíptico. Regras decididas pelo usuário:
-  - frente = lado -Z do `.nbt`, virada para a rua; encostadas na calçada, formando um anel; sorteio por arquivo,
+  - frente = lado -Z do `.nbt`, virada para a rua; o campo `frente` do índice gira o molde quando a frente é
+    outro lado: a casa moderna abandonada tem a frente no +Z (180°, achado pelo usuário no jogo em 12 nov 2026); encostadas na calçada, formando um anel; sorteio por arquivo,
     sem padrão;
   - limites por cidade (`Structures.LIMITS`): farmácias 3 (as duas), oficinas 2 (as duas), postos 2 (os dois); os
     anéis da cidade inteira são sorteados de uma vez (`City.rings`, quarteirões de norte a sul, oeste a leste), e um

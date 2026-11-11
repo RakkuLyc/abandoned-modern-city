@@ -137,8 +137,8 @@ class RingTest {
         assumeFalse(Structures.ALL.isEmpty(), "no structures");
         // each structure fits a 140 x 90 block next to the shallowest structure (depth 20): 90 - 20 = 70 >= depth
         for (Structures.Def d : Structures.ALL) {
-            assertTrue(d.d() + Structures.MIN_DEPTH <= 90, d.name() + " is too deep for a 90 block next to the shallowest");
-            assertTrue(d.w() <= 140, d.name());
+            assertTrue(d.depth() + Structures.MIN_DEPTH <= 90, d.name() + " is too deep for a 90 block next to the shallowest");
+            assertTrue(d.front() <= 140, d.name());
         }
     }
 
@@ -256,6 +256,31 @@ class RingTest {
                 assertTrue(e.getValue() <= Structures.LIMITS.get(e.getKey()), e.getKey() + " " + e.getValue());
             }
             assertEquals(seen, used);
+        }
+    }
+
+    @Test
+    void casaModernaFacesTheStreetWithItsPlusZSide() {
+        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        Structures.Def c = Structures.ALL.stream().filter(d -> d.name().equals("casa_moderna_abandonada")).findFirst().orElseThrow();
+        assertEquals(2, c.turn(), "the user found its front on the +Z side");
+        // at rotation 0 (street to the north) the row touching the street is the template's last z row
+        Template t = c.t();
+        for (int x = 0; x < c.front(); x++) {
+            for (int y = 1; y < c.above(); y++) {
+                int p = t.at(c.ox() + c.w() - 1 - x, c.oy() + c.ground() + y, c.oz() + c.d() - 1);
+                int code = c.code(x, y, 0, 0);
+                if (p < 0 || code < BlockCode.STRUCT) {
+                    continue;
+                }
+                String placed = Structures.blockOf(Structures.STATES.get((code - BlockCode.STRUCT) / 4));
+                assertEquals(Structures.blockOf(t.palette.get(p)), placed, "front row at x " + x + " y " + y);
+            }
+        }
+        for (Structures.Def d : Structures.ALL) {
+            if (d != c) {
+                assertEquals(0, d.turn(), d.name());
+            }
         }
     }
 }

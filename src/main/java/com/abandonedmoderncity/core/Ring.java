@@ -94,7 +94,7 @@ public final class Ring {
             Structures.Def def = Structures.ALL.get(Hash.range(h, 0, Structures.ALL.size() - 1));
             boolean full = def.group() != null
                     && used.getOrDefault(def.group(), 0) >= Structures.LIMITS.get(def.group());
-            if (full || def.d() > maxDepth || def.w() > length - at) {
+            if (full || def.depth() > maxDepth || def.front() > length - at) {
                 failures++;
                 continue;
             }
@@ -115,8 +115,8 @@ public final class Ring {
                 default -> z0 + at;
             };
             out.add(Lot.building(x, z, def, rot, Hash.next(h, 2)));
-            at += def.w() + GAP;
-            deepest = Math.max(deepest, def.d());
+            at += def.front() + GAP;
+            deepest = Math.max(deepest, def.depth());
         }
         return deepest;
     }
