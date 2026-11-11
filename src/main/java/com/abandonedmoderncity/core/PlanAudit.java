@@ -239,7 +239,9 @@ public final class PlanAudit {
                     for (int v = u + 1; v < blockLots.size(); v++) {
                         Lot a = blockLots.get(u);
                         Lot b = blockLots.get(v);
-                        if (a.x0 <= b.x1 && b.x0 <= a.x1 && a.z0 <= b.z1 && b.z0 <= a.z1) {
+                        // the overgrown core covers the whole block under the structures, which win over it
+                        boolean wild = a.type == Lot.Type.WILD || b.type == Lot.Type.WILD;
+                        if (!wild && a.x0 <= b.x1 && b.x0 <= a.x1 && a.z0 <= b.z1 && b.z0 <= a.z1) {
                             r.fail("lot_overlap", c + " lots " + a.x0 + "," + a.z0 + " and " + b.x0 + "," + b.z0);
                         }
                     }

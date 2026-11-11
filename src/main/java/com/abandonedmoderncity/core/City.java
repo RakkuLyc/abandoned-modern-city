@@ -770,15 +770,18 @@ public final class City {
     /**
      * The lots of block (bi, bj), inside its free rectangle x0..x1, z0..z1 (whose outline touches the sidewalks, and
      * reaches across removed streets): some blocks are a single park; the others get a ring of structures against the
-     * sidewalks ({@link Ring}, prototype: drawn at random), and the rest of their ground is the city's free ground
-     * (gray concrete powder).
+     * sidewalks ({@link Ring}, prototype: drawn at random), and the rest is left to nature ({@link Wild}).
      */
     private List<Lot> blockLots(int bi, int bj, int x0, int z0, int x1, int z1) {
         long rs = Hash.of(seed, 0x52494E47L, bi, bj);
         if (Hash.unit(rs) < PARK_BLOCK_CHANCE) {
             return List.of(Lot.park(x0, z0, x1, z1, Hash.next(rs, 1)));
         }
-        return Ring.lots(x0, z0, x1, z1, Hash.next(rs, 2));
+        List<Lot> ring = Ring.lots(x0, z0, x1, z1, Hash.next(rs, 2));
+        // the rest of the block is left to nature (listed last: the structures win where they stand)
+        List<Lot> out = new java.util.ArrayList<>(ring);
+        out.add(Lot.wild(x0, z0, x1, z1, Hash.next(rs, 3), ring));
+        return List.copyOf(out);
     }
 
     /** 0 at the outskirts, 1 at the center. */

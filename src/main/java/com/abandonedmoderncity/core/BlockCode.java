@@ -71,6 +71,20 @@ public final class BlockCode {
      */
     public static final int BUILDING_STAIR = 140;
     public static final int BUILDING_STAIR_END = BUILDING_STAIR + 4;
+    // overgrowth ({@link Flora}): logs and leaves + species (oak, birch, dark oak, spruce), vines + the direction of
+    // the block they hang on (west, east, north, south)
+    public static final int WILD_LOG = 200;
+    public static final int WILD_LEAVES = 204;
+    public static final int VINE = 208;
+    public static final int MOSS_BLOCK = 212;
+    public static final int FERN = 213;
+    public static final int LARGE_FERN_LOWER = 214;
+    public static final int LARGE_FERN_UPPER = 215;
+    /** Bottom slab of mossy stone bricks (rubble, the mossy parts of the fountain ring). */
+    public static final int MOSSY_SLAB = 216;
+    /** Rubble {@code RUBBLE + k}, k < RUBBLES: mossy cobblestone, cobblestone, cracked stone bricks, gray concrete. */
+    public static final int RUBBLE = 220;
+    public static final int RUBBLES = 4;
     /** Block {@code TEMPLATE + i}: entry i of the palette of {@link Template#WATERFALL}. */
     public static final int TEMPLATE = 1000;
     /**

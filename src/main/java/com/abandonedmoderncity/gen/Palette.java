@@ -105,6 +105,31 @@ public final class Palette {
             .setValue(DoublePlantBlock.HALF, DoubleBlockHalf.LOWER);
     public static final BlockState TALL_GRASS_UPPER = Blocks.TALL_GRASS.defaultBlockState()
             .setValue(DoublePlantBlock.HALF, DoubleBlockHalf.UPPER);
+    // ------------------------------------------------------------------ overgrowth (core/Flora)
+    /** Logs and persistent leaves of oak, birch, dark oak and spruce. */
+    public static final BlockState[] WILD_LOGS = {b(Blocks.OAK_LOG), b(Blocks.BIRCH_LOG), b(Blocks.DARK_OAK_LOG), b(Blocks.SPRUCE_LOG)};
+    public static final BlockState[] WILD_LEAVES = {leaves(Blocks.OAK_LEAVES), leaves(Blocks.BIRCH_LEAVES),
+            leaves(Blocks.DARK_OAK_LEAVES), leaves(Blocks.SPRUCE_LEAVES)};
+    /** Vines hanging on the block to the west, east, north, south. */
+    public static final BlockState[] VINES = {
+            Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.WEST, true),
+            Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.EAST, true),
+            Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.NORTH, true),
+            Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.SOUTH, true)};
+    public static final BlockState MOSS_BLOCK = Blocks.MOSS_BLOCK.defaultBlockState();
+    public static final BlockState FERN = Blocks.FERN.defaultBlockState();
+    public static final BlockState LARGE_FERN_LOWER = Blocks.LARGE_FERN.defaultBlockState()
+            .setValue(DoublePlantBlock.HALF, DoubleBlockHalf.LOWER);
+    public static final BlockState LARGE_FERN_UPPER = Blocks.LARGE_FERN.defaultBlockState()
+            .setValue(DoublePlantBlock.HALF, DoubleBlockHalf.UPPER);
+    public static final BlockState MOSSY_SLAB = Blocks.MOSSY_STONE_BRICK_SLAB.defaultBlockState();
+    public static final BlockState[] RUBBLE = {b(Blocks.MOSSY_COBBLESTONE), b(Blocks.COBBLESTONE),
+            b(Blocks.CRACKED_STONE_BRICKS), b(Blocks.GRAY_CONCRETE)};
+
+    private static BlockState leaves(Block block) {
+        return block.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true);
+    }
+
     /** Palette of the fountain template, as block states. */
     private static BlockState[] fountain;
 
@@ -221,6 +246,32 @@ public final class Palette {
         }
         if (code >= BlockCode.FLOWER && code < BlockCode.FLOWER + BlockCode.FLOWERS) {
             return FLOWERS[code - BlockCode.FLOWER];
+        }
+        if (code >= BlockCode.WILD_LOG && code < BlockCode.WILD_LOG + 4) {
+            return WILD_LOGS[code - BlockCode.WILD_LOG];
+        }
+        if (code >= BlockCode.WILD_LEAVES && code < BlockCode.WILD_LEAVES + 4) {
+            return WILD_LEAVES[code - BlockCode.WILD_LEAVES];
+        }
+        if (code >= BlockCode.VINE && code < BlockCode.VINE + 4) {
+            return VINES[code - BlockCode.VINE];
+        }
+        if (code >= BlockCode.RUBBLE && code < BlockCode.RUBBLE + BlockCode.RUBBLES) {
+            return RUBBLE[code - BlockCode.RUBBLE];
+        }
+        switch (code) {
+            case BlockCode.MOSS_BLOCK:
+                return MOSS_BLOCK;
+            case BlockCode.FERN:
+                return FERN;
+            case BlockCode.LARGE_FERN_LOWER:
+                return LARGE_FERN_LOWER;
+            case BlockCode.LARGE_FERN_UPPER:
+                return LARGE_FERN_UPPER;
+            case BlockCode.MOSSY_SLAB:
+                return MOSSY_SLAB;
+            default:
+                break;
         }
         if (code >= BlockCode.BUILDING_DOOR && code < BlockCode.BUILDING_DOOR_END) {
             return BUILDING_DOOR[code - BlockCode.BUILDING_DOOR];
@@ -340,6 +391,11 @@ public final class Palette {
         set.addAll(List.of(BALCONY_WALL));
         set.addAll(List.of(PATH, RING_SLAB, TALL_GRASS_LOWER, TALL_GRASS_UPPER));
         set.addAll(List.of(FLOWERS));
+        set.addAll(List.of(WILD_LOGS));
+        set.addAll(List.of(WILD_LEAVES));
+        set.addAll(List.of(VINES));
+        set.addAll(List.of(RUBBLE));
+        set.addAll(List.of(MOSS_BLOCK, FERN, LARGE_FERN_LOWER, LARGE_FERN_UPPER, MOSSY_SLAB));
         for (BlockState f : fountain()) {
             // flowing water of the fountain is a fluid, not a block to break
             if (!(f.getBlock() instanceof net.minecraft.world.level.block.LiquidBlock)) {

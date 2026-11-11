@@ -66,15 +66,28 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   internos ou da borda; nunca cria beco sem saída e a cidade continua toda conectada. O espaço vira grama, unindo
   os quarteirões. Entradas não são protegidas (só ficam conectadas).
 - Quarteirões: ~1 em 8 quarteirões é um parque
-  inteiro (`City.PARK_BLOCK_CHANCE`); os demais recebem um anel de estruturas (ver abaixo; hoje não há nenhuma) e o resto do chão é
-  `gray_concrete_powder` (o chão da cidade). Rua cortada = quarteirões juntados: cada um avança até o meio da faixa; na borda da cidade o quarteirão
+  inteiro (`City.PARK_BLOCK_CHANCE`); os demais recebem um anel de estruturas (ver abaixo; hoje não há nenhuma) e o resto (o miolo) é tomado
+  pela natureza (ver "Natureza"). Rua cortada = quarteirões juntados: cada um avança até o meio da faixa; na borda da cidade o quarteirão
   cobre a faixa até a beira.
-- Parques (`Park`): grama com mato, tall grass e flores (papoula, dente-de-leão, azure bluet, tulipas, oxeye daisy,
-  cornflower); caminhos de `dirt_path` de 3 blocos com ~8% de falhas, em duas variantes (50%): grade "jogo da velha"
+- Natureza (11 nov 2026, `core/Flora` + `core/Wild`, lote `WILD` que cobre o quarteirão inteiro por baixo das
+  estruturas, que ganham onde estão): aspecto de abandonado. Chão em manchas (ruído de valor): grama (`grass_block`)
+  na maior parte, `moss_block`, `coarse_dirt` e o concreto antigo (`gray_concrete_powder`) aparecendo. Árvores do
+  próprio mod, ~1 a cada 55 colunas com troncos a 5+ blocos: carvalho (38%), bétula (24%), carvalho escuro (18%) e
+  abeto (20%), 30% grandes (copa de raio 3–4, abeto cônico até 12 de altura), folhas persistentes com bordas
+  irregulares, vinhas penduradas (35% das colunas da borda da copa, 1 a 4 blocos; só ficam se presas em folha ou
+  vinha). Copas e vinhas não saem do quarteirão nem entram nas estruturas. Vegetação no solo (nunca no concreto):
+  grama, tall grass, samambaia, samambaia grande, tapete de musgo sobre o musgo, arbustos (folhas no chão).
+  Entulho: `mossy_cobblestone`, `cobblestone`, `cracked_stone_bricks`, `gray_concrete` (1 ou 2 de altura) e laje de
+  `mossy_stone_bricks`, 1,2% das colunas na grama e 4 × isso no concreto.
+- Parques (`Park`): tomados pela mesma natureza (árvores variadas com vinhas, ~1 a cada 60 colunas, sem tronco em
+  caminho e sem copa sobre o anel; samambaias, musgo, arbustos, entulho a 0,6%), com algumas flores restantes
+  (papoula, dente-de-leão, azure bluet, tulipas, oxeye daisy, cornflower, 5%); caminhos de `dirt_path` de 3 blocos
+  com 30% de falhas (grama, musgo ou terra grossa), em duas variantes (50%): grade "jogo da velha"
   (2 + 2 caminhos retos a 16 do centro) ou cata-vento (círculo de raio 16 + 4 braços em espiral); distâncias escaladas
   com o tamanho do parque (base `Park.BASE_SIZE` = 68 no lado menor; escala pelo lado menor: nos quarteirões de 140 × 90 é ×1,32). Centro sem árvores:
   fonte `waterfall.nbt` (do usuário, em `resources/amcs/`) cercada de `smooth_stone_slab` (meio bloco) do anel até a
-  cerca de folhas da fonte.
+  cerca de folhas da fonte; 28% das lajes são de `mossy_stone_brick_slab` e 10% faltam. Nenhum bloco da fonte é
+  removido: 40% dos espaços de ar ao lado das folhas e das pedras dela ganham vinha.
   Baú vazio em 50% das fontes (senão `mossy_cobblestone`).
 - Estruturas (protótipo de 8 nov 2026): os `.nbt` listados em `src/main/resources/amcs/buildings/index.txt`
   (`tipo|arquivo`) entram nos quarteirões por `core/Ring` (`Structures` carrega, mede e gira). **Em 10 nov 2026 o

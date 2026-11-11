@@ -7,7 +7,7 @@ import java.util.List;
  * Lots never touch a street: {@link City#computeLots} only keeps rectangles whose every column is buildable.
  */
 public final class Lot {
-    public enum Type { PARK, PLAZA, EMPTY, BUILDING }
+    public enum Type { PARK, PLAZA, EMPTY, BUILDING, WILD }
 
     public final int x0;
     public final int z0;
@@ -21,6 +21,8 @@ public final class Lot {
     /** The structure standing on a BUILDING lot (its footprint is the lot), turned {@link #rot} quarter turns; else null. */
     public final Structures.Def building;
     public final int rot;
+    /** The overgrown core of a block (WILD lot), else null. */
+    public final Wild wild;
 
     /** A small tree: trunk at (x, z), {@code height} logs from the ground, leaves around the top. */
     public record Tree(int x, int z, int height) {
@@ -28,11 +30,12 @@ public final class Lot {
     }
 
     private Lot(int x0, int z0, int x1, int z1, Type type, Park park, List<Tree> trees, long seed) {
-        this(x0, z0, x1, z1, type, park, trees, seed, null, 0);
+        this(x0, z0, x1, z1, type, park, trees, seed, null, 0, null);
     }
 
     private Lot(int x0, int z0, int x1, int z1, Type type, Park park, List<Tree> trees, long seed,
-                Structures.Def building, int rot) {
+                Structures.Def building, int rot, Wild wild) {
+        this.wild = wild;
         this.building = building;
         this.rot = rot;
         this.park = park;
@@ -52,13 +55,21 @@ public final class Lot {
     /** A structure with its box corner at (x0, z0), turned {@code rot} quarter turns. */
     static Lot building(int x0, int z0, Structures.Def def, int rot, long seed) {
         return new Lot(x0, z0, x0 + def.sizeX(rot) - 1, z0 + def.sizeZ(rot) - 1, Type.BUILDING, null, List.of(), seed,
-                def, rot);
+                def, rot, null);
+    }
+
+    /**
+     * The overgrown core of a block over its whole free rectangle; the {@code obstacles} (the structures of the block,
+     * listed before it so that they win) keep their trees out.
+     */
+    static Lot wild(int x0, int z0, int x1, int z1, long seed, List<Lot> obstacles) {
+        return new Lot(x0, z0, x1, z1, Type.WILD, null, List.of(), seed, null, 0, new Wild(x0, z0, x1, z1, seed, obstacles));
     }
 
     /** A whole park: grass, weeds, flowers, trees, dirt paths and the fountain in the middle. */
     static Lot park(int x0, int z0, int x1, int z1, long seed) {
         Park p = new Park(x0, z0, x1, z1, seed);
-        return new Lot(x0, z0, x1, z1, Type.PARK, p, p.trees, seed);
+        return new Lot(x0, z0, x1, z1, Type.PARK, p, List.of(), seed);
     }
 
     /**
@@ -68,6 +79,9 @@ public final class Lot {
     public int code(int x, int y, int z, int base) {
         if (park != null) {
             return park.code(x, y, z, base);
+        }
+        if (wild != null) {
+            return wild.code(x, y, z, base);
         }
         if (building != null) {
             if (y < base) {
@@ -122,6 +136,9 @@ public final class Lot {
         int h = 2;
         if (building != null) {
             return building.h();
+        }
+        if (wild != null) {
+            return wild.heightAboveBase();
         }
         if (park != null) {
             h = Math.max(h, park.heightAboveBase());

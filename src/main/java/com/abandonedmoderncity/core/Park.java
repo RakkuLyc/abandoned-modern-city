@@ -32,6 +32,16 @@ public final class Park {
     static final double ARM_TURN = Math.PI * 0.8;
     /** No trees closer than this to the center. */
     static final double FREE_RADIUS = 19;
+    /** About one tree per this many columns. */
+    static final int TREE_AREA = 60;
+    /** Share of path columns taken over by grass, moss or coarse dirt. */
+    static final double PATH_GAPS = 0.30;
+    /** Share of the ring slabs that are mossy, and that are missing. */
+    static final double RING_MOSSY = 0.28;
+    static final double RING_GAPS = 0.10;
+    /** Share of the free spots next to the fountain's leaves and stone that get a vine. */
+    static final double FOUNTAIN_VINES = 0.40;
+    static final double RUBBLE = 0.006;
 
     public final int x0;
     public final int z0;
@@ -51,7 +61,7 @@ public final class Park {
     private final double offset;
     private final double growth;
     private final int armSense;
-    final List<Lot.Tree> trees;
+    final Flora.Trees trees;
 
     Park(int x0, int z0, int x1, int z1, long seed) {
         this.x0 = x0;
@@ -71,7 +81,9 @@ public final class Park {
         this.growth = ARM_GROWTH * scale;
         this.armPhase = Hash.range(Hash.next(seed, 3), 0.0, Math.PI / 2);
         this.armSense = Hash.unit(Hash.next(seed, 4)) < 0.5 ? 1 : -1;
-        this.trees = trees(Hash.next(seed, 5));
+        // overgrown: trees of several species with vines, no trunk on a path, no crown over the fountain ring
+        this.trees = Flora.scatter(x0, z0, x1, z1, Hash.next(seed, 5), TREE_AREA, 5,
+                (x, z, reach) -> radius(x, z) - reach < RING_OUT + 1 || nearPath(x, z, 1));
     }
 
     private double radius(int x, int z) {
@@ -114,38 +126,6 @@ public final class Park {
         return r >= RING_IN && r < RING_OUT;
     }
 
-    private List<Lot.Tree> trees(long h0) {
-        int r = Lot.Tree.RADIUS;
-        int ax0 = x0 + r + 1;
-        int ax1 = x1 - r - 1;
-        int az0 = z0 + r + 1;
-        int az1 = z1 - r - 1;
-        List<Lot.Tree> out = new ArrayList<>();
-        if (ax1 < ax0 || az1 < az0) {
-            return out;
-        }
-        int target = (x1 - x0 + 1) * (z1 - z0 + 1) / 70;
-        for (int k = 0; k < target * 6 && out.size() < target; k++) {
-            long h = Hash.next(h0, k);
-            int x = Hash.range(h, ax0, ax1);
-            int z = Hash.range(Hash.next(h, 1), az0, az1);
-            if (radius(x, z) < FREE_RADIUS || nearPath(x, z, r + 1)) {
-                continue;
-            }
-            boolean free = true;
-            for (Lot.Tree t : out) {
-                if (Math.abs(t.x() - x) < 6 && Math.abs(t.z() - z) < 6) {
-                    free = false;
-                    break;
-                }
-            }
-            if (free) {
-                out.add(new Lot.Tree(x, z, Hash.range(Hash.next(h, 2), 4, 6)));
-            }
-        }
-        return List.copyOf(out);
-    }
-
     private boolean nearPath(int x, int z, int reach) {
         for (int dz = -reach; dz <= reach; dz++) {
             for (int dx = -reach; dx <= reach; dx++) {
@@ -157,21 +137,8 @@ public final class Park {
         return false;
     }
 
-    private boolean nearTree(int x, int z) {
-        for (Lot.Tree t : trees) {
-            if (Math.abs(t.x() - x) <= Lot.Tree.RADIUS && Math.abs(t.z() - z) <= Lot.Tree.RADIUS) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public int heightAboveBase() {
-        int h = Template.WATERFALL.sy;
-        for (Lot.Tree t : trees) {
-            h = Math.max(h, t.height() + 2);
-        }
-        return h;
+        return Math.max(Template.WATERFALL.sy, trees.maxTop());
     }
 
     private double rnd(int x, int z, long salt) {
@@ -185,8 +152,10 @@ public final class Park {
         }
         boolean inside = radius(x, z) < RING_OUT;
         if (inside && dy == 1 && (!inFountain(x, z) || OUTSIDE[(x - ox) + (z - oz) * Template.WATERFALL.sx])) {
-            // the ring and everything between it and the fountain's hedge: smooth stone slabs
-            return BlockCode.RING_SLAB;
+            // the ring and everything between it and the fountain's hedge: smooth stone slabs, some mossy, some gone
+            // (no grass where a slab is missing over the fountain's own floor)
+            int slab = ringSlab(x, z);
+            return slab == BlockCode.SHRUB && inFountain(x, z) ? BlockCode.KEEP : slab;
         }
         if (inside && dy == 0 && !inFountain(x, z)) {
             return BlockCode.LAWN;
@@ -197,6 +166,12 @@ public final class Park {
         if (inFountain(x, z)) {
             Template t = Template.WATERFALL;
             int idx = t.at(x - ox, dy, z - oz);
+            if (dy > 0 && dy < t.sy && (idx < 0 || t.palette.get(idx).equals("minecraft:air"))) {
+                int face = VINE_FACE[(x - ox) + t.sx * ((z - oz) + t.sz * dy)];
+                if (face >= 0 && rnd(x, z * 977 + dy, 0x46564EL) < FOUNTAIN_VINES) {
+                    return BlockCode.VINE + face;
+                }
+            }
             if (idx < 0) {
                 return dy == 0 ? BlockCode.LAWN : BlockCode.KEEP;
             }
@@ -206,48 +181,57 @@ public final class Park {
             return BlockCode.TEMPLATE + idx;
         }
         boolean path = path(x, z);
-        // a few path columns are bare: grass or coarse dirt, sometimes with weeds
-        boolean gap = path && rnd(x, z, 0x50L) < 0.08;
+        // many path columns are taken over: grass, moss or coarse dirt, with weeds
+        boolean gap = path && rnd(x, z, 0x50L) < PATH_GAPS;
+        int ground = path && !gap ? BlockCode.PATH : gapGround(x, z, gap);
         if (dy == 0) {
-            if (path && !gap) {
-                return BlockCode.PATH;
-            }
-            if (gap) {
-                return rnd(x, z, 0x51L) < 0.5 ? BlockCode.LAWN : BlockCode.COARSE_DIRT;
-            }
-            return BlockCode.LAWN;
+            return trees.trunk(x, z) ? BlockCode.LAWN : ground;
         }
         if (onRing(x, z)) {
-            return dy == 1 ? BlockCode.RING_SLAB : BlockCode.KEEP;
+            return dy == 1 ? ringSlab(x, z) : BlockCode.KEEP;
         }
-        int tree = Lot.treeCode(trees, x, y, z, base);
+        int tree = trees.code(x, y, z, base);
         if (tree != BlockCode.KEEP) {
             return tree;
         }
-        if (path && !gap) {
+        if (path && !gap || dy > 2 || trees.trunk(x, z)) {
             return BlockCode.KEEP;
         }
-        if (gap) {
-            return dy == 1 && rnd(x, z, 0x52L) < 0.3 ? BlockCode.SHRUB : BlockCode.KEEP;
+        // a few flowers left from the old park
+        if (!gap && ground == BlockCode.LAWN && rnd(x, z, 0x53L) < 0.05) {
+            return dy == 1 ? BlockCode.FLOWER + Hash.range(Hash.of(seed, 0x54L, x, z), 0, BlockCode.FLOWERS - 1) : BlockCode.KEEP;
         }
-        double r = rnd(x, z, 0x53L);
-        boolean tall = r >= 0.28 && r < 0.34 && !nearTree(x, z);
-        if (dy == 2) {
-            return tall ? BlockCode.TALL_GRASS_UPPER : BlockCode.KEEP;
-        }
-        if (dy != 1) {
+        int plant = Flora.plant(seed, x, z, dy, ground, RUBBLE);
+        if (plant != BlockCode.KEEP && dy == 2 && trees.code(x, y - 1, z, base) != BlockCode.KEEP) {
             return BlockCode.KEEP;
         }
-        if (r < 0.28) {
+        if (dy == 1 && (plant == BlockCode.TALL_GRASS_LOWER || plant == BlockCode.LARGE_FERN_LOWER)
+                && trees.code(x, y + 1, z, base) != BlockCode.KEEP) {
             return BlockCode.SHRUB;
         }
-        if (tall) {
-            return BlockCode.TALL_GRASS_LOWER;
+        return plant;
+    }
+
+    /** Ground of a park column off the paths (or of a path column taken over). */
+    private int gapGround(int x, int z, boolean gap) {
+        int g = Flora.ground(seed, x, z);
+        // no bare concrete in a park: it was lawn
+        if (g == BlockCode.CITY_GROUND) {
+            g = BlockCode.LAWN;
         }
-        if (r >= 0.34 && r < 0.41) {
-            return BlockCode.FLOWER + Hash.range(Hash.of(seed, 0x54L, x, z), 0, BlockCode.FLOWERS - 1);
+        if (gap && g == BlockCode.LAWN && rnd(x, z, 0x51L) < 0.4) {
+            g = BlockCode.COARSE_DIRT;
         }
-        return BlockCode.KEEP;
+        return g;
+    }
+
+    /** A slab of the ring around the fountain: smooth stone, mossy stone bricks, or missing (KEEP over the lawn). */
+    private int ringSlab(int x, int z) {
+        double r = rnd(x, z, 0x52534CL);
+        if (r < RING_GAPS) {
+            return rnd(x, z, 0x52534DL) < 0.5 ? BlockCode.SHRUB : BlockCode.KEEP;
+        }
+        return r < RING_GAPS + RING_MOSSY ? BlockCode.MOSSY_SLAB : BlockCode.RING_SLAB;
     }
 
     /** Radius of the fountain's hedge (its leaves stand 10.8 to 11.4 from the center; it has 4 openings). */
@@ -271,6 +255,44 @@ public final class Park {
     private static boolean empty(Template t, int x, int z) {
         int idx = t.at(x, 1, z);
         return idx < 0 || t.palette.get(idx).equals("minecraft:air");
+    }
+
+    /**
+     * For every air position of the fountain template (x + sx * (z + sz * y)): the direction (west, east, north,
+     * south) of a leaf or stone block next to it that a vine can hang on, or -1.
+     */
+    static final int[] VINE_FACE = vineFaces();
+
+    private static int[] vineFaces() {
+        Template t = Template.WATERFALL;
+        int[] out = new int[t.sx * t.sy * t.sz];
+        java.util.Arrays.fill(out, -1);
+        int[][] d = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        for (int y = 1; y < t.sy; y++) {
+            for (int z = 0; z < t.sz; z++) {
+                for (int x = 0; x < t.sx; x++) {
+                    int idx = t.at(x, y, z);
+                    if (idx >= 0 && !t.palette.get(idx).equals("minecraft:air")) {
+                        continue;
+                    }
+                    for (int k = 0; k < 4; k++) {
+                        int n = t.at(x + d[k][0], y, z + d[k][1]);
+                        if (n >= 0 && holdsVine(t.palette.get(n))) {
+                            out[x + t.sx * (z + t.sz * y)] = k;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
+    /** Full blocks of the fountain a vine can hang on. */
+    private static boolean holdsVine(String state) {
+        String b = state.contains("[") ? state.substring(0, state.indexOf('[')) : state;
+        return b.endsWith("_leaves") || b.endsWith("cobblestone") || b.endsWith("stone_bricks") || b.equals("minecraft:stone")
+                || b.endsWith("_planks") || b.endsWith("_log");
     }
 
     static final int CHEST = indexOf("minecraft:chest");

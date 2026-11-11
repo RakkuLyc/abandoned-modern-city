@@ -40,20 +40,26 @@ estruturas de `structures/`); em 10 nov 2026 ruas e rodovias passaram a 33 de la
 - Ruas cortadas estão desligadas (`City.MAX_CUTS` = 0); o código que corta trechos sem criar beco sem saída
   continua lá.
 - **Quarteirões:** cerca de 1 em 8 quarteirões é um parque inteiro; nos outros as estruturas formam um anel
-  encostado nas calçadas, com a frente (lado -Z do `.nbt`) virada para a rua; o resto é chão da cidade
-  (`gray_concrete_powder`).
+  encostado nas calçadas, com a frente (lado -Z do `.nbt`) virada para a rua; o resto (o miolo) é tomado pela natureza.
 - **Estruturas:** nenhuma no momento. As 33 primeiras (farmácias, oficinas, postos, apartamento, prédio azulado,
   torre, prédio tombado) foram removidas do mod em 10 nov 2026, a pedido do usuário; o anel, a rotação e as loot
   tables continuam prontos. Para adicionar: copiar os `.nbt` para `src/main/resources/amcs/buildings/` e listar
-  cada um em `index.txt` (`tipo|arquivo`). Sem estruturas, os quarteirões que não são parque ficam só com o chão
-  da cidade.
+  cada um em `index.txt` (`tipo|arquivo`). Sem estruturas, o quarteirão inteiro fica tomado pela natureza.
 
   Containers (baús, barris, suportes de poção, vasos decorados, atris, fornalhas, camas, fogueiras, sensor de luz, jukebox) recebem loot tables:
   - **Todas as estruturas exceto oficinas (tipo que começa com `oficina`):** loot table `lostcities:chests/lostcitychest` (do mod Apocalypse Loot / Lost Cities), com munição TACZ, armas, itens médicos, comida, recursos e raridades.
   - **Oficinas (médias e pequenas):** baús recebem `oficina_vehicle_parts` (rodas, assentos e motores compatíveis com Camaro e Escargot do OAmP); demais containers recebem `oficina_vehicle_tools` (jumperpack, blowtorch, repairkit).
+- **Natureza tomando a cidade** (`core/Flora`, `core/Wild`):
+  - chão em manchas: grama, musgo, terra grossa e restos do concreto (`gray_concrete_powder`);
+  - árvores do mod, ~1 a cada 55 colunas: carvalho, bétula, carvalho escuro e abeto, pequenas e grandes, com vinhas
+    penduradas nas copas;
+  - grama alta, samambaias, tapete de musgo, arbustos e entulho (pedregulho musgoso, pedregulho, tijolos rachados,
+    concreto e lajes musgosas).
 - **Parques:**
-  - grama, flores e caminhos de `dirt_path` (grade ou cata-vento), escalados com o tamanho do parque;
-  - fonte `waterfall.nbt` no centro, com baú vazio em 50% delas.
+  - a mesma natureza (árvores ~1 a cada 60 colunas), algumas flores, e caminhos de `dirt_path` (grade ou cata-vento)
+    com 30% de falhas, escalados com o tamanho do parque;
+  - fonte `waterfall.nbt` no centro, intacta, com vinhas e baú vazio em 50% delas; o anel de lajes tem lajes
+    musgosas (28%) e falhas (10%).
 
 ### Ruas e rodovias
 
@@ -95,10 +101,12 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
   Params         toda a geometria fixa (larguras, quarteirões, rampas, túneis, pontes) + valores da config
   Terrain        interface: altura natural do chão e água por coluna
   City           estágio 1 (existe? centro, altura) e estágio 2 (ruas, quarteirões, lotes)
-  Lot            lotes: parque inteiro de quarteirão ou uma estrutura
+  Lot            lotes: parque inteiro de quarteirão, uma estrutura ou o miolo tomado pela natureza (WILD)
+  Flora          árvores (4 espécies, vinhas), chão em manchas, plantas e entulho; índice de árvores por baldes
+  Wild           o miolo do quarteirão: chão, árvores e vegetação, sem entrar nas estruturas
   Ring           anel de estruturas em volta do quarteirão (norte e sul inteiros, oeste e leste no que sobra)
   Structures     estruturas de `amcs/buildings/index.txt` (hoje vazio): caixa dos blocos sólidos, rotação, código de cada bloco
-  Park           parques com caminhos e fonte
+  Park           parques tomados pela natureza, com caminhos e fonte
   Template       estruturas .nbt do usuário (fonte waterfall.nbt)
   Highway        curva entre duas entradas de cidade, pontos a cada bloco, projeção de colunas
   Profile        perfil de altura "plano ou rampa" e classificação chão / ponte / túnel

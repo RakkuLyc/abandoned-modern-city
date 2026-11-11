@@ -104,8 +104,18 @@ public final class PlanRender {
                     return rgb(120, 175, 100);
                 }
                 int base = cp.h2[i] / 2 - 1;
+                if (lot.type == Lot.Type.WILD) {
+                    return wildColor(lot, x, z, base);
+                }
                 for (int y = base + lot.heightAboveBase(); y > base; y--) {
                     int c = lot.code(x, y, z, base);
+                    int v = overgrowth(c);
+                    if (v == -2) {
+                        continue;
+                    }
+                    if (v >= 0) {
+                        return v;
+                    }
                     if (c >= BlockCode.TEMPLATE && c < BlockCode.STRUCT) {
                         String st = Template.WATERFALL.palette.get(c - BlockCode.TEMPLATE);
                         if (st.contains("air")) {
@@ -139,7 +149,7 @@ public final class PlanRender {
                         int g = 90 + (int) (Hash.unit(Hash.of(lot.seed, 0x42L, 0, 0)) * 70);
                         yield rgb(g + 40, g, g - 20);
                     }
-                    case PARK -> lot.code(x, base, z, base) == BlockCode.PATH ? rgb(150, 115, 70) : rgb(70, 160, 70);
+                    case PARK -> groundColor(lot.code(x, base, z, base));
                     case PLAZA -> rgb(200, 195, 175);
                     case EMPTY -> rgb(170, 150, 110);
                     default -> rgb(120, 175, 100);
@@ -155,6 +165,51 @@ public final class PlanRender {
                 return terrainColor(plan.terrain, x, z);
             }
         }
+    }
+
+    /** Top view of an overgrown block: crowns and rubble, else the ground (plants are see-through). */
+    private static int wildColor(Lot lot, int x, int z, int base) {
+        for (int y = base + lot.heightAboveBase(); y > base; y--) {
+            int v = overgrowth(lot.code(x, y, z, base));
+            if (v >= 0) {
+                return v;
+            }
+        }
+        return groundColor(lot.code(x, base, z, base));
+    }
+
+    /** Color of an overgrowth block seen from above; -2 for see-through plants and vines, -1 for anything else. */
+    private static int overgrowth(int c) {
+        if (c >= BlockCode.WILD_LEAVES && c < BlockCode.WILD_LEAVES + 4) {
+            int k = c - BlockCode.WILD_LEAVES;
+            return k == 1 ? rgb(95, 150, 60) : k == 3 ? rgb(35, 85, 55) : k == 2 ? rgb(30, 90, 30) : rgb(50, 125, 45);
+        }
+        if (c >= BlockCode.WILD_LOG && c < BlockCode.WILD_LOG + 4) {
+            return rgb(100, 75, 45);
+        }
+        if (c >= BlockCode.RUBBLE && c < BlockCode.RUBBLE + BlockCode.RUBBLES) {
+            return rgb(120, 120, 115);
+        }
+        if (c == BlockCode.MOSSY_SLAB) {
+            return rgb(150, 165, 140);
+        }
+        if (c >= BlockCode.VINE && c < BlockCode.VINE + 4 || c == BlockCode.FERN || c == BlockCode.LARGE_FERN_LOWER
+                || c == BlockCode.LARGE_FERN_UPPER || c == BlockCode.ROOF_MOSS || c == BlockCode.SHRUB
+                || c == BlockCode.TALL_GRASS_LOWER || c == BlockCode.TALL_GRASS_UPPER || c == BlockCode.KEEP
+                || c == BlockCode.AIR) {
+            return -2;
+        }
+        return -1;
+    }
+
+    private static int groundColor(int c) {
+        return switch (c) {
+            case BlockCode.CITY_GROUND -> rgb(155, 155, 150);
+            case BlockCode.MOSS_BLOCK -> rgb(85, 125, 45);
+            case BlockCode.COARSE_DIRT -> rgb(125, 100, 75);
+            case BlockCode.PATH -> rgb(150, 115, 70);
+            default -> rgb(105, 165, 75);
+        };
     }
 
     /** Overview: {@code bpp} blocks per pixel, cities sampled from their geometry, highways drawn as lines. */
