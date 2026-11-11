@@ -60,7 +60,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `ProfileTest.profilesAreFlatOrRampAndJoinTheCities` | 4 000 perfis aleatórios (com penhascos): começa e termina no nível de cada cidade, 48 blocos planos nas pontas, variação ≤ 1/8 de bloco por bloco, trechos planos sempre em altura inteira, nunca abaixo do mínimo, superfície (meio-bloco) nunca muda mais de 0,5 entre vizinhos |
 | `ProfileTest.halfBlockStepsAreEvenlySpaced` | numa subida, os degraus de meia-laje ficam a pelo menos 4 blocos um do outro |
 | `ProfileTest.classificationRunsAreClean` | 2 000 perfis: junções sempre no chão, túneis ≥ 16, pontes secas ≥ 8, toda água fora das junções é ponte |
-| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (357 cidades 2 × 2 de quarteirões 180 × 120, 10 023 lotes — estruturas, parques e miolos tomados pela natureza; em cada cidade no máximo 3 farmácias, 2 oficinas e 2 postos): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado; com as ruas cortadas desligadas (`MAX_CUTS` = 0) nenhuma cidade tem corte, senão todos os valores de 0 a `MAX_CUTS` aparecem; toda coluna de lote é lote do quarteirão certo e não toca rua |
+| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (357 cidades 2 × 2 de quarteirões 180 × 120, 10 722 lotes — estruturas, parques e miolos tomados pela natureza; em cada cidade no máximo 3 farmácias, 2 oficinas e 2 postos): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado; com as ruas cortadas desligadas (`MAX_CUTS` = 0) nenhuma cidade tem corte, senão todos os valores de 0 a `MAX_CUTS` aparecem; toda coluna de lote é lote do quarteirão certo e não toca rua |
 | `WorldPlanTest.streetWidthIsConstantOnStraightStreets` | toda rua reta de cidade tem exatamente 33 colunas; a zebra fica nas linhas 2 a 4 do trecho, com 14 listras, e não existe nas outras linhas |
 | `WorldPlanTest.highwayNetworkIsConsistentAndWellConnected` | 21 combinações terreno × seed: Gabriel simétrico, rodovia começa e termina exatamente na entrada de cada cidade, raio de curva ≥ 60, pontos a ~1 bloco, comprimento máximo, cruzamento de entrada nunca usado duas vezes (um canto tem duas saídas, mas só uma rodovia), no máximo 8 rodovias por cidade, nenhum par de rodovias perto demais (sem cruzamentos); limites: plano/colinas ≥ 85% das ligações e ≤ 5% de cidades sem rodovia, montanhas/rios/cânions ≤ 15%, e pelo menos metade das células com cidade (exceto ilhas); gera `network_*.png` |
 | `WorldPlanTest.removedStreetsAreRenderedAndAudited` | uma cidade para cada quantidade de ruas cortadas (hoje só 0): passa no `PlanAudit` e gera `cuts_N.png` |
@@ -78,7 +78,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `RingTest.rotationKeepsEveryBlockAndTurnsTheFrontToTheStreet` | as 4 rotações têm o mesmo número de blocos em todas as estruturas; a rotação de 90, 180 e 270 graus confere célula a célula com a fórmula da transformação |
 | `RingTest.ringsFitTheirBlockTouchTheSidewalksAndDoNotOverlap` | 6 000 anéis em quarteirões 180 × 120 e 120 × 180: dentro do quarteirão, sem sobreposição, cada estrutura encosta na calçada para onde a frente aponta, determinístico, as 33 aparecem e os 4 lados são usados |
 | `RingTest.everyStructureFitsNextToTheShallowestInA120Block` | cada estrutura cabe num lado de 120 junto da mais rasa (20) e do bosque mais largo (30), e na largura de 180 |
-| `RingTest.structuresNeverTouchAndLeaveTheForest` | 6 000 anéis em 180 × 120 e 120 × 180 (156 327 pares): duas estruturas quaisquer ficam a 10 ou mais blocos; entre lados opostos, 20 ou mais de bosque (menor medido: 10 e 21) |
+| `RingTest.structuresNeverTouchAndLeaveTheForest` | 6 000 anéis em 180 × 120 e 120 × 180 (192 108 pares): duas estruturas quaisquer ficam a 4 ou mais blocos; entre lados opostos, 20 ou mais de bosque (menor medido: 4 e 21) |
 | `PlanAuditTest.citiesAndHighwaysPassThePlanAudit` | `PlanAudit` coluna a coluna em 3 cidades inteiras e 2 rodovias inteiras por terreno × seed (105 auditorias); gera `city_*.png` |
 | `PlanAuditTest.planIsIndependentOfQueryOrderAndThreads` | 3 721 chunks planejados de novo em ordem embaralhada por 8 threads: resultado idêntico, campo a campo |
 
@@ -221,13 +221,15 @@ topo, meio e base, borda) e D (listras e borda ondulada) — quem olha a fachada
     cânions (93–98%); 97–112 nas montanhas (91–93%); 85–96 nos rios (83–86%); 91–110 no terreno misto (85–92%);
     59–64 nas ilhas (76–78%). No máximo 2 cidades sem rodovia por combinação. Com 4 entradas quaisquer das 8
     (rejeitado em 11 nov): só 82 de 106 no plano, 22 por curva fechada, rede partida em 4 grupos.
-  - **Anel (6 000 quarteirões):** ~7,7 estruturas por quarteirão, ~25% em cada lado, 45% da área livre coberta;
+  - **Anel (6 000 quarteirões), vãos de 4 a 17:** ~8,5 estruturas por quarteirão, ~25% em cada lado, 50% da área
+    livre coberta (com vãos de 10 a 19 eram 7,7 e 45%);
     simulação prévia dos tamanhos com vãos: 140 × 90 → 5,0 por quarteirão, 160 × 110 → 6,5, 180 × 120 → 7,2,
     200 × 130 → 8,2.
 - **Bateria no mundo:**
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 12 nov | vãos de 4 a 17 | PASS: 8 de 8, 0 erros de geração, 2,82 ms por chunk |
   | `20261027` | padrão (8 alvos) | 12 nov | quarteirões 180 × 120, vãos de 10 a 19 e bosque de 20 a 30 | PASS: 8 de 8, 0 erros de geração; na cidade mais acidentada 1 180 contêineres com loot e 45 banners conferidos; 8 346 chunks, 2,74 ms por chunk, 267 s |
   | `20261027` | padrão (8 alvos) | 12 nov | mansão pós-apocalíptica girada, teias soltas removidas, banners com desenho | PASS: 8 de 8, 0 erros de geração, 126 banners de farmácia conferidos com desenho, 3,06 ms por chunk |
   | `20261027` | padrão (8 alvos) | 12 nov | casa moderna girada 180° | PASS: 8 de 8, 0 erros de geração, 2,94 ms por chunk |

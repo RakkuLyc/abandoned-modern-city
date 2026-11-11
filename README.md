@@ -65,7 +65,7 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
 
   - Encostadas na calçada sem vão: as fileiras da borda sem piso recebem o piso da primeira fileira que tem.
   - As árvores das estruturas têm leaf decay (folhas ligadas a um tronco); sebes sem tronco continuam persistentes.
-  - As estruturas não se encostam: vão sorteado de 10 a 19 blocos entre vizinhas, e sempre 20 a 30 blocos de bosque
+  - As estruturas não se encostam: vão sorteado de 4 a 17 blocos entre vizinhas, e sempre 20 a 30 blocos de bosque
     entre os fundos de lados opostos. As árvores dos miolos não entram nas estruturas.
   - Os banners mantêm o desenho do molde: as farmácias têm as letras DRUGSTORE.
   - Teias soltas (sem nada em que se prender) são removidas.

@@ -131,12 +131,12 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   - as árvores dos miolos não entram nas estruturas (1 bloco de folga) e as estruturas nunca se sobrepõem
     (as árvores de cada estrutura ficam dentro da caixa dela);
   - vãos (12 nov 2026, pedido do usuário): as estruturas não se encostam; entre duas vizinhas de uma linha, e entre a
-    mais funda de uma linha dos lados curtos e as linhas dos lados compridos, sorteia-se um vão de 10 a 19 blocos
-    (`Ring.GAP_MIN`/`GAP_MAX`); entre os fundos de linhas opostas fica sempre o bosque do miolo, com folga sorteada de
+    mais funda de uma linha dos lados curtos e as linhas dos lados compridos, sorteia-se um vão de 4 a 17 blocos
+    (`Ring.GAP_MIN`/`GAP_MAX`; eram 10 a 19, reduzido pelo usuário no mesmo dia); entre os fundos de linhas opostas fica sempre o bosque do miolo, com folga sorteada de
     20 a 30 por par de lados (`Ring.CORE_MIN`/`CORE_MAX`);
   - as linhas dos lados curtos do quarteirão vão de canto a canto e as dos lados compridos preenchem o que sobra
-    entre elas (o contrário deixava os lados curtos quase sempre vazios); ~7,7 estruturas por quarteirão (as 4
-    linhas com ~25% cada), 45% da área livre coberta. Tamanho do quarteirão: 180 × 120, recomendado depois de
+    entre elas (o contrário deixava os lados curtos quase sempre vazios); ~8,5 estruturas por quarteirão (as 4
+    linhas com ~25% cada), 50% da área livre coberta. Tamanho do quarteirão: 180 × 120, recomendado depois de
     simular os vãos (140 × 90 caía para ~5 estruturas e torre/azulado/prédio apocalíptico ficavam raros).
   - comandos (12 nov 2026, `command/StructureCommands`): `/amcs locate structure <nome|tipo|grupo>` (a mais
     próxima já planejada; coordenada na calçada em frente) e `/amcs spawn <nome>` (2 blocos à frente de quem

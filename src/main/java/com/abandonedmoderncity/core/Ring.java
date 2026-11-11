@@ -18,8 +18,8 @@ public final class Ring {
     }
 
     /** Free columns between two neighbouring structures (drawn). */
-    public static final int GAP_MIN = 10;
-    public static final int GAP_MAX = 19;
+    public static final int GAP_MIN = 4;
+    public static final int GAP_MAX = 17;
     /** Forest between the backs of the structures of two opposite rows (drawn per pair). */
     public static final int CORE_MIN = 20;
     public static final int CORE_MAX = 30;
