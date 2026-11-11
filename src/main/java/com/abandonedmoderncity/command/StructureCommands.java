@@ -210,6 +210,9 @@ public final class StructureCommands {
                     // no shape updates while placing: a vine or a pane must not react to a neighbour not placed yet
                     level.setBlock(pos, s, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
                     placed++;
+                    if (s.hasBlockEntity()) {
+                        Palette.applyBanner(level.getBlockEntity(pos), def.banner(rx, ry, rz, rot), level.registryAccess());
+                    }
                     if (s.hasBlockEntity() && level.getBlockEntity(pos) instanceof RandomizableContainerBlockEntity rc) {
                         rc.setLootTable(Palette.lootTable(def, s), Hash.of(seed, 0x4C4F4F54L, pos.getX(), pos.getY() * 31L + pos.getZ()));
                         containers++;

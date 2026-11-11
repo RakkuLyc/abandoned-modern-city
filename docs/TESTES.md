@@ -53,7 +53,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 
 ## 2. O que é verificado
 
-### Unitários (21 testes)
+### Unitários (23 testes)
 
 | Teste | Verifica |
 |---|---|
@@ -70,7 +70,9 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `RingTest.groundLayerAndBuriedLayers` | as estruturas com camada enterrada têm blocos embaixo do chão e nada mais fundo; nenhum ar enterrado; mansão abandonada, torre, azulado e apartamento descem 1 |
 | `RingTest.frontsMeetTheSidewalk` | a fileira da frente, no nível do chão, é toda de blocos em 13 das 14 (o apartamento tem 22 de 31: as falhas viram o chão da cidade, nivelado) |
 | `RingTest.structureTreesHaveRealLeaves` | toda folha não persistente das estruturas tem distância 1 a 6 e um vizinho tronco ou folha mais perto (regra do leaf decay); mais de 1 000 folhas reais |
-| `RingTest.casaModernaFacesTheStreetWithItsPlusZSide` | a casa moderna tem giro de 180° no índice e, com a rua ao norte, a fileira encostada na rua é a última fileira (+Z) do molde, bloco a bloco; as outras estruturas não têm giro |
+| `RingTest.housesWithTheirFrontOnPlusZFaceTheStreet` | a casa moderna e a mansão pós-apocalíptica têm giro de 180° no índice e, com a rua ao norte, a fileira encostada na rua é a última fileira (+Z) do molde, bloco a bloco; as outras não têm giro |
+| `RingTest.pharmacyBannersKeepTheirLetters` | nas 4 rotações, a farmácia tem 9 banners e a farmácia grande 18 com desenho (listras e borda), todos em blocos de banner |
+| `RingTest.noFloatingCobwebs` | nenhuma teia das estruturas fica sem um bloco em que se prender (o chão conta); mais de 2 000 teias conferidas |
 | `RingTest.spawnLimitsHoldOverACity` | 300 cidades de 4 quarteirões sorteados em sequência: no máximo 3 farmácias, 2 oficinas, 2 postos |
 | `RingTest.structuresHaveSolidBoxesWithAFloorLayer` | toda estrutura tem caixa não vazia e blocos na primeira camada |
 | `RingTest.rotationKeepsEveryBlockAndTurnsTheFrontToTheStreet` | as 4 rotações têm o mesmo número de blocos em todas as estruturas; a rotação de 90, 180 e 270 graus confere célula a célula com a fórmula da transformação |
@@ -112,6 +114,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
     costuras entre chunks apareceriam aqui).
 - **Regras gerais:**
   - `hard_block` (bloco indestrutível em via, ponte, túnel ou lote; qualquer dureza é permitida);
+  - `banner_without_design` (banner de estrutura sem o desenho do molde; contados em `structure_banners`);
   - `structure_without_loot` (contêiner de estrutura — baú, barril, dispenser, dropper — sem loot table; os block
     entities das estruturas são contados em `structure_block_entities` e os contêineres em
     `structure_loot_containers`), `loot_in_city` e `container_in_city` (fora das estruturas; baú da fonte vazio,
@@ -164,6 +167,8 @@ e a regra de escada e apoio no mesmo chunk.
 | 35 | Revisão, 12 nov | loot das estruturas (código de outra sessão) varria o volume inteiro da estrutura a cada coluna e lia o block entity direto do chunk em geração, onde ele ainda não existe | — | o loot é posto quando cada contêiner é colocado, pela região (como as estruturas vanilla); a auditoria passou a exigir loot nos contêineres das estruturas |
 | 36 | Bateria, 12 nov | `lot_hole` (até 200 por alvo): água e seagrass no nível do chão | a piscina da mansão abandonada, que desceu 1 bloco, fica no nível do chão | água planejada pela estrutura não conta como buraco |
 | 37 | Teste no jogo pelo usuário, 12 nov | a casa moderna abandonada aparecia de costas para a rua | a frente do molde dela é o lado +Z (todas as outras: -Z) | campo `frente` no `index.txt` (180) e giro por estrutura em `Structures.Def` |
+| 38 | Teste no jogo pelo usuário, 12 nov | a mansão pós-apocalíptica de costas para a rua; teias flutuando nela | frente no +Z do molde; teias sem apoio no molde | giro de 180° no índice; teias soltas viram ar em todas as estruturas (18) |
+| 39 | Teste no jogo pelo usuário, 12 nov | banners das farmácias lisos | o leitor de moldes ignorava os dados de block entity, onde ficam os desenhos | `Template.banners` guarda os padrões, aplicados quando o banner é colocado (geração e `/amcs spawn`); auditoria `banner_without_design` |
 | — | Bateria (infraestrutura) | servidores falhando com "Address already in use" | um servidor de uma bateria interrompida ainda terminava | o script usa a porta 25591 e se recusa a começar com um servidor de desenvolvimento vivo |
 
 ## 4. Como reproduzir
@@ -188,7 +193,8 @@ Teste dos comandos de estrutura (12 nov 2026, servidor de desenvolvimento via RC
 calçada (`smooth_stone`) e a coluna atrás é o lote da estrutura (`/amcs info`: BUILDING). `spawn torre` olhando
 para o sul: caixa 2 blocos à frente, 62 de largura centralizada, chão no bloco do terreno, 311 793 blocos e 178
 contêineres com loot; `spawn farmacia_vermelho` olhando para o oeste: frente virada para o leste (para quem
-executou).
+executou). Depois dos banners: `spawn farmacia_vermelho` e `data get block` nos banners das pontas: E (listras esquerda,
+topo, meio e base, borda) e D (listras e borda ondulada) — quem olha a fachada lê DRUGSTORE.
 
 ## 5. Desempenho medido
 
@@ -205,7 +211,7 @@ executou).
 
 ## 6. Resultados atuais (11 nov 2026, quarteirões 140 × 90 tomados pela natureza, ruas e rodovias de 33, cidades no meio de células de 648, 4 entradas)
 
-- **Unitários:** 20 passam e 1 é pulado (o teste sem estruturas), 12 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
+- **Unitários:** 22 passam e 1 é pulado (o teste sem estruturas), 12 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
   - **Rede (7 terrenos × 3 seeds, 81 células), cidades no meio da célula de 648, 4 entradas (uma por lado):** 40 a
@@ -218,6 +224,7 @@ executou).
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 12 nov | mansão pós-apocalíptica girada, teias soltas removidas, banners com desenho | PASS: 8 de 8, 0 erros de geração, 126 banners de farmácia conferidos com desenho, 3,06 ms por chunk |
   | `20261027` | padrão (8 alvos) | 12 nov | casa moderna girada 180° | PASS: 8 de 8, 0 erros de geração, 2,94 ms por chunk |
   | `20261027` | padrão (8 alvos) | 12 nov | 14 estruturas, limites por cidade, chão alinhado, piso até a calçada, folhas reais nas estruturas | PASS: 8 de 8, 0 erros de geração; só na cidade do spawn 1 261 block entities de estrutura e 744 contêineres com loot table conferidos; 2,93 ms por chunk, 227 s |
   | `20261027` | padrão (8 alvos) | 11 nov | piso da fonte musgoso | PASS: 8 de 8, 0 erros de geração, 1 fonte conferida, 2,93 ms por chunk |

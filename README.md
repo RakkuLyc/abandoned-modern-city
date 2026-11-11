@@ -50,7 +50,7 @@ cidades foram para o meio de células de 648 (rodovias de ~269 a ~369 blocos) e 
   | Casa abandonada | casas | 29 × 46 × 20 | camada 0 |
   | Casa moderna abandonada (frente no lado +Z do molde: girada 180°) | casas | 30 × 29 × 15 | camada 0 |
   | Mansão abandonada | casas | 41 × 57 × 21 | camada 1 (desce 1) |
-  | Mansão pós-apocalíptica | casas | 37 × 41 × 18 | camada 0 |
+  | Mansão pós-apocalíptica (frente no lado +Z do molde: girada 180°) | casas | 37 × 41 × 18 | camada 0 |
   | Farmácia | farmácia (limite 3 com a grande) | 19 × 28 × 16 | camada 0 |
   | Farmácia grande | farmácia | 26 × 40 × 15 | camada 0 |
   | Oficina média | oficina (limite 2 com a pequena) | 35 × 26 × 17 | camada 0 |
@@ -65,9 +65,11 @@ cidades foram para o meio de células de 648 (rodovias de ~269 a ~369 blocos) e 
   - Encostadas na calçada sem vão: as fileiras da borda sem piso recebem o piso da primeira fileira que tem.
   - As árvores das estruturas têm leaf decay (folhas ligadas a um tronco); sebes sem tronco continuam persistentes.
   - As árvores dos miolos não entram nas estruturas, e as estruturas nunca se sobrepõem.
+  - Os banners mantêm o desenho do molde: as farmácias têm as letras DRUGSTORE.
+  - Teias soltas (sem nada em que se prender) são removidas.
 
-  Os contêineres (baús, barris, dispensers, droppers) recebem a loot table quando são colocados; os outros block
-  entities (fornalhas, camas, banners, crânios etc.) saem vazios:
+  Os contêineres (baús, barris, dispensers, droppers) recebem a loot table quando são colocados; os banners recebem
+  o desenho do molde; os outros block entities (fornalhas, camas, crânios etc.) saem vazios:
   - **Todas as estruturas exceto oficinas (tipo que começa com `oficina`):** loot table `lostcities:chests/lostcitychest` (do mod Apocalypse Loot / Lost Cities), com munição TACZ, armas, itens médicos, comida, recursos e raridades.
   - **Oficinas (médias e pequenas):** baús recebem `oficina_vehicle_parts` (rodas, assentos e motores compatíveis com Camaro e Escargot do OAmP); demais containers recebem `oficina_vehicle_tools` (jumperpack, blowtorch, repairkit).
 - **Natureza tomando a cidade** (`core/Flora`, `core/Wild`):

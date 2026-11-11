@@ -260,27 +260,92 @@ class RingTest {
     }
 
     @Test
-    void casaModernaFacesTheStreetWithItsPlusZSide() {
+    void housesWithTheirFrontOnPlusZFaceTheStreet() {
         assumeFalse(Structures.ALL.isEmpty(), "no structures");
-        Structures.Def c = Structures.ALL.stream().filter(d -> d.name().equals("casa_moderna_abandonada")).findFirst().orElseThrow();
-        assertEquals(2, c.turn(), "the user found its front on the +Z side");
-        // at rotation 0 (street to the north) the row touching the street is the template's last z row
-        Template t = c.t();
-        for (int x = 0; x < c.front(); x++) {
-            for (int y = 1; y < c.above(); y++) {
-                int p = t.at(c.ox() + c.w() - 1 - x, c.oy() + c.ground() + y, c.oz() + c.d() - 1);
-                int code = c.code(x, y, 0, 0);
-                if (p < 0 || code < BlockCode.STRUCT) {
-                    continue;
+        // the user found the front of these two on the template's +Z side
+        List<String> turned = List.of("casa_moderna_abandonada", "mansao_pos_apocaliptica");
+        for (Structures.Def c : Structures.ALL) {
+            assertEquals(turned.contains(c.name()) ? 2 : 0, c.turn(), c.name());
+            if (c.turn() != 2) {
+                continue;
+            }
+            // at rotation 0 (street to the north) the row touching the street is the template's last z row
+            Template t = c.t();
+            for (int x = 0; x < c.front(); x++) {
+                for (int y = 1; y < c.above(); y++) {
+                    int p = t.at(c.ox() + c.w() - 1 - x, c.oy() + c.ground() + y, c.oz() + c.d() - 1);
+                    int code = c.code(x, y, 0, 0);
+                    if (p < 0 || code < BlockCode.STRUCT) {
+                        continue;
+                    }
+                    String placed = Structures.blockOf(Structures.STATES.get((code - BlockCode.STRUCT) / 4));
+                    assertEquals(Structures.blockOf(t.palette.get(p)), placed, c.name() + " front row at x " + x + " y " + y);
                 }
-                String placed = Structures.blockOf(Structures.STATES.get((code - BlockCode.STRUCT) / 4));
-                assertEquals(Structures.blockOf(t.palette.get(p)), placed, "front row at x " + x + " y " + y);
             }
         }
+    }
+
+    @Test
+    void pharmacyBannersKeepTheirLetters() {
+        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        for (String name : List.of("farmacia_vermelho", "farmacia_grande_amarela")) {
+            Structures.Def d = Structures.ALL.stream().filter(s -> s.name().equals(name)).findFirst().orElseThrow();
+            for (int rot = 0; rot < 4; rot++) {
+                int banners = 0;
+                for (int y = -d.ground(); y < d.above(); y++) {
+                    for (int z = 0; z < d.sizeZ(rot); z++) {
+                        for (int x = 0; x < d.sizeX(rot); x++) {
+                            List<String[]> design = d.banner(x, y, z, rot);
+                            if (design == null) {
+                                continue;
+                            }
+                            banners++;
+                            int code = d.code(x, y, z, rot);
+                            assertTrue(code >= BlockCode.STRUCT && Structures.STATES.get((code - BlockCode.STRUCT) / 4).contains("_wall_banner"),
+                                    name + " design on a block that is not a banner");
+                            // every letter is drawn with stripes and framed by a border
+                            assertTrue(design.stream().anyMatch(l -> l[0].contains("stripe")), name);
+                            assertTrue(design.stream().anyMatch(l -> l[0].equals("minecraft:border")), name);
+                        }
+                    }
+                }
+                // D R U G S T O R E: once on the small pharmacy, twice (front and side) on the big one
+                assertEquals(name.equals("farmacia_vermelho") ? 9 : 18, banners, name + " rot " + rot);
+            }
+        }
+    }
+
+    @Test
+    void noFloatingCobwebs() {
+        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        int[][] six = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+        long webs = 0;
         for (Structures.Def d : Structures.ALL) {
-            if (d != c) {
-                assertEquals(0, d.turn(), d.name());
+            for (int y = -d.ground(); y < d.above(); y++) {
+                for (int z = 0; z < d.d(); z++) {
+                    for (int x = 0; x < d.w(); x++) {
+                        if (!name(d.code(x, y, z, 0)).equals("minecraft:cobweb")) {
+                            continue;
+                        }
+                        webs++;
+                        boolean held = false;
+                        for (int[] q : six) {
+                            String n = name(d.code(x + q[0], y + q[1], z + q[2], 0));
+                            held |= !n.isEmpty() && !n.equals("minecraft:cobweb") && !n.equals("minecraft:vine")
+                                    && !n.endsWith("grass") && !n.endsWith("fern") && !n.endsWith("_carpet")
+                                    && !n.equals("minecraft:glow_lichen");
+                        }
+                        // the ground under the first layer counts as something to hang on
+                        held |= y == 0;
+                        assertTrue(held, d.name() + " floating cobweb at " + x + "," + y + "," + z);
+                    }
+                }
             }
         }
+        assertTrue(webs > 2000, "cobwebs " + webs);
+    }
+
+    private static String name(int code) {
+        return code < BlockCode.STRUCT ? "" : Structures.blockOf(Structures.STATES.get((code - BlockCode.STRUCT) / 4));
     }
 }

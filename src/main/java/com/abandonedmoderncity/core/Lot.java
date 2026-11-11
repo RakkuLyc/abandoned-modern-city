@@ -131,6 +131,11 @@ public final class Lot {
         return BlockCode.KEEP;
     }
 
+    /** Banner design ({pattern, color} layers) of the structure block at (x, y, z), or null. */
+    public java.util.List<String[]> bannerAt(int x, int y, int z, int base) {
+        return building == null ? null : building.banner(x - x0, y - base, z - z0, rot);
+    }
+
     /** Layers under its base this lot places blocks in (the buried layers of a structure). */
     public int depthBelowBase() {
         return building != null ? building.ground() : 0;

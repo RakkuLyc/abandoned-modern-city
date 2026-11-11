@@ -5,7 +5,7 @@
 casas|casa_abandonada|0
 casas|casa_moderna_abandonada|0|180
 casas|mansao_abandonada|1
-casas|mansao_pos_apocaliptica|0
+casas|mansao_pos_apocaliptica|0|180
 farmacia|farmacia_vermelho|0
 farmacia_grande|farmacia_grande_amarela|0
 oficina_de_carros_medio|oficina_media_azul_preto|0

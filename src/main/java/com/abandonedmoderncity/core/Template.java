@@ -22,8 +22,15 @@ public final class Template {
     public final int sz;
     public final List<String> palette;
     private final int[] cells;
+    /**
+     * Banner designs saved in the template (block entity data): cell index ({@code x + sx * (z + sz * y)}) -> the
+     * layers, each {@code {pattern, color}} (e.g. {@code {"minecraft:stripe_left", "red"}}).
+     */
+    public final Map<Integer, List<String[]>> banners;
 
-    private Template(String name, int sx, int sy, int sz, List<String> palette, int[] cells) {
+    private Template(String name, int sx, int sy, int sz, List<String> palette, int[] cells,
+                     Map<Integer, List<String[]>> banners) {
+        this.banners = Map.copyOf(banners);
         this.name = name;
         this.sx = sx;
         this.sy = sy;
@@ -80,6 +87,7 @@ public final class Template {
                 }
                 palette.add(sb.toString());
             }
+            Map<Integer, List<String[]>> banners = new java.util.HashMap<>();
             int[] cells = new int[sx * sy * sz];
             java.util.Arrays.fill(cells, -1);
             for (Object o : (List<?>) root.get("blocks")) {
@@ -89,8 +97,19 @@ public final class Template {
                 int y = (Integer) pos.get(1);
                 int z = (Integer) pos.get(2);
                 cells[x + sx * (z + sz * y)] = (Integer) b.get("state");
+                if (b.get("nbt") instanceof Map<?, ?> nbt && nbt.get("patterns") instanceof List<?> layers) {
+                    List<String[]> out = new ArrayList<>();
+                    for (Object layer : layers) {
+                        if (layer instanceof Map<?, ?> l && l.get("pattern") instanceof String pat && l.get("color") instanceof String col) {
+                            out.add(new String[]{pat, col});
+                        }
+                    }
+                    if (!out.isEmpty()) {
+                        banners.put(x + sx * (z + sz * y), List.copyOf(out));
+                    }
+                }
             }
-            return new Template(name, sx, sy, sz, palette, cells);
+            return new Template(name, sx, sy, sz, palette, cells, banners);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

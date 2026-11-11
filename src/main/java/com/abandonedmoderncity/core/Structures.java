@@ -48,7 +48,7 @@ public final class Structures {
      *               template whose front is its +Z side, as the user found for casa_moderna_abandonada)
      */
     public record Def(String type, String name, String group, Template t, int ox, int oy, int oz, int w, int h, int d,
-                      int ground, int turn, int[] state, int[] fill, Map<Integer, Integer> leaf) {
+                      int ground, int turn, int[] state, int[] fill, Map<Integer, Integer> cells) {
         /** Footprint size along x after {@code rot} quarter turns. */
         public int sizeX(int rot) {
             return ((rot + turn) & 1) == 0 ? w : d;
@@ -79,13 +79,56 @@ public final class Structures {
          * ground) or a structure block.
          */
         public int code(int rx, int ry, int rz, int rot) {
-            if (rx < 0 || rz < 0 || ry < -ground || ry >= h - ground || rx >= sizeX(rot) || rz >= sizeZ(rot)) {
+            int[] tc = template(rx, ry, rz, rot);
+            if (tc == null) {
                 return BlockCode.KEEP;
             }
-            rot = (rot + turn) & 3;
+            int r = (rot + turn) & 3;
+            int x = tc[0] - ox;
+            int z = tc[2] - oz;
+            int p = t.at(tc[0], tc[1], tc[2]);
+            int s = p < 0 ? -1 : state[p];
+            if (ry == 0 && (p < 0 || s < 0)) {
+                // the floor filled out to the edge of the box
+                int f = fill[x + w * z];
+                if (f >= 0) {
+                    return BlockCode.STRUCT + 4 * f + r;
+                }
+            }
+            if (p < 0) {
+                return BlockCode.KEEP;
+            }
+            if (s >= 0 && !cells.isEmpty()) {
+                // a real leaf, or a floating cobweb taken out
+                Integer o = cells.get(cell(tc[0], tc[1], tc[2]));
+                if (o != null) {
+                    s = o;
+                }
+            }
+            if (s < 0) {
+                // air buried under the ground stays ground
+                return s == AIR_STATE && ry >= 0 ? BlockCode.AIR : BlockCode.KEEP;
+            }
+            return BlockCode.STRUCT + 4 * s + r;
+        }
+
+        /** Banner design saved at (rx, ry, rz) of the rotated box ({pattern, color} layers), or null. */
+        public List<String[]> banner(int rx, int ry, int rz, int rot) {
+            if (t.banners.isEmpty()) {
+                return null;
+            }
+            int[] tc = template(rx, ry, rz, rot);
+            return tc == null ? null : t.banners.get(cell(tc[0], tc[1], tc[2]));
+        }
+
+        /** Template coordinates of (rx, ry, rz) of the box turned {@code rot}, or null outside the box. */
+        private int[] template(int rx, int ry, int rz, int rot) {
+            if (rx < 0 || rz < 0 || ry < -ground || ry >= h - ground || rx >= sizeX(rot) || rz >= sizeZ(rot)) {
+                return null;
+            }
             int x;
             int z;
-            switch (rot & 3) {
+            switch ((rot + turn) & 3) {
                 case 0 -> {
                     x = rx;
                     z = rz;
@@ -103,30 +146,7 @@ public final class Structures {
                     z = rx;
                 }
             }
-            int ty = oy + ground + ry;
-            int p = t.at(ox + x, ty, oz + z);
-            int s = p < 0 ? -1 : state[p];
-            if (ry == 0 && (p < 0 || s < 0)) {
-                // the floor filled out to the edge of the box
-                int f = fill[x + w * z];
-                if (f >= 0) {
-                    return BlockCode.STRUCT + 4 * f + (rot & 3);
-                }
-            }
-            if (p < 0) {
-                return BlockCode.KEEP;
-            }
-            if (s < 0) {
-                // air buried under the ground stays ground
-                return s == AIR_STATE && ry >= 0 ? BlockCode.AIR : BlockCode.KEEP;
-            }
-            if (!leaf.isEmpty()) {
-                Integer real = leaf.get(cell(ox + x, ty, oz + z));
-                if (real != null) {
-                    s = real;
-                }
-            }
-            return BlockCode.STRUCT + 4 * s + (rot & 3);
+            return new int[]{ox + x, oy + ground + ry, oz + z};
         }
 
         private int cell(int x, int y, int z) {
@@ -223,14 +243,15 @@ public final class Structures {
         int d = z1 - z0 + 1;
         int gy = y0 + ground;
         int[] fill = floorFill(t, solid, x0, z0, w, d, gy, ids);
-        Map<Integer, Integer> leaf = realLeaves(t, solid, x0, y0, z0, w, y1 - y0 + 1, d, ids);
+        Map<Integer, Integer> cells = realLeaves(t, solid, x0, y0, z0, w, y1 - y0 + 1, d, ids);
+        removeFloatingWebs(t, cells);
         String group = null;
         for (String g : LIMITS.keySet()) {
             if (type.startsWith(g)) {
                 group = g;
             }
         }
-        return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, turn, state, fill, leaf);
+        return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, turn, state, fill, cells);
     }
 
     private static int id(Map<String, Integer> ids, String s) {
@@ -362,6 +383,40 @@ public final class Structures {
             }
         }
         return out;
+    }
+
+    /** Neighbours a cobweb may touch and still float: nothing to hang on. */
+    private static final String[] NO_HOLD = {"minecraft:air", "minecraft:cave_air", "minecraft:structure_void",
+            "minecraft:cobweb", "minecraft:vine", "minecraft:short_grass", "minecraft:tall_grass", "minecraft:fern",
+            "minecraft:large_fern", "minecraft:glow_lichen"};
+
+    /**
+     * Cobwebs that touch nothing to hang on (only air, other cobwebs, vines, plants or carpets) become air (asked by
+     * the user, 12 nov 2026): cell index -> AIR_STATE in {@code cells}.
+     */
+    private static void removeFloatingWebs(Template t, Map<Integer, Integer> cells) {
+        int[][] six = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+        for (int y = 0; y < t.sy; y++) {
+            for (int z = 0; z < t.sz; z++) {
+                for (int x = 0; x < t.sx; x++) {
+                    int p = t.at(x, y, z);
+                    if (p < 0 || !blockOf(t.palette.get(p)).equals("minecraft:cobweb")) {
+                        continue;
+                    }
+                    boolean held = false;
+                    for (int[] q : six) {
+                        int n = t.at(x + q[0], y + q[1], z + q[2]);
+                        if (n >= 0) {
+                            String b = blockOf(t.palette.get(n));
+                            held |= !java.util.Arrays.asList(NO_HOLD).contains(b) && !b.endsWith("_carpet");
+                        }
+                    }
+                    if (!held) {
+                        cells.put(x + t.sx * (z + t.sz * y), AIR_STATE);
+                    }
+                }
+            }
+        }
     }
 
     /** The leaves state string with persistent=false and the given distance. */

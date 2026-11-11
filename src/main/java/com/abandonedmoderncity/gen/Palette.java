@@ -408,6 +408,28 @@ public final class Palette {
         return net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE, table);
     }
 
+    /**
+     * Puts a banner design saved in a structure template ({pattern, color} layers) on the banner block entity just
+     * placed (the template keeps the design as block entity data, the block state alone is a plain banner).
+     */
+    public static void applyBanner(net.minecraft.world.level.block.entity.BlockEntity be, List<String[]> layers,
+                                   net.minecraft.core.HolderLookup.Provider registries) {
+        if (!(be instanceof net.minecraft.world.level.block.entity.BannerBlockEntity) || layers == null) {
+            return;
+        }
+        net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+        net.minecraft.nbt.ListTag list = new net.minecraft.nbt.ListTag();
+        for (String[] l : layers) {
+            net.minecraft.nbt.CompoundTag e = new net.minecraft.nbt.CompoundTag();
+            e.putString("pattern", l[0]);
+            e.putString("color", l[1]);
+            list.add(e);
+        }
+        tag.put("patterns", list);
+        be.loadWithComponents(tag, registries);
+        be.setChanged();
+    }
+
     /** All fixed states the generator places (natural surface blocks reused for slopes are checked when used). */
     public static List<BlockState> all() {
         Set<BlockState> set = new LinkedHashSet<>(List.of(LANE, LANE_SLAB, SIDEWALK, SIDEWALK_SLAB, CITY_MARK, HIGHWAY_MARK, WALL, STONE, LIGHT, DIRT, GRASS, SANDSTONE,

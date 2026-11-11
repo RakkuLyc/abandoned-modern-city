@@ -316,8 +316,17 @@ public final class WorldAudit {
             if (cp.kind[i] == ChunkPlan.LOT && cp.lot[i] != null && cp.lot[i].building != null
                     && Palette.exempt(c.getBlockState(bp))
                     && cp.lot[i].code(bp.getX(), bp.getY(), bp.getZ(), cp.h2[i] / 2 - 1) >= BlockCode.STRUCT) {
-                // a block entity of a building structure: its containers carry the structure's loot table
+                // a block entity of a building structure: its containers carry the structure's loot table, its banners
+                // the design saved in the template
                 r.stat("structure_block_entities", 1);
+                java.util.List<String[]> design = cp.lot[i].bannerAt(bp.getX(), bp.getY(), bp.getZ(), cp.h2[i] / 2 - 1);
+                if (design != null) {
+                    r.stat("structure_banners", 1);
+                    if (!(be instanceof net.minecraft.world.level.block.entity.BannerBlockEntity bb)
+                            || bb.getPatterns().layers().size() != design.size()) {
+                        r.fail("banner_without_design", bp.toShortString() + " " + id(c.getBlockState(bp)));
+                    }
+                }
                 if (be instanceof RandomizableContainerBlockEntity) {
                     r.stat("structure_loot_containers", 1);
                     if (!loot) {

@@ -107,7 +107,13 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   farmácia grande, oficina média, oficina pequena, posto padrão, posto pequeno, prédio apartamento, prédio azulado,
   torre, prédio apocalíptico. Regras decididas pelo usuário:
   - frente = lado -Z do `.nbt`, virada para a rua; o campo `frente` do índice gira o molde quando a frente é
-    outro lado: a casa moderna abandonada tem a frente no +Z (180°, achado pelo usuário no jogo em 12 nov 2026); encostadas na calçada, formando um anel; sorteio por arquivo,
+    outro lado: a casa moderna abandonada e a mansão pós-apocalíptica têm a frente no +Z (180°, achado pelo usuário
+    no jogo em 12 nov 2026);
+  - teias soltas (que só encostam em ar, teia, vinha, planta ou carpete) são removidas de todas as estruturas
+    (pedido do usuário para a mansão pós-apocalíptica; 18 no total: 13 nela, 3 na mansão abandonada, 1 na casa
+    abandonada, 1 no prédio apocalíptico);
+  - banners com o desenho salvo no molde (`Template.banners`, aplicado quando o banner é colocado,
+    `Palette.applyBanner`): as letras D R U G S T O R E das farmácias (9 na farmácia, 18 na farmácia grande); encostadas na calçada, formando um anel; sorteio por arquivo,
     sem padrão;
   - limites por cidade (`Structures.LIMITS`): farmácias 3 (as duas), oficinas 2 (as duas), postos 2 (os dois); os
     anéis da cidade inteira são sorteados de uma vez (`City.rings`, quarteirões de norte a sul, oeste a leste), e um
@@ -130,8 +136,8 @@ existem as cidades 2 × 2 de quarteirões retangulares.
     executa, centralizada, frente virada para ele, chão no bloco em que ele pisa; mesmas regras da cidade, com loot).
 - Dureza: qualquer dureza é permitida (regra antiga removida pelo usuário); só blocos indestrutíveis são proibidos.
   Os block entities permitidos são o baú vazio da fonte e os containers das estruturas (baús, barris, suportes de poção, vasos decorados, atris, fornalhas, camas, fogueiras, sensores de luz, jukeboxes,
-  banners, crânios, dispensers e droppers; `Palette.exempt`). Banners e placas saem lisos (o molde não guarda os
-  desenhos).
+  banners, crânios, dispensers e droppers; `Palette.exempt`). Os banners recebem o desenho salvo no molde; placas
+  saem sem texto.
   **Loot tables** (postas quando cada contêiner é colocado, pela região, como nas estruturas vanilla; semente por
   lote e posição; `ChunkBuilder.loot`): exceto oficinas usam `lostcities:chests/lostcitychest` (do Apocalypse Loot / Lost Cities); oficinas usam `oficina_vehicle_parts` (baús: rodas, assentos, motores compatíveis com Camaro/Escargot do OAmP) e `oficina_vehicle_tools` (outros containers: jumperpack, blowtorch, repairkit). Baú da fonte do parque continua vazio (50%) ou `mossy_cobblestone` (50%).
 - Paleta (`gen/Palette`): os 8 estilos de material dos prédios do Abandoned Simple City (paredes, janelas, pisos,
