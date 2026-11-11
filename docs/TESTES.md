@@ -48,7 +48,7 @@ Alvos repetidos (a mesma cidade em dois critérios) entram uma vez só. Seeds fi
 - `CANYONS` (planalto cortado por cânions estreitos abaixo do nível do mar).
 - `RIVERS` (terra ondulada cortada por rios e salpicada de lagos, como o overworld real perto das seeds da bateria).
 
-Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa área de 9 × 9 células de 640
+Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa área de 9 × 9 células de 648
 (~18 000 × 18 000 blocos).
 
 ## 2. O que é verificado
@@ -180,16 +180,17 @@ No jogo (op):
   - para comparar, o próprio Minecraft gasta dezenas de ms por chunk.
 - **Testes unitários:** ~2 min no total (sem o teste dos prédios, que levava ~8 min).
 
-## 6. Resultados atuais (11 nov 2026, quarteirões 140 × 90 tomados pela natureza, ruas e rodovias de 33, células de 640)
+## 6. Resultados atuais (11 nov 2026, quarteirões 140 × 90 tomados pela natureza, ruas e rodovias de 33, cidades no meio de células de 648, 4 entradas)
 
 - **Unitários:** 12 passam e 4 são pulados sem estruturas (11 nov 2026, `index.txt` vazio); `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
-  - **Rede (7 terrenos × 3 seeds, 81 células), rodovias de 33:** 42 a 62 cidades por combinação, 103 a 168 ligações
-    candidatas. Rodovias mantidas: 126–150 no plano, nas colinas e nos cânions (89–95%); 116–143 nas montanhas
-    (85–89%); 117–133 nos rios (82–89%); 120–131 no terreno misto (82–92%); 74–89 nas ilhas (72–75%). Principais
-    descartes: `conflicts with a shorter highway` (até 13 por combinação; a separação mínima subiu para 39 com a
-    largura nova), `mostly water` nas ilhas (até 26) e desnível nas montanhas (até 10). Nenhuma cidade sem rodovia.
+  - **Rede (7 terrenos × 3 seeds, 81 células), cidades no meio da célula de 648, 4 entradas (uma por lado):** 40 a
+    62 cidades por combinação, 75 a 121 ligações candidatas. Rodovias mantidas: 99–119 no plano, nas colinas e nos
+    cânions (93–98%); 89–114 nas montanhas (84–94%); 88–101 nos rios (82–89%); 90–104 no terreno misto (88–94%);
+    57–64 nas ilhas (73–82%). Principal descarte: `curve too tight` (até 11), depois `mostly water` e desnível. No
+    máximo 1 cidade sem rodovia por combinação. Com 4 entradas quaisquer das 8 (rejeitado): só 82 de 106 no plano,
+    22 por curva fechada, rede partida em 4 grupos.
 - **Bateria no mundo:**
 
   | Seed | Escopo | Data | Versão | Resultado |

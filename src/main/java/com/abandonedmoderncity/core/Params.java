@@ -19,7 +19,7 @@ package com.abandonedmoderncity.core;
 public record Params(int cellSize, double cityChance, int minRadius, int maxRadius, int maxCityLevel,
                      int highwayMaxLength, boolean highways) {
 
-    public static final Params DEFAULT = new Params(640, 0.7, 128, 190, 150, 4000, true);
+    public static final Params DEFAULT = new Params(648, 0.7, 128, 190, 150, 4000, true);
 
     // ------------------------------------------------------------------ city grid
 

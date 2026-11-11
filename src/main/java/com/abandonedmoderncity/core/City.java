@@ -86,10 +86,11 @@ public final class City {
     // ------------------------------------------------------------------ stage 1
 
     /**
-     * Most entrances (highways) of a city: the 4 border T crossings and the 4 corners (one highway per crossing), facing
-     * the linked cities.
+     * Entrances (highways) of a city: one per side, rolled per city among the crossings that can leave that way (the
+     * border T crossing of the side or one of its two corners; one highway per crossing). A fully random choice of 4 of
+     * the 8 left many cities without an entrance toward their neighbour (23% of the highways lost).
      */
-    public static final int EXITS = 8;
+    public static final int EXITS = 4;
     /**
      * Most street segments removed from a grid city (the count is uniform in 0..MAX_CUTS). 0 = switched off (asked by
      * the user for the 2 x 2 grid, where only the inner cross could be cut); the cutting code stays for later.
@@ -99,9 +100,6 @@ public final class City {
     /** Grid blocks of a city: FIRST..LAST in both directions (-1..0 for the 2 x 2 grid, -2..1 for 4 x 4). */
     public static final int FIRST = -(Params.GRID / 2);
     public static final int LAST = (Params.GRID + 1) / 2 - 1;
-
-    /** Positions tried per cell before giving up (the later ones with a smaller radius). */
-    static final int ATTEMPTS = 10;
 
     /** The city of a world cell, or null. Pure function of (seed, cell). */
     public static City create(long worldSeed, Params p, Terrain t, int ci, int cj) {
@@ -115,34 +113,24 @@ public final class City {
     }
 
     /**
-     * Rolls whether the cell has a city, then looks for a place for it: up to {@link #ATTEMPTS} positions inside the
-     * cell (the last ones with a smaller radius), the first one that is dry, not too high and flat enough wins. A single
-     * random spot per cell, rejected when it fell on a lake or a hill, left most of a real world without cities.
+     * Rolls whether the cell has a city, which then stands in the middle of the cell if that place is dry enough and not
+     * too high (the cities form a regular grid; 10 nov 2026: the user wanted highways of ~270 to ~370 blocks).
      */
     private static Object site(long worldSeed, Params p, Terrain t, int ci, int cj) {
         long h = Hash.of(worldSeed, SALT, ci, cj);
         if (Hash.unit(h) >= p.cityChance()) {
             return "no city rolled";
         }
-        int margin = p.margin();
-        int span = p.cellSize() - 2 * margin;
-        int baseRadius = Hash.range(Hash.next(h, 3), p.minRadius(), p.maxRadius());
-        String reason = "no attempt";
-        for (int attempt = 0; attempt < ATTEMPTS; attempt++) {
-            long ha = Hash.next(h, 100 + attempt);
-            int cx = ci * p.cellSize() + margin + Hash.range(ha, 0, span);
-            int cz = cj * p.cellSize() + margin + Hash.range(Hash.next(ha, 1), 0, span);
-            // every city is the same 2 x 2 grid: the radius only bounds its area of influence
-            int radius = Params.GRID_RADIUS;
-            Object r = trySite(p, t, cx, cz, radius);
-            if (r instanceof String s) {
-                reason = s;
-                continue;
-            }
-            int level = (Integer) r;
-            return build(h, ci, cj, cx, cz, radius, level, t);
+        // the city stands in the middle of its cell (asked by the user: highways of ~270 to ~370 blocks between
+        // neighbours); a cell whose middle is mostly water or too high has no city
+        int cx = ci * p.cellSize() + p.cellSize() / 2;
+        int cz = cj * p.cellSize() + p.cellSize() / 2;
+        int radius = Params.GRID_RADIUS;
+        Object r = trySite(p, t, cx, cz, radius);
+        if (r instanceof String s) {
+            return s;
         }
-        return reason;
+        return build(h, ci, cj, cx, cz, radius, (Integer) r, t);
     }
 
     /** The level of a city at (cx, cz), or why it cannot stand there. */
@@ -255,7 +243,30 @@ public final class City {
                     }
                 }
             }
-            // the border T crossings and the corners (two directions each): WorldPlan picks the entrances among them
+            // the border T crossings and the corners (two directions each) are the possible places; each city rolls
+            // EXITS of them, and WorldPlan picks the entrances among those
+            // one per side: for each direction, one of the crossings that can leave that way (the middle T or one of
+            // the two corners), never the same crossing twice
+            List<Exit> picked = new ArrayList<>();
+            List<Integer> dirs = new ArrayList<>(List.of(Exit.WEST, Exit.EAST, Exit.NORTH, Exit.SOUTH));
+            dirs.sort(java.util.Comparator.comparingLong(d -> Hash.of(seed, 0x45584FL, d)));
+            for (int dir : dirs) {
+                List<Exit> c = new ArrayList<>();
+                for (Exit e : ex) {
+                    boolean used = false;
+                    for (Exit q : picked) {
+                        used |= q.i() == e.i() && q.j() == e.j();
+                    }
+                    if (e.dir() == dir && !used) {
+                        c.add(e);
+                    }
+                }
+                if (!c.isEmpty()) {
+                    c.sort(java.util.Comparator.comparingLong(e -> Hash.of(seed, 0x455854L, Cache.key(e.i(), e.j()))));
+                    picked.add(c.get(0));
+                }
+            }
+            ex = picked;
             this.exits = List.copyOf(ex);
             this.xCut = new boolean[nw * nw];
             this.zCut = new boolean[nw * nw];
