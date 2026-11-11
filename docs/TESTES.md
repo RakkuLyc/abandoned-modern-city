@@ -53,7 +53,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 
 ## 2. O que é verificado
 
-### Unitários (24 testes)
+### Unitários (27 testes)
 
 | Teste | Verifica |
 |---|---|
@@ -66,6 +66,9 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `WorldPlanTest.removedStreetsAreRenderedAndAudited` | uma cidade para cada quantidade de ruas cortadas (hoje só 0): passa no `PlanAudit` e gera `cuts_N.png` |
 | `FloraTest.overgrownBlocksAreConsistent` | 6 miolos de 140 × 90 (o teste usa esse tamanho fixo): mais de 120 árvores cada, copas dentro do quarteirão, toda vinha presa em folha/tronco ou embaixo de outra vinha, toda folha com distância de 1 a 6 e um vizinho um passo mais perto da madeira (regra do leaf decay do vanilla), plantas só a 1 bloco do chão e só em solo (grama, musgo, terra grossa), metades de cima das plantas altas certas, entulho nunca flutua; nenhuma árvore entra numa estrutura; gera `wild_block.png` |
 | `FloraTest.parksAreOvergrownAndKeepTheirFountain` | 6 parques: as mesmas regras de plantas e vinhas, todo bloco da fonte no lugar (só a troca baú → pedregulho musgoso, as lajes musgosas do anel e o piso de pedra virado musgoso), cachos de vinha na fonte; gera `wild_park.png` |
+| `RoadDecayTest.aboutOneColumnInTenIsTakenInPatches` | 1,9 milhão de colunas em 3 seeds: 10,2% tomadas, determinístico, em manchas (54% das tomadas têm a vizinha tomada), os 6 tipos aparecem |
+| `RoadDecayTest.bridgesTunnelsRampStepsAndWallsStayClean` | pontes, túneis, degraus de meia-laje e a coluna do muro nunca são tomados; calçadas racham em pedregulho, nunca em asfalto |
+| `RoadDecayTest.plantsOnlyOnGrassAndMossAndWithoutCollision` | plantas só sobre grama e musgo, sempre sem colisão (grama baixa, alta, samambaia), metade de cima da grama alta certa |
 | `RingTest.withoutStructuresBlocksStayEmpty` | (pulado com estruturas) com `index.txt` vazio: nenhum estado de estrutura e o anel não cria lotes |
 | `RingTest.groundLayerAndBuriedLayers` | as estruturas com camada enterrada têm blocos embaixo do chão e nada mais fundo; nenhum ar enterrado; mansão abandonada, torre, azulado e apartamento descem 1 |
 | `RingTest.frontsMeetTheSidewalk` | a fileira da frente, no nível do chão, é toda de blocos em 13 das 14 (o apartamento tem 22 de 31: as falhas viram o chão da cidade, nivelado) |
@@ -115,6 +118,8 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
     costuras entre chunks apareceriam aqui).
 - **Regras gerais:**
   - `hard_block` (bloco indestrutível em via, ponte, túnel ou lote; qualquer dureza é permitida);
+  - `road_plant` (planta planejada numa coluna de via tomada que falta ou mudou; as colunas tomadas são contadas em
+    `taken_road_columns`, as plantas em `road_plants`; a superfície tomada é conferida em `surface_block`);
   - `banner_without_design` (banner de estrutura sem o desenho do molde; contados em `structure_banners`);
   - `structure_without_loot` (contêiner de estrutura — baú, barril, dispenser, dropper — sem loot table; os block
     entities das estruturas são contados em `structure_block_entities` e os contêineres em
@@ -198,6 +203,10 @@ contêineres com loot; `spawn farmacia_vermelho` olhando para o oeste: frente vi
 executou). Depois dos banners: `spawn farmacia_vermelho` e `data get block` nos banners das pontas: E (listras esquerda,
 topo, meio e base, borda) e D (listras e borda ondulada) — quem olha a fachada lê DRUGSTORE.
 
+Vinhas das pontes (12 nov 2026, RCON): ao redor do viaduto seco mais longo da seed 20261027 (-1965 86 -1382)
+há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um desnível pequeno não tem vinhas
+(as colunas da borda dela são de via no chão, sem muro de ponte).
+
 ## 5. Desempenho medido
 
 - **Amostras de terreno:** cada `getBaseHeight` custa ~2,7 ms, porque monta um `NoiseChunk` de uma coluna. O
@@ -213,7 +222,7 @@ topo, meio e base, borda) e D (listras e borda ondulada) — quem olha a fachada
 
 ## 6. Resultados atuais (12 nov 2026, quarteirões 180 × 120 com anel de estruturas com vãos e miolo tomado pela natureza, ruas e rodovias de 33, cidades no meio de células de 736, 4 entradas)
 
-- **Unitários:** 23 passam e 1 é pulado (o teste sem estruturas), 12 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
+- **Unitários:** 26 passam e 1 é pulado (o teste sem estruturas), 12 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
   - **Rede (7 terrenos × 3 seeds, 81 células), cidades no meio da célula de 736, 4 entradas (uma por lado):** 35 a
@@ -229,6 +238,7 @@ topo, meio e base, borda) e D (listras e borda ondulada) — quem olha a fachada
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 12 nov | ruas abandonadas e vinhas das pontes | PASS: 8 de 8, 0 erros de geração; na cidade do spawn 7 717 de 76 027 colunas de via no chão tomadas (10,2%) e 2 413 plantas conferidas; 2,86 ms por chunk, 279 s |
   | `20261027` | padrão (8 alvos) | 12 nov | vãos de 4 a 17 | PASS: 8 de 8, 0 erros de geração, 2,82 ms por chunk |
   | `20261027` | padrão (8 alvos) | 12 nov | quarteirões 180 × 120, vãos de 10 a 19 e bosque de 20 a 30 | PASS: 8 de 8, 0 erros de geração; na cidade mais acidentada 1 180 contêineres com loot e 45 banners conferidos; 8 346 chunks, 2,74 ms por chunk, 267 s |
   | `20261027` | padrão (8 alvos) | 12 nov | mansão pós-apocalíptica girada, teias soltas removidas, banners com desenho | PASS: 8 de 8, 0 erros de geração, 126 banners de farmácia conferidos com desenho, 3,06 ms por chunk |

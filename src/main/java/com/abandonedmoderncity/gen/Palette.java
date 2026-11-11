@@ -137,6 +137,10 @@ public final class Palette {
             .setValue(DoublePlantBlock.HALF, DoubleBlockHalf.UPPER);
     public static final BlockState MOSSY_SLAB = Blocks.MOSSY_STONE_BRICK_SLAB.defaultBlockState();
     public static final BlockState MOSSY_COBBLE_SLAB = Blocks.MOSSY_COBBLESTONE_SLAB.defaultBlockState();
+    /** Taken-over road surfaces (core/RoadDecay). */
+    public static final BlockState GRAVEL = Blocks.GRAVEL.defaultBlockState();
+    public static final BlockState BLACKSTONE = Blocks.BLACKSTONE.defaultBlockState();
+    public static final BlockState COBBLED_DEEPSLATE = Blocks.COBBLED_DEEPSLATE.defaultBlockState();
     public static final BlockState[] RUBBLE = {b(Blocks.MOSSY_COBBLESTONE), b(Blocks.COBBLESTONE),
             b(Blocks.CRACKED_STONE_BRICKS), b(Blocks.GRAY_CONCRETE)};
 
@@ -282,6 +286,12 @@ public final class Palette {
                 return MOSSY_SLAB;
             case BlockCode.MOSSY_COBBLE_SLAB:
                 return MOSSY_COBBLE_SLAB;
+            case BlockCode.GRAVEL:
+                return GRAVEL;
+            case BlockCode.BLACKSTONE:
+                return BLACKSTONE;
+            case BlockCode.COBBLED_DEEPSLATE:
+                return COBBLED_DEEPSLATE;
             default:
                 break;
         }
@@ -457,7 +467,8 @@ public final class Palette {
         }
         set.addAll(List.of(VINES));
         set.addAll(List.of(RUBBLE));
-        set.addAll(List.of(MOSS_BLOCK, FERN, LARGE_FERN_LOWER, LARGE_FERN_UPPER, MOSSY_SLAB, MOSSY_COBBLE_SLAB));
+        set.addAll(List.of(MOSS_BLOCK, FERN, LARGE_FERN_LOWER, LARGE_FERN_UPPER, MOSSY_SLAB, MOSSY_COBBLE_SLAB, GRAVEL, BLACKSTONE,
+                COBBLED_DEEPSLATE));
         for (BlockState f : fountain()) {
             // flowing water of the fountain is a fluid, not a block to break
             if (!(f.getBlock() instanceof net.minecraft.world.level.block.LiquidBlock)) {

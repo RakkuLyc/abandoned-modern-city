@@ -92,6 +92,10 @@ public final class BlockCode {
     /** Rubble {@code RUBBLE + k}, k < RUBBLES: mossy cobblestone, cobblestone, cracked stone bricks, gray concrete. */
     public static final int RUBBLE = 220;
     public static final int RUBBLES = 4;
+    /** Taken-over road surfaces ({@link RoadDecay}): gravel, and cracked asphalt (blackstone, cobbled deepslate). */
+    public static final int GRAVEL = 230;
+    public static final int BLACKSTONE = 231;
+    public static final int COBBLED_DEEPSLATE = 232;
     /** Block {@code TEMPLATE + i}: entry i of the palette of {@link Template#WATERFALL}. */
     public static final int TEMPLATE = 1000;
     /**

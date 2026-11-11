@@ -97,6 +97,9 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
 
 - **Faixa central:** traços de 11 com intervalo de 6. Cada cruzamento tem um quadrado 3 × 3 de `smooth_stone` em
   cada esquina.
+- **Ruas abandonadas:** ~10% das colunas de ruas, calçadas e rodovias no chão são tomadas, em manchas e rachaduras:
+  grama com mato, musgo, terra grossa, cascalho ou asfalto rachado, sempre no mesmo nível (sem degraus) e só com
+  plantas sem colisão por cima. Pontes e túneis ficam limpos; das pontes pendem vinhas até o chão.
 - **Faixas de pedestres:** zebra de `white_concrete` (listras de 1 com intervalo de 1, 3 linhas) 2 linhas antes de
   cada cruzamento, nas duas pontas de todo trecho de rua.
 - **Rede de rodovias:** grafo de Gabriel entre os centros das cidades. É planar e conexo, e as rodovias nunca se
@@ -132,6 +135,7 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
   City           estágio 1 (existe? centro, altura) e estágio 2 (ruas, quarteirões, lotes)
   Lot            lotes: parque inteiro de quarteirão, uma estrutura ou o miolo tomado pela natureza (WILD)
   Flora          árvores (4 espécies, vinhas), chão em manchas, plantas e entulho; índice de árvores por baldes
+  RoadDecay      ruas abandonadas: que colunas de via são tomadas, por quê e com que planta
   Wild           o miolo do quarteirão: chão, árvores e vegetação, sem entrar nas estruturas
   Ring           anel de estruturas em volta do quarteirão (lados curtos inteiros, compridos no que sobra), vãos, limites
   Structures     as 14 estruturas de `amcs/buildings/index.txt`: caixa, camada do chão, piso até a borda, folhas reais, rotação

@@ -5,6 +5,7 @@ import com.abandonedmoderncity.core.ChunkPlan;
 import com.abandonedmoderncity.core.Lot;
 import com.abandonedmoderncity.core.Params;
 import com.abandonedmoderncity.core.Profile;
+import com.abandonedmoderncity.core.RoadDecay;
 import com.abandonedmoderncity.core.Structures;
 import com.abandonedmoderncity.core.WorldPlan;
 import java.util.ArrayList;
@@ -110,6 +111,7 @@ final class ChunkBuilder {
             b.run();
             built = true;
         }
+        built |= bridgeVines(plan, chunk);
         repairNeighbours(plan, region, c);
         return built;
     }
@@ -135,6 +137,57 @@ final class ChunkBuilder {
         }
         seal();
         removeOrphanLeaves();
+    }
+
+    /**
+     * Vines hanging from the bridges down to the ground (asked by the user, 12 nov 2026): in {@link
+     * RoadDecay#BRIDGE_VINES} of the columns just outside a bridge edge (the one with the wall), a strand hangs on the
+     * side of the deck from its surface down to the first block that is not air (ground or water). Done for every
+     * chunk, also those with nothing planned in them, since the column outside the bridge may be the only part of a
+     * chunk next to it.
+     */
+    private static boolean bridgeVines(WorldPlan plan, ChunkAccess chunk) {
+        ChunkPos c = chunk.getPos();
+        int bx = c.getMinBlockX();
+        int bz = c.getMinBlockZ();
+        int minY = chunk.getMinBuildHeight();
+        ChunkPlan cp = plan.chunk(c.x, c.z);
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        boolean any = false;
+        // west, east, north, south: the side the bridge is on, as Palette.VINES counts them
+        int[][] side = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        for (int lz = 0; lz < 16; lz++) {
+            for (int lx = 0; lx < 16; lx++) {
+                byte kind = cp.kind[ChunkPlan.idx(lx, lz)];
+                if (kind != ChunkPlan.NONE && kind != ChunkPlan.SKIRT) {
+                    continue;
+                }
+                int x = bx + lx;
+                int z = bz + lz;
+                if (!RoadDecay.bridgeVine(plan.seed, x, z)) {
+                    continue;
+                }
+                for (int k = 0; k < 4; k++) {
+                    int nx = x + side[k][0];
+                    int nz = z + side[k][1];
+                    ChunkPlan np = plan.chunk(nx >> 4, nz >> 4);
+                    int ni = ChunkPlan.idx(nx & 15, nz & 15);
+                    if (np.kind[ni] != ChunkPlan.ROAD || np.struct[ni] != Profile.BRIDGE || !ChunkPlan.walled(np.zone[ni])) {
+                        continue;
+                    }
+                    BlockState vine = Palette.VINES[k];
+                    for (int y = ChunkPlan.surfaceY(np.h2[ni]); y > minY; y--) {
+                        if (!chunk.getBlockState(p.set(x, y, z)).isAir()) {
+                            break;
+                        }
+                        chunk.setBlockState(p, vine, false);
+                        any = true;
+                    }
+                    break;
+                }
+            }
+        }
+        return any;
     }
 
     // ------------------------------------------------------------------ column reading
@@ -251,6 +304,11 @@ final class ChunkBuilder {
         byte flags = cp.flags[i];
         BlockState surface = Palette.roadSurface(zone, slab);
         BlockState base = Palette.roadBase(zone);
+        // abandoned roads: some columns taken over by grass, moss, dirt or cracks (core/RoadDecay)
+        int decay = RoadDecay.surface(plan.seed, x, z, zone, cp.struct[i], slab);
+        if (decay != BlockCode.KEEP) {
+            surface = Palette.of(decay, 0, null);
+        }
         switch (cp.struct[i]) {
             case Profile.BRIDGE -> {
                 clear(i, x, z, ys + 1, top);
@@ -277,6 +335,14 @@ final class ChunkBuilder {
                 set(x, ys - 1, z, base);
                 for (int y = ys - 2; y > groundY; y--) {
                     set(x, y, z, Palette.STONE);
+                }
+                if (decay != BlockCode.KEEP) {
+                    for (int dy = 1; dy <= 2; dy++) {
+                        int plant = RoadDecay.plant(plan.seed, x, z, dy, decay);
+                        if (plant != BlockCode.KEEP) {
+                            set(x, ys + dy, z, Palette.of(plant, 0, null));
+                        }
+                    }
                 }
             }
         }
@@ -589,7 +655,9 @@ final class ChunkBuilder {
                         int ys = ChunkPlan.surfaceY(h2);
                         byte zone = np.zone[i];
                         boolean tunnel = np.struct[i] == Profile.TUNNEL;
-                        restore(region, nc, p.set(x, ys, z), Palette.roadSurface(zone, ChunkPlan.isSlab(h2)));
+                        int decay = RoadDecay.surface(plan.seed, x, z, zone, np.struct[i], ChunkPlan.isSlab(h2));
+                        restore(region, nc, p.set(x, ys, z), decay != BlockCode.KEEP ? Palette.of(decay, 0, null)
+                                : Palette.roadSurface(zone, ChunkPlan.isSlab(h2)));
                         restore(region, nc, p.set(x, ys - 1, z), Palette.roadBase(zone));
                         if (ChunkPlan.walled(zone)) {
                             for (int y = ys + 1; y <= wallTop(plan, x, z); y++) {
@@ -608,6 +676,15 @@ final class ChunkBuilder {
                         int free1 = ys + (tunnel ? Params.CLEARANCE : 4);
                         for (int y = free0; y <= free1 && y < maxY; y++) {
                             BlockState s = nc.getBlockState(p.set(x, y, z));
+                            int plant = decay == BlockCode.KEEP ? BlockCode.KEEP : RoadDecay.plant(plan.seed, x, z, y - ys, decay);
+                            if (plant != BlockCode.KEEP) {
+                                // the plan's own plant on a taken-over column
+                                BlockState want = Palette.of(plant, 0, null);
+                                if (s != want) {
+                                    region.setBlock(p, want, Block.UPDATE_CLIENTS);
+                                }
+                                continue;
+                            }
                             if (s.isAir()) {
                                 continue;
                             }

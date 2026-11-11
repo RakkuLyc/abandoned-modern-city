@@ -67,6 +67,17 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   `smooth_stone` (o de fora com muro). Muros conectados pelo plano (não pelo vanilla); na junção com a rua não há
   muro. Dentro das cidades os lotes têm prioridade. As rodovias vão direto de uma cidade à outra. O afunilamento
   perto das cidades foi removido (as larguras são iguais).
+- Ruas abandonadas (12 nov 2026, `core/RoadDecay`): ~10% das colunas de via tomadas, em manchas (ruído de valor,
+  células de 5, acima de 0,82) e rachaduras soltas (3%), função pura da posição e da seed. Valem para ruas, faixas,
+  faixas de pedestres, calçadas e acostamentos das cidades e das rodovias no chão; ficam limpos pontes, túneis, os
+  degraus de meia-laje das rampas e a coluna do muro. A coluna tomada fica na mesma altura (sem degrau para os
+  veículos) e só recebe plantas sem colisão: grama (`grass_block`) com grama baixa, alta ou samambaia; musgo
+  (`moss_block`), às vezes com grama baixa (sem tapete de musgo, que tem colisão); `coarse_dirt` ou `gravel`;
+  asfalto rachado (`blackstone` ou `cobbled_deepslate` na pista, `cobblestone` na calçada). O reparo de vizinhos e a
+  auditoria usam a mesma regra (`surface_block`, `road_plant`).
+- Vinhas das pontes (12 nov 2026, pedido do usuário): em 35% das colunas logo fora da borda de uma ponte (a do muro),
+  um cacho de vinha preso na laje desce da superfície até o primeiro bloco que não é ar (chão ou água); feito em
+  todo chunk, também nos sem nada planejado (`ChunkBuilder.bridgeVines`).
 - Túneis com 7 blocos de altura livre (`Params.CLEARANCE`); só há túnel com 11+ blocos de terreno acima da pista
   (`Params.TUNNEL_COVER`).
 - Ruas cortadas: **desligadas** (`City.MAX_CUTS` = 0, pedido do usuário para o 2 × 2; o código continua). Quando

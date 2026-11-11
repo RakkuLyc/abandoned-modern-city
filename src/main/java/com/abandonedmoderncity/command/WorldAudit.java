@@ -26,7 +26,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * Audit of the blocks actually generated (the chunks must exist). Every failure count must be 0:
  * <ul>
  *   <li>{@code hole}: no surface block (air or liquid) on a road column.</li>
- *   <li>{@code surface_block}: wrong surface block (roads are only smooth stone / stone and their bottom slabs).</li>
+ *   <li>{@code surface_block}: wrong surface block (smooth stone / stone and their bottom slabs, or the taken-over
+ *   surface of {@code RoadDecay}).</li>
+ *   <li>{@code road_plant}: a plant planned on a taken-over road column is missing or different.</li>
  *   <li>{@code no_base}: nothing solid under the surface block.</li>
  *   <li>{@code height_mismatch}: the walking height measured in the world differs from the plan.</li>
  *   <li>{@code step}: two neighbouring drivable columns more than half a block apart, measured on the blocks
@@ -152,7 +154,11 @@ public final class WorldAudit {
             r.stat("slab_columns", 1);
         }
         BlockState surface = at(c, p, x, ys, z);
-        BlockState expected = Palette.roadSurface(zone, slab);
+        int decay = com.abandonedmoderncity.core.RoadDecay.surface(plan.seed, x, z, zone, st, slab);
+        BlockState expected = decay != BlockCode.KEEP ? Palette.of(decay, 0, null) : Palette.roadSurface(zone, slab);
+        if (decay != BlockCode.KEEP) {
+            r.stat("taken_road_columns", 1);
+        }
         if (surface.isAir() || !surface.getFluidState().isEmpty()) {
             r.fail("hole", where + " " + id(surface));
         } else if (surface.getBlock() != expected.getBlock()
@@ -183,6 +189,17 @@ public final class WorldAudit {
         int free = tunnel ? com.abandonedmoderncity.core.Params.CLEARANCE : 4;
         for (int y = ys + 1; y <= ys + free; y++) {
             BlockState s = at(c, p, x, y, z);
+            int plant = decay == BlockCode.KEEP ? BlockCode.KEEP
+                    : com.abandonedmoderncity.core.RoadDecay.plant(plan.seed, x, z, y - ys, decay);
+            if (plant != BlockCode.KEEP) {
+                // the plan's own plant on a taken-over column (no collision)
+                if (s.getBlock() != Palette.of(plant, 0, null).getBlock()) {
+                    r.fail("road_plant", x + "," + y + "," + z + " " + id(s) + " expected " + id(Palette.of(plant, 0, null)));
+                } else {
+                    r.stat("road_plants", 1);
+                }
+                continue;
+            }
             if (s.isAir()) {
                 // the entrance canopy of a building over the sidewalk is checked by overhang()
                 continue;
