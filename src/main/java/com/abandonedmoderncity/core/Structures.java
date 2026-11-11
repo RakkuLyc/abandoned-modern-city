@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The building structures supplied by the user ({@code structures/}, packed in {@code resources/amcs/buildings/} with
- * an {@code index.txt}): their trimmed boxes, their rotation and the block code of each cell. The front of every
+ * The building structures supplied by the user ({@code .nbt} files in {@code resources/amcs/buildings/}, listed in its
+ * {@code index.txt}; the list may be empty): their trimmed boxes, their rotation and the block code of each cell. The front of every
  * structure is its -Z side (north); {@link #rotationFor} turns it to face the street.
  * <p>
  * Block code of a structure block: {@code BlockCode.STRUCT + 4 * state + rotation}; the game layer turns it into a

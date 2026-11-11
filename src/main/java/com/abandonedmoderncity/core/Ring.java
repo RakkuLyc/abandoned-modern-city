@@ -21,6 +21,10 @@ public final class Ring {
 
     /** The lots of the free rectangle x0..x1, z0..z1 of a block. */
     public static List<Lot> lots(int x0, int z0, int x1, int z1, long seed) {
+        if (Structures.ALL.isEmpty()) {
+            // no structures in resources/amcs/buildings: the block stays free city ground
+            return List.of();
+        }
         List<Lot> out = new ArrayList<>();
         int w = x1 - x0 + 1;
         int h = z1 - z0 + 1;

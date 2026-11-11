@@ -53,21 +53,22 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 
 ## 2. O que é verificado
 
-### Unitários (13 testes)
+### Unitários (14 testes)
 
 | Teste | Verifica |
 |---|---|
 | `ProfileTest.profilesAreFlatOrRampAndJoinTheCities` | 4 000 perfis aleatórios (com penhascos): começa e termina no nível de cada cidade, 48 blocos planos nas pontas, variação ≤ 1/8 de bloco por bloco, trechos planos sempre em altura inteira, nunca abaixo do mínimo, superfície (meio-bloco) nunca muda mais de 0,5 entre vizinhos |
 | `ProfileTest.halfBlockStepsAreEvenlySpaced` | numa subida, os degraus de meia-laje ficam a pelo menos 4 blocos um do outro |
 | `ProfileTest.classificationRunsAreClean` | 2 000 perfis: junções sempre no chão, túneis ≥ 16, pontes secas ≥ 8, toda água fora das junções é ponte |
-| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (359 cidades 2 × 2 de quarteirões 140 × 90, 11 833 lotes — parques e estruturas): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado; com as ruas cortadas desligadas (`MAX_CUTS` = 0) nenhuma cidade tem corte, senão todos os valores de 0 a `MAX_CUTS` aparecem; toda coluna de lote é lote do quarteirão certo e não toca rua |
+| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (359 cidades 2 × 2 de quarteirões 140 × 90, 199 lotes — só parques, sem estruturas; com as 33 estruturas eram 11 833): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado; com as ruas cortadas desligadas (`MAX_CUTS` = 0) nenhuma cidade tem corte, senão todos os valores de 0 a `MAX_CUTS` aparecem; toda coluna de lote é lote do quarteirão certo e não toca rua |
 | `WorldPlanTest.streetWidthIsConstantOnStraightStreets` | toda rua reta de cidade tem exatamente 17 colunas |
 | `WorldPlanTest.highwayNetworkIsConsistentAndWellConnected` | 21 combinações terreno × seed: Gabriel simétrico, rodovia começa e termina exatamente na entrada de cada cidade, raio de curva ≥ 60, pontos a ~1 bloco, comprimento máximo, cruzamento de entrada nunca usado duas vezes (um canto tem duas saídas, mas só uma rodovia), no máximo 8 rodovias por cidade, nenhum par de rodovias perto demais (sem cruzamentos); limites: plano/colinas ≥ 85% das ligações e ≤ 5% de cidades sem rodovia, montanhas/rios/cânions ≤ 15%, e pelo menos metade das células com cidade (exceto ilhas); gera `network_*.png` |
 | `WorldPlanTest.removedStreetsAreRenderedAndAudited` | uma cidade para cada quantidade de ruas cortadas (hoje só 0): passa no `PlanAudit` e gera `cuts_N.png` |
-| `RingTest.allStructuresAreLoadedWithTheirMeasuredBoxes` | as 33 estruturas carregam; caixas medidas (posto 45 × 37, farmácia 19 × 28 sem a margem vazia); profundidade mínima 20; todas têm blocos na primeira camada |
-| `RingTest.rotationKeepsEveryBlockAndTurnsTheFrontToTheStreet` | as 4 rotações têm o mesmo número de blocos em todas as estruturas; a rotação de 90, 180 e 270 graus confere célula a célula com a fórmula da transformação |
-| `RingTest.ringsFitTheirBlockTouchTheSidewalksAndDoNotOverlap` | 6 000 anéis em quarteirões 140 × 90 e 90 × 140: dentro do quarteirão, sem sobreposição, cada estrutura encosta na calçada para onde a frente aponta, determinístico, as 33 aparecem e os 4 lados são usados |
-| `RingTest.everyStructureFitsNextToTheShallowestInA90Block` | cada estrutura cabe ao lado da mais rasa (20) num lado de 90, e na largura de 140 |
+| `RingTest.withoutStructuresBlocksStayEmpty` | com `index.txt` vazio (hoje): nenhum estado de estrutura e o anel não cria lotes |
+| `RingTest.structuresHaveSolidBoxesWithAFloorLayer` | (pulado sem estruturas) toda estrutura tem caixa não vazia e blocos na primeira camada |
+| `RingTest.rotationKeepsEveryBlockAndTurnsTheFrontToTheStreet` | (pulado sem estruturas) as 4 rotações têm o mesmo número de blocos em todas as estruturas; a rotação de 90, 180 e 270 graus confere célula a célula com a fórmula da transformação |
+| `RingTest.ringsFitTheirBlockTouchTheSidewalksAndDoNotOverlap` | (pulado sem estruturas) 6 000 anéis em quarteirões 140 × 90 e 90 × 140: dentro do quarteirão, sem sobreposição, cada estrutura encosta na calçada para onde a frente aponta, determinístico, as 33 aparecem e os 4 lados são usados |
+| `RingTest.everyStructureFitsNextToTheShallowestInA90Block` | (pulado sem estruturas) cada estrutura cabe ao lado da mais rasa (20) num lado de 90, e na largura de 140 |
 | `PlanAuditTest.citiesAndHighwaysPassThePlanAudit` | `PlanAudit` coluna a coluna em 3 cidades inteiras e 2 rodovias inteiras por terreno × seed (105 auditorias); gera `city_*.png` |
 | `PlanAuditTest.planIsIndependentOfQueryOrderAndThreads` | 3 721 chunks planejados de novo em ordem embaralhada por 8 threads: resultado idêntico, campo a campo |
 
@@ -173,7 +174,7 @@ No jogo (op):
 
 ## 6. Resultados atuais (8 nov 2026, cidades 2 × 2 de quarteirões 140 × 90 em células de 576)
 
-- **Unitários:** 13 de 13 passam; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
+- **Unitários:** 10 passam e 4 são pulados sem estruturas (10 nov 2026, `index.txt` vazio); `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
   - **Rede (7 terrenos × 3 seeds, 81 células), com entradas nos cantos (até 8 por cidade):** 42 a 62 cidades por

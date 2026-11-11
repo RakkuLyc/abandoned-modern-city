@@ -3,6 +3,8 @@ package com.abandonedmoderncity.core;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,23 +16,22 @@ import org.junit.jupiter.api.Test;
 class RingTest {
 
     @Test
-    void allStructuresAreLoadedWithTheirMeasuredBoxes() {
-        assertEquals(33, Structures.ALL.size());
-        Structures.Def posto = Structures.ALL.stream().filter(d -> d.name().equals("posto_azul")).findFirst().orElseThrow();
-        assertEquals(45, posto.w());
-        assertEquals(37, posto.d());
-        // the solid box drops the empty first row of the pharmacy (20 x 29 template, 19 x 28 solid)
-        Structures.Def farmacia = Structures.ALL.stream().filter(d -> d.name().equals("farmacia_amarelo")).findFirst().orElseThrow();
-        assertEquals(19, farmacia.w());
-        assertEquals(28, farmacia.d());
-        assertEquals(20, Structures.MIN_DEPTH);
-        // the floor layer of every structure has blocks (nothing floats: the box starts at the first solid layer),
+    void withoutStructuresBlocksStayEmpty() {
+        assumeTrue(Structures.ALL.isEmpty(), "structures present");
+        assertTrue(Ring.lots(0, 0, 139, 89, 1).isEmpty());
+        assertTrue(Structures.STATES.isEmpty());
+    }
+
+    @Test
+    void structuresHaveSolidBoxesWithAFloorLayer() {
+        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        // the floor layer of every structure has blocks (nothing floats: the box starts at the first solid layer)
         for (Structures.Def d : Structures.ALL) {
+            assertTrue(d.w() > 0 && d.h() > 0 && d.d() > 0, d.name());
             int solid = 0;
             for (int x = 0; x < d.w(); x++) {
                 for (int z = 0; z < d.d(); z++) {
-                    int c = d.code(x, 0, z, 0);
-                    if (c >= BlockCode.STRUCT) {
+                    if (d.code(x, 0, z, 0) >= BlockCode.STRUCT) {
                         solid++;
                     }
                 }
@@ -41,6 +42,7 @@ class RingTest {
 
     @Test
     void rotationKeepsEveryBlockAndTurnsTheFrontToTheStreet() {
+        assumeFalse(Structures.ALL.isEmpty(), "no structures");
         for (Structures.Def d : Structures.ALL) {
             long[] count = new long[4];
             for (int rot = 0; rot < 4; rot++) {
@@ -78,6 +80,7 @@ class RingTest {
 
     @Test
     void ringsFitTheirBlockTouchTheSidewalksAndDoNotOverlap() {
+        assumeFalse(Structures.ALL.isEmpty(), "no structures");
         int[][] sizes = {{140, 90}, {90, 140}};
         long lots = 0;
         long[] bySide = new long[4];
@@ -131,6 +134,7 @@ class RingTest {
 
     @Test
     void everyStructureFitsNextToTheShallowestInA90Block() {
+        assumeFalse(Structures.ALL.isEmpty(), "no structures");
         // each structure fits a 140 x 90 block next to the shallowest structure (depth 20): 90 - 20 = 70 >= depth
         for (Structures.Def d : Structures.ALL) {
             assertTrue(d.d() + Structures.MIN_DEPTH <= 90, d.name() + " is too deep for a 90 block next to the shallowest");

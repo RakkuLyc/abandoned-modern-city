@@ -1,8 +1,8 @@
 # Abandoned Modern City — NeoForge 1.21.1
 
 Cidades modernas abandonadas geradas proceduralmente: ruas, rodovias, túneis, pontes, quarteirões e parques.
-Os prédios são as 33 estruturas `.nbt` do usuário (`structures/`), sorteadas ao acaso num anel em volta de cada
-quarteirão (protótipo: o sorteio será ajustado depois).
+Os prédios serão estruturas `.nbt` do usuário, sorteadas ao acaso num anel em volta de cada quarteirão
+(protótipo). No momento o mod não tem nenhuma estrutura: as 33 primeiras foram removidas em 10 nov 2026.
 
 > Começou em 7 nov 2026 como cópia do Abandoned Simple City (repositório `abandoned-simple-city`), sem os prédios e
 > sem o histórico de commits. O Abandoned Modern City original (pasta `AbandonedModernCity-Deprecated`) está
@@ -42,23 +42,14 @@ estruturas de `structures/`).
 - **Quarteirões:** cerca de 1 em 8 quarteirões é um parque inteiro; nos outros as estruturas formam um anel
   encostado nas calçadas, com a frente (lado -Z do `.nbt`) virada para a rua; o resto é chão da cidade
   (`gray_concrete_powder`).
-- **Estruturas (33 arquivos, 10 tipos):**
+- **Estruturas:** nenhuma no momento. As 33 primeiras (farmácias, oficinas, postos, apartamento, prédio azulado,
+  torre, prédio tombado) foram removidas do mod em 10 nov 2026, a pedido do usuário; o anel, a rotação e as loot
+  tables continuam prontos. Para adicionar: copiar os `.nbt` para `src/main/resources/amcs/buildings/` e listar
+  cada um em `index.txt` (`tipo|arquivo`). Sem estruturas, os quarteirões que não são parque ficam só com o chão
+  da cidade.
 
-  | Tipo | Arquivos | Caixa (frente × profundidade × altura) |
-  |---|---|---|
-  | Farmácia | 5 cores | 19 × 28 × 16 |
-  | Farmácia grande | 5 | 25 × 40 × 15 |
-  | Oficina média | 4 | 35 × 26 × 17 |
-  | Oficina pequena | 5 | 22 × 33 × 16 |
-  | Posto padrão | 5 | 45 × 37 × 18 |
-  | Posto pequeno | 5 | 25 × 20 × 18 |
-  | Prédio apartamento | 1 | 31 × 29 × 37 |
-  | Prédio azulado | 1 | 66 × 46 × 106 |
-  | Torre | 1 | 62 × 53 × 118 |
-  | Prédio tombado com vinhas | 1 | 33 × 45 × 97 |
-
-  A pasta `Casas` do usuário está vazia. Containers (baús, barris, suportes de poção, vasos decorados, atris, fornalhas, camas, fogueiras, sensor de luz, jukebox) recebem loot tables:
-  - **Todas as estruturas exceto oficinas:** loot table `lostcities:chests/lostcitychest` (do mod Apocalypse Loot / Lost Cities), com munição TACZ, armas, itens médicos, comida, recursos e raridades.
+  Containers (baús, barris, suportes de poção, vasos decorados, atris, fornalhas, camas, fogueiras, sensor de luz, jukebox) recebem loot tables:
+  - **Todas as estruturas exceto oficinas (tipo que começa com `oficina`):** loot table `lostcities:chests/lostcitychest` (do mod Apocalypse Loot / Lost Cities), com munição TACZ, armas, itens médicos, comida, recursos e raridades.
   - **Oficinas (médias e pequenas):** baús recebem `oficina_vehicle_parts` (rodas, assentos e motores compatíveis com Camaro e Escargot do OAmP); demais containers recebem `oficina_vehicle_tools` (jumperpack, blowtorch, repairkit).
 - **Parques:**
   - grama, flores e caminhos de `dirt_path` (grade ou cata-vento), escalados com o tamanho do parque;
@@ -106,7 +97,7 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
   City           estágio 1 (existe? centro, altura) e estágio 2 (ruas, quarteirões, lotes)
   Lot            lotes: parque inteiro de quarteirão ou uma estrutura
   Ring           anel de estruturas em volta do quarteirão (norte e sul inteiros, oeste e leste no que sobra)
-  Structures     as 33 estruturas: caixa dos blocos sólidos, rotação, código de cada bloco
+  Structures     estruturas de `amcs/buildings/index.txt` (hoje vazio): caixa dos blocos sólidos, rotação, código de cada bloco
   Park           parques com caminhos e fonte
   Template       estruturas .nbt do usuário (fonte waterfall.nbt)
   Highway        curva entre duas entradas de cidade, pontos a cada bloco, projeção de colunas
