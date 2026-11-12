@@ -17,8 +17,9 @@ import java.util.Map;
  *   those under a roof and {@link #GREEN_OPEN} of those under the open sky. A stone or concrete floor turns into
  *   moss, grass or dirt (in the shares of that building), often with a moss carpet, grass, a fern or a dead bush on
  *   it; any other full block (wood) only gets a moss carpet;</li>
- *   <li>vines on the facades: short strands (1 to 7 blocks, mostly 1 to 3) on the outer walls and under the eaves,
- *   up to {@link #VINES} of the wall blocks that face air;</li>
+ *   <li>vines on the facades (asked by the user, 13 nov 2026: longer, aggressive, on all sides): strands of 3 to 12
+ *   blocks hanging down the outer walls, in patches, up to {@link #VINES} of the outer facade of each side, and a few
+ *   under the eaves;</li>
  *   <li>cobblestone and stone bricks next to the new green (2 blocks or less) turn mossy, half of them.</li>
  * </ul>
  * Never touched: leaves, logs, glass, block entities (containers, banners, beds...), doors, water, partial blocks.
@@ -36,7 +37,6 @@ public final class Weathering {
     static final double CRACKED = 0.31;
     static final double GREEN_COVERED = 0.082;
     static final double GREEN_OPEN = 0.358;
-    static final double VINES = 0.079;
     static final double MOSSY_NEAR_GREEN = 0.5;
 
     private static final String[][] CRACK = {
@@ -69,7 +69,7 @@ public final class Weathering {
             "anchor", "dragon", "petals", "spore", "frogspawn", "turtle", "sniffer", "decorated", "suspicious"};
     /** Not full blocks either, matched by the whole name (a part of it would catch light_gray_concrete, sandstone...). */
     private static final String[] NOT_FULL_EXACT = {"minecraft:light", "minecraft:ice", "minecraft:sand",
-            "minecraft:red_sand", "minecraft:mud", "minecraft:clay", "minecraft:moss_block", "minecraft:snow_block",
+            "minecraft:red_sand", "minecraft:mud", "minecraft:clay", "minecraft:snow_block",
             "minecraft:powder_snow"};
     /** Stone-like floors that may turn into moss, grass or dirt. */
     private static final String[] MINERAL = {"stone", "cobble", "brick", "deepslate", "blackstone", "basalt", "tuff",
@@ -333,101 +333,160 @@ public final class Weathering {
 
     // ------------------------------------------------------------------ vines
 
-    /** Strand lengths 1..7 in the shares of that building (1022, 294, 178, 107, 59, 11, 2 of 1673 strands). */
-    private static final double[] RUN = {1022, 294, 178, 107, 59, 11, 2};
-
-    private static int vines(Editor e, int gy, int x0, int z0, int x1, int z1, long seed) {
-        int sx = e.t.sx;
-        int sy = e.t.sy;
-        int sz = e.t.sz;
-        int walls = 0;
-        int have = 0;
-        // candidate tops of strands: an outer air cell next to a full block (a wall), or under one (an eave)
-        List<int[]> cand = new ArrayList<>();
-        int[][] dirs = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}}; // north, east, south, west
-        String[] face = {"north", "east", "south", "west"};
-        for (int y = gy + 1; y < sy; y++) {
-            for (int z = 0; z < sz; z++) {
-                for (int x = 0; x < sx; x++) {
-                    String b = e.block(x, y, z);
-                    if (b.equals("minecraft:vine")) {
-                        have++;
-                        continue;
-                    }
-                    if (!soft(b)) {
-                        boolean facesAir = false;
-                        for (int[] d : dirs) {
-                            facesAir |= soft(e.block(x + d[0], y, z + d[1]));
-                        }
-                        walls += facesAir ? 1 : 0;
-                        continue;
-                    }
-                    if (!air(b) || y <= gy + 1 || !e.inBox(x, y, z)) {
+    /**
+     * The outer facade of a template: the air cells above the ground layer, inside the box, next to a full block (the
+     * wall) on side {@code k} (0 north, 1 east, 2 south, 3 west of the cell) and looking out of the box the other way.
+     * Returns, per side, {facade cells, of them with a vine}.
+     */
+    static int[][] facade(Template t, int gy) {
+        Editor e = new Editor(t);
+        int[] b = solidBox(e);
+        int[][] out = new int[4][2];
+        if (b == null) {
+            return out;
+        }
+        for (int y = gy + 1; y <= b[4]; y++) {
+            for (int z = b[2]; z <= b[5]; z++) {
+                for (int x = b[0]; x <= b[3]; x++) {
+                    String c = e.block(x, y, z);
+                    if (!air(c) && !c.equals("minecraft:vine")) {
                         continue;
                     }
                     for (int k = 0; k < 4; k++) {
-                        String w = e.block(x + dirs[k][0], y, z + dirs[k][1]);
-                        if (full(w) && !soft(w) && outside(e, x, y, z, -dirs[k][0], -dirs[k][1], x0, z0, x1, z1)) {
-                            cand.add(new int[]{x, y, z, k});
+                        if (facadeSide(e, x, y, z, k, b)) {
+                            out[k][0]++;
+                            out[k][1] += c.equals("minecraft:vine") ? 1 : 0;
                         }
                     }
-                    String up = e.block(x, y + 1, z);
-                    if (full(up) && !soft(up) && outsideAny(e, x, y, z, x0, z0, x1, z1)) {
-                        cand.add(new int[]{x, y, z, 4});
+                }
+            }
+        }
+        return out;
+    }
+
+    private static final int[][] SIDES = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}}; // north, east, south, west
+
+    private static boolean facadeSide(Editor e, int x, int y, int z, int k, int[] b) {
+        String w = e.block(x + SIDES[k][0], y, z + SIDES[k][1]);
+        return full(w) && !soft(w) && outside(e, x, y, z, -SIDES[k][0], -SIDES[k][1], b[0], b[2], b[3], b[5]);
+    }
+
+    private static int[] solidBox(Editor e) {
+        if (e.box != null) {
+            return e.box;
+        }
+        int[] b = {Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, -1, -1, -1};
+        for (int y = 0; y < e.t.sy; y++) {
+            for (int z = 0; z < e.t.sz; z++) {
+                for (int x = 0; x < e.t.sx; x++) {
+                    if (!soft(e.block(x, y, z))) {
+                        b[0] = Math.min(b[0], x);
+                        b[1] = Math.min(b[1], y);
+                        b[2] = Math.min(b[2], z);
+                        b[3] = Math.max(b[3], x);
+                        b[4] = Math.max(b[4], y);
+                        b[5] = Math.max(b[5], z);
                     }
                 }
             }
         }
-        int want = (int) Math.round(VINES * walls) - have;
-        if (want <= 0 || cand.isEmpty()) {
-            return 0;
-        }
-        cand.sort((a, b) -> Long.compare(Hash.of(seed, 0x56494EL, a[0], a[1] * 8L + a[3], a[2]),
-                Hash.of(seed, 0x56494EL, b[0], b[1] * 8L + b[3], b[2])));
-        double sum = 0;
-        for (double v : RUN) {
-            sum += v;
-        }
+        return b[3] < 0 ? null : b;
+    }
+
+    /**
+     * Strands of vines on every side, up to {@link #VINES} of the outer facade of that side (asked by the user, 13 nov
+     * 2026: longer, aggressive, on all sides). Strands of {@link #STRAND_MIN} to {@link #STRAND_MAX} blocks hang down
+     * from where they start to a floor or the ground; they start where a value noise over the facade is highest, so
+     * they gather in patches that cover stretches of wall and leave others bare. A side already that covered keeps
+     * what it has. Under the eaves (a full block above, outside), one vine in {@link #EAVES} holds by its top.
+     */
+    private static int vines(Editor e, int gy, int x0, int z0, int x1, int z1, long seed) {
+        int[] b = e.box;
         int added = 0;
-        for (int[] c : cand) {
-            if (added >= want) {
-                break;
+        for (int k = 0; k < 4; k++) {
+            List<int[]> cand = new ArrayList<>();
+            int cells = 0;
+            int have = 0;
+            for (int y = gy + 1; y <= b[4]; y++) {
+                for (int z = b[2]; z <= b[5]; z++) {
+                    for (int x = b[0]; x <= b[3]; x++) {
+                        String c = e.block(x, y, z);
+                        boolean vine = c.equals("minecraft:vine");
+                        if (!air(c) && !vine || !facadeSide(e, x, y, z, k, b)) {
+                            continue;
+                        }
+                        cells++;
+                        if (vine) {
+                            have++;
+                        } else if (y > gy + 1) {
+                            cand.add(new int[]{x, y, z});
+                        }
+                    }
+                }
             }
-            if (!air(e.block(c[0], c[1], c[2]))) {
+            int want = (int) Math.round(VINES * cells) - have;
+            if (want <= 0 || cand.isEmpty()) {
                 continue;
             }
-            // the length of the strand
-            double r = Hash.unit(Hash.of(seed, 0x52554EL, c[0], c[1], c[2])) * sum;
-            int len = 1;
-            for (double v : RUN) {
-                if (r < v) {
+            // patches: the noise along the wall (x for the north and south sides, z for east and west) and up it
+            final int side = k;
+            cand.sort((p, q) -> Double.compare(vineRank(seed, side, q), vineRank(seed, side, p)));
+            String state = vine(k == 1, k == 0, k == 2, k == 3, false);
+            int got = 0;
+            for (int[] c : cand) {
+                if (got >= want) {
                     break;
                 }
-                r -= v;
-                len++;
-            }
-            len = Math.min(len, RUN.length);
-            String state = c[3] == 4 ? vine(false, false, false, false, true)
-                    : vine(c[3] == 1, c[3] == 0, c[3] == 2, c[3] == 3, false);
-            if (c[3] == 4) {
-                // a vine under an eave holds by its top face only: a vine under it would hold on nothing
-                len = 1;
-            }
-            for (int k = 0; k < len && added < want; k++) {
-                int y = c[1] - k;
-                if (y <= gy || !air(e.block(c[0], y, c[2]))) {
-                    break;
+                if (!air(e.block(c[0], c[1], c[2]))) {
+                    continue;
                 }
-                // a strand stops at the ground or at a floor (the cell under it is not air)
-                // the cells under the first hold on the vine above them (same face)
-                e.set(c[0], y, c[2], state);
-                added++;
-                if (!air(e.block(c[0], y - 1, c[2]))) {
-                    break;
+                // 3 to 12 blocks, about 6 on average
+                double u = Hash.unit(Hash.of(seed, 0x52554EL, c[0], c[1] * 4L + k, c[2]));
+                int len = STRAND_MIN + (int) Math.floor((STRAND_MAX - STRAND_MIN + 1) * Math.pow(u, 1.6));
+                len = Math.min(len, STRAND_MAX);
+                for (int n = 0; n < len; n++) {
+                    int y = c[1] - n;
+                    if (y <= gy || !air(e.block(c[0], y, c[2]))) {
+                        break;
+                    }
+                    // the cells under the first hold on the vine above them (same face), wall or not; only those on the
+                    // facade count toward its share
+                    e.set(c[0], y, c[2], state);
+                    if (facadeSide(e, c[0], y, c[2], k, b)) {
+                        got++;
+                    }
+                    added++;
+                }
+            }
+        }
+        // a few vines under the eaves
+        for (int y = gy + 2; y <= b[4]; y++) {
+            for (int z = b[2]; z <= b[5]; z++) {
+                for (int x = b[0]; x <= b[3]; x++) {
+                    String up = e.block(x, y + 1, z);
+                    if (air(e.block(x, y, z)) && full(up) && !soft(up) && e.inBox(x, y + 1, z)
+                            && outsideAny(e, x, y, z, b[0], b[2], b[3], b[5])
+                            && Hash.unit(Hash.of(seed, 0x454156L, x, y, z)) < EAVES) {
+                        e.set(x, y, z, vine(false, false, false, false, true));
+                        added++;
+                    }
                 }
             }
         }
         return added;
+    }
+
+    /** Share of the outer facade of each side with vines (asked by the user: strong, ~25%). */
+    static final double VINES = 0.25;
+    static final int STRAND_MIN = 3;
+    static final int STRAND_MAX = 12;
+    /** Share of the cells under an eave (outside) that get a vine holding by its top. */
+    static final double EAVES = 0.10;
+
+    private static double vineRank(long seed, int side, int[] p) {
+        double along = side == 0 || side == 2 ? p[0] : p[2];
+        double noise = Flora.noise(seed, 0x56494E0L + side, along, p[1] * 0.6, 5);
+        return noise + 0.35 * Hash.unit(Hash.of(seed, 0x56494EL, p[0], p[1] * 4L + side, p[2]));
     }
 
     static String vine(boolean east, boolean north, boolean south, boolean west, boolean up) {

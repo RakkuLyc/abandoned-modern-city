@@ -206,23 +206,28 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   apocalíptico; `core/Weathering`): aplicado a cada molde na carga, antes de tudo que o lê (folhas reais, acesso dos
   contêineres, copas), sem mexer nos `.nbt`; **desliga com `structureOvergrowth = false`** na config (lida na
   inicialização: reiniciar o jogo; o log diz "Structure overgrowth on (N blocks changed)" ou "off"). Só acrescenta o
-  que falta para chegar às medidas do prédio apocalíptico (quem já tem mais fica como está; ele mesmo, o prédio
-  esqueleto e a casa moderna não mudam), acima da camada do chão e só dentro da caixa da estrutura (tamanho e lugar
-  no anel iguais):
+  que falta para chegar às medidas do prédio apocalíptico (quem já tem mais fica como está; na pedra e nos pisos ele
+  mesmo, o prédio esqueleto e a casa moderna não mudam), acima da camada do chão e só dentro da caixa da estrutura
+  (tamanho e lugar no anel iguais):
   - pedra rachada: `stone_bricks`, `deepslate_bricks`, `deepslate_tiles`, `polished_blackstone_bricks` e
     `nether_bricks` viram as rachadas em manchas (ruído de valor) até 31% da família (no prédio: 9 863 de 31 332);
   - verde nos pisos: pontos soltos nos blocos inteiros com ar em cima, até 8,2% dos que estão sob teto e 35,8% dos a
     céu aberto; piso de pedra ou concreto vira `moss_block` (63%), `grass_block` (20%), `coarse_dirt` (7%),
     `rooted_dirt` (5%) ou `dirt` (5%), com tapete de musgo, grama baixa, samambaia ou arbusto seco em cima nas
     proporções do prédio; madeira e outros blocos inteiros só recebem `moss_carpet`;
-  - vinhas nas fachadas: cachos de 1 a 7 blocos (na proporção do prédio: quase todos de 1 a 3) presos em paredes de
-    fora (a célula vê o lado de fora da caixa) e, de 1 bloco, sob beirais, até 7,9% dos blocos de parede voltados
-    para o ar;
+  - vinhas nas fachadas (13 nov 2026, pedido do usuário depois do primeiro teste: "mais longas, agressivas e
+    espalhadas por todos os lados"; antes eram cachos de 1 a 3 até a medida do prédio, ~5% da fachada): em cada um
+    dos 4 lados, até 25% da fachada externa (`Weathering.VINES`; células de ar junto a um bloco inteiro que veem o
+    lado de fora da caixa) coberta, também no prédio apocalíptico, no esqueleto e na casa moderna (quem já tem mais
+    fica); cachos de 3 a 12 blocos (`STRAND_MIN`/`STRAND_MAX`, média ~6) que descem até um piso ou o chão,
+    começando onde um ruído de valor sobre a fachada é mais alto (manchas que cobrem trechos de parede e deixam
+    outros limpos); as células abaixo da primeira se seguram na vinha de cima; 10% das células sob beirais (de fora)
+    recebem uma vinha presa pelo topo;
   - `cobblestone` e `stone_bricks` (e suas escadas, lajes e muros) a até 2 blocos do verde novo viram musgosos (50%).
   Nunca mexe em folhas, troncos, vidro, block entities (contêineres, banners, camas...), portas, água ou blocos
   parciais; planta só sobre solo, tapete só sobre bloco inteiro, vinha só presa em bloco inteiro ou na vinha de cima.
-  Nos 43 arquivos: 6 712 pisos viram solo, 3 518 tapetes, 3 263 plantas, 2 014 vinhas, 1 469 rachados, 1 365
-  musgosos (18 341 blocos). As medidas antes e depois de cada estrutura ficam em `docs/TESTES.md`.
+  Nos 43 arquivos: 17 879 vinhas, 6 712 pisos viram solo, 3 518 tapetes, 3 263 plantas, 1 768 musgosos, 1 469
+  rachados (34 609 blocos). As medidas antes e depois de cada estrutura ficam em `docs/TESTES.md`.
 - Dureza: qualquer dureza é permitida (regra antiga removida pelo usuário); só blocos indestrutíveis são proibidos.
   Os block entities permitidos são o baú vazio da fonte e os containers das estruturas (baús, barris, suportes de poção, vasos decorados, atris, fornalhas, camas, fogueiras, sensores de luz, jukeboxes,
   banners, crânios, dispensers, droppers e estantes entalhadas, vazias, desde 13 nov 2026 por causa da casa grande; `Palette.exempt`). Os banners recebem o desenho salvo no molde; placas
@@ -242,8 +247,8 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   da cidade (`Access.HIGH`) ou fora do alcance de quem entra andando da rua: o percurso pula 1 bloco (nunca sobre
   cerca, muro ou vidraça), cai qualquer altura, sobe escada de mão, vinha, andaime e água, abre portas, alçapões e
   portões (não os de ferro); plantas, teias, tapetes e tochas não bloqueiam; folhas sim; o contêiner precisa estar a
-  1 bloco de lado (diagonal vale) de onde o jogador pisa, de 1 abaixo dos pés a 1 acima da cabeça. Hoje 177 de 1 530
-  contêineres dos 43 arquivos (173 de 882 nos 21 modelos originais): 166 pela altura (torre 82, prédio apocalíptico 54, azulado 17, esqueleto 9,
+  1 bloco de lado (diagonal vale) de onde o jogador pisa, de 1 abaixo dos pés a 1 acima da cabeça. Hoje 172 de 1 530
+  contêineres dos 43 arquivos com o abandono ligado (as vinhas também se escalam; 173 de 882 nos 21 modelos sem ele): 166 pela altura (torre 82, prédio apocalíptico 54, azulado 17, esqueleto 9,
   apartamento 4) e 17 fechados (telhados da casa abandonada e da farmácia grande, um cômodo da mansão abandonada 2
   blocos acima do pátio, salas do prédio apocalíptico e do azulado). As peças de veículo do OAmP e a tabela do Lost
   Cities saíram (a do Lost Cities era rejeitada pelo Minecraft). Baú da fonte do parque continua vazio (50%) ou

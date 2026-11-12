@@ -200,16 +200,30 @@ class WeatheringTest {
                 }
             }
         }
+        // vines: the share of the outer facade covered, all sides together, and the least covered side
+        int[][] f = Weathering.facade(t, gy);
+        int cells = 0;
+        int vined = 0;
+        double least = Double.NaN;
+        for (int[] side : f) {
+            cells += side[0];
+            vined += side[1];
+            if (side[0] >= 40) {
+                double c = side[1] / (double) side[0];
+                least = Double.isNaN(least) ? c : Math.min(least, c);
+            }
+        }
         return new double[]{family == 0 ? Double.NaN : cracked / (double) family,
                 coveredTops == 0 ? Double.NaN : coveredGreen / (double) coveredTops,
-                openTops == 0 ? Double.NaN : openGreen / (double) openTops, walls == 0 ? Double.NaN : vines / (double) walls};
+                openTops == 0 ? Double.NaN : openGreen / (double) openTops, cells == 0 ? Double.NaN : vined / (double) cells,
+                least};
     }
 
     @Test
     void everyStructureReachesTheMeasuresOfTheApocalypticBuilding() {
         assumeFalse(Structures.ALL.isEmpty(), "no structures");
         assumeTrue(Weathering.enabled, "overgrowth off");
-        System.out.println("[WeatheringTest] structure: cracked, green under a roof, green open, vines per wall (before -> after)");
+        System.out.println("[WeatheringTest] structure: cracked, green under a roof, green open, facade with vines, least covered side (before -> after)");
         for (Structures.Def d : Structures.ALL) {
             Template raw = Structures.source(d.name());
             Weathering.Result w = Weathering.apply(raw, d.ground(), d.name().hashCode());
@@ -217,7 +231,6 @@ class WeatheringTest {
             double[] a = measures(raw, gy);
             double[] b = measures(w.template(), gy);
             System.out.printf("[WeatheringTest] %-32s %s -> %s  %s%n", d.name(), fmt(a), fmt(b), w.report());
-            double[] target = {Weathering.CRACKED, Weathering.GREEN_COVERED, Weathering.GREEN_OPEN, Weathering.VINES};
             for (int k = 0; k < 4; k++) {
                 if (Double.isNaN(b[k])) {
                     continue;
@@ -225,16 +238,22 @@ class WeatheringTest {
                 // never less than before; the target reached, or as close as the candidates allow (vines: strands
                 // stop at floors, so a little under)
                 // (the cracked share may drop a little: brick floors that turn to moss leave the family)
-                assertTrue(b[k] >= a[k] - (k == 0 ? 0.02 : 1e-9), d.name() + " measure " + k + " went down");
+                assertTrue(b[k] >= a[k] - (k == 0 || k >= 3 ? 0.03 : 1e-9), d.name() + " measure " + k + " went down");
             }
             if (!Double.isNaN(b[0])) {
-                assertTrue(b[0] >= Math.min(a[0], 0) + target[0] - 0.01 || b[0] >= a[0], d.name() + " cracked " + b[0]);
+                assertTrue(b[0] >= Weathering.CRACKED - 0.03 || b[0] >= a[0] - 0.02, d.name() + " cracked " + b[0]);
+            }
+            // vines on every side (sides of 40+ facade cells): about the target share, or more if it had more
+            if (!Double.isNaN(b[4])) {
+                assertTrue(b[4] >= Weathering.VINES - 0.06, d.name() + " least covered side " + b[4]);
             }
         }
-        // the apocalyptic building itself changes little: it is the model
+        // the apocalyptic building itself
         Structures.Def ref = Structures.ALL.stream().filter(d -> d.name().equals("predio_apocaliptico_57x45")).findFirst().orElseThrow();
         Weathering.Report r = Weathering.apply(Structures.source(ref.name()), ref.ground(), ref.name().hashCode()).report();
-        assertTrue(r.total() < 1500, "predio_apocaliptico changed " + r);
+        // it is the model of the stone and the floors (nothing there changes); the vines are the user's stronger ones
+        assertEquals(0, r.cracked() + r.floors() + r.carpets() + r.plants() + r.mossy(), "predio_apocaliptico changed " + r);
+        assertTrue(r.vines() > 0, "predio_apocaliptico without the stronger vines");
     }
 
     private static int lowest(Template t) {

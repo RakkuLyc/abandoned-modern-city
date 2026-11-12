@@ -86,9 +86,9 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
   - Natureza tomando conta (`core/Weathering`, no modelo do prédio apocalíptico, desligável com
     `structureOvergrowth = false`): cada estrutura recebe o que falta para chegar às medidas dele, sem mudar de
     tamanho: pedra rachada em manchas (31% dos tijolos e ladrilhos que racham), pontos de musgo, grama e terra nos
-    pisos (8% sob teto, 36% a céu aberto) com tapete de musgo, grama, samambaia ou arbusto seco, vinhas curtas nas
-    fachadas (8% das paredes) e pedregulho e tijolo de pedra musgosos perto do verde. 18 341 blocos nos 43 arquivos;
-    o prédio apocalíptico, o esqueleto e a casa moderna já estão no nível e não mudam.
+    pisos (8% sob teto, 36% a céu aberto) com tapete de musgo, grama, samambaia ou arbusto seco, vinhas longas e
+    agressivas nos 4 lados (25% da fachada externa de cada lado, cachos de 3 a 12 blocos em manchas, em todas as
+    estruturas) e pedregulho e tijolo de pedra musgosos perto do verde. 34 609 blocos nos 43 arquivos.
   - Para-raios viram tochas de redstone acesas (5: no topo da casa com torre, da mansão pós-apocalíptica, do prédio
     apartamento, do prédio apocalíptico e da torre).
 
@@ -111,7 +111,7 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
   | Vaso decorado (`vaso`) | 40%: 1 pilha comum | 80%: 1 pilha normal ou rara |
 
   Difícil acesso (`core/Access`): a 15 ou mais blocos acima da rua, ou fora do alcance de quem entra andando (sem
-  quebrar blocos: pulando 1 bloco, caindo, subindo escadas de mão, vinhas e água, abrindo portas). São 177 dos 1 530
+  quebrar blocos: pulando 1 bloco, caindo, subindo escadas de mão, vinhas e água, abrindo portas). São 172 dos 1 530
   contêineres: quase todos nos andares altos da torre, do prédio apocalíptico, do azulado e do esqueleto.
 - **Natureza tomando a cidade** (`core/Flora`, `core/Wild`):
   - chão em manchas: grama, musgo, terra grossa e restos do concreto (`gray_concrete_powder`);
