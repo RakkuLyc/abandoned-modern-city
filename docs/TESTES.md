@@ -53,7 +53,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 
 ## 2. O que é verificado
 
-### Unitários (40 testes)
+### Unitários (41 testes)
 
 | Teste | Verifica |
 |---|---|
@@ -74,6 +74,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `RoadDecayTest.plantsOnlyOnGrassAndMossAndWithoutCollision` | plantas só sobre grama e musgo, sempre sem colisão (grama baixa, alta, samambaia), metade de cima da grama alta certa |
 | `RingTest.withoutStructuresBlocksStayEmpty` | (pulado com estruturas) com `index.txt` vazio: nenhum estado de estrutura e o anel não cria lotes |
 | `RingTest.groundLayerAndBuriedLayers` | as estruturas com camada enterrada têm blocos embaixo do chão e nada mais fundo; nenhum ar enterrado; mansão abandonada, casa grande, torre, azulado e apartamento descem 1 |
+| `StructuresCarveTest.caveAirIsDugUnderTheGround` | molde sintético 3 × 3 × 3 com chão 2: abaixo do chão o `cave_air` vira ar (escavado) e o `air` comum continua terreno (`KEEP`); a pedra enterrada e a do nível do chão são colocadas |
 | `RingTest.frontsMeetTheSidewalk` | a fileira da frente, no nível do chão, é toda de blocos em 42 dos 43 arquivos (o apartamento tem 22 de 31: as falhas viram o chão da cidade, nivelado) |
 | `RingTest.structureTreesHaveRealLeaves` | toda folha não persistente das estruturas tem distância 1 a 6 e um vizinho tronco ou folha mais perto (regra do leaf decay); mais de 1 000 folhas reais |
 | `RingTest.housesWithTheirFrontOnPlusZFaceTheStreet` | a casa moderna e a mansão pós-apocalíptica têm giro de 180° no índice e, com a rua ao norte, a fileira encostada na rua é a última fileira (+Z) do molde, bloco a bloco; as outras não têm giro |
@@ -253,7 +254,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
 ## 6. Resultados atuais (12 nov 2026, quarteirões 180 × 120 com anel de estruturas com vãos e miolo tomado pela natureza, ruas e rodovias de 33, cidades no meio de células de 736, 4 entradas)
 
-- **Unitários:** 39 passam e 1 é pulado (o teste sem estruturas), 13 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
+- **Unitários:** 40 passam e 1 é pulado (o teste sem estruturas), 12 nov 2026, com o teste da escavação por `cave_air`; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
   - **Rede (7 terrenos × 3 seeds, 81 células), cidades no meio da célula de 736, 4 entradas (uma por lado):** 35 a

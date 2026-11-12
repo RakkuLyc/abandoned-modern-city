@@ -183,7 +183,7 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
   Wreck          buracos nas pontes, por posição ao longo da rodovia
   Wild           o miolo do quarteirão: chão, árvores e vegetação, sem entrar nas estruturas
   Ring           anel de estruturas em volta do quarteirão (lados curtos inteiros, compridos no que sobra), vãos, limites
-  Structures     os 43 arquivos (21 modelos) de `amcs/buildings/index.txt`: caixa, camada do chão, piso até a borda, folhas reais, rotação
+  Structures     os 43 arquivos (21 modelos) de `amcs/buildings/index.txt`: caixa, camada do chão, piso até a borda, folhas reais, rotação, escavação com `cave_air`
   Access         contêineres de difícil acesso das estruturas (altos ou fora do alcance andando): loot mais generoso
   Crowns         onde vão as folhas que completam copas cortadas pela borda das estruturas (gen/Overhangs as põe)
   Park           parques tomados pela natureza, com caminhos e fonte
@@ -240,7 +240,7 @@ valores velhos: apague-o ou ajuste os dois valores.
 - `/amcs spawn <nome>` — coloca a estrutura 2 blocos à sua frente, centralizada na direção em que você olha, com a
   frente virada para você e o chão no nível do bloco em que você pisa. Mesmas regras da cidade: camada enterrada,
   piso até a borda, folhas reais e loot tables nos contêineres. O ar do molde limpa o terreno dentro da caixa (acima
-  do chão).
+  do chão); abaixo do chão só o `cave_air` do molde escava o terreno (subsolos, como garagens subterrâneas).
 - `/amcs plan [raio]` — auditoria do plano em volta (não gera nada) + PNG.
 - `/amcs audit [raio]` — gera os chunks em volta, audita plano e blocos, PNG do mundo.
 - `/amcs network [raio]` — PNG da rede de cidades e rodovias.

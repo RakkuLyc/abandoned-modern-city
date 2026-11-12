@@ -107,7 +107,10 @@ public final class Structures {
                 }
             }
             if (s < 0) {
-                // air buried under the ground stays ground
+                // air buried under the ground stays ground; cave_air is dug out even there (underground garages)
+                if (s == CARVE_STATE) {
+                    return BlockCode.AIR;
+                }
                 return s == AIR_STATE && ry >= 0 ? BlockCode.AIR : BlockCode.KEEP;
             }
             return BlockCode.STRUCT + 4 * s + r;
@@ -207,6 +210,11 @@ public final class Structures {
     }
 
     private static final int AIR_STATE = -2;
+    /**
+     * State of {@code minecraft:cave_air} in a template: air even under the city ground, dug out of the terrain (asked
+     * by the user, 12 nov 2026, for an underground garage). Plain air under the ground stays ground, as before.
+     */
+    private static final int CARVE_STATE = -3;
     /** Distinct block state strings of all structures; a structure block code points into this list. */
     public static final List<String> STATES = new ArrayList<>();
     public static final List<Def> ALL;
@@ -299,6 +307,11 @@ public final class Structures {
             t = w.template();
             WEATHERING.put(name, w.report());
         }
+        return of(type, name, t, ground, turn, model, ids);
+    }
+
+    /** A structure from a template already loaded (and weathered); the tests build small templates with it. */
+    static Def of(String type, String name, Template t, int ground, int turn, String model, Map<String, Integer> ids) {
         int[] state = new int[t.palette.size()];
         boolean[] solid = new boolean[state.length];
         String[] placed = new String[state.length];
@@ -306,7 +319,9 @@ public final class Structures {
             String s = swap(t.palette.get(p));
             placed[p] = s;
             String block = blockOf(s);
-            if (block.equals("minecraft:air") || block.equals("minecraft:cave_air") || block.equals("minecraft:void_air")) {
+            if (block.equals("minecraft:cave_air")) {
+                state[p] = CARVE_STATE;
+            } else if (block.equals("minecraft:air") || block.equals("minecraft:void_air")) {
                 state[p] = AIR_STATE;
             } else if (block.equals("minecraft:structure_void")) {
                 state[p] = -1;

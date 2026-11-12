@@ -180,7 +180,9 @@ existem as cidades 2 × 2 de quarteirões retangulares.
     tinham alguma repetida; em quarteirões vizinhos ela pode aparecer de novo;
   - caixa = a dos blocos sólidos; a camada `chão` do índice fica no nível do chão da cidade e as de baixo ficam
     enterradas: mansão abandonada, torre, prédio azulado e prédio apartamento descem 1 bloco (pedido do usuário; ar
-    enterrado vira terra); a casa grande também (13 nov 2026: a camada 0 dela é só terra e a grama do quintal está
+    enterrado vira terra); exceção (12 nov 2026, pedido do usuário para o estacionamento subterrâneo de um prédio): o
+    `cave_air` do molde vira ar de verdade também abaixo do chão, escavando o terreno (`Structures.CARVE_STATE`); o
+    `air` comum enterrado continua virando terra, então as estruturas atuais não mudam; a casa grande também (13 nov 2026: a camada 0 dela é só terra e a grama do quintal está
     na camada 1); as outras casas novas têm o quintal de grama na camada 0, que fica no nível do chão;
   - sem vão até a calçada: na camada do chão, as fileiras da borda sem piso de verdade (menos de 25% de piso, só
     vinhas, banners ou lajes soltas) recebem o bloco de piso da primeira fileira que tem piso, nos 4 lados
