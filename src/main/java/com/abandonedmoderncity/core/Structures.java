@@ -215,6 +215,22 @@ public final class Structures {
      * The ring draws a model, then one of its variants, so variants do not make a structure more frequent.
      */
     public static final List<List<Def>> MODELS;
+    private static final Map<String, String> BANNER_SPECS = new HashMap<>();
+
+    /** The template of a structure as saved, with the banners its index line copies in (before {@link Weathering}). */
+    static Template source(String name) {
+        Template t = Template.load("buildings/" + name);
+        String spec = BANNER_SPECS.get(name);
+        if (spec != null) {
+            // <source>@<dx>,<dz>:<from color>=<to color>
+            String[] a = spec.split("[@,:=]");
+            t = t.withBannersFrom(Template.load("buildings/" + a[0]), Integer.parseInt(a[1]), Integer.parseInt(a[2]), a[3], a[4]);
+        }
+        return t;
+    }
+
+    /** What {@link Weathering} added to each structure (empty when it is off). */
+    public static final Map<String, Weathering.Report> WEATHERING = new LinkedHashMap<>();
     /** Smallest depth and front width among the structures (what still fits in a row). */
     public static final int MIN_DEPTH;
     public static final int MIN_WIDTH;
@@ -260,11 +276,15 @@ public final class Structures {
 
     private static Def define(String type, String name, int ground, int turn, String model, String bannerSpec,
                               Map<String, Integer> ids) {
-        Template t = Template.load("buildings/" + name);
         if (bannerSpec != null) {
-            // <source>@<dx>,<dz>:<from color>=<to color>
-            String[] a = bannerSpec.split("[@,:=]");
-            t = t.withBannersFrom(Template.load("buildings/" + a[0]), Integer.parseInt(a[1]), Integer.parseInt(a[2]), a[3], a[4]);
+            BANNER_SPECS.put(name, bannerSpec);
+        }
+        Template t = source(name);
+        if (Weathering.enabled) {
+            // nature taking over (config structureOvergrowth): before anything below reads the template
+            Weathering.Result w = Weathering.apply(t, ground, name.hashCode());
+            t = w.template();
+            WEATHERING.put(name, w.report());
         }
         int[] state = new int[t.palette.size()];
         boolean[] solid = new boolean[state.length];

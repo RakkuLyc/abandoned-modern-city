@@ -17,6 +17,7 @@ public final class SimpleConfig {
     public static final ModConfigSpec.IntValue MAX_CITY_LEVEL;
     public static final ModConfigSpec.BooleanValue HIGHWAYS;
     public static final ModConfigSpec.IntValue HIGHWAY_MAX_LENGTH;
+    public static final ModConfigSpec.BooleanValue STRUCTURE_OVERGROWTH;
 
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
@@ -31,6 +32,8 @@ public final class SimpleConfig {
         MAX_CITY_LEVEL = b.comment("Highest ground level a city may sit at").defineInRange("maxCityLevel", d.maxCityLevel(), 70, 250);
         HIGHWAYS = b.comment("Link neighboring cities with highways").define("highways", d.highways());
         HIGHWAY_MAX_LENGTH = b.comment("Longest highway (blocks of path)").defineInRange("highwayMaxLength", d.highwayMaxLength(), 256, 8192);
+        STRUCTURE_OVERGROWTH = b.comment("Nature taking over the building structures: cracked stone, moss and plants on the floors, vines on the facades (modeled on predio_apocaliptico). Read at startup: restart the game after changing it.")
+                .define("structureOvergrowth", true);
         SPEC = b.build();
     }
 

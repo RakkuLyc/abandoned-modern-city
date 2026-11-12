@@ -53,7 +53,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 
 ## 2. O que é verificado
 
-### Unitários (36 testes)
+### Unitários (39 testes)
 
 | Teste | Verifica |
 |---|---|
@@ -82,6 +82,9 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `AccessTest.highContainersAreHard` | barril a `Access.HIGH` (15) blocos do chão, alcançável por escada, conta como difícil; baú no chão não |
 | `AccessTest.structuresHardContainers` | nos 43 arquivos: 177 de 1 530 contêineres de difícil acesso (entre 10% e 33%); os mesmos nas 4 rotações; prédios grandes e médios têm contêineres altos; nas casas no máximo 5% (4 de 356) |
 | `AccessTest.everyStructureHasItsLootTables` | as 6 tabelas do tema de cada estrutura existem; barril e vaso com 40% de chance, `barril_dificil` 75%, `vaso_dificil` 80%, baús sem chance de vir vazios; nada do Lost Cities ou do OAmP |
+| `WeatheringTest.onlyAllowedChangesAndEverythingHolds` | nos 43 arquivos, célula por célula contra o molde salvo: só mudanças permitidas (rachado e musgoso da mesma pedra, com as mesmas propriedades; piso de pedra ou concreto com ar em cima virando solo; tapete sobre bloco inteiro ou solo; grama, samambaia e arbusto seco só sobre solo; vinha com uma face, presa em bloco inteiro ou na vinha de cima com a mesma face, ou sob beiral); banners iguais; caixa da estrutura igual; o mesmo resultado em duas cargas; relatório igual às mudanças. Total: 6 712 solos, 3 518 tapetes, 3 263 plantas, 2 014 vinhas, 1 469 rachados, 1 365 musgosos |
+| `WeatheringTest.everyStructureReachesTheMeasuresOfTheApocalypticBuilding` | nenhuma medida cai (a parcela rachada pode cair até 2 pontos quando piso de tijolo vira musgo); o prédio apocalíptico muda menos de 1 500 blocos (muda 0) |
+| `WeatheringTest.wholeNamesAreNotTakenForParts` | `light_gray_concrete`, `smooth_sandstone` e `mud_bricks` são pedra inteira; tábua é inteira mas não pedra; vidro, folhas, laje, baú, banner e o bloco de luz não são inteiros |
 | `RingTest.cutCrownsAreCompletedOutsideTheBox` | 174 folhas completam copas cortadas, só na casa com piscina, com garagem, de subúrbio, com torre e no prédio esqueleto; nas 4 rotações: todas fora da caixa e a até 4 dela, não persistentes, distância 1 a 6 com um vizinho um passo mais perto do tronco, sem repetir posição; as da casa com piscina ficam na frente e acima de `CLEARANCE` |
 | `RingTest.lightningRodsBecomeRedstoneTorches` | nenhum estado de para-raios sobra nas estruturas; 5 tochas de redstone de pé (uma no topo de cada estrutura que tinha para-raios); para-raios de lado vira tocha de parede com a mesma direção |
 | `RingTest.noFloatingCobwebs` | nenhuma teia das estruturas fica sem um bloco em que se prender (o chão conta); mais de 2 000 teias conferidas |
@@ -195,6 +198,10 @@ e a regra de escada e apoio no mesmo chunk.
 | 43 | Bateria e teste por RCON, 12–13 nov | a loot table `lostcitychest` (do Lost Cities) era rejeitada pelo Minecraft ao carregar | escape a mais em `custom_data` | substituída, a pedido do usuário, pelas tabelas vanilla próprias (`tools/gen_loot.py`); o log da bateria não tem mais erro de loot table |
 | 44 | `WorldPlanTest`, 13 nov (copas completadas) | nenhuma folha de copa planejada | `WorldPlan.citiesIn` só devolve cidades cujo centro cai no retângulo pedido, e o retângulo de um chunk quase nunca contém o centro | `Crowns.forChunk` usa `cityNear` |
 | 45 | Bateria, 13 nov (copas completadas) | `crown_leaf_missing` (todas, até 324 por alvo) e avisos `Detected setBlock in a far chunk` | o reparo de vizinhos tirava as folhas como decoração solta sobre o lote e a rua e, ao conferir os 4 vizinhos do bloco tirado, chamava `ensureCanWrite` 2 chunks longe (o que loga o aviso) | o reparo pula as folhas planejadas (`Overhangs.forChunk` do vizinho) e só confere vizinhos dentro da área de escrita (`canWrite`) |
+| 46 | Revisão, 13 nov (abandono) | a lista de blocos que não são inteiros, por trecho do nome, pegava `light_gray_concrete` (`light`), `sandstone` (`sand`), `mud_bricks` (`mud`), e tábuas e lã ficavam sem tapete de musgo | comparação por trecho em nomes curtos | esses nomes passam a ser comparados inteiros (`NOT_FULL_EXACT`); `WeatheringTest.wholeNamesAreNotTakenForParts` |
+| 47 | `WeatheringTest`, 13 nov | relatório com mais mudanças que as células mudadas (oficina média: 327 / 321) | uma mancha de musgo caía sobre um bloco que já tinha rachado | uma célula já mudada não recebe outra mudança |
+| 48 | `WorldPlanTest`, 13 nov | 11 812 lotes em vez de 11 818: o anel mudou | vinhas e um tapete fora da caixa dos blocos sólidos aumentavam a caixa (a estrutura afastava da calçada) | nada é posto fora da caixa original (`Editor.set` recusa); teste da caixa igual |
+| 49 | Medida, 13 nov | alvo de pedra rachada de 23% | a conta inicial incluía pedras sem versão rachada (`polished_deepslate`) | alvo de 31% da família que racha, a medida do próprio prédio |
 | — | Bateria (infraestrutura) | servidores falhando com "Address already in use" | um servidor de uma bateria interrompida ainda terminava | o script usa a porta 25591 e se recusa a começar com um servidor de desenvolvimento vivo |
 
 ## 4. Como reproduzir
@@ -241,7 +248,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
 ## 6. Resultados atuais (12 nov 2026, quarteirões 180 × 120 com anel de estruturas com vãos e miolo tomado pela natureza, ruas e rodovias de 33, cidades no meio de células de 736, 4 entradas)
 
-- **Unitários:** 35 passam e 1 é pulado (o teste sem estruturas), 13 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
+- **Unitários:** 38 passam e 1 é pulado (o teste sem estruturas), 13 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
   - **Rede (7 terrenos × 3 seeds, 81 células), cidades no meio da célula de 736, 4 entradas (uma por lado):** 35 a
@@ -254,10 +261,62 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
     por quarteirão e 50,9% coberto; antes da regra 8,41 e 51,1%, com 80% dos quarteirões tendo alguma repetida;
     simulação prévia dos tamanhos com vãos: 140 × 90 → 5,0 por quarteirão, 160 × 110 → 6,5, 180 × 120 → 7,2,
     200 × 130 → 8,2.
+- **Abandono das estruturas (13 nov):** rachado da família que racha / verde sob teto / verde a céu aberto /
+  vinhas por bloco de parede voltado para o ar, antes → depois (alvos 31% / 8,2% / 35,8% / 7,9%; "-" = sem
+  candidatos):
+
+  | Estrutura | Antes | Depois |
+  |---|---|---|
+  | `casa_abandonada` | 48% / 0% / 4% / 15% | 57% / 8% / 35% / 15% |
+  | `casa_moderna_abandonada` | 36% / 19% / 36% / 36% | 36% / 19% / 36% / 36% |
+  | `mansao_abandonada` | 48% / 6% / 16% / 10% | 62% / 8% / 35% / 10% |
+  | `mansao_pos_apocaliptica` | 61% / 4% / 5% / 18% | 68% / 8% / 34% / 18% |
+  | `casa_garagem_abandonada` | 13% / 6% / 38% / 2% | 32% / 8% / 38% / 8% |
+  | `casa_grande_abandonada` | 30% / 9% / 5% / 10% | 32% / 9% / 36% / 10% |
+  | `casa_piscina_abandonada` | 19% / 7% / 1% / 4% | 32% / 8% / 36% / 8% |
+  | `casa_suburbio_abandonada` | 0% / 9% / 48% / 3% | 31% / 9% / 48% / 8% |
+  | `casa_torre_abandonada` | 31% / 7% / 17% / 8% | 32% / 8% / 35% / 8% |
+  | `casa_vitoriana_abandonada` | 27% / 8% / 1% / 4% | 35% / 8% / 36% / 8% |
+  | `farmacia_vermelho` | 100% / 5% / 12% / 13% | 100% / 8% / 34% / 13% |
+  | `farmacia_amarelo` | 100% / 5% / 12% / 13% | 100% / 7% / 34% / 13% |
+  | `farmacia_azul` | 100% / 5% / 12% / 13% | 100% / 8% / 34% / 13% |
+  | `farmacia_roxo` | 100% / 5% / 12% / 13% | 100% / 8% / 35% / 13% |
+  | `farmacia_verde` | 100% / 5% / 12% / 13% | 100% / 8% / 35% / 13% |
+  | `farmacia_grande_amarela` | - / 5% / 15% / 0% | - / 8% / 34% / 8% |
+  | `farmacia_grande_azul` | - / 5% / 15% / 0% | - / 8% / 35% / 8% |
+  | `farmacia_grande_roxo` | - / 5% / 15% / 0% | - / 8% / 34% / 8% |
+  | `farmacia_grande_verde` | - / 5% / 15% / 0% | - / 8% / 35% / 8% |
+  | `farmacia_grande_vermelho` | - / 5% / 15% / 0% | - / 8% / 35% / 8% |
+  | `oficina_media_azul_preto` | 0% / 5% / 13% / 5% | 35% / 6% / 33% / 8% |
+  | `oficina_media_amarela_azul` | - / 5% / 13% / 5% | - / 8% / 35% / 8% |
+  | `oficina_media_amarelo_vermelho` | - / 5% / 13% / 5% | - / 8% / 35% / 8% |
+  | `oficina_pequena_verde` | 18% / 14% / 15% / 22% | 35% / 14% / 33% / 22% |
+  | `oficina_pequena_amarela` | 18% / 14% / 15% / 22% | 36% / 14% / 33% / 22% |
+  | `oficina_pequena_azul` | 18% / 14% / 15% / 22% | 35% / 14% / 34% / 22% |
+  | `oficina_pequena_roxa` | 18% / 14% / 15% / 22% | 33% / 14% / 34% / 22% |
+  | `oficina_pequena_vermelha` | 18% / 14% / 15% / 22% | 34% / 14% / 34% / 22% |
+  | `posto_vermelho` | 34% / 0% / 7% / 36% | 34% / 7% / 34% / 36% |
+  | `posto_amarelo` | 34% / 0% / 7% / 36% | 34% / 8% / 34% / 36% |
+  | `posto_azul` | 34% / 0% / 7% / 36% | 33% / 7% / 35% / 36% |
+  | `posto_roxo` | 34% / 0% / 7% / 36% | 36% / 7% / 35% / 36% |
+  | `posto_verde` | 34% / 0% / 7% / 36% | 35% / 7% / 35% / 36% |
+  | `posto_pequeno_vermelho` | 31% / 0% / 2% / 43% | 33% / 10% / 35% / 43% |
+  | `posto_pequeno_amarelo` | 31% / 0% / 2% / 43% | 34% / 10% / 35% / 43% |
+  | `posto_pequeno_azul` | 31% / 0% / 2% / 43% | 32% / 10% / 33% / 43% |
+  | `posto_pequeno_roxo` | 31% / 0% / 2% / 43% | 30% / 13% / 35% / 43% |
+  | `posto_pequeno_verde` | 31% / 0% / 2% / 43% | 35% / 10% / 34% / 43% |
+  | `predio_apartamento` | 40% / 6% / 0% / 19% | 44% / 8% / 35% / 19% |
+  | `predio_esqueleto_31x29` | 39% / 22% / 41% / 54% | 39% / 22% / 41% / 54% |
+  | `predio_azulado` | 22% / 0% / 7% / 11% | 31% / 8% / 34% / 11% |
+  | `torre` | 39% / 2% / 4% / 6% | 47% / 8% / 34% / 8% |
+  | `predio_apocaliptico_57x45` | 31% / 9% / 43% / 8% | 31% / 9% / 43% / 8% |
+
 - **Bateria no mundo:**
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 13 nov | natureza tomando conta das estruturas (`structureOvergrowth` ligado, 18 341 blocos) | PASS: 8 de 8, 0 erros de geração, nenhum `building_mismatch` (plantas e vinhas ficaram no mundo como no plano); 2,72 ms por chunk, 266 s |
+  | `20261027` | rápido (3 alvos) | 13 nov | o mesmo com `structureOvergrowth = false` | PASS: 3 de 3; log "Structure overgrowth off" |
   | `20261027` | padrão (8 alvos) | 13 nov | 22 variações de cor (sorteio por modelo, banners copiados nas farmácias) | PASS: 8 de 8, 0 erros de geração, 1 115 estados de estrutura validados, banners de farmácia conferidos com desenho; 2,70 ms por chunk, 263 s |
   | `20261027` | padrão (8 alvos) | 13 nov | copas cortadas completadas para fora das estruturas | PASS: 8 de 8, 0 erros de geração, 0 avisos de `far chunk`; 151 folhas de copa conferidas na cidade do spawn, 324 na mais alta, 307 na mais acidentada; 2,62 ms por chunk, 250 s |
   | `20261027` | padrão (8 alvos) | 13 nov | nunca duas estruturas iguais no mesmo quarteirão | PASS: 8 de 8, 0 erros de geração; na cidade do spawn 906 contêineres com a tabela certa, 156 de difícil acesso; 2,87 ms por chunk, 247 s |

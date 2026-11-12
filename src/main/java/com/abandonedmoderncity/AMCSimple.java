@@ -43,7 +43,14 @@ public final class AMCSimple {
         modBus.addListener((ModConfigEvent.Loading e) -> Plans.clear());
         modBus.addListener((ModConfigEvent.Reloading e) -> Plans.clear());
         // fail fast: every block the generator can place must be breakable
-        modBus.addListener((FMLCommonSetupEvent e) -> e.enqueueWork(Palette::validate));
+        modBus.addListener((FMLCommonSetupEvent e) -> e.enqueueWork(() -> {
+            // read before the structures load (Palette.validate loads them): the overgrowth is applied while loading
+            com.abandonedmoderncity.core.Weathering.enabled = SimpleConfig.STRUCTURE_OVERGROWTH.get();
+            Palette.validate();
+            LOGGER.info("[AMCS] Structure overgrowth {}", com.abandonedmoderncity.core.Weathering.enabled
+                    ? "on (" + com.abandonedmoderncity.core.Structures.WEATHERING.values().stream()
+                    .mapToInt(com.abandonedmoderncity.core.Weathering.Report::total).sum() + " blocks changed)" : "off");
+        }));
         NeoForge.EVENT_BUS.addListener(SimpleCommands::register);
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> Plans.clear());
         SelfTest.init();

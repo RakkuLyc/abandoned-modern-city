@@ -83,6 +83,12 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
     entre os fundos de lados opostos. As árvores dos miolos não entram nas estruturas.
   - Os banners mantêm o desenho do molde: as farmácias têm as letras DRUGSTORE.
   - Teias soltas (sem nada em que se prender) são removidas.
+  - Natureza tomando conta (`core/Weathering`, no modelo do prédio apocalíptico, desligável com
+    `structureOvergrowth = false`): cada estrutura recebe o que falta para chegar às medidas dele, sem mudar de
+    tamanho: pedra rachada em manchas (31% dos tijolos e ladrilhos que racham), pontos de musgo, grama e terra nos
+    pisos (8% sob teto, 36% a céu aberto) com tapete de musgo, grama, samambaia ou arbusto seco, vinhas curtas nas
+    fachadas (8% das paredes) e pedregulho e tijolo de pedra musgosos perto do verde. 18 341 blocos nos 43 arquivos;
+    o prédio apocalíptico, o esqueleto e a casa moderna já estão no nível e não mudam.
   - Para-raios viram tochas de redstone acesas (5: no topo da casa com torre, da mansão pós-apocalíptica, do prédio
     apartamento, do prédio apocalíptico e da torre).
 
@@ -216,7 +222,9 @@ command/  /amcs (StructureCommands: locate structure e spawn), auditoria dos blo
 
 ## Configuração (`config/abandonedmoderncity-common.toml`)
 
-`enabled`, `cellSize`, `cityChance`, `minRadius`, `maxRadius`, `maxCityLevel`, `highways`, `highwayMaxLength`.
+`enabled`, `cellSize`, `cityChance`, `minRadius`, `maxRadius`, `maxCityLevel`, `highways`, `highwayMaxLength`,
+`structureOvergrowth` (padrão `true`: natureza tomando conta das estruturas; `false` as gera como foram salvas; lida na
+inicialização, reinicie o jogo depois de mudar).
 A geometria (larguras, quarteirões, rampas, túneis, pontes) fica em `core/Params` e as cidades em `core/City`. Mudanças valem para chunks novos e mudam o plano: use um mundo novo.
 Padrões: `cellSize` = 736 e `maxRadius` = 230. Um arquivo de config antigo (com 2048/288, 1024/212, 512/131, 576/166, 640/190 ou 648/190) mantém os
 valores velhos: apague-o ou ajuste os dois valores.

@@ -119,6 +119,21 @@ public final class Template {
         return new Template(name, nsx, sy, nsz, np, nc, nb);
     }
 
+    /** This template with the blocks of some cells changed: cell index -> block state string ({@link Weathering}). */
+    Template withStates(Map<Integer, String> changed) {
+        List<String> np = new ArrayList<>(palette);
+        int[] nc = cells.clone();
+        for (Map.Entry<Integer, String> e : new java.util.TreeMap<>(changed).entrySet()) {
+            int id = np.indexOf(e.getValue());
+            if (id < 0) {
+                np.add(e.getValue());
+                id = np.size() - 1;
+            }
+            nc[e.getKey()] = id;
+        }
+        return new Template(name, sx, sy, sz, np, nc, banners);
+    }
+
     /** Palette index at template position (x, y, z), or -1 (outside or nothing there). */
     public int at(int x, int y, int z) {
         if (x < 0 || y < 0 || z < 0 || x >= sx || y >= sy || z >= sz) {

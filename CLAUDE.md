@@ -202,6 +202,27 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   - comandos (12 nov 2026, `command/StructureCommands`): `/amcs locate structure <nome|tipo|grupo>` (a mais
     próxima já planejada; coordenada na calçada em frente) e `/amcs spawn <nome>` (2 blocos à frente de quem
     executa, centralizada, frente virada para ele, chão no bloco em que ele pisa; mesmas regras da cidade, com loot).
+- Abandono das estruturas (13 nov 2026, pedido do usuário: "natureza tomando conta", no modelo do prédio
+  apocalíptico; `core/Weathering`): aplicado a cada molde na carga, antes de tudo que o lê (folhas reais, acesso dos
+  contêineres, copas), sem mexer nos `.nbt`; **desliga com `structureOvergrowth = false`** na config (lida na
+  inicialização: reiniciar o jogo; o log diz "Structure overgrowth on (N blocks changed)" ou "off"). Só acrescenta o
+  que falta para chegar às medidas do prédio apocalíptico (quem já tem mais fica como está; ele mesmo, o prédio
+  esqueleto e a casa moderna não mudam), acima da camada do chão e só dentro da caixa da estrutura (tamanho e lugar
+  no anel iguais):
+  - pedra rachada: `stone_bricks`, `deepslate_bricks`, `deepslate_tiles`, `polished_blackstone_bricks` e
+    `nether_bricks` viram as rachadas em manchas (ruído de valor) até 31% da família (no prédio: 9 863 de 31 332);
+  - verde nos pisos: pontos soltos nos blocos inteiros com ar em cima, até 8,2% dos que estão sob teto e 35,8% dos a
+    céu aberto; piso de pedra ou concreto vira `moss_block` (63%), `grass_block` (20%), `coarse_dirt` (7%),
+    `rooted_dirt` (5%) ou `dirt` (5%), com tapete de musgo, grama baixa, samambaia ou arbusto seco em cima nas
+    proporções do prédio; madeira e outros blocos inteiros só recebem `moss_carpet`;
+  - vinhas nas fachadas: cachos de 1 a 7 blocos (na proporção do prédio: quase todos de 1 a 3) presos em paredes de
+    fora (a célula vê o lado de fora da caixa) e, de 1 bloco, sob beirais, até 7,9% dos blocos de parede voltados
+    para o ar;
+  - `cobblestone` e `stone_bricks` (e suas escadas, lajes e muros) a até 2 blocos do verde novo viram musgosos (50%).
+  Nunca mexe em folhas, troncos, vidro, block entities (contêineres, banners, camas...), portas, água ou blocos
+  parciais; planta só sobre solo, tapete só sobre bloco inteiro, vinha só presa em bloco inteiro ou na vinha de cima.
+  Nos 43 arquivos: 6 712 pisos viram solo, 3 518 tapetes, 3 263 plantas, 2 014 vinhas, 1 469 rachados, 1 365
+  musgosos (18 341 blocos). As medidas antes e depois de cada estrutura ficam em `docs/TESTES.md`.
 - Dureza: qualquer dureza é permitida (regra antiga removida pelo usuário); só blocos indestrutíveis são proibidos.
   Os block entities permitidos são o baú vazio da fonte e os containers das estruturas (baús, barris, suportes de poção, vasos decorados, atris, fornalhas, camas, fogueiras, sensores de luz, jukeboxes,
   banners, crânios, dispensers, droppers e estantes entalhadas, vazias, desde 13 nov 2026 por causa da casa grande; `Palette.exempt`). Os banners recebem o desenho salvo no molde; placas
