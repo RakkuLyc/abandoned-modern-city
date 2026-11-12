@@ -49,7 +49,7 @@ public final class Structures {
      */
     public record Def(String type, String name, String group, Template t, int ox, int oy, int oz, int w, int h, int d,
                       int ground, int turn, int[] state, int[] fill, Map<Integer, Integer> cells, Access.Result access,
-                      List<int[]> overhang, String model) {
+                      List<int[]> overhang, String model, boolean[] openings) {
         /** Footprint size along x after {@code rot} quarter turns. */
         public int sizeX(int rot) {
             return ((rot + turn) & 1) == 0 ? w : d;
@@ -123,15 +123,7 @@ public final class Structures {
          */
         public boolean opening(int rx, int rz, int rot) {
             int[] tc = template(rx, 0, rz, rot);
-            if (tc == null) {
-                return false;
-            }
-            int p = t.at(tc[0], tc[1], tc[2]);
-            if (p < 0 || state[p] != AIR_STATE && state[p] != CARVE_STATE) {
-                return false;
-            }
-            int below = t.at(tc[0], tc[1] - 1, tc[2]);
-            return below >= 0 && state[below] == CARVE_STATE;
+            return tc != null && openings[(tc[0] - ox) + w * (tc[2] - oz)];
         }
 
         /** Banner design saved at (rx, ry, rz) of the rotated box ({pattern, color} layers), or null. */
@@ -396,8 +388,9 @@ public final class Structures {
             }
         }
         Access.Result access = Access.of(t, placed, x0, y0, z0, w, y1 - y0 + 1, d, ground);
+        boolean[] openings = openings(t, state, x0, z0, w, d, y0 + ground);
         return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, turn, state, fill, cells, access,
-                overhang, model);
+                overhang, model, openings);
     }
 
     private static int id(Map<String, Integer> ids, String s) {
@@ -745,6 +738,47 @@ public final class Structures {
     public static Def pick(long h) {
         List<Def> m = MODELS.get(Hash.range(h, 0, MODELS.size() - 1));
         return m.size() == 1 ? m.get(0) : m.get(Hash.range(Hash.next(h, 0x5641), 0, m.size() - 1));
+    }
+
+    /**
+     * The openings of the ground layer {@code gy} (template box x0.., z0.., w x d): air or cave_air there with cave_air
+     * under it (the mouth of a ramp or a stairwell over an underground garage), and the air of the ground layer joined
+     * to those (the top of the ramp, whose own blocks lie under it: asked by the user, 13 nov 2026, after two rows of
+     * terrain closed the ramp of predio_largo). Everywhere else air of the ground layer becomes city ground.
+     */
+    static boolean[] openings(Template t, int[] state, int x0, int z0, int w, int d, int gy) {
+        boolean[] out = new boolean[w * d];
+        java.util.ArrayDeque<int[]> q = new java.util.ArrayDeque<>();
+        for (int z = 0; z < d; z++) {
+            for (int x = 0; x < w; x++) {
+                int p = t.at(x0 + x, gy, z0 + z);
+                int below = t.at(x0 + x, gy - 1, z0 + z);
+                if (open(state, p) && below >= 0 && state[below] == CARVE_STATE) {
+                    out[x + w * z] = true;
+                    q.add(new int[]{x, z});
+                }
+            }
+        }
+        int[][] four = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        while (!q.isEmpty()) {
+            int[] c = q.poll();
+            for (int[] f : four) {
+                int x = c[0] + f[0];
+                int z = c[1] + f[1];
+                if (x < 0 || z < 0 || x >= w || z >= d || out[x + w * z]) {
+                    continue;
+                }
+                if (open(state, t.at(x0 + x, gy, z0 + z))) {
+                    out[x + w * z] = true;
+                    q.add(new int[]{x, z});
+                }
+            }
+        }
+        return out;
+    }
+
+    private static boolean open(int[] state, int p) {
+        return p >= 0 && (state[p] == AIR_STATE || state[p] == CARVE_STATE);
     }
 
     /** Quarter turns clockwise that turn the front (-Z) to face the street on the given side. */

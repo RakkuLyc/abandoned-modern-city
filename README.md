@@ -79,7 +79,7 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
   | Casa de vidro | casas | 48 × 40 × 15 | camada 0 |
   | Prédio pequeno | prédio | 23 × 31 × 41 | camada 0 |
   | Prédio brutalista em U | prédio | 75 × 58 × 125 | camada 0 |
-  | Prédio largo (estacionamento subterrâneo cavado no terreno, rampa e escada abertas) | prédio | 84 × 31 × 80 | camada 8 (8 enterradas) |
+  | Prédio largo (estacionamento subterrâneo cavado no terreno, rampa inteira e escada abertas) | prédio | 84 × 31 × 80 | camada 8 (8 enterradas) |
   | Torre verde | prédio | 31 × 31 × 143 | camada 0 |
   | Prédio da rampa (pasta Especial) | especial (no máximo 1 por cidade) | 102 × 72 × 134 | camada 0 |
 

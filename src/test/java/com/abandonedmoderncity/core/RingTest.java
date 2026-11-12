@@ -314,8 +314,9 @@ class RingTest {
                     for (int rx = 0; rx < d.sizeX(rot); rx++) {
                         if (d.opening(rx, rz, rot)) {
                             n++;
-                            // dug out right under it, and air (not city ground) in the plan of the lot
-                            assertEquals(BlockCode.AIR, d.code(rx, -1, rz, rot), d.name() + " under an opening");
+                            // under it dug-out space or a block of the ramp itself, never terrain
+                            int below = d.code(rx, -1, rz, rot);
+                            assertTrue(below == BlockCode.AIR || below >= BlockCode.STRUCT, d.name() + " terrain under an opening");
                             assertEquals(BlockCode.AIR, d.code(rx, 0, rz, rot), d.name() + " opening");
                         }
                     }
@@ -327,8 +328,8 @@ class RingTest {
                 }
             }
             if (d.name().equals("predio_largo_abandonado")) {
-                // the car ramp (5 x 15) and the stairwell at street level
-                assertTrue(openings >= 75 && openings <= 99, "predio_largo openings " + openings);
+                // every air cell of its street level is open: the car ramp (5 x 15, its top too) and the stairwell
+                assertEquals(99, openings, "predio_largo openings");
                 assertEquals(8, d.ground());
                 System.out.println("[RingTest] predio_largo_abandonado: " + openings + " open cells at street level, "
                         + d.access().containers() + " containers, " + d.access().closed() + " out of reach");

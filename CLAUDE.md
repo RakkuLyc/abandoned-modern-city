@@ -153,7 +153,9 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   garagem, fachada de vidro; a conferir no jogo com `/amcs spawn`) e o chão na camada 0, menos o prédio largo: chão
   na camada 8, as 8 de baixo enterradas; a garagem (camadas 1 a 7 de `cave_air`) é cavada no terreno, e na camada do
   chão a boca da rampa (5 × 15, na borda da frente) e o poço da escada ficam abertos: ar ou `cave_air` com `cave_air`
-  embaixo não vira chão da cidade (`Def.opening`, `Lot.code`; 87 células); o `/amcs spawn` também cava a garagem e
+  embaixo não vira chão da cidade, nem o ar da camada do chão ligado a essas aberturas (o topo da rampa, que tem a
+  própria rampa embaixo; corrigido em 13 nov 2026 depois que o usuário achou duas fileiras de terreno ali)
+  (`Structures.openings`, `Def.opening`, `Lot.code`; 99 células, todo o ar da camada do chão dele); o `/amcs spawn` também cava a garagem e
   abre a rampa. O prédio da rampa cabe só nas linhas dos lados curtos do quarteirão (frente de 102 nos 120, fundo de
   72 no sentido dos 180) ou, nos lados compridos, quando o bosque sorteado é estreito. Folhas salvas como não
   persistentes longe de qualquer tronco (casa moderna com garagem, casa de vidro, brutalista, prédio da rampa) viram
