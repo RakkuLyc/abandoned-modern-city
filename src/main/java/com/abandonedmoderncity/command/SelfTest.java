@@ -350,6 +350,7 @@ public final class SelfTest {
         int errors = CityFeature.ERRORS.get();
         long chunks = CityFeature.CHUNKS.get();
         report.append("\ngeneration errors: ").append(errors).append('\n');
+        report.append("village creatures removed from cities: ").append(com.abandonedmoderncity.gen.Plans.villageMobsRemoved()).append('\n');
         report.append("chunks through the feature: ").append(chunks).append(", mean ")
                 .append(chunks == 0 ? 0 : String.format("%.2f", CityFeature.NANOS.get() / 1e6 / chunks)).append(" ms per chunk\n");
         long samples = com.abandonedmoderncity.gen.McTerrain.SAMPLES.get();

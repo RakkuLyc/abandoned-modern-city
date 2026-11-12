@@ -104,6 +104,7 @@ final class ChunkBuilder {
 
     static boolean build(WorldPlan plan, WorldGenRegion region, ChunkAccess chunk) {
         ChunkPos c = chunk.getPos();
+        removeVillageMobs(plan, chunk);
         ChunkPlan cp = plan.chunk(c.x, c.z);
         boolean built = false;
         if (cp.any) {
@@ -114,6 +115,43 @@ final class ChunkBuilder {
         built |= bridgeVines(plan, chunk);
         repairNeighbours(plan, region, c);
         return built;
+    }
+
+    /** Creatures a village brings with its houses ({@link #removeVillageMobs}). */
+    private static final java.util.Set<String> VILLAGE_MOBS = java.util.Set.of("minecraft:villager",
+            "minecraft:zombie_villager", "minecraft:iron_golem", "minecraft:cat");
+    /** Village creatures removed so far (the self-test reports it). */
+    static final java.util.concurrent.atomic.AtomicInteger VILLAGE_MOBS_REMOVED = new java.util.concurrent.atomic.AtomicInteger();
+
+    /**
+     * A village generated where a city is (asked by the user, 13 nov 2026): its houses are placed before the city, each
+     * with its villagers, iron golem and cats, which stay when the city is built over them. They are taken out of the
+     * chunk being generated (the village is placed in this chunk before this feature runs) when they stand in the
+     * city or {@link com.abandonedmoderncity.core.City#VILLAGE_MARGIN} or less from it. Other creatures stay.
+     */
+    static int removeVillageMobs(WorldPlan plan, ChunkAccess chunk) {
+        if (!(chunk instanceof net.minecraft.world.level.chunk.ProtoChunk pc) || pc.getEntities().isEmpty()) {
+            return 0;
+        }
+        ChunkPos c = chunk.getPos();
+        com.abandonedmoderncity.core.City city = plan.cityNear(c.getMiddleBlockX(), c.getMiddleBlockZ(),
+                16 + com.abandonedmoderncity.core.City.VILLAGE_MARGIN);
+        if (city == null) {
+            return 0;
+        }
+        com.abandonedmoderncity.core.City.Hit hit = new com.abandonedmoderncity.core.City.Hit();
+        int before = pc.getEntities().size();
+        pc.getEntities().removeIf(tag -> {
+            if (!VILLAGE_MOBS.contains(tag.getString("id"))) {
+                return false;
+            }
+            net.minecraft.nbt.ListTag pos = tag.getList("Pos", net.minecraft.nbt.Tag.TAG_DOUBLE);
+            return pos.size() == 3 && city.within(pos.getDouble(0), pos.getDouble(2),
+                    com.abandonedmoderncity.core.City.VILLAGE_MARGIN, hit);
+        });
+        int removed = before - pc.getEntities().size();
+        VILLAGE_MOBS_REMOVED.addAndGet(removed);
+        return removed;
     }
 
     private void run() {

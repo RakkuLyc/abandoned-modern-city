@@ -275,6 +275,13 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   parciais; planta só sobre solo, tapete só sobre bloco inteiro, vinha só presa em bloco inteiro ou na vinha de cima.
   Nos 50 arquivos: 34 047 vinhas, 9 945 pisos viram solo, 5 014 tapetes, 4 827 plantas, 3 621 musgosos, 2 450
   rachados (59 904 blocos; 34 609 nos 43 de antes das 7 novas). As medidas antes e depois de cada estrutura ficam em `docs/TESTES.md`.
+- Vilas dentro das cidades (13 nov 2026, pedido do usuário: aldeões e golem de ferro numa cidade gerada onde havia
+  uma vila): as casas da vila são geradas antes da cidade, cada uma com suas criaturas, que ficavam quando a cidade
+  era construída por cima (no teste, um aldeão preso dentro do aterro da rua). Ao construir cada chunk, o mod tira
+  do chunk em geração os aldeões, aldeões zumbis, golens de ferro e gatos que estão na cidade ou a até 32 blocos além
+  das ruas da borda (`City.within`, `City.VILLAGE_MARGIN`, `ChunkBuilder.removeVillageMobs`); outros animais ficam,
+  e casas da vila de pé fora da cidade ficam vazias na margem; mais longe, a vila fica como é. A bateria informa
+  quantos foram retirados ("village creatures removed from cities").
 - Dureza: qualquer dureza é permitida (regra antiga removida pelo usuário); só blocos indestrutíveis são proibidos.
   Os block entities permitidos são o baú vazio da fonte e os containers das estruturas (baús, barris, suportes de poção, vasos decorados, atris, fornalhas, camas, fogueiras, sensores de luz, jukeboxes,
   banners, crânios, dispensers, droppers e estantes entalhadas, vazias, desde 13 nov 2026 por causa da casa grande; `Palette.exempt`). Os banners recebem o desenho salvo no molde; placas

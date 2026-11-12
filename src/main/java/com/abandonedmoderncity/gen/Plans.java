@@ -35,4 +35,9 @@ public final class Plans {
     public static void clear() {
         PLANS.clear();
     }
+
+    /** Village creatures removed from cities so far (ChunkBuilder.removeVillageMobs). */
+    public static int villageMobsRemoved() {
+        return ChunkBuilder.VILLAGE_MOBS_REMOVED.get();
+    }
 }

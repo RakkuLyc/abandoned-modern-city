@@ -53,13 +53,14 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 
 ## 2. O que é verificado
 
-### Unitários (44 testes)
+### Unitários (45 testes)
 
 | Teste | Verifica |
 |---|---|
 | `ProfileTest.profilesAreFlatOrRampAndJoinTheCities` | 4 000 perfis aleatórios (com penhascos): começa e termina no nível de cada cidade, 48 blocos planos nas pontas, variação ≤ 1/8 de bloco por bloco, trechos planos sempre em altura inteira, nunca abaixo do mínimo, superfície (meio-bloco) nunca muda mais de 0,5 entre vizinhos |
 | `ProfileTest.halfBlockStepsAreEvenlySpaced` | numa subida, os degraus de meia-laje ficam a pelo menos 4 blocos um do outro |
 | `ProfileTest.classificationRunsAreClean` | 2 000 perfis: junções sempre no chão, túneis ≥ 16, pontes secas ≥ 8, toda água fora das junções é ponte |
+| `WorldPlanTest.villageCreaturesAreRemovedInTheCityAndItsMargin` | em 30 cidades: o centro conta como cidade; andando do centro para fora, a área vale até 32 blocos (±1) depois da última coluna de rua ou lote e não vale mais longe |
 | `WorldPlanTest.parkBenchesSitOnTheEdgeOfThePathsFacingThem` | nos 30 parques do terreno plano: todo assento com a trilha na frente e sem trilha atrás; todo braço com o painel encostado num assento; nenhum banco sobre a trilha; nada cresce através do banco (só copa alta); bancos a 8+ um do outro; todo parque com banco; 565 bancos, 1 018 assentos, 1 a cada 18,6 blocos de trilha |
 | `WorldPlanTest.streetLightsStandOnTheSidewalksWithTheirArmsOverTheLanes` | em 20 cidades, coluna por coluna: postes só em trechos de rua (nunca em cruzamento nem em faixa de pedestres); cada poste com um braço de 4 (o último com o vidro) ou nenhum; nenhum braço sem poste; 129,9 postes por cidade (de 144 lugares, 10% faltam), 5,2% sem braço; nos planos dos chunks o poste fica na calçada e não é trafegável, o braço sobre a pista |
 | `WorldPlanTest.cutCrownsHangOverSidewalksAndCores` | nas cidades do terreno plano (1 237 chunks com copas completadas): 11 622 folhas no bosque e 892 sobre calçadas; 2 144 baixas demais sobre a rua e 13 onde o bosque já planeja algo ficam de fora; nenhuma em outra estrutura; cada uma no chunk pedido |
@@ -221,6 +222,7 @@ e a regra de escada e apoio no mesmo chunk.
 | 59 | `WorldPlanTest`, 13 nov (bancos) | vinha de árvore "pendurada no nada" sobre um banco | a coluna do banco devolvia vazio em todas as alturas, apagando a copa acima | acima do banco a árvore continua; só plantas do chão não nascem através dele |
 | 60 | `WorldPlanTest`, 13 nov (bancos) | 1 banco a cada 22,2 blocos de trilha (pedido: 15) | distância mínima de 12 entre bancos e poucos trechos retos de 4 blocos nas espirais | distância mínima de 8: 1 a cada 18,6; o resto é a forma das trilhas |
 | 61 | Teste no jogo pelo usuário, 13 nov | duas fileiras de terreno logo antes da rampa da garagem do prédio largo (também com `/amcs spawn`) | só ficava aberto o ar da camada do chão com `cave_air` logo embaixo; no topo da rampa, embaixo está a própria rampa (e na boca da escada, o degrau) | fica aberto também o ar da camada do chão ligado a essas aberturas (`Structures.openings`): 99 células em vez de 87 |
+| 62 | Teste no jogo pelo usuário, 13 nov | aldeões e golem de ferro numa cidade gerada onde havia uma vila | as criaturas da vila nascem com as casas, antes da cidade, e ficavam no chunk quando a cidade era construída por cima | o mod as tira do chunk em geração na cidade e a até 32 blocos dela (aldeões, aldeões zumbis, golens, gatos) |
 | — | Bateria (infraestrutura) | servidores falhando com "Address already in use" | um servidor de uma bateria interrompida ainda terminava | o script usa a porta 25591 e se recusa a começar com um servidor de desenvolvimento vivo |
 
 ## 4. Como reproduzir
@@ -267,7 +269,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
 ## 6. Resultados atuais (12 nov 2026, quarteirões 180 × 120 com anel de estruturas com vãos e miolo tomado pela natureza, ruas e rodovias de 33, cidades no meio de células de 736, 4 entradas)
 
-- **Unitários:** 43 passam e 1 é pulado (o teste sem estruturas), 12 nov 2026, com o teste da escavação por `cave_air`; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
+- **Unitários:** 44 passam e 1 é pulado (o teste sem estruturas), 12 nov 2026, com o teste da escavação por `cave_air`; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
   - **Rede (7 terrenos × 3 seeds, 81 células), cidades no meio da célula de 736, 4 entradas (uma por lado):** 35 a
@@ -334,6 +336,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 13 nov | criaturas de vila retiradas das cidades | PASS: 8 de 8, 0 erros de geração, 16 criaturas de vila retiradas; 2,77 ms por chunk, 259 s. Por RCON, seed 20261027, vila de neve em (−240, 144) numa rua da cidade do spawn: antes 4 aldeões, 1 golem e 1 gato num quadrado de 160 × 160 (um aldeão em y 64, sob a rua de piso 69); depois 1 aldeão, em (−235, 89), ~49 blocos além da rua (fora da margem, de uma casa que ficou de pé fora da cidade) |
   | `20261027` | padrão (8 alvos) | 13 nov | topo da rampa e boca da escada do prédio largo abertos | PASS: 8 de 8, 0 erros de geração; 2,85 ms por chunk, 251 s. Por RCON, `/amcs spawn predio_largo_abandonado` sobre pedra: as duas fileiras do topo da rampa e a boca da escada abertas, a laje e o concreto da rampa no lugar (10 de 10 conferidos) |
   | `20261027` | padrão (8 alvos) | 13 nov | prédios no máximo 1 por cidade, postes a cada 24, bancos nos parques, escada da casa de vidro em L | PASS: 8 de 8, 0 erros de geração; ~2 300 blocos de poste conferidos por cidade; 214 estados de bloco da paleta validados; 2,68 ms por chunk, 266 s |
   | `20261027` | padrão (8 alvos) | 13 nov | 7 estruturas novas (50 arquivos), prédio largo com garagem cavada e rampa aberta, prédio da rampa 1 por cidade | PASS: 8 de 8, 0 erros de geração, 1 385 estados de estrutura validados, 59 904 blocos de abandono; 2,75 ms por chunk, 246 s. Por RCON: `/amcs spawn predio_largo_abandonado` sobre um volume de pedra: boca da rampa aberta, 4 pontos da garagem cavados, piso de `smooth_stone`, pedra fora da garagem intacta (7 de 7 conferidos); 249 contêineres com loot, 191 de difícil acesso |

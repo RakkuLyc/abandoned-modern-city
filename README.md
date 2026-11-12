@@ -154,6 +154,8 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
   vinhas até o chão.
 - **Pontes velhas:** laje e pilares de pedra musgosa e rachada, muro quebrado em trechos e musgoso, e buracos
   irregulares (5 a 7 × 4 a 5) atravessando a laje, ~1 a cada 80 blocos de ponte.
+- **Vilas sob as cidades:** aldeões, aldeões zumbis, golens de ferro e gatos de uma vila gerada onde a cidade ficou
+  são retirados (na cidade e a até 32 blocos dela); animais comuns ficam.
 - **Postes:** a cada 24 blocos dos dois lados de toda rua da cidade, frente a frente (7 por lado nos trechos de 180,
   5 nos de 120), iguais ao `poste_exemplo` do usuário: coluna de andesito polido de 13 na calçada, braço de 4 lajes a
   12 de altura sobre a pista e vidro cinza (apagado) na ponta; 10% faltam e 5% perderam o braço.

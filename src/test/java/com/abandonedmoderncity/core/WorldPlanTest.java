@@ -43,6 +43,37 @@ class WorldPlanTest {
     }
 
     @Test
+    void villageCreaturesAreRemovedInTheCityAndItsMargin() {
+        WorldPlan p = plan(SEEDS[0], TestTerrain.Kind.FLAT);
+        City.Hit hit = new City.Hit();
+        int cities = 0;
+        for (City c : allCities(p)) {
+            if (++cities > 30) {
+                break;
+            }
+            // the center is a street crossing or a lot
+            assertTrue(c.within(c.cx + 0.5, c.cz + 0.5, City.VILLAGE_MARGIN, hit), c + " center");
+            // walking out from the center in x: inside, then within the margin, then out; the limit is the margin
+            double inside = Double.NaN;
+            double out = Double.NaN;
+            for (int dx = 0; dx < 700; dx++) {
+                boolean in = c.within(c.cx + dx + 0.5, c.cz + 0.5, City.VILLAGE_MARGIN, hit);
+                boolean city = hit.road || hit.lot;
+                if (city) {
+                    inside = dx;
+                }
+                if (!in) {
+                    out = dx;
+                    break;
+                }
+            }
+            assertFalse(Double.isNaN(out), c + " never out");
+            assertEquals(City.VILLAGE_MARGIN, out - inside - 1, 1.0, c + " margin beyond the last street column");
+            assertFalse(c.within(c.cx + 700.5, c.cz + 0.5, City.VILLAGE_MARGIN, hit), c + " far away");
+        }
+    }
+
+    @Test
     void parkBenchesSitOnTheEdgeOfThePathsFacingThem() {
         WorldPlan p = plan(SEEDS[0], TestTerrain.Kind.FLAT);
         int parks = 0;

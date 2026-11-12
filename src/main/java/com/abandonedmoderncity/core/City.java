@@ -761,6 +761,18 @@ public final class City {
         h.lamp = role;
     }
 
+    /**
+     * Margin around a city where the creatures of a village built over by it are removed (asked by the user, 13 nov
+     * 2026: villagers and an iron golem were left in a city generated where a village was).
+     */
+    public static final double VILLAGE_MARGIN = 32;
+
+    /** Whether (x, z) is in the city (a street or a lot) or {@code margin} or less beyond its streets. */
+    public boolean within(double x, double z, double margin, Hit h) {
+        query(x, z, h);
+        return h.road || h.lot || h.edge <= margin;
+    }
+
     /** Rows of a crosswalk along the street, and lane rows between it and the crossing. */
     public static final int CROSSWALK_DEPTH = 3;
     public static final int CROSSWALK_GAP = 2;
