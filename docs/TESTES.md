@@ -80,10 +80,10 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `RingTest.pharmacyBannersKeepTheirLetters` | nas 4 rotações, cada uma das 10 farmácias (originais e variações) tem 9 banners (pequena) ou 18 (grande) com desenho (listras e borda), todos em blocos de banner; nas pequenas, banner branco com letras na cor da variação; nas grandes, banner na cor da variação com letras pretas |
 | `AccessTest.closedRoomsDoorsAndLadders` | salas montadas no teste: baú em sala lacrada é de difícil acesso; com porta de madeira não; com porta de ferro ou cerca no vão sim; baú num pilar de 4 só se alcança com escada de mão; degraus de 1 bloco se sobem pulando |
 | `AccessTest.highContainersAreHard` | barril a `Access.HIGH` (15) blocos do chão, alcançável por escada, conta como difícil; baú no chão não |
-| `AccessTest.structuresHardContainers` | nos 43 arquivos: 177 de 1 530 contêineres de difícil acesso (entre 10% e 33%); os mesmos nas 4 rotações; prédios grandes e médios têm contêineres altos; nas casas no máximo 5% (4 de 356) |
+| `AccessTest.structuresHardContainers` | nos 43 arquivos, com o abandono: 172 de 1 530 contêineres de difícil acesso (entre 10% e 33%); os mesmos nas 4 rotações; prédios grandes e médios têm contêineres altos; nas casas no máximo 5% (4 de 356) |
 | `AccessTest.everyStructureHasItsLootTables` | as 6 tabelas do tema de cada estrutura existem; barril e vaso com 40% de chance, `barril_dificil` 75%, `vaso_dificil` 80%, baús sem chance de vir vazios; nada do Lost Cities ou do OAmP |
-| `WeatheringTest.onlyAllowedChangesAndEverythingHolds` | nos 43 arquivos, célula por célula contra o molde salvo: só mudanças permitidas (rachado e musgoso da mesma pedra, com as mesmas propriedades; piso de pedra ou concreto com ar em cima virando solo; tapete sobre bloco inteiro ou solo; grama, samambaia e arbusto seco só sobre solo; vinha com uma face, presa em bloco inteiro ou na vinha de cima com a mesma face, ou sob beiral); banners iguais; caixa da estrutura igual; o mesmo resultado em duas cargas; relatório igual às mudanças. Total: 6 712 solos, 3 518 tapetes, 3 263 plantas, 2 014 vinhas, 1 469 rachados, 1 365 musgosos |
-| `WeatheringTest.everyStructureReachesTheMeasuresOfTheApocalypticBuilding` | nenhuma medida cai (a parcela rachada pode cair até 2 pontos quando piso de tijolo vira musgo); o prédio apocalíptico muda menos de 1 500 blocos (muda 0) |
+| `WeatheringTest.onlyAllowedChangesAndEverythingHolds` | nos 43 arquivos, célula por célula contra o molde salvo: só mudanças permitidas (rachado e musgoso da mesma pedra, com as mesmas propriedades; piso de pedra ou concreto com ar em cima virando solo; tapete sobre bloco inteiro ou solo; grama, samambaia e arbusto seco só sobre solo; vinha com uma face, presa em bloco inteiro ou na vinha de cima com a mesma face, ou sob beiral); banners iguais; caixa da estrutura igual; o mesmo resultado em duas cargas; relatório igual às mudanças. Total: 17 879 vinhas, 6 712 solos, 3 518 tapetes, 3 263 plantas, 1 768 musgosos, 1 469 rachados |
+| `WeatheringTest.everyStructureReachesTheMeasuresOfTheApocalypticBuilding` | nenhuma medida cai (rachado e vinhas podem cair até 3 pontos quando piso vira musgo: o bloco sai da família ou da parede contada); rachado a 31% (−3) ou mais; o lado menos coberto de vinhas com 19% ou mais (meta 25%); no prédio apocalíptico só as vinhas mudam |
 | `WeatheringTest.wholeNamesAreNotTakenForParts` | `light_gray_concrete`, `smooth_sandstone` e `mud_bricks` são pedra inteira; tábua é inteira mas não pedra; vidro, folhas, laje, baú, banner e o bloco de luz não são inteiros |
 | `RingTest.cutCrownsAreCompletedOutsideTheBox` | 174 folhas completam copas cortadas, só na casa com piscina, com garagem, de subúrbio, com torre e no prédio esqueleto; nas 4 rotações: todas fora da caixa e a até 4 dela, não persistentes, distância 1 a 6 com um vizinho um passo mais perto do tronco, sem repetir posição; as da casa com piscina ficam na frente e acima de `CLEARANCE` |
 | `RingTest.lightningRodsBecomeRedstoneTorches` | nenhum estado de para-raios sobra nas estruturas; 5 tochas de redstone de pé (uma no topo de cada estrutura que tinha para-raios); para-raios de lado vira tocha de parede com a mesma direção |
@@ -202,6 +202,8 @@ e a regra de escada e apoio no mesmo chunk.
 | 47 | `WeatheringTest`, 13 nov | relatório com mais mudanças que as células mudadas (oficina média: 327 / 321) | uma mancha de musgo caía sobre um bloco que já tinha rachado | uma célula já mudada não recebe outra mudança |
 | 48 | `WorldPlanTest`, 13 nov | 11 812 lotes em vez de 11 818: o anel mudou | vinhas e um tapete fora da caixa dos blocos sólidos aumentavam a caixa (a estrutura afastava da calçada) | nada é posto fora da caixa original (`Editor.set` recusa); teste da caixa igual |
 | 49 | Medida, 13 nov | alvo de pedra rachada de 23% | a conta inicial incluía pedras sem versão rachada (`polished_deepslate`) | alvo de 31% da família que racha, a medida do próprio prédio |
+| 50 | `WeatheringTest`, 13 nov (vinhas fortes) | mansão abandonada com 15% no lado menos coberto (meta 25%) | os trechos de vinha que descem abaixo do fim da parede contavam para a meta sem cobrir fachada | só as vinhas na fachada contam |
+| 51 | `WeatheringTest`, 13 nov (vinhas fortes) | cobertura de vinhas da casa abandonada "caía" | o `moss_block` não contava como bloco inteiro: as vinhas ao lado de um piso que virou musgo saíam da conta | `moss_block` conta como parede (a vinha se prende nele) |
 | — | Bateria (infraestrutura) | servidores falhando com "Address already in use" | um servidor de uma bateria interrompida ainda terminava | o script usa a porta 25591 e se recusa a começar com um servidor de desenvolvimento vivo |
 
 ## 4. Como reproduzir
@@ -262,59 +264,60 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
     simulação prévia dos tamanhos com vãos: 140 × 90 → 5,0 por quarteirão, 160 × 110 → 6,5, 180 × 120 → 7,2,
     200 × 130 → 8,2.
 - **Abandono das estruturas (13 nov):** rachado da família que racha / verde sob teto / verde a céu aberto /
-  vinhas por bloco de parede voltado para o ar, antes → depois (alvos 31% / 8,2% / 35,8% / 7,9%; "-" = sem
-  candidatos):
+  fachada externa com vinhas / lado menos coberto (lados de 40+ células), antes → depois (alvos 31% / 8,2% / 35,8% /
+  25% por lado; "-" = sem candidatos):
 
   | Estrutura | Antes | Depois |
   |---|---|---|
-  | `casa_abandonada` | 48% / 0% / 4% / 15% | 57% / 8% / 35% / 15% |
-  | `casa_moderna_abandonada` | 36% / 19% / 36% / 36% | 36% / 19% / 36% / 36% |
-  | `mansao_abandonada` | 48% / 6% / 16% / 10% | 62% / 8% / 35% / 10% |
-  | `mansao_pos_apocaliptica` | 61% / 4% / 5% / 18% | 68% / 8% / 34% / 18% |
-  | `casa_garagem_abandonada` | 13% / 6% / 38% / 2% | 32% / 8% / 38% / 8% |
-  | `casa_grande_abandonada` | 30% / 9% / 5% / 10% | 32% / 9% / 36% / 10% |
-  | `casa_piscina_abandonada` | 19% / 7% / 1% / 4% | 32% / 8% / 36% / 8% |
-  | `casa_suburbio_abandonada` | 0% / 9% / 48% / 3% | 31% / 9% / 48% / 8% |
-  | `casa_torre_abandonada` | 31% / 7% / 17% / 8% | 32% / 8% / 35% / 8% |
-  | `casa_vitoriana_abandonada` | 27% / 8% / 1% / 4% | 35% / 8% / 36% / 8% |
-  | `farmacia_vermelho` | 100% / 5% / 12% / 13% | 100% / 8% / 34% / 13% |
-  | `farmacia_amarelo` | 100% / 5% / 12% / 13% | 100% / 7% / 34% / 13% |
-  | `farmacia_azul` | 100% / 5% / 12% / 13% | 100% / 8% / 34% / 13% |
-  | `farmacia_roxo` | 100% / 5% / 12% / 13% | 100% / 8% / 35% / 13% |
-  | `farmacia_verde` | 100% / 5% / 12% / 13% | 100% / 8% / 35% / 13% |
-  | `farmacia_grande_amarela` | - / 5% / 15% / 0% | - / 8% / 34% / 8% |
-  | `farmacia_grande_azul` | - / 5% / 15% / 0% | - / 8% / 35% / 8% |
-  | `farmacia_grande_roxo` | - / 5% / 15% / 0% | - / 8% / 34% / 8% |
-  | `farmacia_grande_verde` | - / 5% / 15% / 0% | - / 8% / 35% / 8% |
-  | `farmacia_grande_vermelho` | - / 5% / 15% / 0% | - / 8% / 35% / 8% |
-  | `oficina_media_azul_preto` | 0% / 5% / 13% / 5% | 35% / 6% / 33% / 8% |
-  | `oficina_media_amarela_azul` | - / 5% / 13% / 5% | - / 8% / 35% / 8% |
-  | `oficina_media_amarelo_vermelho` | - / 5% / 13% / 5% | - / 8% / 35% / 8% |
-  | `oficina_pequena_verde` | 18% / 14% / 15% / 22% | 35% / 14% / 33% / 22% |
-  | `oficina_pequena_amarela` | 18% / 14% / 15% / 22% | 36% / 14% / 33% / 22% |
-  | `oficina_pequena_azul` | 18% / 14% / 15% / 22% | 35% / 14% / 34% / 22% |
-  | `oficina_pequena_roxa` | 18% / 14% / 15% / 22% | 33% / 14% / 34% / 22% |
-  | `oficina_pequena_vermelha` | 18% / 14% / 15% / 22% | 34% / 14% / 34% / 22% |
-  | `posto_vermelho` | 34% / 0% / 7% / 36% | 34% / 7% / 34% / 36% |
-  | `posto_amarelo` | 34% / 0% / 7% / 36% | 34% / 8% / 34% / 36% |
-  | `posto_azul` | 34% / 0% / 7% / 36% | 33% / 7% / 35% / 36% |
-  | `posto_roxo` | 34% / 0% / 7% / 36% | 36% / 7% / 35% / 36% |
-  | `posto_verde` | 34% / 0% / 7% / 36% | 35% / 7% / 35% / 36% |
-  | `posto_pequeno_vermelho` | 31% / 0% / 2% / 43% | 33% / 10% / 35% / 43% |
-  | `posto_pequeno_amarelo` | 31% / 0% / 2% / 43% | 34% / 10% / 35% / 43% |
-  | `posto_pequeno_azul` | 31% / 0% / 2% / 43% | 32% / 10% / 33% / 43% |
-  | `posto_pequeno_roxo` | 31% / 0% / 2% / 43% | 30% / 13% / 35% / 43% |
-  | `posto_pequeno_verde` | 31% / 0% / 2% / 43% | 35% / 10% / 34% / 43% |
-  | `predio_apartamento` | 40% / 6% / 0% / 19% | 44% / 8% / 35% / 19% |
-  | `predio_esqueleto_31x29` | 39% / 22% / 41% / 54% | 39% / 22% / 41% / 54% |
-  | `predio_azulado` | 22% / 0% / 7% / 11% | 31% / 8% / 34% / 11% |
-  | `torre` | 39% / 2% / 4% / 6% | 47% / 8% / 34% / 8% |
-  | `predio_apocaliptico_57x45` | 31% / 9% / 43% / 8% | 31% / 9% / 43% / 8% |
+  | `casa_abandonada` | 48% / 0% / 4% / 38% / 28% | 60% / 8% / 35% / 38% / 28% |
+  | `casa_moderna_abandonada` | 36% / 19% / 36% / 36% / 35% | 36% / 19% / 36% / 36% / 36% |
+  | `mansao_abandonada` | 48% / 6% / 16% / 10% / 7% | 63% / 8% / 35% / 26% / 25% |
+  | `mansao_pos_apocaliptica` | 61% / 4% / 5% / 18% / 9% | 70% / 8% / 35% / 26% / 25% |
+  | `casa_garagem_abandonada` | 13% / 6% / 38% / 4% / 1% | 31% / 8% / 40% / 26% / 25% |
+  | `casa_grande_abandonada` | 30% / 9% / 5% / 29% / 22% | 32% / 9% / 36% / 31% / 26% |
+  | `casa_piscina_abandonada` | 19% / 7% / 1% / 11% / 5% | 34% / 8% / 36% / 26% / 25% |
+  | `casa_suburbio_abandonada` | 0% / 9% / 48% / 8% / 0% | 31% / 9% / 50% / 26% / 25% |
+  | `casa_torre_abandonada` | 31% / 7% / 17% / 18% / 5% | 34% / 8% / 35% / 26% / 25% |
+  | `casa_vitoriana_abandonada` | 27% / 8% / 1% / 10% / 8% | 35% / 8% / 36% / 26% / 25% |
+  | `farmacia_vermelho` | 100% / 5% / 12% / 20% / 0% | 100% / 8% / 34% / 34% / 26% |
+  | `farmacia_amarelo` | 100% / 5% / 12% / 20% / 0% | 100% / 7% / 34% / 34% / 26% |
+  | `farmacia_azul` | 100% / 5% / 12% / 20% / 0% | 100% / 8% / 34% / 34% / 25% |
+  | `farmacia_roxo` | 100% / 5% / 12% / 20% / 0% | 100% / 8% / 35% / 34% / 25% |
+  | `farmacia_verde` | 100% / 5% / 12% / 20% / 0% | 100% / 8% / 35% / 35% / 26% |
+  | `farmacia_grande_amarela` | - / 5% / 15% / 0% / 0% | - / 8% / 34% / 27% / 26% |
+  | `farmacia_grande_azul` | - / 5% / 15% / 0% / 0% | - / 8% / 35% / 26% / 26% |
+  | `farmacia_grande_roxo` | - / 5% / 15% / 0% / 0% | - / 8% / 34% / 26% / 25% |
+  | `farmacia_grande_verde` | - / 5% / 15% / 0% / 0% | - / 8% / 35% / 26% / 25% |
+  | `farmacia_grande_vermelho` | - / 5% / 15% / 0% / 0% | - / 8% / 35% / 26% / 26% |
+  | `oficina_media_azul_preto` | 0% / 5% / 13% / 1% / 0% | 35% / 7% / 33% / 28% / 25% |
+  | `oficina_media_amarela_azul` | - / 5% / 13% / 1% / 0% | - / 8% / 35% / 28% / 25% |
+  | `oficina_media_amarelo_vermelho` | - / 5% / 13% / 1% / 0% | - / 8% / 35% / 29% / 26% |
+  | `oficina_pequena_verde` | 18% / 14% / 15% / 20% / 8% | 35% / 15% / 33% / 28% / 25% |
+  | `oficina_pequena_amarela` | 18% / 14% / 15% / 21% / 4% | 36% / 15% / 33% / 29% / 26% |
+  | `oficina_pequena_azul` | 18% / 14% / 15% / 20% / 8% | 35% / 14% / 34% / 29% / 25% |
+  | `oficina_pequena_roxa` | 18% / 14% / 15% / 20% / 8% | 33% / 16% / 34% / 29% / 25% |
+  | `oficina_pequena_vermelha` | 18% / 14% / 15% / 20% / 8% | 34% / 15% / 34% / 29% / 25% |
+  | `posto_vermelho` | 34% / 0% / 7% / 22% / 14% | 34% / 7% / 34% / 26% / 25% |
+  | `posto_amarelo` | 34% / 0% / 7% / 21% / 14% | 34% / 8% / 34% / 26% / 25% |
+  | `posto_azul` | 34% / 0% / 7% / 22% / 14% | 33% / 7% / 35% / 26% / 25% |
+  | `posto_roxo` | 34% / 0% / 7% / 21% / 14% | 36% / 8% / 35% / 26% / 25% |
+  | `posto_verde` | 34% / 0% / 7% / 22% / 14% | 35% / 7% / 35% / 26% / 25% |
+  | `posto_pequeno_vermelho` | 31% / 0% / 2% / 23% / 10% | 33% / 11% / 35% / 29% / 25% |
+  | `posto_pequeno_amarelo` | 31% / 0% / 2% / 23% / 10% | 34% / 10% / 35% / 29% / 25% |
+  | `posto_pequeno_azul` | 31% / 0% / 2% / 23% / 10% | 32% / 11% / 33% / 29% / 26% |
+  | `posto_pequeno_roxo` | 31% / 0% / 2% / 23% / 11% | 30% / 14% / 35% / 29% / 25% |
+  | `posto_pequeno_verde` | 31% / 0% / 2% / 23% / 10% | 35% / 10% / 34% / 29% / 26% |
+  | `predio_apartamento` | 40% / 6% / 0% / 18% / 15% | 45% / 8% / 35% / 26% / 25% |
+  | `predio_esqueleto_31x29` | 39% / 22% / 41% / 51% / 48% | 39% / 22% / 41% / 51% / 48% |
+  | `predio_azulado` | 22% / 0% / 7% / 7% / 6% | 31% / 8% / 35% / 26% / 26% |
+  | `torre` | 39% / 2% / 4% / 4% / 3% | 49% / 8% / 35% / 26% / 26% |
+  | `predio_apocaliptico_57x45` | 31% / 9% / 43% / 11% / 9% | 31% / 9% / 43% / 27% / 27% |
 
 - **Bateria no mundo:**
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 13 nov | vinhas longas e agressivas nos 4 lados (25% da fachada, cachos de 3 a 12; 34 609 blocos de abandono) | PASS: 8 de 8, 0 erros de geração, nenhum `building_mismatch`; 2,63 ms por chunk, 253 s |
   | `20261027` | padrão (8 alvos) | 13 nov | natureza tomando conta das estruturas (`structureOvergrowth` ligado, 18 341 blocos) | PASS: 8 de 8, 0 erros de geração, nenhum `building_mismatch` (plantas e vinhas ficaram no mundo como no plano); 2,72 ms por chunk, 266 s |
   | `20261027` | rápido (3 alvos) | 13 nov | o mesmo com `structureOvergrowth = false` | PASS: 3 de 3; log "Structure overgrowth off" |
   | `20261027` | padrão (8 alvos) | 13 nov | 22 variações de cor (sorteio por modelo, banners copiados nas farmácias) | PASS: 8 de 8, 0 erros de geração, 1 115 estados de estrutura validados, banners de farmácia conferidos com desenho; 2,70 ms por chunk, 263 s |
