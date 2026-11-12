@@ -86,6 +86,7 @@ class WorldPlanTest {
         int lots = 0;
         int parks = 0;
         int parkStructures = 0;
+        int buildingsPerCity = 0;
         int[] cutHistogram = new int[City.MAX_CUTS + 1];
         for (TestTerrain.Kind kind : TestTerrain.Kind.values()) {
             WorldPlan p = plan(SEEDS[0], kind);
@@ -97,6 +98,7 @@ class WorldPlanTest {
                 cutHistogram[c.streetCuts()]++;
                 // spawn limits per city (pharmacies 3, workshops 2, gas stations 2)
                 java.util.Map<String, Integer> groups = new java.util.HashMap<>();
+                java.util.Map<String, Integer> buildings = new java.util.HashMap<>();
                 for (int bj = -n; bj <= n; bj++) {
                     for (int bi = -n; bi <= n; bi++) {
                         // and never two of the same structure in one block
@@ -109,12 +111,20 @@ class WorldPlanTest {
                             if (l.building != null && l.building.group() != null) {
                                 groups.merge(l.building.group(), 1, Integer::sum);
                             }
+                            if (l.building != null && l.building.onePerCity()) {
+                                buildings.merge(l.building.model(), 1, Integer::sum);
+                            }
                         }
                     }
                 }
                 for (var e : groups.entrySet()) {
                     assertTrue(e.getValue() <= Structures.LIMITS.get(e.getKey()), c + " " + e);
                 }
+                // never the same building twice in a city (asked by the user)
+                for (var e : buildings.entrySet()) {
+                    assertEquals(1, e.getValue(), c + " has " + e.getValue() + " " + e.getKey());
+                }
+                buildingsPerCity += buildings.size();
                 // park blocks: a park of 110 x 64 in a corner, structures 4+ blocks away from it
                 for (int bj = -n; bj <= n; bj++) {
                     for (int bi = -n; bi <= n; bi++) {
@@ -181,6 +191,7 @@ class WorldPlanTest {
             }
         }
         System.out.println("[WorldPlanTest] parks " + parks + " with " + parkStructures + " structures");
+        System.out.printf("[WorldPlanTest] buildings per city %.2f (each model at most once)%n", buildingsPerCity / (double) cities);
         System.out.println("[WorldPlanTest] cities " + cities + ", lots " + lots + ", removed segments per city "
                 + java.util.Arrays.toString(cutHistogram));
         int withCuts = 0;

@@ -178,6 +178,15 @@ public final class Structures {
             return out;
         }
 
+        /**
+         * Whether at most one of this structure (any color of it) may stand in a city (asked by the user, 13 nov
+         * 2026: two or three predio_azulado in one city): the buildings, not the houses, pharmacies, workshops or gas
+         * stations.
+         */
+        public boolean onePerCity() {
+            return type.startsWith("predios") || type.equals("especial");
+        }
+
         /** Kind of loot (folder of its loot tables): casa, farmacia, oficina, posto or predio. */
         public String lootTheme() {
             for (String k : LOOT_THEMES) {

@@ -122,7 +122,9 @@ public final class Ring {
             h = Hash.next(h, 1);
             Structures.Def def = Structures.pick(h);
             boolean full = def.group() != null
-                    && used.getOrDefault(def.group(), 0) >= Structures.LIMITS.get(def.group());
+                    && used.getOrDefault(def.group(), 0) >= Structures.LIMITS.get(def.group())
+                    // a building already in the city (any block of it)
+                    || def.onePerCity() && used.getOrDefault("model:" + def.model(), 0) >= 1;
             // already in this block (any of its rows): never two of the same structure (any color of it) in one block
             boolean twice = false;
             for (Lot l : out) {
@@ -158,6 +160,9 @@ public final class Ring {
             }
             if (def.group() != null) {
                 used.merge(def.group(), 1, Integer::sum);
+            }
+            if (def.onePerCity()) {
+                used.merge("model:" + def.model(), 1, Integer::sum);
             }
             out.add(Lot.building(x, z, def, rot, Hash.next(h, 2)));
             at += def.front() + Hash.range(Hash.next(h, 3), GAP_MIN, GAP_MAX);

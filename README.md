@@ -45,7 +45,8 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
   a rua; o resto (o miolo) é tomado pela natureza. Cerca de 1 em 8 quarteirões tem um parque de 110 × 64 num canto,
   com as estruturas em L nas outras duas ruas.
 - **Estruturas (28 modelos, 50 arquivos, `structures/`):** sorteadas ao acaso no anel (cada modelo com a mesma
-  chance, depois a cor: as 10 casas dão ~43% das estruturas), com limite por cidade: farmácias 3, oficinas 2, postos 2.
+  chance, depois a cor: as 10 casas dão ~43% das estruturas), com limite por cidade: farmácias 3, oficinas 2, postos 2, e cada prédio (apartamento, esqueleto, azulado, torre,
+  apocalíptico, pequeno, brutalista, largo, torre verde, rampa) no máximo 1 vez por cidade.
   Nunca duas estruturas iguais (o mesmo modelo, em qualquer cor) no mesmo quarteirão. Variações de cor: farmácia e
   farmácia grande (5 cores cada, as letras D R U G S T O R E copiadas da original na cor da variação, sem o letreiro
   F A R M Á C I A em blocos que as variações tinham: a parede fica branca como na original), oficina média

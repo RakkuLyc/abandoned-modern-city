@@ -187,7 +187,10 @@ existem as cidades 2 × 2 de quarteirões retangulares.
     `Palette.applyBanner`): as letras D R U G S T O R E das farmácias (9 na farmácia, 18 na farmácia grande); encostadas na calçada, formando um anel; sorteio por arquivo,
     sem padrão;
   - limites por cidade (`Structures.LIMITS`): farmácias 3 (as duas), oficinas 2 (as duas), postos 2 (os dois),
-    especial 1 (o prédio da rampa); os
+    especial 1 (o prédio da rampa); e cada prédio (tipos `predios_*` e `especial`, `Def.onePerCity`) no máximo 1
+    vez por cidade, em qualquer quarteirão (13 nov 2026, pedido do usuário: havia cidades com 2 ou 3 prédios
+    azulados; casas, farmácias, oficinas e postos podem repetir dentro dos limites); 6,24 prédios por cidade nos
+    testes; os
     anéis da cidade inteira são sorteados de uma vez (`City.rings`, quarteirões de norte a sul, oeste a leste), e um
     grupo no limite é sorteado de novo;
   - nunca duas estruturas iguais (o mesmo modelo, em qualquer cor) no mesmo quarteirão (13 nov 2026, pedido do usuário): uma

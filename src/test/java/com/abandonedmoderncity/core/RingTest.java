@@ -263,10 +263,15 @@ class RingTest {
                     if (l.building.group() != null) {
                         seen.merge(l.building.group(), 1, Integer::sum);
                     }
+                    // the buildings are counted by model: at most one of each in the city
+                    if (l.building.onePerCity()) {
+                        seen.merge("model:" + l.building.model(), 1, Integer::sum);
+                    }
                 }
             }
             for (var e : seen.entrySet()) {
-                assertTrue(e.getValue() <= Structures.LIMITS.get(e.getKey()), e.getKey() + " " + e.getValue());
+                int limit = e.getKey().startsWith("model:") ? 1 : Structures.LIMITS.get(e.getKey());
+                assertTrue(e.getValue() <= limit, e.getKey() + " " + e.getValue());
             }
             assertEquals(seen, used);
         }
