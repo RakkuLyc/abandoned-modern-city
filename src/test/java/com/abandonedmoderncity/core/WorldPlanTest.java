@@ -43,6 +43,95 @@ class WorldPlanTest {
     }
 
     @Test
+    void streetLightsStandOnTheSidewalksWithTheirArmsOverTheLanes() {
+        WorldPlan p = plan(SEEDS[0], TestTerrain.Kind.FLAT);
+        int poles = 0;
+        int arms = 0;
+        int armless = 0;
+        int cities = 0;
+        City.Hit hit = new City.Hit();
+        for (City c : allCities(p)) {
+            if (++cities > 20) {
+                break;
+            }
+            int r = c.radius + 40;
+            java.util.Map<Long, Byte> lamp = new java.util.HashMap<>();
+            for (int z = (int) c.cz - r; z <= (int) c.cz + r; z++) {
+                for (int x = (int) c.cx - r; x <= (int) c.cx + r; x++) {
+                    c.query(x + 0.5, z + 0.5, hit);
+                    if (hit.lamp != City.LAMP_NONE) {
+                        assertTrue(hit.road && hit.count == 1, c + " light outside a street segment at " + x + "," + z);
+                        assertFalse(hit.crosswalk, c + " light on a crosswalk at " + x + "," + z);
+                        lamp.put(((long) x << 32) | (z & 0xffffffffL), hit.lamp);
+                    }
+                }
+            }
+            java.util.Set<Long> armOfAPole = new java.util.HashSet<>();
+            for (var e : lamp.entrySet()) {
+                if (e.getValue() != City.LAMP_POLE) {
+                    continue;
+                }
+                poles++;
+                int x = (int) (e.getKey() >> 32);
+                int z = (int) (long) e.getKey();
+                int found = 0;
+                for (int[] d : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                    boolean whole = true;
+                    for (int k = 1; k <= City.LAMP_ARM; k++) {
+                        Byte b = lamp.get(((long) (x + k * d[0]) << 32) | ((z + k * d[1]) & 0xffffffffL));
+                        byte want = k == City.LAMP_ARM ? City.LAMP_GLASS : City.LAMP_ARM_PART;
+                        whole &= b != null && b == want;
+                    }
+                    if (whole) {
+                        found++;
+                        for (int k = 1; k <= City.LAMP_ARM; k++) {
+                            armOfAPole.add(((long) (x + k * d[0]) << 32) | ((z + k * d[1]) & 0xffffffffL));
+                        }
+                    }
+                }
+                // one arm toward the lanes, or none (the abandoned ones that lost it)
+                assertTrue(found <= 1, c + " pole with two arms at " + x + "," + z);
+                if (found == 1) {
+                    arms++;
+                } else {
+                    armless++;
+                }
+            }
+            // no arm without its post
+            for (var e : lamp.entrySet()) {
+                if (e.getValue() != City.LAMP_POLE) {
+                    assertTrue(armOfAPole.contains(e.getKey()), c + " arm without a post at " + (e.getKey() >> 32) + "," + (int) (long) e.getKey());
+                }
+            }
+        }
+        // a 2 x 2 city has 12 segments (6 of 180, 6 of 120) with 2 x 7 or 2 x 5 places: 144; ~10% gone, ~5% armless
+        double perCity = poles / 20.0;
+        System.out.printf("[WorldPlanTest] street lights: %.1f posts per city, %d with arm, %d without%n", perCity, arms, armless);
+        assertTrue(perCity > 144 * 0.8 && perCity < 144 * 0.95, "posts per city " + perCity);
+        assertTrue(armless > 0 && armless < poles * 0.12, "armless " + armless);
+        // in the chunk plans: the post on the sidewalk (not drivable), the arm over the lanes
+        City c0 = allCities(p).get(0);
+        int checked = 0;
+        for (int cz = ((int) c0.cz - 240) >> 4; cz <= ((int) c0.cz + 240) >> 4; cz++) {
+            for (int cx = ((int) c0.cx - 240) >> 4; cx <= ((int) c0.cx + 240) >> 4; cx++) {
+                ChunkPlan cp = p.chunk(cx, cz);
+                for (int i = 0; i < 256; i++) {
+                    if ((cp.flags[i] & ChunkPlan.F_POLE) != 0) {
+                        checked++;
+                        assertEquals(ChunkPlan.SIDEWALK, cp.zone[i]);
+                        assertFalse(cp.drivable(i));
+                    }
+                    if ((cp.flags[i] & ChunkPlan.F_ARM) != 0) {
+                        assertTrue(cp.zone[i] == ChunkPlan.LANE || cp.zone[i] == ChunkPlan.MARK, "arm zone " + cp.zone[i]);
+                        assertTrue(cp.drivable(i));
+                    }
+                }
+            }
+        }
+        assertTrue(checked > 100, "posts in the chunk plans " + checked);
+    }
+
+    @Test
     void cutCrownsHangOverSidewalksAndCores() {
         java.util.Map<String, Integer> why = new java.util.TreeMap<>();
         int placed = 0;

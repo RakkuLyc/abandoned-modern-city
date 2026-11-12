@@ -632,6 +632,15 @@ public final class WorldPlan {
                         zone = ChunkPlan.LANE;
                     }
                     cp.zone[i] = zone;
+                    // the street lights: the post on the sidewalk, the arm (and its lamp) over the lanes
+                    if (hit.lamp == City.LAMP_POLE && zone == ChunkPlan.SIDEWALK) {
+                        cp.flags[i] |= ChunkPlan.F_POLE;
+                    } else if (hit.lamp >= City.LAMP_ARM_PART && zone != ChunkPlan.SIDEWALK) {
+                        cp.flags[i] |= ChunkPlan.F_ARM;
+                        if (hit.lamp == City.LAMP_GLASS) {
+                            cp.flags[i] |= ChunkPlan.F_GLASS;
+                        }
+                    }
                 } else if (cLot) {
                     // lots win over the highway band (both are 33 wide, so this only trims the curve's outside)
                     cp.kind[i] = ChunkPlan.LOT;

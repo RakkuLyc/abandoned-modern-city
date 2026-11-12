@@ -226,8 +226,23 @@ public final class WorldAudit {
             r.fail("height_mismatch", where + " plan " + h2 / 2.0 + " world " + m);
         }
         int free = tunnel ? com.abandonedmoderncity.core.Params.CLEARANCE : 4;
+        // the street light of the column (post, arm, lamp): planned there, checked whole
+        for (int y = ys + 1; y <= ys + com.abandonedmoderncity.core.City.LAMP_POST; y++) {
+            BlockState want = Palette.lampAt(cp.flags[i], y, ys);
+            if (want != null) {
+                BlockState s = at(c, p, x, y, z);
+                if (s.getBlock() != want.getBlock()) {
+                    r.fail("street_light", x + "," + y + "," + z + " " + id(s) + " expected " + id(want));
+                } else {
+                    r.stat("street_light_blocks", 1);
+                }
+            }
+        }
         for (int y = ys + 1; y <= ys + free; y++) {
             BlockState s = at(c, p, x, y, z);
+            if (Palette.lampAt(cp.flags[i], y, ys) != null) {
+                continue;
+            }
             int plant = decay == BlockCode.KEEP ? BlockCode.KEEP
                     : com.abandonedmoderncity.core.RoadDecay.plant(plan.seed, x, z, y - ys, decay);
             if (plant != BlockCode.KEEP) {

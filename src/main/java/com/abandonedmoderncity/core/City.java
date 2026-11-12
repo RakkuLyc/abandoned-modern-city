@@ -560,6 +560,8 @@ public final class City {
         public boolean mark;
         /** On a white stripe of a crosswalk (only outside intersections). */
         public boolean crosswalk;
+        /** Street light at the column ({@link #LAMP_EVERY}): {@link #LAMP_NONE}, POLE, ARM or GLASS. */
+        public byte lamp;
         /** Number of street bands covering the column (2+ = intersection). */
         public int count;
         /** Buildable ground of a city block (not street, inside the rounded corners). */
@@ -575,6 +577,7 @@ public final class City {
             lane = false;
             mark = false;
             crosswalk = false;
+            lamp = LAMP_NONE;
             count = 0;
             lot = false;
             edge = Double.POSITIVE_INFINITY;
@@ -648,6 +651,7 @@ public final class City {
                     markRun = SZ - (int) (2 * hw);
                 }
                 crossCandidate |= crosswalk(u - U(i), v - V(bj) - hw, SZ - (int) (2 * hw));
+                lampCandidate(h, u - U(i), v - V(bj) - hw, SZ - (int) (2 * hw), 0, i, bj);
             }
         }
         // east-west streets
@@ -659,9 +663,13 @@ public final class City {
                     markRun = SX - (int) (2 * hw);
                 }
                 crossCandidate |= crosswalk(v - V(j), u - U(bi) - hw, SX - (int) (2 * hw));
+                lampCandidate(h, v - V(j), u - U(bi) - hw, SX - (int) (2 * hw), 1, bi, j);
             }
         }
         h.mark = h.count == 1 && markCandidate && dash((int) Math.floor(markAlong), markRun);
+        if (h.count != 1) {
+            h.lamp = LAMP_NONE;
+        }
         h.crosswalk = h.count == 1 && crossCandidate && !h.mark;
         if (!h.road && L.isCity(bi, bj)) {
             h.lot = true;
@@ -704,6 +712,53 @@ public final class City {
         int len = n * Params.DASH + (n - 1) * Params.DASH_GAP;
         int k = t - (run - len) / 2;
         return k >= 0 && k < len && k % (Params.DASH + Params.DASH_GAP) < Params.DASH;
+    }
+
+    /**
+     * Street lights (asked by the user, 13 nov 2026, after his example poste_exemplo): on every segment of street,
+     * one every {@link #LAMP_EVERY} blocks on both sides, facing each other, centered on the segment (7 a side on the
+     * segments of 180, 5 on those of 120, away from the crosswalks and the crossings). The post (polished andesite,
+     * {@link #LAMP_POST} high) stands on the sidewalk row next to the lanes; its arm (polished andesite slabs) reaches
+     * {@link #LAMP_ARM} blocks over the lanes at the height {@link #LAMP_ARM_Y}, and a light gray glass hangs under
+     * its end (an unlit lamp). Abandoned: {@link #LAMP_GONE} of them are gone, {@link #LAMP_BROKEN} more lost the arm.
+     */
+    public static final int LAMP_EVERY = 24;
+    public static final int LAMP_POST = 13;
+    public static final int LAMP_ARM = 4;
+    public static final int LAMP_ARM_Y = 12;
+    public static final double LAMP_GONE = 0.10;
+    public static final double LAMP_BROKEN = 0.05;
+    public static final byte LAMP_NONE = 0;
+    public static final byte LAMP_POLE = 1;
+    public static final byte LAMP_ARM_PART = 2;
+    public static final byte LAMP_GLASS = 3;
+
+    /** Positions along a segment {@code run} long where its lights stand (centered, {@link #LAMP_EVERY} apart). */
+    static boolean lampAt(int t, int run) {
+        int n = (run - 2 * 10) / LAMP_EVERY + 1;
+        int first = (run - (n - 1) * LAMP_EVERY) / 2;
+        return t >= first && t <= first + (n - 1) * LAMP_EVERY && (t - first) % LAMP_EVERY == 0;
+    }
+
+    /**
+     * The light (if any) at signed distance {@code across} from the centerline of a segment, {@code along} blocks into
+     * it; {@code axis}, {@code a} and {@code b} name the segment (for the decay of each light).
+     */
+    private void lampCandidate(Hit h, double across, double along, int run, int axis, int a, int b) {
+        double lane = Params.STREET_LANE_HW;
+        double d = Math.abs(across);
+        byte role = d > lane && d <= lane + 1 ? LAMP_POLE
+                : d > lane - LAMP_ARM && d <= lane - LAMP_ARM + 1 ? LAMP_GLASS
+                : d > lane - LAMP_ARM && d <= lane ? LAMP_ARM_PART : LAMP_NONE;
+        int t = (int) Math.floor(along);
+        if (role == LAMP_NONE || t < 0 || t >= run || !lampAt(t, run)) {
+            return;
+        }
+        double r = Hash.unit(Hash.of(seed, 0x4C414D50L + axis, a * 4096L + b, t * 2L + (across < 0 ? 0 : 1)));
+        if (r < LAMP_GONE || r < LAMP_GONE + LAMP_BROKEN && role != LAMP_POLE) {
+            return;
+        }
+        h.lamp = role;
     }
 
     /** Rows of a crosswalk along the street, and lane rows between it and the crossing. */

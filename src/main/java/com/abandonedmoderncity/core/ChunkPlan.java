@@ -39,6 +39,11 @@ public final class ChunkPlan {
     public static final byte F_LIGHT = 8;
     /** A hole through the deck of a bridge ({@link Wreck}): nothing there, not drivable. */
     public static final byte F_HOLE = 16;
+    /** Street lights ({@link City#LAMP_EVERY}): the post on the sidewalk (not drivable), its arm over the lanes, the
+     *  glass lamp under the arm's end. */
+    public static final byte F_POLE = 32;
+    public static final byte F_ARM = 64;
+    public static final byte F_GLASS = (byte) 128;
 
     public final int cx;
     public final int cz;
@@ -71,7 +76,7 @@ public final class ChunkPlan {
 
     /** Whether a road column can be driven / walked on (everything but the raised parapet). */
     public boolean drivable(int i) {
-        return kind[i] == ROAD && !walled(zone[i]) && (flags[i] & F_HOLE) == 0;
+        return kind[i] == ROAD && !walled(zone[i]) && (flags[i] & (F_HOLE | F_POLE)) == 0;
     }
 
     /** y of the surface block of a road column (a full block, or a bottom slab when h2 is odd). */

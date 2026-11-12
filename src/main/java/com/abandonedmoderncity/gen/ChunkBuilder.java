@@ -368,11 +368,27 @@ final class ChunkBuilder {
                 }
             }
         }
+        lamp(flags, x, ys, z);
         if (ChunkPlan.walled(zone)) {
             int top = wallTop(plan, x, z);
             for (int y = ys + 1; y <= top; y++) {
                 set(x, y, z, wallState(plan, x, y, z));
             }
+        }
+    }
+
+    /** The street light parts of a road column (after its plants: the post replaces them). */
+    private void lamp(byte flags, int x, int ys, int z) {
+        if ((flags & ChunkPlan.F_POLE) != 0) {
+            for (int y = ys + 1; y <= ys + com.abandonedmoderncity.core.City.LAMP_POST; y++) {
+                set(x, y, z, Palette.LAMP_POST);
+            }
+        }
+        if ((flags & ChunkPlan.F_ARM) != 0) {
+            set(x, ys + com.abandonedmoderncity.core.City.LAMP_ARM_Y, z, Palette.LAMP_ARM);
+        }
+        if ((flags & ChunkPlan.F_GLASS) != 0) {
+            set(x, ys + com.abandonedmoderncity.core.City.LAMP_ARM_Y - 1, z, Palette.LAMP_GLASS);
         }
     }
 
@@ -709,6 +725,14 @@ final class ChunkBuilder {
                         int free1 = ys + (tunnel ? Params.CLEARANCE : 4);
                         for (int y = free0; y <= free1 && y < maxY; y++) {
                             BlockState s = nc.getBlockState(p.set(x, y, z));
+                            BlockState post = Palette.lampAt(np.flags[i], y, ys);
+                            if (post != null) {
+                                // the foot of a street light post
+                                if (s != post) {
+                                    region.setBlock(p, post, Block.UPDATE_CLIENTS);
+                                }
+                                continue;
+                            }
                             int plant = decay == BlockCode.KEEP ? BlockCode.KEEP : RoadDecay.plant(plan.seed, x, z, y - ys, decay);
                             if (plant != BlockCode.KEEP) {
                                 // the plan's own plant on a taken-over column
@@ -730,6 +754,13 @@ final class ChunkBuilder {
                                         region.setBlock(n, Palette.STONE, Block.UPDATE_CLIENTS);
                                     }
                                 }
+                            }
+                        }
+                        // the rest of a street light (post above the free height, arm, lamp)
+                        for (int y = free1 + 1; y <= ys + com.abandonedmoderncity.core.City.LAMP_POST && y < maxY; y++) {
+                            BlockState part = Palette.lampAt(np.flags[i], y, ys);
+                            if (part != null && nc.getBlockState(p.set(x, y, z)) != part) {
+                                region.setBlock(p, part, Block.UPDATE_CLIENTS);
                             }
                         }
                         if (tunnel || !near) {

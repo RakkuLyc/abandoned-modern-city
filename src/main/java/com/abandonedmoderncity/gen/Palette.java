@@ -65,6 +65,25 @@ public final class Palette {
     public static final BlockState STONE = Blocks.STONE.defaultBlockState();
     /** Tunnel ceiling lights. */
     public static final BlockState LIGHT = Blocks.GLOWSTONE.defaultBlockState();
+    /** Street lights (City.LAMP_EVERY): post, arm (bottom slabs) and the unlit lamp under its end. */
+    public static final BlockState LAMP_POST = Blocks.POLISHED_ANDESITE.defaultBlockState();
+    public static final BlockState LAMP_ARM = Blocks.POLISHED_ANDESITE_SLAB.defaultBlockState();
+    public static final BlockState LAMP_GLASS = Blocks.LIGHT_GRAY_STAINED_GLASS.defaultBlockState();
+
+    /** What a street light puts at height y of a road column with these flags, or null. */
+    public static BlockState lampAt(byte flags, int y, int ys) {
+        int dy = y - ys;
+        if ((flags & com.abandonedmoderncity.core.ChunkPlan.F_POLE) != 0 && dy >= 1 && dy <= com.abandonedmoderncity.core.City.LAMP_POST) {
+            return LAMP_POST;
+        }
+        if ((flags & com.abandonedmoderncity.core.ChunkPlan.F_ARM) != 0 && dy == com.abandonedmoderncity.core.City.LAMP_ARM_Y) {
+            return LAMP_ARM;
+        }
+        if ((flags & com.abandonedmoderncity.core.ChunkPlan.F_GLASS) != 0 && dy == com.abandonedmoderncity.core.City.LAMP_ARM_Y - 1) {
+            return LAMP_GLASS;
+        }
+        return null;
+    }
 
     // ------------------------------------------------------------------ terrain fill
     public static final BlockState DIRT = Blocks.DIRT.defaultBlockState();
