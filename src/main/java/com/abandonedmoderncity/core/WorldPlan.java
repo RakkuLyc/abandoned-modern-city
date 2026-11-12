@@ -632,13 +632,13 @@ public final class WorldPlan {
                         zone = ChunkPlan.LANE;
                     }
                     cp.zone[i] = zone;
-                    // the street lights: the post on the sidewalk, the arm (and its lamp) over the lanes
-                    if (hit.lamp == City.LAMP_POLE && zone == ChunkPlan.SIDEWALK) {
-                        cp.flags[i] |= ChunkPlan.F_POLE;
-                    } else if (hit.lamp >= City.LAMP_ARM_PART && zone != ChunkPlan.SIDEWALK) {
-                        cp.flags[i] |= ChunkPlan.F_ARM;
-                        if (hit.lamp == City.LAMP_GLASS) {
-                            cp.flags[i] |= ChunkPlan.F_GLASS;
+                    // the street lights: the post and the vine behind it on the sidewalk, the arm over the lanes
+                    int[] lamp = City.lampParts(hit);
+                    if (lamp != null && (hit.lamp <= 0) == (zone == ChunkPlan.SIDEWALK)) {
+                        cp.flags[i] |= ChunkPlan.F_LAMP;
+                        if (lamp[1] != BlockCode.KEEP && !City.lampVine(lamp[1])) {
+                            // a block standing on the street: the post, or the lamp fallen on the lane
+                            cp.flags[i] |= ChunkPlan.F_POLE;
                         }
                     }
                 } else if (cLot) {

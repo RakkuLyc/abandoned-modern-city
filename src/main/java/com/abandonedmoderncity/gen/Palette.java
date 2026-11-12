@@ -65,10 +65,18 @@ public final class Palette {
     public static final BlockState STONE = Blocks.STONE.defaultBlockState();
     /** Tunnel ceiling lights. */
     public static final BlockState LIGHT = Blocks.GLOWSTONE.defaultBlockState();
-    /** Street lights (City.LAMP_EVERY): post, arm (bottom slabs) and the unlit lamp under its end. */
-    public static final BlockState LAMP_POST = Blocks.POLISHED_ANDESITE.defaultBlockState();
-    public static final BlockState LAMP_ARM = Blocks.POLISHED_ANDESITE_SLAB.defaultBlockState();
-    public static final BlockState LAMP_GLASS = Blocks.LIGHT_GRAY_STAINED_GLASS.defaultBlockState();
+    /** Blocks of the street lights, in the order of City.L_* (BlockCode.LAMP + index). */
+    public static final BlockState[] LAMP_STATES = {
+            b(Blocks.MOSSY_COBBLESTONE), b(Blocks.MOSSY_STONE_BRICKS), b(Blocks.POLISHED_DEEPSLATE),
+            b(Blocks.CRACKED_DEEPSLATE_BRICKS), b(Blocks.COBBLED_DEEPSLATE), b(Blocks.TUFF), b(Blocks.ANDESITE),
+            b(Blocks.MOSS_BLOCK), b(Blocks.MOSSY_STONE_BRICK_SLAB), b(Blocks.POLISHED_DEEPSLATE_SLAB),
+            b(Blocks.COBBLED_DEEPSLATE_SLAB), b(Blocks.GRAY_STAINED_GLASS), b(Blocks.TINTED_GLASS), b(Blocks.CHAIN),
+            Blocks.OAK_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true),
+            Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.UP, true),
+            Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.NORTH, true),
+            Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.EAST, true),
+            Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.SOUTH, true),
+            Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.WEST, true)};
     /** Park benches: spruce stairs (seat, back toward the facing) and open spruce trapdoors (armrests), per facing. */
     public static final BlockState[] BENCH_SEAT = benchParts(true);
     public static final BlockState[] BENCH_ARM = benchParts(false);
@@ -87,19 +95,20 @@ public final class Palette {
         return out;
     }
 
-    /** What a street light puts at height y of a road column with these flags, or null. */
-    public static BlockState lampAt(byte flags, int y, int ys) {
-        int dy = y - ys;
-        if ((flags & com.abandonedmoderncity.core.ChunkPlan.F_POLE) != 0 && dy >= 1 && dy <= com.abandonedmoderncity.core.City.LAMP_POST) {
-            return LAMP_POST;
+    /** The block a street light (City.lampParts) puts dy over the street surface, or null. */
+    public static BlockState lampBlock(int[] parts, int dy) {
+        if (parts == null || dy < 1 || dy >= parts.length || parts[dy] == BlockCode.KEEP) {
+            return null;
         }
-        if ((flags & com.abandonedmoderncity.core.ChunkPlan.F_ARM) != 0 && dy == com.abandonedmoderncity.core.City.LAMP_ARM_Y) {
-            return LAMP_ARM;
+        return of(parts[dy], 0, null);
+    }
+
+    /** The street light parts of a road column of a chunk plan, or null. */
+    public static int[] lampParts(com.abandonedmoderncity.core.ChunkPlan cp, int i, int x, int z) {
+        if ((cp.flags[i] & com.abandonedmoderncity.core.ChunkPlan.F_LAMP) == 0 || cp.city == null) {
+            return null;
         }
-        if ((flags & com.abandonedmoderncity.core.ChunkPlan.F_GLASS) != 0 && dy == com.abandonedmoderncity.core.City.LAMP_ARM_Y - 1) {
-            return LAMP_GLASS;
-        }
-        return null;
+        return cp.city.lampParts(x + 0.5, z + 0.5);
     }
 
     // ------------------------------------------------------------------ terrain fill
@@ -309,6 +318,9 @@ public final class Palette {
         }
         if (code >= BlockCode.TEMPLATE) {
             return fountain()[code - BlockCode.TEMPLATE];
+        }
+        if (code >= BlockCode.LAMP && code < BlockCode.LAMP + LAMP_STATES.length) {
+            return LAMP_STATES[code - BlockCode.LAMP];
         }
         if (code >= BlockCode.BENCH_SEAT && code < BlockCode.BENCH_SEAT + 4) {
             return BENCH_SEAT[code - BlockCode.BENCH_SEAT];
@@ -540,7 +552,7 @@ public final class Palette {
         set.addAll(List.of(PATH, RING_SLAB, TALL_GRASS_LOWER, TALL_GRASS_UPPER));
         set.addAll(List.of(BENCH_SEAT));
         set.addAll(List.of(BENCH_ARM));
-        set.addAll(List.of(LAMP_POST, LAMP_ARM, LAMP_GLASS));
+        set.addAll(List.of(LAMP_STATES));
         set.addAll(List.of(FLOWERS));
         set.addAll(List.of(WILD_LOGS));
         for (BlockState l : WILD_LEAVES) {

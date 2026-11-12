@@ -106,6 +106,8 @@ public final class BlockCode {
      *  back is); the armrest, an open spruce trapdoor, + facing. */
     public static final int BENCH_SEAT = 380;
     public static final int BENCH_ARM = 384;
+    /** Street lights ({@code City.lampParts}): LAMP + one of City.L_* (20 states). */
+    public static final int LAMP = 390;
     public static final int TEMPLATE = 1000;
     /**
      * Block of a building structure ({@link Structures}): {@code STRUCT + 4 * state + rotation}, the state being an index

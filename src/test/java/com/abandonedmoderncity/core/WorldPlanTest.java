@@ -2,6 +2,7 @@ package com.abandonedmoderncity.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -148,90 +149,107 @@ class WorldPlanTest {
     @Test
     void streetLightsStandOnTheSidewalksWithTheirArmsOverTheLanes() {
         WorldPlan p = plan(SEEDS[0], TestTerrain.Kind.FLAT);
+        int[] variants = new int[City.LAMP_VARIANTS];
         int poles = 0;
-        int arms = 0;
-        int armless = 0;
         int cities = 0;
+        int[][] dirs = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
         City.Hit hit = new City.Hit();
         for (City c : allCities(p)) {
             if (++cities > 20) {
                 break;
             }
             int r = c.radius + 40;
-            java.util.Map<Long, Byte> lamp = new java.util.HashMap<>();
-            for (int z = (int) c.cz - r; z <= (int) c.cz + r; z++) {
-                for (int x = (int) c.cx - r; x <= (int) c.cx + r; x++) {
+            java.util.Map<Long, int[]> parts = new java.util.HashMap<>();
+            java.util.Map<Long, int[]> info = new java.util.HashMap<>();
+            for (int z = c.cz - r; z <= c.cz + r; z++) {
+                for (int x = c.cx - r; x <= c.cx + r; x++) {
                     c.query(x + 0.5, z + 0.5, hit);
-                    if (hit.lamp != City.LAMP_NONE) {
-                        assertTrue(hit.road && hit.count == 1, c + " light outside a street segment at " + x + "," + z);
-                        assertFalse(hit.crosswalk, c + " light on a crosswalk at " + x + "," + z);
-                        lamp.put(((long) x << 32) | (z & 0xffffffffL), hit.lamp);
+                    int[] lp = City.lampParts(hit);
+                    if (lp == null) {
+                        continue;
+                    }
+                    assertTrue(hit.road && hit.count == 1 && !hit.crosswalk, c + " light off a street segment at " + x + "," + z);
+                    long k = ((long) x << 32) | (z & 0xffffffffL);
+                    parts.put(k, lp);
+                    info.put(k, new int[]{hit.lamp, hit.lampVariant, hit.lampFace});
+                }
+            }
+            for (var e : parts.entrySet()) {
+                int x = (int) (e.getKey() >> 32);
+                int z = (int) (long) e.getKey();
+                int[] lp = e.getValue();
+                int[] in = info.get(e.getKey());
+                int offset = in[0];
+                int v = in[1];
+                String where = c + " " + x + "," + z + " offset " + offset + " variant " + v;
+                if (offset == 0) {
+                    poles++;
+                    variants[v]++;
+                    for (int dy = 1; dy <= City.LAMP_POST; dy++) {
+                        assertTrue(lp[dy] != BlockCode.KEEP && !City.lampVine(lp[dy]), where + " post hole at " + dy);
+                    }
+                    assertEquals(v == City.V_OVERGROWN, lp[City.LAMP_TOP] == BlockCode.LAMP + City.L_LEAVES, where + " tuft");
+                } else if (offset == -1) {
+                    // a vine up the back of the post: the post right beside it at the same height
+                    int px = x + dirs[in[2]][0];
+                    int pz = z + dirs[in[2]][1];
+                    int[] post = parts.get(((long) px << 32) | (pz & 0xffffffffL));
+                    assertNotNull(post, where + " vine without its post");
+                    for (int dy = 1; dy < lp.length; dy++) {
+                        if (lp[dy] == BlockCode.KEEP) {
+                            continue;
+                        }
+                        assertEquals(BlockCode.LAMP + City.L_VINE + 1 + in[2], lp[dy], where + " not a vine facing the post");
+                        assertTrue(dy >= 3, where + " vine in the sidewalk's tall grass");
+                        assertTrue(post[dy] != BlockCode.KEEP && !City.lampVine(post[dy]), where + " vine on nothing at " + dy);
+                    }
+                } else {
+                    // over the lanes: nothing under the arm's height but the fallen lamp
+                    for (int dy = 1; dy < City.LAMP_ARM_Y - 1; dy++) {
+                        boolean fallen = v == City.V_FALLEN && offset == City.LAMP_ARM && dy == 1;
+                        assertEquals(fallen ? BlockCode.LAMP + City.L_GRAY_GLASS : BlockCode.KEEP, lp[dy], where + " at " + dy);
+                    }
+                    if (lp[City.LAMP_ARM_Y - 1] == BlockCode.LAMP + City.L_VINE) {
+                        assertTrue(lp[City.LAMP_ARM_Y] != BlockCode.KEEP, where + " hanging vine without the arm");
+                    }
+                    if (v == City.V_BROKEN) {
+                        assertEquals(offset <= 2, lp[City.LAMP_ARM_Y] != BlockCode.KEEP, where + " broken arm");
                     }
                 }
             }
-            java.util.Set<Long> armOfAPole = new java.util.HashSet<>();
-            for (var e : lamp.entrySet()) {
-                if (e.getValue() != City.LAMP_POLE) {
-                    continue;
-                }
-                poles++;
-                int x = (int) (e.getKey() >> 32);
-                int z = (int) (long) e.getKey();
-                int found = 0;
-                for (int[] d : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
-                    boolean whole = true;
-                    for (int k = 1; k <= City.LAMP_ARM; k++) {
-                        Byte b = lamp.get(((long) (x + k * d[0]) << 32) | ((z + k * d[1]) & 0xffffffffL));
-                        byte want = k == City.LAMP_ARM ? City.LAMP_GLASS : City.LAMP_ARM_PART;
-                        whole &= b != null && b == want;
+        }
+        double perCity = poles / 20.0;
+        System.out.printf("[WorldPlanTest] street lights: %.1f posts per city, variants %s%n", perCity, java.util.Arrays.toString(variants));
+        // 144 places per city, 10% gone; the 5 variants share the rest
+        assertTrue(perCity > 144 * 0.8 && perCity < 144 * 0.95, "posts per city " + perCity);
+        for (int n : variants) {
+            assertTrue(Math.abs(n - poles / 5.0) < poles * 0.06, "variants " + java.util.Arrays.toString(variants));
+        }
+        // in the chunk plans: posts and fallen lamps stand on the street (not drivable), the rest of a light does not
+        City c0 = allCities(p).get(0);
+        int posts = 0;
+        int fallen = 0;
+        int lit = 0;
+        for (int cz = (c0.cz - 240) >> 4; cz <= (c0.cz + 240) >> 4; cz++) {
+            for (int cx = (c0.cx - 240) >> 4; cx <= (c0.cx + 240) >> 4; cx++) {
+                ChunkPlan cp = p.chunk(cx, cz);
+                for (int i = 0; i < 256; i++) {
+                    if ((cp.flags[i] & ChunkPlan.F_LAMP) != 0) {
+                        lit++;
                     }
-                    if (whole) {
-                        found++;
-                        for (int k = 1; k <= City.LAMP_ARM; k++) {
-                            armOfAPole.add(((long) (x + k * d[0]) << 32) | ((z + k * d[1]) & 0xffffffffL));
+                    if ((cp.flags[i] & ChunkPlan.F_POLE) != 0) {
+                        assertTrue((cp.flags[i] & ChunkPlan.F_LAMP) != 0);
+                        assertFalse(cp.drivable(i));
+                        if (cp.zone[i] == ChunkPlan.SIDEWALK) {
+                            posts++;
+                        } else {
+                            fallen++;
                         }
                     }
                 }
-                // one arm toward the lanes, or none (the abandoned ones that lost it)
-                assertTrue(found <= 1, c + " pole with two arms at " + x + "," + z);
-                if (found == 1) {
-                    arms++;
-                } else {
-                    armless++;
-                }
-            }
-            // no arm without its post
-            for (var e : lamp.entrySet()) {
-                if (e.getValue() != City.LAMP_POLE) {
-                    assertTrue(armOfAPole.contains(e.getKey()), c + " arm without a post at " + (e.getKey() >> 32) + "," + (int) (long) e.getKey());
-                }
             }
         }
-        // a 2 x 2 city has 12 segments (6 of 180, 6 of 120) with 2 x 7 or 2 x 5 places: 144; ~10% gone, ~5% armless
-        double perCity = poles / 20.0;
-        System.out.printf("[WorldPlanTest] street lights: %.1f posts per city, %d with arm, %d without%n", perCity, arms, armless);
-        assertTrue(perCity > 144 * 0.8 && perCity < 144 * 0.95, "posts per city " + perCity);
-        assertTrue(armless > 0 && armless < poles * 0.12, "armless " + armless);
-        // in the chunk plans: the post on the sidewalk (not drivable), the arm over the lanes
-        City c0 = allCities(p).get(0);
-        int checked = 0;
-        for (int cz = ((int) c0.cz - 240) >> 4; cz <= ((int) c0.cz + 240) >> 4; cz++) {
-            for (int cx = ((int) c0.cx - 240) >> 4; cx <= ((int) c0.cx + 240) >> 4; cx++) {
-                ChunkPlan cp = p.chunk(cx, cz);
-                for (int i = 0; i < 256; i++) {
-                    if ((cp.flags[i] & ChunkPlan.F_POLE) != 0) {
-                        checked++;
-                        assertEquals(ChunkPlan.SIDEWALK, cp.zone[i]);
-                        assertFalse(cp.drivable(i));
-                    }
-                    if ((cp.flags[i] & ChunkPlan.F_ARM) != 0) {
-                        assertTrue(cp.zone[i] == ChunkPlan.LANE || cp.zone[i] == ChunkPlan.MARK, "arm zone " + cp.zone[i]);
-                        assertTrue(cp.drivable(i));
-                    }
-                }
-            }
-        }
-        assertTrue(checked > 100, "posts in the chunk plans " + checked);
+        assertTrue(posts > 100 && fallen > 5 && lit > posts * 4, "posts " + posts + ", fallen lamps " + fallen + ", light columns " + lit);
     }
 
     @Test

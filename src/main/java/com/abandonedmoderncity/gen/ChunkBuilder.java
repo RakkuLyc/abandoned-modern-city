@@ -397,7 +397,10 @@ final class ChunkBuilder {
                 }
             }
         }
-        if (decay != BlockCode.KEEP && (flags & ChunkPlan.F_HOLE) == 0) {
+        int[] lamp = Palette.lampParts(cp, i, x, z);
+        // no plant under a street light standing on the column (its post, or the lamp fallen on the lane)
+        boolean lampFoot = lamp != null && lamp[1] != BlockCode.KEEP;
+        if (decay != BlockCode.KEEP && (flags & ChunkPlan.F_HOLE) == 0 && !lampFoot) {
             // plants of a taken-over column (on the ground or on a bridge)
             for (int dy = 1; dy <= 2; dy++) {
                 int plant = RoadDecay.plant(plan.seed, x, z, dy, decay);
@@ -406,27 +409,17 @@ final class ChunkBuilder {
                 }
             }
         }
-        lamp(flags, x, ys, z);
+        for (int dy = 1; lamp != null && dy < lamp.length; dy++) {
+            BlockState part = Palette.lampBlock(lamp, dy);
+            if (part != null) {
+                set(x, ys + dy, z, part);
+            }
+        }
         if (ChunkPlan.walled(zone)) {
             int top = wallTop(plan, x, z);
             for (int y = ys + 1; y <= top; y++) {
                 set(x, y, z, wallState(plan, x, y, z));
             }
-        }
-    }
-
-    /** The street light parts of a road column (after its plants: the post replaces them). */
-    private void lamp(byte flags, int x, int ys, int z) {
-        if ((flags & ChunkPlan.F_POLE) != 0) {
-            for (int y = ys + 1; y <= ys + com.abandonedmoderncity.core.City.LAMP_POST; y++) {
-                set(x, y, z, Palette.LAMP_POST);
-            }
-        }
-        if ((flags & ChunkPlan.F_ARM) != 0) {
-            set(x, ys + com.abandonedmoderncity.core.City.LAMP_ARM_Y, z, Palette.LAMP_ARM);
-        }
-        if ((flags & ChunkPlan.F_GLASS) != 0) {
-            set(x, ys + com.abandonedmoderncity.core.City.LAMP_ARM_Y - 1, z, Palette.LAMP_GLASS);
         }
     }
 
@@ -742,6 +735,11 @@ final class ChunkBuilder {
                             continue;
                         }
                         int decay = RoadDecay.surface(plan.seed, x, z, zone, np.struct[i], ChunkPlan.isSlab(h2));
+                        int[] lamp = Palette.lampParts(np, i, x, z);
+                        if (lamp != null && lamp[1] != BlockCode.KEEP) {
+                            // a street light stands on the column: no plant there
+                            decay = BlockCode.KEEP;
+                        }
                         restore(region, nc, p.set(x, ys, z), Palette.roadSurfaceAt(plan.seed, x, z, zone, np.struct[i], ChunkPlan.isSlab(h2)));
                         restore(region, nc, p.set(x, ys - 1, z), bridge
                                 ? Palette.BRIDGE_STONES[RoadDecay.bridgeStone(plan.seed, x, ys - 1, z)] : Palette.roadBase(zone));
@@ -763,7 +761,7 @@ final class ChunkBuilder {
                         int free1 = ys + (tunnel ? Params.CLEARANCE : 4);
                         for (int y = free0; y <= free1 && y < maxY; y++) {
                             BlockState s = nc.getBlockState(p.set(x, y, z));
-                            BlockState post = Palette.lampAt(np.flags[i], y, ys);
+                            BlockState post = Palette.lampBlock(lamp, y - ys);
                             if (post != null) {
                                 // the foot of a street light post
                                 if (s != post) {
@@ -795,8 +793,8 @@ final class ChunkBuilder {
                             }
                         }
                         // the rest of a street light (post above the free height, arm, lamp)
-                        for (int y = free1 + 1; y <= ys + com.abandonedmoderncity.core.City.LAMP_POST && y < maxY; y++) {
-                            BlockState part = Palette.lampAt(np.flags[i], y, ys);
+                        for (int y = free1 + 1; y <= ys + com.abandonedmoderncity.core.City.LAMP_TOP && y < maxY; y++) {
+                            BlockState part = Palette.lampBlock(lamp, y - ys);
                             if (part != null && nc.getBlockState(p.set(x, y, z)) != part) {
                                 region.setBlock(p, part, Block.UPDATE_CLIENTS);
                             }
@@ -812,7 +810,9 @@ final class ChunkBuilder {
                                 continue;
                             }
                             BlockState s = section.getBlockState(lx, y & 15, lz);
-                            if (isDecoration(s) && !crowns.containsKey(BlockPos.asLong(x, y, z))) {
+                            // (the planned crowns and the vines and leaves of a street light stay)
+                            if (isDecoration(s) && !crowns.containsKey(BlockPos.asLong(x, y, z))
+                                    && Palette.lampBlock(lamp, y - ys) == null) {
                                 region.setBlock(p.set(x, y, z), Palette.AIR, Block.UPDATE_CLIENTS);
                             }
                         }

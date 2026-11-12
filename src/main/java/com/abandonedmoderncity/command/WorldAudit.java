@@ -228,9 +228,14 @@ public final class WorldAudit {
             r.fail("height_mismatch", where + " plan " + h2 / 2.0 + " world " + m);
         }
         int free = tunnel ? com.abandonedmoderncity.core.Params.CLEARANCE : 4;
-        // the street light of the column (post, arm, lamp): planned there, checked whole
-        for (int y = ys + 1; y <= ys + com.abandonedmoderncity.core.City.LAMP_POST; y++) {
-            BlockState want = Palette.lampAt(cp.flags[i], y, ys);
+        // the street light of the column (post, arm, lamp, vines): planned there, checked whole
+        int[] lamp = Palette.lampParts(cp, i, x, z);
+        if (lamp != null && lamp[1] != BlockCode.KEEP) {
+            // no plant under a street light standing on the column
+            decay = BlockCode.KEEP;
+        }
+        for (int y = ys + 1; y <= ys + com.abandonedmoderncity.core.City.LAMP_TOP; y++) {
+            BlockState want = Palette.lampBlock(lamp, y - ys);
             if (want != null) {
                 BlockState s = at(c, p, x, y, z);
                 if (s.getBlock() != want.getBlock()) {
@@ -242,7 +247,7 @@ public final class WorldAudit {
         }
         for (int y = ys + 1; y <= ys + free; y++) {
             BlockState s = at(c, p, x, y, z);
-            if (Palette.lampAt(cp.flags[i], y, ys) != null) {
+            if (Palette.lampBlock(lamp, y - ys) != null) {
                 continue;
             }
             int plant = decay == BlockCode.KEEP ? BlockCode.KEEP
@@ -279,6 +284,10 @@ public final class WorldAudit {
         } else {
             for (int y = ys + free + 1; y <= ys + 48 && y < c.getMaxBuildHeight(); y++) {
                 BlockState s = at(c, p, x, y, z);
+                if (Palette.lampBlock(lamp, y - ys) != null) {
+                    // a vine or the leaves of a street light (checked above, by street_light)
+                    continue;
+                }
                 if (crowns.containsKey(BlockPos.asLong(x, y, z)) && s.is(net.minecraft.tags.BlockTags.LEAVES)) {
                     // a crown of a structure's tree completed over the sidewalk, high over it
                     continue;

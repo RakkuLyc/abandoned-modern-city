@@ -53,14 +53,21 @@ existem as cidades 2 × 2 de quarteirões retangulares.
 - Trecho de rua de 180 ou 120 blocos (o lado do quarteirão) + 33 de cruzamento; quadrado 3 × 3 de `smooth_stone` em cada esquina de cruzamento.
 - Faixa central no 17º bloco da largura (o do meio), traços de 11 com intervalo de 6 (quantos couberem, centrados); `white_concrete` na cidade,
   `yellow_terracotta` nas rodovias.
-- Postes (pedido do usuário, a partir do exemplo `poste_exemplo.nbt`; `City.lampCandidate`, `ChunkPlan.F_POLE`/`F_ARM`/
-  `F_GLASS`, `ChunkBuilder.lamp`): em todo trecho de rua da cidade, um a cada 24 blocos (`City.LAMP_EVERY`) dos dois
+- Postes (pedido do usuário, a partir do exemplo `poste_exemplo.nbt`; `City.lampCandidate`, `City.lampParts`,
+  `ChunkPlan.F_LAMP`/`F_POLE`): em todo trecho de rua da cidade, um a cada 24 blocos (`City.LAMP_EVERY`) dos dois
   lados, frente a frente, centralizados no trecho (7 por lado nos trechos de 180, 5 nos de 120; longe das faixas de
-  pedestres e fora dos cruzamentos). Poste de `polished_andesite` com 13 de altura na fileira da calçada junto à
-  pista (não trafegável); braço de 4 lajes de `polished_andesite` a 12 de altura sobre a pista (acima da altura
-  livre de 7) e `light_gray_stained_glass` sob a ponta (apagado, como no exemplo). Abandono: 10% faltam
-  (`LAMP_GONE`), mais 5% sem o braço (`LAMP_BROKEN`); nos testes, 129,9 postes por cidade de 144 lugares. O reparo de
-  vizinhos recoloca as peças e a auditoria as confere (`street_light`, `street_light_blocks`).
+  pedestres e fora dos cruzamentos). Coluna de 13 na fileira da calçada junto à pista (não trafegável), braço de 4
+  lajes a 12 de altura sobre a pista (acima da altura livre de 7), luminária de vidro (apagada) sob a ponta. Abandonados
+  (13 nov 2026, pedido do usuário: "vinhas, tonalidade escura, blocos mossy"): 10% faltam (`LAMP_GONE`) e os outros
+  são uma de 5 variações, ~18% cada: musgosa (pedregulho e tijolo musgosos, laje musgosa, vidro cinza, vinha subindo
+  por trás da coluna de 3 a 10 e 2 vinhas sob o braço), escura (deepslate polido, rachado e pedregulho de deepslate,
+  laje de deepslate, vidro fumê, vinhas), quebrada (andesito, tufo e deepslate, só 2 das 4 lajes do braço, sem
+  luminária), lâmpada caída (braço inteiro, só uma corrente na ponta, o vidro cinza caído na pista embaixo: essa
+  coluna não é trafegável) e tomada (tijolo musgoso e bloco de musgo, tufo de folhas persistentes no topo, vinhas
+  por trás da coluna de 3 a 12 e sob o braço). As vinhas começam a 3 de altura (a grama alta da calçada tem 2) e sob
+  o braço pendem só 1 bloco (vinha presa pelo topo não segura outra); sobre a pista nada fica abaixo de 11 além da
+  lâmpada caída. O reparo de vizinhos recoloca as peças (e a limpeza de plantas penduradas as poupa); a auditoria as
+  confere (`street_light`, `street_light_blocks`).
 - Faixas de pedestres (11 nov 2026, `City.crosswalk`): em cada ponta de todo trecho de rua, 2 linhas de pista depois
   do quadrado do cruzamento, zebra de 3 linhas (`CROSSWALK_GAP` = 2, `CROSSWALK_DEPTH` = 3) com listras de
   `white_concrete` de 1 bloco e intervalo de 1, paralelas à rua, nos 27 de pista (14 listras, as duas de fora
