@@ -66,6 +66,7 @@ public final class WorldAudit {
             for (int cx = cx0; cx <= cx1; cx++) {
                 LevelChunk chunk = level.getChunk(cx, cz);
                 ChunkPlan cp = plan.chunk(cx, cz);
+                java.util.Map<Long, BlockState> crowns = com.abandonedmoderncity.gen.Overhangs.forChunk(plan, cx, cz);
                 for (int lz = 0; lz < 16; lz++) {
                     for (int lx = 0; lx < 16; lx++) {
                         int i = ChunkPlan.idx(lx, lz);
@@ -74,7 +75,7 @@ public final class WorldAudit {
                         int g = (x - x0) + (z - z0) * w;
                         switch (cp.kind[i]) {
                             case ChunkPlan.ROAD -> {
-                                double m = road(r, plan, chunk, cp, i, x, z, p);
+                                double m = road(r, plan, chunk, cp, i, x, z, p, crowns);
                                 if (cp.drivable(i)) {
                                     drivable[g] = true;
                                     walk[g] = m;
@@ -89,6 +90,16 @@ public final class WorldAudit {
                     }
                 }
                 containers(r, chunk, cp);
+                // the leaves completing the crowns a structure's edge cut: placed where there was air
+                for (java.util.Map.Entry<Long, BlockState> e : crowns.entrySet()) {
+                    BlockPos b = BlockPos.of(e.getKey());
+                    BlockState s = chunk.getBlockState(b);
+                    if (s.is(net.minecraft.tags.BlockTags.LEAVES)) {
+                        r.stat("crown_leaves", 1);
+                    } else if (s.isAir()) {
+                        r.fail("crown_leaf_missing", b.toShortString() + " expected " + id(e.getValue()));
+                    }
+                }
             }
         }
         // steps between neighbours, measured on the blocks
@@ -152,7 +163,7 @@ public final class WorldAudit {
     }
 
     private static double road(PlanAudit.Report r, WorldPlan plan, LevelChunk c, ChunkPlan cp, int i, int x, int z,
-                               BlockPos.MutableBlockPos p) {
+                               BlockPos.MutableBlockPos p, java.util.Map<Long, BlockState> crowns) {
         int h2 = cp.h2[i];
         boolean slab = ChunkPlan.isSlab(h2);
         int ys = ChunkPlan.surfaceY(h2);
@@ -251,6 +262,10 @@ public final class WorldAudit {
         } else {
             for (int y = ys + free + 1; y <= ys + 48 && y < c.getMaxBuildHeight(); y++) {
                 BlockState s = at(c, p, x, y, z);
+                if (crowns.containsKey(BlockPos.asLong(x, y, z)) && s.is(net.minecraft.tags.BlockTags.LEAVES)) {
+                    // a crown of a structure's tree completed over the sidewalk, high over it
+                    continue;
+                }
                 if (!s.isAir() && (s.is(net.minecraft.tags.BlockTags.LEAVES) || s.is(net.minecraft.tags.BlockTags.LOGS)
                         || s.getBlock() instanceof net.minecraft.world.level.block.BushBlock
                         || s.getBlock() instanceof net.minecraft.world.level.block.VineBlock)) {

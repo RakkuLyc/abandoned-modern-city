@@ -53,13 +53,14 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 
 ## 2. O que é verificado
 
-### Unitários (34 testes)
+### Unitários (36 testes)
 
 | Teste | Verifica |
 |---|---|
 | `ProfileTest.profilesAreFlatOrRampAndJoinTheCities` | 4 000 perfis aleatórios (com penhascos): começa e termina no nível de cada cidade, 48 blocos planos nas pontas, variação ≤ 1/8 de bloco por bloco, trechos planos sempre em altura inteira, nunca abaixo do mínimo, superfície (meio-bloco) nunca muda mais de 0,5 entre vizinhos |
 | `ProfileTest.halfBlockStepsAreEvenlySpaced` | numa subida, os degraus de meia-laje ficam a pelo menos 4 blocos um do outro |
 | `ProfileTest.classificationRunsAreClean` | 2 000 perfis: junções sempre no chão, túneis ≥ 16, pontes secas ≥ 8, toda água fora das junções é ponte |
+| `WorldPlanTest.cutCrownsHangOverSidewalksAndCores` | nas cidades do terreno plano (1 237 chunks com copas completadas): 11 622 folhas no bosque e 892 sobre calçadas; 2 144 baixas demais sobre a rua e 13 onde o bosque já planeja algo ficam de fora; nenhuma em outra estrutura; cada uma no chunk pedido |
 | `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (357 cidades 2 × 2 de quarteirões 180 × 120, 11 818 lotes — estruturas, parques e miolos tomados pela natureza; nenhum quarteirão com duas estruturas iguais; em cada cidade no máximo 3 farmácias, 2 oficinas e 2 postos; 204 quarteirões de parque, cada um com o parque de 110 × 64 num canto e 1 009 estruturas em volta, nenhuma a menos de 4 blocos dele; gera `park_block.png`): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado; com as ruas cortadas desligadas (`MAX_CUTS` = 0) nenhuma cidade tem corte, senão todos os valores de 0 a `MAX_CUTS` aparecem; toda coluna de lote é lote do quarteirão certo e não toca rua |
 | `WorldPlanTest.streetWidthIsConstantOnStraightStreets` | toda rua reta de cidade tem exatamente 33 colunas; a zebra fica nas linhas 2 a 4 do trecho, com 14 listras, e não existe nas outras linhas |
 | `WorldPlanTest.highwayNetworkIsConsistentAndWellConnected` | 21 combinações terreno × seed: Gabriel simétrico, rodovia começa e termina exatamente na entrada de cada cidade, raio de curva ≥ 60, pontos a ~1 bloco, comprimento máximo, cruzamento de entrada nunca usado duas vezes (um canto tem duas saídas, mas só uma rodovia), no máximo 8 rodovias por cidade, nenhum par de rodovias perto demais (sem cruzamentos); limites: plano/colinas ≥ 85% das ligações e ≤ 5% de cidades sem rodovia, montanhas/rios/cânions ≤ 15%, e pelo menos metade das células com cidade (exceto ilhas); gera `network_*.png` |
@@ -81,6 +82,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `AccessTest.highContainersAreHard` | barril a `Access.HIGH` (15) blocos do chão, alcançável por escada, conta como difícil; baú no chão não |
 | `AccessTest.structuresHardContainers` | nas 21 estruturas: 173 de 882 contêineres de difícil acesso (entre 10% e 33%); os mesmos nas 4 rotações; prédios grandes e médios têm contêineres altos; nas casas no máximo 5% (4 de 356) |
 | `AccessTest.everyStructureHasItsLootTables` | as 6 tabelas do tema de cada estrutura existem; barril e vaso com 40% de chance, `barril_dificil` 75%, `vaso_dificil` 80%, baús sem chance de vir vazios; nada do Lost Cities ou do OAmP |
+| `RingTest.cutCrownsAreCompletedOutsideTheBox` | 174 folhas completam copas cortadas, só na casa com piscina, com garagem, de subúrbio, com torre e no prédio esqueleto; nas 4 rotações: todas fora da caixa e a até 4 dela, não persistentes, distância 1 a 6 com um vizinho um passo mais perto do tronco, sem repetir posição; as da casa com piscina ficam na frente e acima de `CLEARANCE` |
 | `RingTest.lightningRodsBecomeRedstoneTorches` | nenhum estado de para-raios sobra nas estruturas; 5 tochas de redstone de pé (uma no topo de cada estrutura que tinha para-raios); para-raios de lado vira tocha de parede com a mesma direção |
 | `RingTest.noFloatingCobwebs` | nenhuma teia das estruturas fica sem um bloco em que se prender (o chão conta); mais de 2 000 teias conferidas |
 | `RingTest.spawnLimitsHoldOverACity` | 300 cidades de 4 quarteirões sorteados em sequência: no máximo 3 farmácias, 2 oficinas, 2 postos |
@@ -114,7 +116,9 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
   - `step` (medido nos blocos, inclusive entre chunks).
 - **Espaço livre e decoração:**
   - `obstacle`, `cover` e `fluid_on_road` (4 blocos livres acima da pista, 7 em túneis);
-  - `vegetation_over_road` (até 48 acima).
+  - `vegetation_over_road` (até 48 acima; as folhas planejadas que completam copas de estruturas não contam);
+  - `crown_leaf_missing` (folha planejada de copa completada que ficou sem bloco; as conferidas são contadas em
+    `crown_leaves`).
 - **Estruturas:** `parapet`, `tunnel_ceiling` (`stone` ou `glowstone`), `tunnel_wall` e `pillar_floating`.
 - **Lotes:**
   - `lot_hole` (água que a estrutura põe no nível do chão, a piscina da mansão, não conta);
@@ -189,6 +193,8 @@ e a regra de escada e apoio no mesmo chunk.
 | 41 | `PlanAuditTest`, 12 nov (buracos nas pontes e desabamentos nos túneis, estes depois retirados) | `orphan_road` (18 de 105 auditorias): colunas de pista isoladas | a borda irregular, sorteada coluna a coluna, cercava colunas de pista | contorno irregular mas suave em volta do centro (ondas do ângulo) sem ilhas; 105 de 105 passam |
 | 42 | Bateria, 12 nov (pontes velhas) | servidor travado no viaduto e avisos `Detected setBlock in a far chunk` | nos trechos de muro caído, `wallTop` devolvia `Integer.MIN_VALUE + 1` e o laço da altura livre do reparo de vizinhos percorria ~2 bilhões de alturas; o muro também era posto nos trechos caídos (altura do vizinho) | `wallTop` devolve `Integer.MIN_VALUE` quando a coluna não tem muro e a altura livre começa na superfície |
 | 43 | Bateria e teste por RCON, 12–13 nov | a loot table `lostcitychest` (do Lost Cities) era rejeitada pelo Minecraft ao carregar | escape a mais em `custom_data` | substituída, a pedido do usuário, pelas tabelas vanilla próprias (`tools/gen_loot.py`); o log da bateria não tem mais erro de loot table |
+| 44 | `WorldPlanTest`, 13 nov (copas completadas) | nenhuma folha de copa planejada | `WorldPlan.citiesIn` só devolve cidades cujo centro cai no retângulo pedido, e o retângulo de um chunk quase nunca contém o centro | `Crowns.forChunk` usa `cityNear` |
+| 45 | Bateria, 13 nov (copas completadas) | `crown_leaf_missing` (todas, até 324 por alvo) e avisos `Detected setBlock in a far chunk` | o reparo de vizinhos tirava as folhas como decoração solta sobre o lote e a rua e, ao conferir os 4 vizinhos do bloco tirado, chamava `ensureCanWrite` 2 chunks longe (o que loga o aviso) | o reparo pula as folhas planejadas (`Overhangs.forChunk` do vizinho) e só confere vizinhos dentro da área de escrita (`canWrite`) |
 | — | Bateria (infraestrutura) | servidores falhando com "Address already in use" | um servidor de uma bateria interrompida ainda terminava | o script usa a porta 25591 e se recusa a começar com um servidor de desenvolvimento vivo |
 
 ## 4. Como reproduzir
@@ -235,7 +241,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
 ## 6. Resultados atuais (12 nov 2026, quarteirões 180 × 120 com anel de estruturas com vãos e miolo tomado pela natureza, ruas e rodovias de 33, cidades no meio de células de 736, 4 entradas)
 
-- **Unitários:** 33 passam e 1 é pulado (o teste sem estruturas), 13 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
+- **Unitários:** 35 passam e 1 é pulado (o teste sem estruturas), 13 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
   - **Rede (7 terrenos × 3 seeds, 81 células), cidades no meio da célula de 736, 4 entradas (uma por lado):** 35 a
@@ -252,6 +258,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 13 nov | copas cortadas completadas para fora das estruturas | PASS: 8 de 8, 0 erros de geração, 0 avisos de `far chunk`; 151 folhas de copa conferidas na cidade do spawn, 324 na mais alta, 307 na mais acidentada; 2,62 ms por chunk, 250 s |
   | `20261027` | padrão (8 alvos) | 13 nov | nunca duas estruturas iguais no mesmo quarteirão | PASS: 8 de 8, 0 erros de geração; na cidade do spawn 906 contêineres com a tabela certa, 156 de difícil acesso; 2,87 ms por chunk, 247 s |
   | `20261027` | padrão (8 alvos) | 13 nov | loot vanilla por tema, contêiner e acesso | PASS: 8 de 8, 0 erros de geração; na cidade do spawn 902 contêineres com a tabela certa, 105 de difícil acesso; 2,68 ms por chunk, 256 s. Por RCON, 300 sorteios de cada uma das 30 tabelas: barril vazio em 58–62% (0,74–0,85 pilha), `barril_dificil` vazio em 19–30% (2,1–2,4 pilhas), baú 4,5–4,6 pilhas, `bau_dificil` 7,9–8,1, vaso vazio em 58–65%, `vaso_dificil` em 19–22%; poções com efeito, ferramentas gastas e encantadas e livros encantados conferidos; `/amcs spawn` do prédio apocalíptico pôs 73 contêineres, 56 de difícil acesso |
   | `20261027` | padrão (8 alvos) | 13 nov | para-raios trocados por tochas de redstone | PASS: 8 de 8, 0 erros de geração, 2,72 ms por chunk, 261 s |

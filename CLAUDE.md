@@ -168,8 +168,17 @@ existem as cidades 2 × 2 de quarteirões retangulares.
     (`Structures.floorFill`); os enfeites (banners da farmácia, vinhas das oficinas) ficam;
   - árvores das estruturas com leaf decay: folhas a até 6 (pelas folhas) de um tronco do molde viram não
     persistentes com a distância certa; folhas sem tronco perto (sebes, arbustos) continuam persistentes;
+  - copas cortadas pela borda do molde são completadas para fora da estrutura (13 nov 2026, pedido do usuário pela
+    árvore em frente à casa com piscina; `Structures.crowns`, `core/Crowns`, `gen/Overhangs`): cada folha real de uma
+    copa (a até 4 blocos na horizontal de um tronco de 3+ troncos naturais, não descascados, e 2+ acima do pé dele) é
+    espelhada em volta do tronco, em x, em z e nos dois; o espelho que cai fora da caixa vira folha não persistente,
+    com a distância contada pelas folhas (até 6). São 174 folhas em 5 estruturas: casa com piscina 11 (sobre a
+    calçada, a 13–16 do chão), casa com garagem 23, casa de subúrbio 20, casa com torre 15 e prédio esqueleto 105
+    (no bosque do miolo). Sobre rua ou calçada só a mais de `Params.CLEARANCE` (7) blocos da superfície; no bosque ou
+    parque onde ele não planeja nada; nunca em outra estrutura; só onde há ar. O reparo de vizinhos e a limpeza de
+    folhas órfãs as mantêm; a auditoria as confere (`crown_leaves`, `crown_leaf_missing`);
   - as árvores dos miolos não entram nas estruturas (1 bloco de folga) e as estruturas nunca se sobrepõem
-    (as árvores de cada estrutura ficam dentro da caixa dela);
+    (as árvores de cada estrutura ficam dentro da caixa dela, menos as copas completadas acima);
   - vãos (12 nov 2026, pedido do usuário): as estruturas não se encostam; entre duas vizinhas de uma linha, e entre a
     mais funda de uma linha dos lados curtos e as linhas dos lados compridos, sorteia-se um vão de 4 a 17 blocos
     (`Ring.GAP_MIN`/`GAP_MAX`; eram 10 a 19, reduzido pelo usuário no mesmo dia); entre os fundos de linhas opostas fica sempre o bosque do miolo, com folga sorteada de

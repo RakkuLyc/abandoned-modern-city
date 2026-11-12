@@ -74,6 +74,9 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
 
   - Encostadas na calçada sem vão: as fileiras da borda sem piso recebem o piso da primeira fileira que tem.
   - As árvores das estruturas têm leaf decay (folhas ligadas a um tronco); sebes sem tronco continuam persistentes.
+  - Copas cortadas pela borda do molde são completadas espelhando a copa em volta do tronco: 174 folhas em 5
+    estruturas (casa com piscina, com garagem, de subúrbio, com torre, prédio esqueleto), penduradas sobre o bosque
+    ou, a mais de 7 blocos de altura, sobre a calçada.
   - As estruturas não se encostam: vão sorteado de 4 a 17 blocos entre vizinhas, e sempre 20 a 30 blocos de bosque
     entre os fundos de lados opostos. As árvores dos miolos não entram nas estruturas.
   - Os banners mantêm o desenho do molde: as farmácias têm as letras DRUGSTORE.
@@ -173,6 +176,7 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
   Ring           anel de estruturas em volta do quarteirão (lados curtos inteiros, compridos no que sobra), vãos, limites
   Structures     as 21 estruturas de `amcs/buildings/index.txt`: caixa, camada do chão, piso até a borda, folhas reais, rotação
   Access         contêineres de difícil acesso das estruturas (altos ou fora do alcance andando): loot mais generoso
+  Crowns         onde vão as folhas que completam copas cortadas pela borda das estruturas (gen/Overhangs as põe)
   Park           parques tomados pela natureza, com caminhos e fonte
   Template       estruturas .nbt do usuário (fonte waterfall.nbt)
   Highway        curva entre duas entradas de cidade, pontos a cada bloco, projeção de colunas

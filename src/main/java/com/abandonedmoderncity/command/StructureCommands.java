@@ -223,6 +223,15 @@ public final class StructureCommands {
                 }
             }
         }
+        // the leaves completing the crowns its template cut, where there is air
+        for (int[] o : def.overhangs(rot)) {
+            pos.set(x0 + o[0], base + o[1], z0 + o[2]);
+            BlockState s = Palette.of(o[3], 0, null);
+            if (s != null && level.getBlockState(pos).isAir()) {
+                level.setBlock(pos, s, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+                placed++;
+            }
+        }
         final int n = placed;
         final int k = containers;
         final int kh = hardOnes;

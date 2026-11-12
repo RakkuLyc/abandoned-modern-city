@@ -136,6 +136,25 @@ public final class Lot {
         return building == null ? null : building.banner(x - x0, y - base, z - z0, rot);
     }
 
+    private List<int[]> overhangs;
+
+    /**
+     * Leaves completing the tree crowns its template cut ({@link Structures.Def#overhangs}), out of this lot: each
+     * {x, ry, z, code} in world x and z, ry over the base.
+     */
+    public List<int[]> overhangs() {
+        if (overhangs == null) {
+            List<int[]> out = new java.util.ArrayList<>();
+            if (building != null) {
+                for (int[] o : building.overhangs(rot)) {
+                    out.add(new int[]{x0 + o[0], o[1], z0 + o[2], o[3]});
+                }
+            }
+            overhangs = List.copyOf(out);
+        }
+        return overhangs;
+    }
+
     /** Whether the structure container at (x, y, z) is hard to get to ({@link Access}): more generous loot. */
     public boolean hardAt(int x, int y, int z, int base) {
         return building != null && building.hard(x - x0, y - base, z - z0, rot);

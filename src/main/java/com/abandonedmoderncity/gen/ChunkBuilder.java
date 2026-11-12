@@ -136,7 +136,25 @@ final class ChunkBuilder {
             }
         }
         seal();
+        overhangs();
         removeOrphanLeaves();
+    }
+
+    /** Chunk key -> the crown leaves hanging out of structures planned there ({@link Overhangs}). */
+    private final java.util.Map<Long, java.util.Map<Long, BlockState>> overhangCache = new java.util.HashMap<>();
+
+    private java.util.Map<Long, BlockState> overhangsOf(int cx, int cz) {
+        return overhangCache.computeIfAbsent(ChunkPos.asLong(cx, cz), k -> Overhangs.forChunk(plan, cx, cz));
+    }
+
+    /** The leaves that complete the crowns cut by a structure's edge, where this chunk has air for them. */
+    private void overhangs() {
+        for (java.util.Map.Entry<Long, BlockState> e : overhangsOf(chunk.getPos().x, chunk.getPos().z).entrySet()) {
+            BlockPos b = BlockPos.of(e.getKey());
+            if (chunk.getBlockState(b).isAir()) {
+                set(b.getX(), b.getY(), b.getZ(), e.getValue());
+            }
+        }
     }
 
     /**
@@ -461,6 +479,9 @@ final class ChunkBuilder {
      * are real leaves too, but their trunk may stand in a chunk not built yet, so they are never taken for orphans.
      */
     private boolean plannedLeaves(int x, int y, int z) {
+        if (overhangsOf(x >> 4, z >> 4).containsKey(BlockPos.asLong(x, y, z))) {
+            return true;
+        }
         ChunkPlan p = plan.chunk(x >> 4, z >> 4);
         int i = ChunkPlan.idx(x & 15, z & 15);
         if (p.kind[i] != ChunkPlan.LOT || p.lot[i] == null) {
@@ -625,6 +646,8 @@ final class ChunkBuilder {
                 if (!nc.getPersistedStatus().isOrAfter(ChunkStatus.FEATURES)) {
                     continue;
                 }
+                // the leaves completing structure crowns planned there are not stray decoration
+                java.util.Map<Long, BlockState> crowns = Overhangs.forChunk(plan, c.x + dx, c.z + dz);
                 int maxY = nc.getMaxBuildHeight();
                 int nbx = (c.x + dx) << 4;
                 int nbz = (c.z + dz) << 4;
@@ -648,7 +671,7 @@ final class ChunkBuilder {
                             // a structure is put back over its whole height near the border (ore blobs of the chunk
                             // decorated later reach it at any height)
                             int above = near && lot != null ? Math.max(LOT_REPAIR_ABOVE, lot.heightAboveBase()) : LOT_REPAIR_ABOVE;
-                            repairLot(region, nc, p, n, x, z, np.h2[i] / 2 - 1, lot,
+                            repairLot(region, nc, p, n, crowns, x, z, np.h2[i] / 2 - 1, lot,
                                     np.city != null ? np.city.yardCode() : BlockCode.GRASS, above);
                             continue;
                         }
@@ -703,7 +726,7 @@ final class ChunkBuilder {
                             if (liquid) {
                                 for (Direction d : Direction.Plane.HORIZONTAL) {
                                     n.set(x + d.getStepX(), y, z + d.getStepZ());
-                                    if (region.ensureCanWrite(n) && !region.getBlockState(n).getFluidState().isEmpty()) {
+                                    if (canWrite(region, n) && !region.getBlockState(n).getFluidState().isEmpty()) {
                                         region.setBlock(n, Palette.STONE, Block.UPDATE_CLIENTS);
                                     }
                                 }
@@ -720,7 +743,7 @@ final class ChunkBuilder {
                                 continue;
                             }
                             BlockState s = section.getBlockState(lx, y & 15, lz);
-                            if (isDecoration(s)) {
+                            if (isDecoration(s) && !crowns.containsKey(BlockPos.asLong(x, y, z))) {
                                 region.setBlock(p.set(x, y, z), Palette.AIR, Block.UPDATE_CLIENTS);
                             }
                         }
@@ -739,7 +762,8 @@ final class ChunkBuilder {
      * of buildings, park trees and plazas are put back, and liquids are removed (with the liquid next to them sealed).
      */
     private static void repairLot(WorldGenRegion region, ChunkAccess nc, BlockPos.MutableBlockPos p,
-                                  BlockPos.MutableBlockPos n, int x, int z, int base, Lot lot, int yard, int above) {
+                                  BlockPos.MutableBlockPos n, java.util.Map<Long, BlockState> crowns, int x, int z,
+                                  int base, Lot lot, int yard, int above) {
         boolean paved = yard != BlockCode.GRASS;
         int depth = lot == null ? 0 : lot.depthBelowBase();
         for (int y = base - 3; y < base - depth; y++) {
@@ -762,11 +786,13 @@ final class ChunkBuilder {
             if (code == BlockCode.KEEP || code == BlockCode.AIR || code == BlockCode.SHRUB) {
                 // inside a building everything that is not the building goes; over a yard only liquids do
                 boolean rock = paved && s.is(Blocks.MOSSY_COBBLESTONE);
-                if (liquid || code == BlockCode.AIR && !s.isAir() || code == BlockCode.KEEP && y > base && (isDecoration(s) || rock)) {
+                boolean crown = code == BlockCode.KEEP && crowns.containsKey(BlockPos.asLong(x, y, z));
+                if (liquid || code == BlockCode.AIR && !s.isAir()
+                        || code == BlockCode.KEEP && y > base && !crown && (isDecoration(s) || rock)) {
                     region.setBlock(p, Palette.AIR, Block.UPDATE_CLIENTS);
                     for (Direction d : Direction.Plane.HORIZONTAL) {
                         n.set(x + d.getStepX(), y, z + d.getStepZ());
-                        if (region.ensureCanWrite(n) && !region.getBlockState(n).getFluidState().isEmpty()
+                        if (canWrite(region, n) && !region.getBlockState(n).getFluidState().isEmpty()
                                 && !plannedFluid(lot, n.getX(), y, n.getZ(), base)) {
                             region.setBlock(n, Palette.STONE, Block.UPDATE_CLIENTS);
                         }
@@ -796,7 +822,8 @@ final class ChunkBuilder {
                 continue;
             }
             int code = lot == null ? BlockCode.KEEP : lot.code(x, y, z, base);
-            if ((code == BlockCode.KEEP || code == BlockCode.AIR) && isDecoration(section.getBlockState(x & 15, y & 15, z & 15))) {
+            if ((code == BlockCode.KEEP || code == BlockCode.AIR) && isDecoration(section.getBlockState(x & 15, y & 15, z & 15))
+                    && !crowns.containsKey(BlockPos.asLong(x, y, z))) {
                 region.setBlock(p.set(x, y, z), Palette.AIR, Block.UPDATE_CLIENTS);
             }
         }
@@ -864,6 +891,15 @@ final class ChunkBuilder {
     }
 
     /** Puts back one block of the road structure if something else took its place. */
+    /**
+     * Whether the region may write at {@code p}: asked before touching the neighbour of a repaired block, which can lie
+     * two chunks from the center ({@code ensureCanWrite} would log "setBlock in a far chunk" for it).
+     */
+    private static boolean canWrite(WorldGenRegion region, BlockPos p) {
+        ChunkPos c = region.getCenter();
+        return Math.abs((p.getX() >> 4) - c.x) <= 1 && Math.abs((p.getZ() >> 4) - c.z) <= 1 && region.ensureCanWrite(p);
+    }
+
     private static void restore(WorldGenRegion region, ChunkAccess nc, BlockPos.MutableBlockPos p, BlockState want) {
         if (nc.getBlockState(p) != want) {
             region.setBlock(p, want, Block.UPDATE_CLIENTS);

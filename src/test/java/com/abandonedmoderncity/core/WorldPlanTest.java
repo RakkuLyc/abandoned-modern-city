@@ -43,6 +43,44 @@ class WorldPlanTest {
     }
 
     @Test
+    void cutCrownsHangOverSidewalksAndCores() {
+        java.util.Map<String, Integer> why = new java.util.TreeMap<>();
+        int placed = 0;
+        WorldPlan p = plan(SEEDS[0], TestTerrain.Kind.FLAT);
+        java.util.Set<Long> chunks = new java.util.HashSet<>();
+        for (City c : allCities(p)) {
+            int n = c.gridHalf();
+            for (int bj = -n; bj <= n; bj++) {
+                for (int bi = -n; bi <= n; bi++) {
+                    for (Lot l : c.lots(bi, bj)) {
+                        for (int[] o : l.overhangs()) {
+                            chunks.add(((long) (o[0] >> 4) << 32) | ((o[2] >> 4) & 0xffffffffL));
+                        }
+                    }
+                }
+            }
+        }
+        for (long k : chunks) {
+            int cx = (int) (k >> 32);
+            int cz = (int) k;
+            java.util.Map<Long, Integer> m = Crowns.forChunk(p, cx, cz, why);
+            placed += m.size();
+            for (long pos : m.keySet()) {
+                // inside the chunk asked for
+                int x = (int) (pos >> 38);
+                int z = (int) (pos << 26 >> 38);
+                assertEquals(cx, x >> 4);
+                assertEquals(cz, z >> 4);
+            }
+        }
+        System.out.println("[WorldPlanTest] crown leaves near " + chunks.size() + " chunks: " + why + ", placed " + placed);
+        // the crowns hang over the core of the blocks and, high up, over the sidewalks
+        assertTrue(why.getOrDefault("core", 0) > 0, "no crown over a core " + why);
+        assertTrue(why.getOrDefault("street", 0) > 0, "no crown over a sidewalk " + why);
+        assertEquals(0, why.getOrDefault("another structure", 0), "crown into another structure " + why);
+    }
+
+    @Test
     void cityStreetsHaveNoDeadEndsAndLotsAreBuildable() throws java.io.IOException {
         int cities = 0;
         int lots = 0;

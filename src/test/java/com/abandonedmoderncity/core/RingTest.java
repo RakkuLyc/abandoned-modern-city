@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -371,6 +372,74 @@ class RingTest {
         assertEquals("minecraft:redstone_wall_torch[facing=east,lit=true]",
                 Structures.swap("minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]"));
         assertEquals("minecraft:stone", Structures.swap("minecraft:stone"));
+    }
+
+    @Test
+    void cutCrownsAreCompletedOutsideTheBox() {
+        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        int total = 0;
+        Set<String> with = new HashSet<>();
+        for (Structures.Def d : Structures.ALL) {
+            for (int rot = 0; rot < 4; rot++) {
+                List<int[]> o = d.overhangs(rot);
+                assertEquals(d.overhangs(0).size(), o.size(), d.name() + " rot " + rot);
+                Set<String> at = new HashSet<>();
+                for (int[] q : o) {
+                    at.add(q[0] + "," + q[1] + "," + q[2]);
+                }
+                for (int[] q : o) {
+                    // out of the box, never more than the crown radius beyond it, and real leaves (leaf decay)
+                    boolean out = q[0] < 0 || q[2] < 0 || q[0] >= d.sizeX(rot) || q[2] >= d.sizeZ(rot);
+                    assertTrue(out, d.name() + " overhang inside the box");
+                    assertTrue(q[0] >= -Structures.CROWN_RADIUS && q[2] >= -Structures.CROWN_RADIUS
+                            && q[0] < d.sizeX(rot) + Structures.CROWN_RADIUS && q[2] < d.sizeZ(rot) + Structures.CROWN_RADIUS,
+                            d.name() + " overhang too far");
+                    String st = Structures.STATES.get((q[3] - BlockCode.STRUCT) / 4);
+                    assertTrue(st.contains("_leaves") && st.contains("persistent=false"), d.name() + " " + st);
+                    int dist = Integer.parseInt(st.replaceAll(".*distance=(\\d+).*", "$1"));
+                    assertTrue(dist >= 1 && dist <= Flora.LEAF_REACH, d.name() + " " + st);
+                    // a neighbour one step nearer to the trunk: a log, a leaf of the structure or another overhang
+                    boolean held = false;
+                    int[][] six = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+                    for (int[] s6 : six) {
+                        int nx = q[0] + s6[0];
+                        int ny = q[1] + s6[1];
+                        int nz = q[2] + s6[2];
+                        String n = name(d.code(nx, ny, nz, rot));
+                        String full = d.code(nx, ny, nz, rot) >= BlockCode.STRUCT
+                                ? Structures.STATES.get((d.code(nx, ny, nz, rot) - BlockCode.STRUCT) / 4) : "";
+                        if (dist == 1 && Structures.isLogName(n)) {
+                            held = true;
+                        }
+                        if (full.contains("distance=" + (dist - 1) + ",") || full.contains("distance=" + (dist - 1) + "]")) {
+                            held = true;
+                        }
+                        for (int[] q2 : o) {
+                            if (q2[0] == nx && q2[1] == ny && q2[2] == nz && Structures.STATES.get((q2[3] - BlockCode.STRUCT) / 4)
+                                    .contains("distance=" + (dist - 1))) {
+                                held = true;
+                            }
+                        }
+                    }
+                    assertTrue(held, d.name() + " overhang leaf with nothing nearer to its trunk");
+                }
+                assertEquals(o.size(), at.size(), d.name() + " overhang twice at one place");
+            }
+            if (!d.overhangs(0).isEmpty()) {
+                with.add(d.name());
+                total += d.overhangs(0).size();
+            }
+        }
+        System.out.println("[RingTest] crowns completed outside the box: " + total + " leaves in " + with);
+        // the tree in front of the house with the pool (asked by the user): its crown hangs over the sidewalk, high
+        Structures.Def pool = Structures.ALL.stream().filter(d -> d.name().equals("casa_piscina_abandonada")).findFirst()
+                .orElseThrow();
+        assertFalse(pool.overhangs(0).isEmpty(), "casa_piscina crown not completed");
+        for (int[] q : pool.overhangs(0)) {
+            assertTrue(q[2] < 0 && q[1] > Params.CLEARANCE, "casa_piscina crown " + Arrays.toString(q));
+        }
+        assertEquals(Set.of("casa_piscina_abandonada", "casa_garagem_abandonada", "casa_suburbio_abandonada",
+                "casa_torre_abandonada", "predio_esqueleto_31x29"), with);
     }
 
     private static String name(int code) {

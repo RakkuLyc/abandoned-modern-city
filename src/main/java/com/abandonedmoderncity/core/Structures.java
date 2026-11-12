@@ -48,7 +48,8 @@ public final class Structures {
      *               template whose front is its +Z side, as the user found for casa_moderna_abandonada)
      */
     public record Def(String type, String name, String group, Template t, int ox, int oy, int oz, int w, int h, int d,
-                      int ground, int turn, int[] state, int[] fill, Map<Integer, Integer> cells, Access.Result access) {
+                      int ground, int turn, int[] state, int[] fill, Map<Integer, Integer> cells, Access.Result access,
+                      List<int[]> overhang) {
         /** Footprint size along x after {@code rot} quarter turns. */
         public int sizeX(int rot) {
             return ((rot + turn) & 1) == 0 ? w : d;
@@ -119,6 +120,41 @@ public final class Structures {
             }
             int[] tc = template(rx, ry, rz, rot);
             return tc == null ? null : t.banners.get(cell(tc[0], tc[1], tc[2]));
+        }
+
+        /**
+         * Leaves outside the box, completing a tree crown that the edge of the template cut ({@link #crowns}), for the
+         * box turned {@code rot}: each {rx, ry, rz, code}, rx or rz out of the box (ry = 0 being the city ground).
+         */
+        public List<int[]> overhangs(int rot) {
+            List<int[]> out = new ArrayList<>(overhang.size());
+            int r = (rot + turn) & 3;
+            for (int[] o : overhang) {
+                int x = o[0] - ox;
+                int z = o[2] - oz;
+                int rx;
+                int rz;
+                switch (r) {
+                    case 0 -> {
+                        rx = x;
+                        rz = z;
+                    }
+                    case 1 -> {
+                        rx = d - 1 - z;
+                        rz = x;
+                    }
+                    case 2 -> {
+                        rx = w - 1 - x;
+                        rz = d - 1 - z;
+                    }
+                    default -> {
+                        rx = z;
+                        rz = w - 1 - x;
+                    }
+                }
+                out.add(new int[]{rx, o[1] - oy - ground, rz, BlockCode.STRUCT + 4 * o[3] + r});
+            }
+            return out;
         }
 
         /** Kind of loot (folder of its loot tables): casa, farmacia, oficina, posto or predio. */
@@ -263,7 +299,9 @@ public final class Structures {
         int d = z1 - z0 + 1;
         int gy = y0 + ground;
         int[] fill = floorFill(t, solid, x0, z0, w, d, gy, ids);
-        Map<Integer, Integer> cells = realLeaves(t, solid, x0, y0, z0, w, y1 - y0 + 1, d, ids);
+        int[] dist = new int[t.sx * t.sy * t.sz];
+        Map<Integer, Integer> cells = realLeaves(t, solid, x0, y0, z0, w, y1 - y0 + 1, d, ids, dist);
+        List<int[]> overhang = crowns(t, solid, dist, x0, y0, z0, w, y1 - y0 + 1, d, ids);
         removeFloatingWebs(t, cells);
         String group = null;
         for (String g : LIMITS.keySet()) {
@@ -272,7 +310,8 @@ public final class Structures {
             }
         }
         Access.Result access = Access.of(t, placed, x0, y0, z0, w, y1 - y0 + 1, d, ground);
-        return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, turn, state, fill, cells, access);
+        return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, turn, state, fill, cells, access,
+                overhang);
     }
 
     private static int id(Map<String, Integer> ids, String s) {
@@ -355,7 +394,7 @@ public final class Structures {
      * (steps through leaves from a log, 1..6). Leaves farther than that from any log are not in the map.
      */
     private static Map<Integer, Integer> realLeaves(Template t, boolean[] solid, int x0, int y0, int z0, int w, int h,
-                                                    int d, Map<String, Integer> ids) {
+                                                    int d, Map<String, Integer> ids, int[] dist) {
         boolean[] logP = new boolean[t.palette.size()];
         boolean[] leafP = new boolean[t.palette.size()];
         boolean any = false;
@@ -369,7 +408,6 @@ public final class Structures {
         if (!any) {
             return out;
         }
-        int[] dist = new int[t.sx * t.sy * t.sz];
         ArrayDeque<int[]> q = new ArrayDeque<>();
         for (int y = y0; y < y0 + h; y++) {
             for (int z = z0; z < z0 + d; z++) {
@@ -404,6 +442,131 @@ public final class Structures {
             }
         }
         return out;
+    }
+
+    /** Trunks: columns of at least this many natural (not stripped) logs. */
+    static final int TRUNK_MIN = 3;
+    /** Leaves this far (horizontally) from a trunk, and at least two blocks over its foot, are its crown. */
+    static final int CROWN_RADIUS = 4;
+
+    /**
+     * Leaves that complete the tree crowns the edge of the template cut (asked by the user, 13 nov 2026, for the tree
+     * in front of casa_piscina_abandonada): every real leaf of a crown is mirrored across its trunk, in x, in z and in
+     * both; a mirror that falls outside the box (where the template had no room for the crown) becomes a leaf hanging
+     * out of the structure, over its sidewalk or the core of the block. Its distance to the trunk is counted through
+     * the leaves like the others ({@link #realLeaves}); one farther than {@link Flora#LEAF_REACH} is left out. Each
+     * entry is {x, y, z, state} in template coordinates.
+     */
+    private static List<int[]> crowns(Template t, boolean[] solid, int[] dist, int x0, int y0, int z0, int w, int h,
+                                      int d, Map<String, Integer> ids) {
+        // trunks: (x, z) -> {logs, lowest y}
+        Map<Long, int[]> trunks = new HashMap<>();
+        for (int y = y0; y < y0 + h; y++) {
+            for (int z = z0; z < z0 + d; z++) {
+                for (int x = x0; x < x0 + w; x++) {
+                    int p = t.at(x, y, z);
+                    if (p >= 0 && solid[p]) {
+                        String b = blockOf(t.palette.get(p));
+                        if (isLogName(b) && !b.contains("stripped")) {
+                            int[] c = trunks.computeIfAbsent(((long) x << 32) | (z & 0xffffffffL), k -> new int[]{0, Integer.MAX_VALUE});
+                            c[0]++;
+                            c[1] = Math.min(c[1], y);
+                        }
+                    }
+                }
+            }
+        }
+        trunks.values().removeIf(c -> c[0] < TRUNK_MIN);
+        List<int[]> out = new ArrayList<>();
+        if (trunks.isEmpty()) {
+            return out;
+        }
+        // the mirrors out of the box, with the leaf they mirror
+        Map<Long, String> mirror = new java.util.LinkedHashMap<>();
+        for (int y = y0; y < y0 + h; y++) {
+            for (int z = z0; z < z0 + d; z++) {
+                for (int x = x0; x < x0 + w; x++) {
+                    int k = x + t.sx * (z + t.sz * y);
+                    if (dist[k] == 0) {
+                        continue;
+                    }
+                    long best = Long.MIN_VALUE;
+                    int bestD = Integer.MAX_VALUE;
+                    for (Map.Entry<Long, int[]> e : trunks.entrySet()) {
+                        int tx = (int) (e.getKey() >> 32);
+                        int tz = (int) (long) e.getKey();
+                        int dd = (x - tx) * (x - tx) + (z - tz) * (z - tz);
+                        if (dd < bestD && dd <= CROWN_RADIUS * CROWN_RADIUS && y >= e.getValue()[1] + 2) {
+                            bestD = dd;
+                            best = e.getKey();
+                        }
+                    }
+                    if (best == Long.MIN_VALUE) {
+                        continue;
+                    }
+                    int tx = (int) (best >> 32);
+                    int tz = (int) best;
+                    int[][] m = {{2 * tx - x, z}, {x, 2 * tz - z}, {2 * tx - x, 2 * tz - z}};
+                    for (int[] q : m) {
+                        boolean outside = q[0] < x0 || q[0] >= x0 + w || q[1] < z0 || q[1] >= z0 + d;
+                        if (outside) {
+                            mirror.putIfAbsent(key(q[0], y, q[1]), t.palette.get(t.at(x, y, z)));
+                        }
+                    }
+                }
+            }
+        }
+        // distances through the leaves: the template's, then the mirrors' among themselves
+        Map<Long, Integer> md = new HashMap<>();
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            for (long k : mirror.keySet()) {
+                int x = (int) (k >> 40) - 0x80000;
+                int y = (int) ((k >> 20) & 0xFFFFF) - 0x80000;
+                int z = (int) (k & 0xFFFFF) - 0x80000;
+                int best = md.getOrDefault(k, Integer.MAX_VALUE);
+                int[][] six = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+                for (int[] s6 : six) {
+                    int nx = x + s6[0];
+                    int ny = y + s6[1];
+                    int nz = z + s6[2];
+                    int nd = Integer.MAX_VALUE;
+                    int p = t.at(nx, ny, nz);
+                    if (p >= 0 && solid[p]) {
+                        String b = blockOf(t.palette.get(p));
+                        int kk = nx + t.sx * (nz + t.sz * ny);
+                        nd = isLogName(b) ? 0 : dist[kk] > 0 ? dist[kk] : Integer.MAX_VALUE;
+                    }
+                    Integer o = md.get(key(nx, ny, nz));
+                    if (o != null) {
+                        nd = Math.min(nd, o);
+                    }
+                    if (nd != Integer.MAX_VALUE && nd + 1 < best) {
+                        best = nd + 1;
+                    }
+                }
+                if (best != Integer.MAX_VALUE && best <= Flora.LEAF_REACH && !Integer.valueOf(best).equals(md.get(k))) {
+                    md.put(k, best);
+                    changed = true;
+                }
+            }
+        }
+        for (Map.Entry<Long, String> e : mirror.entrySet()) {
+            Integer dd = md.get(e.getKey());
+            if (dd == null) {
+                continue;
+            }
+            long k = e.getKey();
+            out.add(new int[]{(int) (k >> 40) - 0x80000, (int) ((k >> 20) & 0xFFFFF) - 0x80000,
+                    (int) (k & 0xFFFFF) - 0x80000, id(ids, withProps(e.getValue(), dd))});
+        }
+        return out;
+    }
+
+    /** A key for (x, y, z), each in -2^19 .. 2^19. */
+    private static long key(int x, int y, int z) {
+        return ((long) (x + 0x80000) << 40) | ((long) (y + 0x80000) << 20) | (z + 0x80000);
     }
 
     /** Neighbours a cobweb may touch and still float: nothing to hang on. */
