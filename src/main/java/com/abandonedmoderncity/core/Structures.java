@@ -116,6 +116,24 @@ public final class Structures {
             return BlockCode.STRUCT + 4 * s + r;
         }
 
+        /**
+         * Whether the ground layer at (rx, rz) of the rotated box is an opening over dug-out space: air or cave_air with
+         * cave_air under it (the mouth of a car ramp or a stairwell going down to an underground garage). It stays open
+         * instead of becoming city ground.
+         */
+        public boolean opening(int rx, int rz, int rot) {
+            int[] tc = template(rx, 0, rz, rot);
+            if (tc == null) {
+                return false;
+            }
+            int p = t.at(tc[0], tc[1], tc[2]);
+            if (p < 0 || state[p] != AIR_STATE && state[p] != CARVE_STATE) {
+                return false;
+            }
+            int below = t.at(tc[0], tc[1] - 1, tc[2]);
+            return below >= 0 && state[below] == CARVE_STATE;
+        }
+
         /** Banner design saved at (rx, ry, rz) of the rotated box ({pattern, color} layers), or null. */
         public List<String[]> banner(int rx, int ry, int rz, int rot) {
             if (t.banners.isEmpty()) {
@@ -256,7 +274,7 @@ public final class Structures {
      * Most structures of a group per city (asked by the user): pharmacies 3 (both kinds), car workshops 2 (both
      * kinds), gas stations 2 (both kinds). The group is the start of the structure's type.
      */
-    public static final Map<String, Integer> LIMITS = Map.of("farmacia", 3, "oficina", 2, "posto", 2);
+    public static final Map<String, Integer> LIMITS = Map.of("farmacia", 3, "oficina", 2, "posto", 2, "especial", 1);
     /** Kinds of loot by the start of the structure type; every other type (the buildings) gets {@code predio}. */
     static final String[] LOOT_THEMES = {"casa", "farmacia", "oficina", "posto"};
 
@@ -497,6 +515,19 @@ public final class Structures {
                     dist[k] = c[3] + 1;
                     q.add(new int[]{x, y, z, c[3] + 1});
                     out.put(k, id(ids, withProps(t.palette.get(p), c[3] + 1)));
+                }
+            }
+        }
+        // leaves saved as not persistent but out of reach of any trunk (13 nov 2026: casa_moderna_garagem, casa_vidro,
+        // predio_brutalista_u, predio_rampa) would fall in the world: they stay persistent, like the hedges
+        for (int y = y0; y < y0 + h; y++) {
+            for (int z = z0; z < z0 + d; z++) {
+                for (int x = x0; x < x0 + w; x++) {
+                    int p = t.at(x, y, z);
+                    int k = x + t.sx * (z + t.sz * y);
+                    if (p >= 0 && leafP[p] && dist[k] == 0 && t.palette.get(p).contains("persistent=false")) {
+                        out.put(k, id(ids, t.palette.get(p).replace("persistent=false", "persistent=true")));
+                    }
                 }
             }
         }

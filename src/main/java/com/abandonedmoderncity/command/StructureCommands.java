@@ -199,8 +199,10 @@ public final class StructureCommands {
             for (int rz = 0; rz < sz; rz++) {
                 for (int rx = 0; rx < sx; rx++) {
                     int code = def.code(rx, ry, rz, rot);
-                    // nothing in the template, or its air at / under the ground: the world stays as it is
-                    if (code == BlockCode.KEEP || code == BlockCode.AIR && ry <= 0) {
+                    // nothing in the template, or its air at the ground: the world stays as it is; under the ground only
+                    // cave_air comes as AIR (an underground garage, dug out), and at the ground the mouth of its ramp
+                    // or stairwell stays open
+                    if (code == BlockCode.KEEP || code == BlockCode.AIR && ry == 0 && !def.opening(rx, rz, rot)) {
                         continue;
                     }
                     BlockState s = Palette.of(code, 0, null);

@@ -24,7 +24,7 @@ Abandoned Modern City (mod id `abandonedmoderncity`, pacote `com.abandonedmodern
 `RakkuLyc/abandoned-modern-city`, pasta `Projetos Claude/AbandonedModernCity`). Começou em 7 nov 2026 como cópia do
 Abandoned Simple City (`RakkuLyc/abandoned-simple-city`, pasta `AbandonedModernCity-Simple`) com o mesmo sistema de
 rodovias, túneis, pontes, quarteirões, parques e plantações, **sem os prédios** (e sem as casinhas das cidades
-3 × 2) e sem o histórico de commits. Os prédios são as estruturas `.nbt` do usuário (43 arquivos desde 13 nov 2026: 21 modelos, 6 deles com variações de cor; 14 em 12 nov, mais 7 e as 22 variações em 13 nov; as 33 primeiras foram removidas em 10 nov). O Abandoned Modern City original
+3 × 2) e sem o histórico de commits. Os prédios são as estruturas `.nbt` do usuário (50 arquivos desde 13 nov 2026: 28 modelos, 6 deles com variações de cor; 14 em 12 nov, mais 7 e as 22 variações em 13 nov, mais 7 depois; as 33 primeiras foram removidas em 10 nov). O Abandoned Modern City original
 (pasta `AbandonedModernCity-Deprecated`) está descontinuado. Ainda em 7 nov 2026 o usuário mandou remover as cidades
 octogonais e as cidades 3 × 2 das rodovias (com o padrão rural_highway perto delas e as plantações), e depois trocar
 o grid 4 × 4 por 2 × 2 com células de 1024, depois os quarteirões para 105 × 60 com células de 512, e em 8 nov 2026 os quarteirões para 140 × 90 com células de 576
@@ -130,6 +130,20 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   `mossy_cobblestone`, `stone_bricks` e `cracked_stone_bricks` → `mossy_stone_bricks`; a bacia, a água, as escadas,
   as lanternas e o baú não mudam.
   Baú vazio em 50% das fontes (senão `mossy_cobblestone`).
+- Estruturas novas (pedido do usuário depois de 13 nov 2026, com loot vanilla): casa moderna com garagem
+  (42 × 36 × 15), casa de vidro (48 × 40 × 15), prédio pequeno (23 × 31 × 41), prédio brutalista em U (75 × 58 × 125),
+  prédio largo (84 × 31 × 80, com estacionamento subterrâneo), torre verde (31 × 31 × 143) e prédio da rampa (pasta
+  "Especial", 102 × 72 × 134; tipo `especial`, no máximo 1 por cidade, `Structures.LIMITS`; o usuário quer deixá-lo
+  mais raro depois). Todas com a frente no -Z (hipótese pelos desenhos dos moldes: portas, pátio do U, rampa da
+  garagem, fachada de vidro; a conferir no jogo com `/amcs spawn`) e o chão na camada 0, menos o prédio largo: chão
+  na camada 8, as 8 de baixo enterradas; a garagem (camadas 1 a 7 de `cave_air`) é cavada no terreno, e na camada do
+  chão a boca da rampa (5 × 15, na borda da frente) e o poço da escada ficam abertos: ar ou `cave_air` com `cave_air`
+  embaixo não vira chão da cidade (`Def.opening`, `Lot.code`; 87 células); o `/amcs spawn` também cava a garagem e
+  abre a rampa. O prédio da rampa cabe só nas linhas dos lados curtos do quarteirão (frente de 102 nos 120, fundo de
+  72 no sentido dos 180) ou, nos lados compridos, quando o bosque sorteado é estreito. Folhas salvas como não
+  persistentes longe de qualquer tronco (casa moderna com garagem, casa de vidro, brutalista, prédio da rampa) viram
+  persistentes, senão cairiam no mundo. As 7 já vêm tomadas pela natureza; o abandono completa o que falta. O loot
+  vale sem mudança: as casas usam o tema `casa`, os prédios e o especial o tema `predio`.
 - Estruturas (12 nov 2026, `core/Structures` carrega, mede e gira; `core/Ring` monta o anel): as 21 `.nbt` de
   `structures/` (cópias em `src/main/resources/amcs/buildings/`, listadas em `index.txt` como `tipo|arquivo|chão|frente`):
   10 casas (casa abandonada, casa moderna abandonada, mansão abandonada, mansão pós-apocalíptica e, desde 13 nov
@@ -168,11 +182,12 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   - para-raios viram tochas de redstone acesas (13 nov 2026, pedido do usuário; `Structures.swap`, na carga dos
     moldes, vale para qualquer estrutura): de pé quando o para-raios aponta para cima ou para baixo, na parede quando
     aponta para o lado; hoje são 5, um no topo de cada: casa com torre, mansão pós-apocalíptica, prédio apartamento,
-    prédio apocalíptico e torre;
+    prédio apocalíptico e torre (as estruturas novas já vêm com 12 tochas de redstone salvas e não têm para-raios);
   - banners com o desenho salvo no molde (`Template.banners`, aplicado quando o banner é colocado,
     `Palette.applyBanner`): as letras D R U G S T O R E das farmácias (9 na farmácia, 18 na farmácia grande); encostadas na calçada, formando um anel; sorteio por arquivo,
     sem padrão;
-  - limites por cidade (`Structures.LIMITS`): farmácias 3 (as duas), oficinas 2 (as duas), postos 2 (os dois); os
+  - limites por cidade (`Structures.LIMITS`): farmácias 3 (as duas), oficinas 2 (as duas), postos 2 (os dois),
+    especial 1 (o prédio da rampa); os
     anéis da cidade inteira são sorteados de uma vez (`City.rings`, quarteirões de norte a sul, oeste a leste), e um
     grupo no limite é sorteado de novo;
   - nunca duas estruturas iguais (o mesmo modelo, em qualquer cor) no mesmo quarteirão (13 nov 2026, pedido do usuário): uma
@@ -188,14 +203,15 @@ existem as cidades 2 × 2 de quarteirões retangulares.
     vinhas, banners ou lajes soltas) recebem o bloco de piso da primeira fileira que tem piso, nos 4 lados
     (`Structures.floorFill`); os enfeites (banners da farmácia, vinhas das oficinas) ficam;
   - árvores das estruturas com leaf decay: folhas a até 6 (pelas folhas) de um tronco do molde viram não
-    persistentes com a distância certa; folhas sem tronco perto (sebes, arbustos) continuam persistentes;
+    persistentes com a distância certa; folhas sem tronco perto (sebes, arbustos) continuam ou passam a ser
+    persistentes (mesmo as salvas como não persistentes);
   - copas cortadas pela borda do molde são completadas para fora da estrutura (13 nov 2026, pedido do usuário pela
     árvore em frente à casa com piscina; `Structures.crowns`, `core/Crowns`, `gen/Overhangs`): cada folha real de uma
     copa (a até 4 blocos na horizontal de um tronco de 3+ troncos naturais, não descascados, e 2+ acima do pé dele) é
     espelhada em volta do tronco, em x, em z e nos dois; o espelho que cai fora da caixa vira folha não persistente,
-    com a distância contada pelas folhas (até 6). São 174 folhas em 5 estruturas: casa com piscina 11 (sobre a
-    calçada, a 13–16 do chão), casa com garagem 23, casa de subúrbio 20, casa com torre 15 e prédio esqueleto 105
-    (no bosque do miolo). Sobre rua ou calçada só a mais de `Params.CLEARANCE` (7) blocos da superfície; no bosque ou
+    com a distância contada pelas folhas (até 6). São 189 folhas em 7 estruturas: casa com piscina 11 (sobre a
+    calçada, a 13–16 do chão), casa com garagem 23, casa de subúrbio 20, casa com torre 15, prédio esqueleto 105
+    (no bosque do miolo), casa de vidro e prédio da rampa (15 as duas). Sobre rua ou calçada só a mais de `Params.CLEARANCE` (7) blocos da superfície; no bosque ou
     parque onde ele não planeja nada; nunca em outra estrutura; só onde há ar. O reparo de vizinhos e a limpeza de
     folhas órfãs as mantêm; a auditoria as confere (`crown_leaves`, `crown_leaf_missing`);
   - as árvores dos miolos não entram nas estruturas (1 bloco de folga) e as estruturas nunca se sobrepõem
@@ -235,8 +251,8 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   - `cobblestone` e `stone_bricks` (e suas escadas, lajes e muros) a até 2 blocos do verde novo viram musgosos (50%).
   Nunca mexe em folhas, troncos, vidro, block entities (contêineres, banners, camas...), portas, água ou blocos
   parciais; planta só sobre solo, tapete só sobre bloco inteiro, vinha só presa em bloco inteiro ou na vinha de cima.
-  Nos 43 arquivos: 17 879 vinhas, 6 712 pisos viram solo, 3 518 tapetes, 3 263 plantas, 1 768 musgosos, 1 469
-  rachados (34 609 blocos). As medidas antes e depois de cada estrutura ficam em `docs/TESTES.md`.
+  Nos 50 arquivos: 34 047 vinhas, 9 945 pisos viram solo, 5 014 tapetes, 4 827 plantas, 3 621 musgosos, 2 450
+  rachados (59 904 blocos; 34 609 nos 43 de antes das 7 novas). As medidas antes e depois de cada estrutura ficam em `docs/TESTES.md`.
 - Dureza: qualquer dureza é permitida (regra antiga removida pelo usuário); só blocos indestrutíveis são proibidos.
   Os block entities permitidos são o baú vazio da fonte e os containers das estruturas (baús, barris, suportes de poção, vasos decorados, atris, fornalhas, camas, fogueiras, sensores de luz, jukeboxes,
   banners, crânios, dispensers, droppers e estantes entalhadas, vazias, desde 13 nov 2026 por causa da casa grande; `Palette.exempt`). Os banners recebem o desenho salvo no molde; placas
@@ -256,8 +272,10 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   da cidade (`Access.HIGH`) ou fora do alcance de quem entra andando da rua: o percurso pula 1 bloco (nunca sobre
   cerca, muro ou vidraça), cai qualquer altura, sobe escada de mão, vinha, andaime e água, abre portas, alçapões e
   portões (não os de ferro); plantas, teias, tapetes e tochas não bloqueiam; folhas sim; o contêiner precisa estar a
-  1 bloco de lado (diagonal vale) de onde o jogador pisa, de 1 abaixo dos pés a 1 acima da cabeça. Hoje 172 de 1 530
-  contêineres dos 43 arquivos com o abandono ligado (as vinhas também se escalam; 173 de 882 nos 21 modelos sem ele): 166 pela altura (torre 82, prédio apocalíptico 54, azulado 17, esqueleto 9,
+  1 bloco de lado (diagonal vale) de onde o jogador pisa, de 1 abaixo dos pés a 1 acima da cabeça. Hoje 1 200 de 2 842
+  contêineres dos 50 arquivos com o abandono ligado (os prédios altos novos têm quase todos acima de 15; o
+  estacionamento do prédio largo é alcançado pela rampa: 0 fora de alcance nele); antes das 7 novas, 172 de 1 530
+  (173 de 882 nos 21 modelos sem o abandono): 166 pela altura (torre 82, prédio apocalíptico 54, azulado 17, esqueleto 9,
   apartamento 4) e 17 fechados (telhados da casa abandonada e da farmácia grande, um cômodo da mansão abandonada 2
   blocos acima do pátio, salas do prédio apocalíptico e do azulado). As peças de veículo do OAmP e a tabela do Lost
   Cities saíram (a do Lost Cities era rejeitada pelo Minecraft). Baú da fonte do parque continua vazio (50%) ou

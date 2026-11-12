@@ -114,7 +114,7 @@ class WeatheringTest {
             Weathering.Report r = w.report();
             assertEquals(r.total(), changed, d.name() + " report");
         }
-        System.out.println("[WeatheringTest] changes over the 43 files: " + kinds);
+        System.out.println("[WeatheringTest] changes over the " + Structures.ALL.size() + " files: " + kinds);
         assertTrue(kinds.getOrDefault("vine", 0) > 0 && kinds.getOrDefault("soil", 0) > 0
                 && kinds.getOrDefault("cracked", 0) > 0 && kinds.getOrDefault("carpet", 0) > 0, kinds.toString());
     }

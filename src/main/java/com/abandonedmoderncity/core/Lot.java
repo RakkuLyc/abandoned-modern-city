@@ -88,8 +88,12 @@ public final class Lot {
                 return BlockCode.KEEP;
             }
             int c = building.code(x - x0, y - base, z - z0, rot);
-            // the floor layer replaces the ground; where the structure has no block at it, the city ground stays
-            return y == base && (c == BlockCode.KEEP || c == BlockCode.AIR) ? BlockCode.CITY_GROUND : c;
+            // the floor layer replaces the ground; where the structure has no block at it, the city ground stays,
+            // except over dug-out space (the mouth of a garage ramp or stairwell stays open)
+            if (y == base && (c == BlockCode.KEEP || c == BlockCode.AIR)) {
+                return building.opening(x - x0, z - z0, rot) ? BlockCode.AIR : BlockCode.CITY_GROUND;
+            }
+            return c;
         }
         if (y == base) {
             return switch (type) {

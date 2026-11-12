@@ -51,3 +51,10 @@ predios_pequenos|predio_esqueleto_31x29|0
 predios_grandes|predio_azulado|1
 predios_grandes|torre|1
 predios_medios|predio_apocaliptico_57x45|0
+casas|casa_moderna_garagem_abandonada|0
+casas|casa_vidro_abandonada|0
+predios_pequenos|predio_pequeno_abandonado|0
+predios_grandes|predio_brutalista_u_75x58|0
+predios_grandes|predio_largo_abandonado|8
+predios_grandes|torre_verde_abandonada|0
+especial|predio_rampa_abandonado|0

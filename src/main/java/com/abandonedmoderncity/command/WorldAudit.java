@@ -313,7 +313,8 @@ public final class WorldAudit {
         int planned = lot == null ? BlockCode.KEEP : lot.code(x, base, z, base);
         BlockState plannedState = planned >= BlockCode.STRUCT ? Palette.of(planned, 0, null) : null;
         boolean plannedFluid = plannedState != null && !plannedState.getFluidState().isEmpty();
-        if ((ground.isAir() || !ground.getFluidState().isEmpty()) && !plannedFluid) {
+        // the mouth of a garage ramp or stairwell is planned open
+        if ((ground.isAir() || !ground.getFluidState().isEmpty()) && !plannedFluid && planned != BlockCode.AIR) {
             r.fail("lot_hole", x + "," + base + "," + z + " " + id(ground));
         }
         if (lot == null) {

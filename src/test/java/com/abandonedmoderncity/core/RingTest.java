@@ -141,10 +141,13 @@ class RingTest {
     @Test
     void everyStructureFitsNextToTheShallowestInA120Block() {
         assumeFalse(Structures.ALL.isEmpty(), "no structures");
-        // each structure fits a 180 x 120 block next to the shallowest structure (depth 20) and the widest forest (30)
+        // each structure fits a 180 x 120 block next to the shallowest structure (depth 20) and the widest forest (30):
+        // facing a long side (depth across the 120), or facing a short side (front within the 120, depth across the
+        // 180), as the predio_rampa (102 x 72) does
         for (Structures.Def d : Structures.ALL) {
-            assertTrue(d.depth() + Structures.MIN_DEPTH + Ring.CORE_MAX <= 120, d.name() + " is too deep for a 120 block next to the shallowest and the widest forest");
-            assertTrue(d.front() <= 180, d.name());
+            boolean longSide = d.depth() + Structures.MIN_DEPTH + Ring.CORE_MAX <= 120 && d.front() <= 180;
+            boolean shortSide = d.depth() + Structures.MIN_DEPTH + Ring.CORE_MAX <= 180 && d.front() <= 120;
+            assertTrue(longSide || shortSide, d.name() + " fits no side of a 180 x 120 block");
         }
     }
 
@@ -159,7 +162,11 @@ class RingTest {
                     if (d.code(x, -1, z, 0) >= BlockCode.STRUCT) {
                         buried++;
                     }
-                    if (d.code(x, -1 - d.ground(), z, 0) != BlockCode.KEEP || d.code(x, -1, z, 0) == BlockCode.AIR) {
+                    if (d.code(x, -1 - d.ground(), z, 0) != BlockCode.KEEP) {
+                        below++;
+                    }
+                    // air under the ground only where the template has cave_air (the underground garage)
+                    if (d.code(x, -1, z, 0) == BlockCode.AIR && !d.name().equals("predio_largo_abandonado")) {
                         below++;
                     }
                 }
@@ -287,6 +294,42 @@ class RingTest {
                     String placed = Structures.blockOf(Structures.STATES.get((code - BlockCode.STRUCT) / 4));
                     assertEquals(Structures.blockOf(t.palette.get(p)), placed, c.name() + " front row at x " + x + " y " + y);
                 }
+            }
+        }
+    }
+
+    @Test
+    void undergroundGarageKeepsItsRampAndStairsOpen() {
+        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        for (Structures.Def d : Structures.ALL) {
+            int openings = 0;
+            for (int rot = 0; rot < 4; rot++) {
+                int n = 0;
+                for (int rz = 0; rz < d.sizeZ(rot); rz++) {
+                    for (int rx = 0; rx < d.sizeX(rot); rx++) {
+                        if (d.opening(rx, rz, rot)) {
+                            n++;
+                            // dug out right under it, and air (not city ground) in the plan of the lot
+                            assertEquals(BlockCode.AIR, d.code(rx, -1, rz, rot), d.name() + " under an opening");
+                            assertEquals(BlockCode.AIR, d.code(rx, 0, rz, rot), d.name() + " opening");
+                        }
+                    }
+                }
+                if (rot == 0) {
+                    openings = n;
+                } else {
+                    assertEquals(openings, n, d.name() + " rot " + rot);
+                }
+            }
+            if (d.name().equals("predio_largo_abandonado")) {
+                // the car ramp (5 x 15) and the stairwell at street level
+                assertTrue(openings >= 75 && openings <= 99, "predio_largo openings " + openings);
+                assertEquals(8, d.ground());
+                System.out.println("[RingTest] predio_largo_abandonado: " + openings + " open cells at street level, "
+                        + d.access().containers() + " containers, " + d.access().closed() + " out of reach");
+            } else {
+                // no other structure has dug-out space under its ground layer
+                assertEquals(0, openings, d.name());
             }
         }
     }
@@ -423,8 +466,10 @@ class RingTest {
                 }
             }
         }
-        // one on top of each: casa_torre_abandonada, mansao_pos_apocaliptica, predio_apartamento, predio_apocaliptico, torre
-        assertEquals(5, torches, "redstone torches");
+        // one from a rod on top of each: casa_torre_abandonada, mansao_pos_apocaliptica, predio_apartamento,
+        // predio_apocaliptico, torre; 12 more were saved as torches in the 13 nov structures (brutalista 4, rampa 4,
+        // torre verde 2, largo 1, pequeno 1)
+        assertEquals(5 + 12, torches, "redstone torches");
         assertEquals("minecraft:redstone_wall_torch[facing=east,lit=true]",
                 Structures.swap("minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]"));
         assertEquals("minecraft:stone", Structures.swap("minecraft:stone"));
@@ -495,7 +540,7 @@ class RingTest {
             assertTrue(q[2] < 0 && q[1] > Params.CLEARANCE, "casa_piscina crown " + Arrays.toString(q));
         }
         assertEquals(Set.of("casa_piscina_abandonada", "casa_garagem_abandonada", "casa_suburbio_abandonada",
-                "casa_torre_abandonada", "predio_esqueleto_31x29"), with);
+                "casa_torre_abandonada", "predio_esqueleto_31x29", "casa_vidro_abandonada", "predio_rampa_abandonado"), with);
     }
 
     private static String name(int code) {

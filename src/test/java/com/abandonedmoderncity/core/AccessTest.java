@@ -168,7 +168,8 @@ class AccessTest {
         // houses are low and open: nearly all their containers are reached on foot (the mansion's room 2 blocks over
         // its yard, with no step, is one of the few that are not)
         assertTrue(housesHard * 20 <= houses, housesHard + " of " + houses + " in houses");
-        assertTrue(hard * 10 >= containers && hard * 3 <= containers, hard + " of " + containers);
+        // the tall buildings (torre, torre verde, predio da rampa, brutalista...) have most of theirs 15+ blocks up
+        assertTrue(hard * 10 >= containers && hard * 2 <= containers, hard + " of " + containers);
     }
 
     @Test
