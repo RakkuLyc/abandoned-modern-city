@@ -47,7 +47,8 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
 - **Estruturas (21 modelos, 43 arquivos, `structures/`):** sorteadas ao acaso no anel (cada modelo com a mesma
   chance, depois a cor: as 10 casas dão ~43% das estruturas), com limite por cidade: farmácias 3, oficinas 2, postos 2.
   Nunca duas estruturas iguais (o mesmo modelo, em qualquer cor) no mesmo quarteirão. Variações de cor: farmácia e
-  farmácia grande (5 cores cada, as letras D R U G S T O R E copiadas da original na cor da variação), oficina média
+  farmácia grande (5 cores cada, as letras D R U G S T O R E copiadas da original na cor da variação, sem o letreiro
+  F A R M Á C I A em blocos que as variações tinham: a parede fica branca como na original), oficina média
   (3), oficina pequena (5), posto e posto pequeno (5 cada).
 
   | Estrutura | Tipo | Caixa (frente × fundo × altura) | Chão |

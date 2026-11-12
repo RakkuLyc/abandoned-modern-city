@@ -216,10 +216,20 @@ public final class Structures {
      */
     public static final List<List<Def>> MODELS;
     private static final Map<String, String> BANNER_SPECS = new HashMap<>();
+    private static final Map<String, String> NEUTRAL_FROM = new HashMap<>();
+    /** Cells of each color variant given back the neutral blocks of its original (the F A R M Á C I A letters). */
+    public static final Map<String, Integer> LETTERS_REMOVED = new LinkedHashMap<>();
 
     /** The template of a structure as saved, with the banners its index line copies in (before {@link Weathering}). */
     static Template source(String name) {
         Template t = Template.load("buildings/" + name);
+        String from = NEUTRAL_FROM.get(name);
+        if (from != null) {
+            // the colored letters of the variant go: the original's neutral wall comes back
+            int[] n = new int[1];
+            t = t.withNeutralFrom(Template.load("buildings/" + from), n);
+            LETTERS_REMOVED.put(name, n[0]);
+        }
         String spec = BANNER_SPECS.get(name);
         if (spec != null) {
             // <source>@<dx>,<dz>:<from color>=<to color>
@@ -275,9 +285,12 @@ public final class Structures {
     static final double FLOOR_ROW = 0.25;
 
     private static Def define(String type, String name, int ground, int turn, String model, String bannerSpec,
-                              Map<String, Integer> ids) {
+                              String neutralFrom, Map<String, Integer> ids) {
         if (bannerSpec != null) {
             BANNER_SPECS.put(name, bannerSpec);
+        }
+        if (neutralFrom != null) {
+            NEUTRAL_FROM.put(name, neutralFrom);
         }
         Template t = source(name);
         if (Weathering.enabled) {
@@ -704,7 +717,9 @@ public final class Structures {
                 int turn = f.length > 3 && !f[3].isBlank() ? Math.floorMod(Integer.parseInt(f[3].trim()) / 90, 4) : 0;
                 String model = f.length > 4 && !f[4].isBlank() ? f[4].trim() : f[1].trim();
                 String banners = f.length > 5 && !f[5].isBlank() ? f[5].trim() : null;
-                defs.add(define(f[0], f[1], f.length > 2 ? Integer.parseInt(f[2].trim()) : 0, turn, model, banners, ids));
+                String neutral = f.length > 6 && !f[6].isBlank() ? f[6].trim() : null;
+                defs.add(define(f[0], f[1], f.length > 2 ? Integer.parseInt(f[2].trim()) : 0, turn, model, banners,
+                        neutral, ids));
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);

@@ -5,6 +5,8 @@
 #   variant, and never puts two of one model in a block
 # banners (optional): <source>@<dx>,<dz>:<from>=<to> copies the banners of <source> moved by dx, dz, color <from>
 #   turned to <to> (the pharmacy variants were saved without the D R U G S T O R E letters)
+# neutral (optional): <source> puts back the neutral blocks (white concrete, smooth quartz, calcite, polished
+#   diorite) of <source> where this file painted them (the F A R M Á C I A letters of the pharmacy variants)
 # The originals are in structures/ at the repo root (file names here are ASCII: prédio_esqueleto -> predio_esqueleto).
 casas|casa_abandonada|0
 casas|casa_moderna_abandonada|0|180
@@ -17,15 +19,15 @@ casas|casa_suburbio_abandonada|0
 casas|casa_torre_abandonada|0
 casas|casa_vitoriana_abandonada|0
 farmacia|farmacia_vermelho|0||farmacia
-farmacia|farmacia_amarelo|0||farmacia|farmacia_vermelho@-1,0:red=yellow
-farmacia|farmacia_azul|0||farmacia|farmacia_vermelho@-1,0:red=blue
-farmacia|farmacia_roxo|0||farmacia|farmacia_vermelho@-1,0:red=purple
-farmacia|farmacia_verde|0||farmacia|farmacia_vermelho@-1,0:red=green
+farmacia|farmacia_amarelo|0||farmacia|farmacia_vermelho@0,0:red=yellow|farmacia_vermelho
+farmacia|farmacia_azul|0||farmacia|farmacia_vermelho@0,0:red=blue|farmacia_vermelho
+farmacia|farmacia_roxo|0||farmacia|farmacia_vermelho@0,0:red=purple|farmacia_vermelho
+farmacia|farmacia_verde|0||farmacia|farmacia_vermelho@0,0:red=green|farmacia_vermelho
 farmacia_grande|farmacia_grande_amarela|0||farmacia_grande
-farmacia_grande|farmacia_grande_azul|0||farmacia_grande|farmacia_grande_amarela@0,0:yellow=light_blue
-farmacia_grande|farmacia_grande_roxo|0||farmacia_grande|farmacia_grande_amarela@0,0:yellow=purple
-farmacia_grande|farmacia_grande_verde|0||farmacia_grande|farmacia_grande_amarela@0,0:yellow=lime
-farmacia_grande|farmacia_grande_vermelho|0||farmacia_grande|farmacia_grande_amarela@0,0:yellow=red
+farmacia_grande|farmacia_grande_azul|0||farmacia_grande|farmacia_grande_amarela@0,0:yellow=light_blue|farmacia_grande_amarela
+farmacia_grande|farmacia_grande_roxo|0||farmacia_grande|farmacia_grande_amarela@0,0:yellow=purple|farmacia_grande_amarela
+farmacia_grande|farmacia_grande_verde|0||farmacia_grande|farmacia_grande_amarela@0,0:yellow=lime|farmacia_grande_amarela
+farmacia_grande|farmacia_grande_vermelho|0||farmacia_grande|farmacia_grande_amarela@0,0:yellow=red|farmacia_grande_amarela
 oficina_de_carros_medio|oficina_media_azul_preto|0||oficina_media
 oficina_de_carros_medio|oficina_media_amarela_azul|0||oficina_media
 oficina_de_carros_medio|oficina_media_amarelo_vermelho|0||oficina_media

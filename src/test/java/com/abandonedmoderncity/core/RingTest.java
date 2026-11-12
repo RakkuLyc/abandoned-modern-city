@@ -292,6 +292,41 @@ class RingTest {
     }
 
     @Test
+    void pharmacyVariantsMatchTheirOriginalButTheColor() {
+        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        int variants = 0;
+        for (Structures.Def d : Structures.ALL) {
+            if (!d.type().startsWith("farmacia") || d.name().equals("farmacia_vermelho") || d.name().equals("farmacia_grande_amarela")) {
+                continue;
+            }
+            variants++;
+            String original = d.model().equals("farmacia") ? "farmacia_vermelho" : "farmacia_grande_amarela";
+            Template o = Structures.source(original);
+            Template v = Structures.source(d.name());
+            // the F A R M Á C I A letters (colored blocks on the white wall) are gone: 76 blocks on the small one (its
+            // side), 152 on the big one (front and side)
+            assertEquals(d.model().equals("farmacia") ? 76 : 152, Structures.LETTERS_REMOVED.get(d.name()), d.name());
+            for (int y = 0; y < o.sy; y++) {
+                for (int z = 0; z < o.sz; z++) {
+                    for (int x = 0; x < o.sx; x++) {
+                        String os = o.at(x, y, z) < 0 ? "minecraft:air" : o.palette.get(o.at(x, y, z));
+                        String vs = v.at(x, y, z) < 0 ? "minecraft:air" : v.palette.get(v.at(x, y, z));
+                        String where = d.name() + " " + x + "," + y + "," + z + " " + os + " / " + vs;
+                        // the same blocks in the same places (the color aside)
+                        assertEquals(Structures.blockOf(os).equals("minecraft:air"), Structures.blockOf(vs).equals("minecraft:air"), where);
+                        if (Template.NEUTRAL.contains(Structures.blockOf(os))) {
+                            assertEquals(os, vs, where + ": a neutral block painted");
+                        }
+                        // the banners where the original has them
+                        assertEquals(os.contains("_wall_banner"), vs.contains("_wall_banner"), where + ": banner");
+                    }
+                }
+            }
+        }
+        assertEquals(8, variants);
+    }
+
+    @Test
     void pharmacyBannersKeepTheirLetters() {
         assumeFalse(Structures.ALL.isEmpty(), "no structures");
         // the originals and their color variants (whose letters are copied from the originals, in their color)

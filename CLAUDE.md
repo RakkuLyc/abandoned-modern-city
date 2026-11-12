@@ -150,7 +150,14 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   fica na cor da variação com letras pretas (como o amarelo da original); azul-claro, roxo, verde-limão e vermelho
   nas grandes, amarelo, azul, roxo e verde nas pequenas. A coluna de banners da lateral da farmácia grande fica fora
   do molde salvo das variações (25 de largura): o molde cresce 1 bloco. A carga falha se um banner cair sobre um
-  bloco ou não tiver parede atrás. Regras decididas pelo usuário:
+  bloco ou não tiver parede atrás. As variações de farmácia têm ainda um letreiro F A R M Á C I A em blocos coloridos
+  sobre a parede branca (na lateral da pequena, na frente e na lateral da grande) que as originais não têm; a pedido
+  do usuário (13 nov 2026) o índice devolve os blocos neutros da original onde a variação os pintou
+  (`Template.withNeutralFrom`, campo `neutros`: `white_concrete`, `smooth_quartz`, `calcite`, `polished_diorite`):
+  76 blocos em cada pequena, 152 em cada grande; o resto da cor da variação fica. As variações ficam bloco a bloco
+  nas mesmas posições da original, com os banners nas mesmas posições (até 13 nov os das pequenas estavam 1 bloco
+  à esquerda: o primeiro alinhamento foi pela caixa dos blocos sólidos, não pelas posições do molde). Regras
+  decididas pelo usuário:
   - frente = lado -Z do `.nbt`, virada para a rua; o campo `frente` do índice gira o molde quando a frente é
     outro lado: a casa moderna abandonada e a mansão pós-apocalíptica têm a frente no +Z (180°, achado pelo usuário
     no jogo em 12 nov 2026); as 7 de 13 nov têm a frente no -Z (caminho e degraus de entrada no lado norte do

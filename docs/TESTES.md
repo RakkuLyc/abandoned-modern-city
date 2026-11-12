@@ -53,7 +53,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 
 ## 2. O que é verificado
 
-### Unitários (39 testes)
+### Unitários (40 testes)
 
 | Teste | Verifica |
 |---|---|
@@ -77,6 +77,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `RingTest.frontsMeetTheSidewalk` | a fileira da frente, no nível do chão, é toda de blocos em 42 dos 43 arquivos (o apartamento tem 22 de 31: as falhas viram o chão da cidade, nivelado) |
 | `RingTest.structureTreesHaveRealLeaves` | toda folha não persistente das estruturas tem distância 1 a 6 e um vizinho tronco ou folha mais perto (regra do leaf decay); mais de 1 000 folhas reais |
 | `RingTest.housesWithTheirFrontOnPlusZFaceTheStreet` | a casa moderna e a mansão pós-apocalíptica têm giro de 180° no índice e, com a rua ao norte, a fileira encostada na rua é a última fileira (+Z) do molde, bloco a bloco; as outras não têm giro |
+| `RingTest.pharmacyVariantsMatchTheirOriginalButTheColor` | nas 8 variações de farmácia, posição por posição contra a original: os mesmos blocos nos mesmos lugares, nenhum bloco neutro (concreto branco, quartzo liso, calcita, diorito polido) pintado e os banners nas mesmas posições; 76 blocos do letreiro F A R M Á C I A devolvidos em cada pequena, 152 em cada grande |
 | `RingTest.pharmacyBannersKeepTheirLetters` | nas 4 rotações, cada uma das 10 farmácias (originais e variações) tem 9 banners (pequena) ou 18 (grande) com desenho (listras e borda), todos em blocos de banner; nas pequenas, banner branco com letras na cor da variação; nas grandes, banner na cor da variação com letras pretas |
 | `AccessTest.closedRoomsDoorsAndLadders` | salas montadas no teste: baú em sala lacrada é de difícil acesso; com porta de madeira não; com porta de ferro ou cerca no vão sim; baú num pilar de 4 só se alcança com escada de mão; degraus de 1 bloco se sobem pulando |
 | `AccessTest.highContainersAreHard` | barril a `Access.HIGH` (15) blocos do chão, alcançável por escada, conta como difícil; baú no chão não |
@@ -204,6 +205,8 @@ e a regra de escada e apoio no mesmo chunk.
 | 49 | Medida, 13 nov | alvo de pedra rachada de 23% | a conta inicial incluía pedras sem versão rachada (`polished_deepslate`) | alvo de 31% da família que racha, a medida do próprio prédio |
 | 50 | `WeatheringTest`, 13 nov (vinhas fortes) | mansão abandonada com 15% no lado menos coberto (meta 25%) | os trechos de vinha que descem abaixo do fim da parede contavam para a meta sem cobrir fachada | só as vinhas na fachada contam |
 | 51 | `WeatheringTest`, 13 nov (vinhas fortes) | cobertura de vinhas da casa abandonada "caía" | o `moss_block` não contava como bloco inteiro: as vinhas ao lado de um piso que virou musgo saíam da conta | `moss_block` conta como parede (a vinha se prende nele) |
+| 52 | Teste no jogo pelo usuário, 13 nov | as variações de farmácia não eram iguais à original | um letreiro F A R M Á C I A em blocos coloridos sobre a parede branca | os blocos neutros da original voltam onde a variação os pintou (`withNeutralFrom`) |
+| 53 | Revisão, 13 nov (mesma comparação) | banners D R U G S T O R E das farmácias pequenas coloridas 1 bloco à esquerda | o deslocamento foi medido alinhando as caixas dos blocos sólidos; nas posições do molde ele é 0 | índice com `@0,0`; teste compara as posições dos banners com as da original |
 | — | Bateria (infraestrutura) | servidores falhando com "Address already in use" | um servidor de uma bateria interrompida ainda terminava | o script usa a porta 25591 e se recusa a começar com um servidor de desenvolvimento vivo |
 
 ## 4. Como reproduzir
@@ -250,7 +253,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
 ## 6. Resultados atuais (12 nov 2026, quarteirões 180 × 120 com anel de estruturas com vãos e miolo tomado pela natureza, ruas e rodovias de 33, cidades no meio de células de 736, 4 entradas)
 
-- **Unitários:** 38 passam e 1 é pulado (o teste sem estruturas), 13 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
+- **Unitários:** 39 passam e 1 é pulado (o teste sem estruturas), 13 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
   - **Rede (7 terrenos × 3 seeds, 81 células), cidades no meio da célula de 736, 4 entradas (uma por lado):** 35 a
@@ -317,6 +320,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 13 nov | letreiro F A R M Á C I A apagado das variações; banners das farmácias pequenas na posição da original | PASS: 8 de 8, 0 erros de geração, banners de farmácia conferidos; 2,68 ms por chunk, 257 s |
   | `20261027` | padrão (8 alvos) | 13 nov | vinhas longas e agressivas nos 4 lados (25% da fachada, cachos de 3 a 12; 34 609 blocos de abandono) | PASS: 8 de 8, 0 erros de geração, nenhum `building_mismatch`; 2,63 ms por chunk, 253 s |
   | `20261027` | padrão (8 alvos) | 13 nov | natureza tomando conta das estruturas (`structureOvergrowth` ligado, 18 341 blocos) | PASS: 8 de 8, 0 erros de geração, nenhum `building_mismatch` (plantas e vinhas ficaram no mundo como no plano); 2,72 ms por chunk, 266 s |
   | `20261027` | rápido (3 alvos) | 13 nov | o mesmo com `structureOvergrowth = false` | PASS: 3 de 3; log "Structure overgrowth off" |

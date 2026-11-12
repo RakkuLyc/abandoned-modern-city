@@ -119,6 +119,42 @@ public final class Template {
         return new Template(name, nsx, sy, nsz, np, nc, nb);
     }
 
+    /** Neutral facade blocks (white and light stone) that a color variant may have painted. */
+    static final java.util.Set<String> NEUTRAL = java.util.Set.of("minecraft:white_concrete", "minecraft:smooth_quartz",
+            "minecraft:calcite", "minecraft:polished_diorite");
+
+    /**
+     * This template with the neutral blocks of {@code src} (same size and place) put back where this one painted them
+     * another color (asked by the user, 13 nov 2026: the color variants of the pharmacies spell F A R M Á C I A in
+     * colored blocks on a white wall, which the originals do not have). Returns the cells changed in {@code count[0]}.
+     */
+    Template withNeutralFrom(Template src, int[] count) {
+        // the same place; the original may be a little larger (the big pharmacy has a column of banners more)
+        if (src.sy != sy || Math.abs(src.sx - sx) > 1 || Math.abs(src.sz - sz) > 1) {
+            throw new IllegalStateException(name + ": " + src.name + " has another size");
+        }
+        Map<Integer, String> changed = new java.util.HashMap<>();
+        for (int y = 0; y < sy; y++) {
+            for (int z = 0; z < Math.min(sz, src.sz); z++) {
+                for (int x = 0; x < Math.min(sx, src.sx); x++) {
+                    int ps = src.at(x, y, z);
+                    int pv = at(x, y, z);
+                    if (ps < 0 || pv < 0) {
+                        continue;
+                    }
+                    String want = src.palette.get(ps);
+                    String have = palette.get(pv);
+                    if (NEUTRAL.contains(Structures.blockOf(want)) && !want.equals(have)
+                            && !Structures.blockOf(have).equals("minecraft:air")) {
+                        changed.put(x + sx * (z + sz * y), want);
+                    }
+                }
+            }
+        }
+        count[0] = changed.size();
+        return withStates(changed);
+    }
+
     /** This template with the blocks of some cells changed: cell index -> block state string ({@link Weathering}). */
     Template withStates(Map<Integer, String> changed) {
         List<String> np = new ArrayList<>(palette);
