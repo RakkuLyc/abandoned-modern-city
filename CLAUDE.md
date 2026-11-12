@@ -157,7 +157,9 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   abre a rampa. O prédio da rampa cabe só nas linhas dos lados curtos do quarteirão (frente de 102 nos 120, fundo de
   72 no sentido dos 180) ou, nos lados compridos, quando o bosque sorteado é estreito. Folhas salvas como não
   persistentes longe de qualquer tronco (casa moderna com garagem, casa de vidro, brutalista, prédio da rampa) viram
-  persistentes, senão cairiam no mundo. As 7 já vêm tomadas pela natureza; o abandono completa o que falta. O loot
+  persistentes, senão cairiam no mundo. A escada da casa de vidro começava colada na parede de vidro da frente (só se
+  subia de lado); o molde foi trocado (13 nov 2026, commit `7e0b2a9`) por uma escada em L a partir do hall, com
+  patamar 2 × 2 no canto e corrimão contínuo de barras de ferro até a galeria. As 7 já vêm tomadas pela natureza; o abandono completa o que falta. O loot
   vale sem mudança: as casas usam o tema `casa`, os prédios e o especial o tema `predio`.
 - Estruturas (12 nov 2026, `core/Structures` carrega, mede e gira; `core/Ring` monta o anel): as 21 `.nbt` de
   `structures/` (cópias em `src/main/resources/amcs/buildings/`, listadas em `index.txt` como `tipo|arquivo|chão|frente`):
