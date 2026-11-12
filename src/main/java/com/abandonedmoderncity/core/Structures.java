@@ -49,7 +49,7 @@ public final class Structures {
      */
     public record Def(String type, String name, String group, Template t, int ox, int oy, int oz, int w, int h, int d,
                       int ground, int turn, int[] state, int[] fill, Map<Integer, Integer> cells, Access.Result access,
-                      List<int[]> overhang) {
+                      List<int[]> overhang, String model) {
         /** Footprint size along x after {@code rot} quarter turns. */
         public int sizeX(int rot) {
             return ((rot + turn) & 1) == 0 ? w : d;
@@ -210,6 +210,11 @@ public final class Structures {
     /** Distinct block state strings of all structures; a structure block code points into this list. */
     public static final List<String> STATES = new ArrayList<>();
     public static final List<Def> ALL;
+    /**
+     * The structures grouped by model (asked by the user, 13 nov 2026): the color variants of a structure are one model.
+     * The ring draws a model, then one of its variants, so variants do not make a structure more frequent.
+     */
+    public static final List<List<Def>> MODELS;
     /** Smallest depth and front width among the structures (what still fits in a row). */
     public static final int MIN_DEPTH;
     public static final int MIN_WIDTH;
@@ -253,8 +258,14 @@ public final class Structures {
     /** A floor row counts as real floor from this share of its width up. */
     static final double FLOOR_ROW = 0.25;
 
-    private static Def define(String type, String name, int ground, int turn, Map<String, Integer> ids) {
+    private static Def define(String type, String name, int ground, int turn, String model, String bannerSpec,
+                              Map<String, Integer> ids) {
         Template t = Template.load("buildings/" + name);
+        if (bannerSpec != null) {
+            // <source>@<dx>,<dz>:<from color>=<to color>
+            String[] a = bannerSpec.split("[@,:=]");
+            t = t.withBannersFrom(Template.load("buildings/" + a[0]), Integer.parseInt(a[1]), Integer.parseInt(a[2]), a[3], a[4]);
+        }
         int[] state = new int[t.palette.size()];
         boolean[] solid = new boolean[state.length];
         String[] placed = new String[state.length];
@@ -311,7 +322,7 @@ public final class Structures {
         }
         Access.Result access = Access.of(t, placed, x0, y0, z0, w, y1 - y0 + 1, d, ground);
         return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, turn, state, fill, cells, access,
-                overhang);
+                overhang, model);
     }
 
     private static int id(Map<String, Integer> ids, String s) {
@@ -642,6 +653,12 @@ public final class Structures {
         return sb.append(']').toString();
     }
 
+    /** A structure drawn by {@code h}: a model (all equally likely), then one of its variants. */
+    public static Def pick(long h) {
+        List<Def> m = MODELS.get(Hash.range(h, 0, MODELS.size() - 1));
+        return m.size() == 1 ? m.get(0) : m.get(Hash.range(Hash.next(h, 0x5641), 0, m.size() - 1));
+    }
+
     /** Quarter turns clockwise that turn the front (-Z) to face the street on the given side. */
     public static final int NORTH = 0;
     public static final int EAST = 1;
@@ -664,14 +681,21 @@ public final class Structures {
                     continue;
                 }
                 String[] f = line.trim().split("\\|");
-                int turn = f.length > 3 ? Math.floorMod(Integer.parseInt(f[3].trim()) / 90, 4) : 0;
-                defs.add(define(f[0], f[1], f.length > 2 ? Integer.parseInt(f[2].trim()) : 0, turn, ids));
+                int turn = f.length > 3 && !f[3].isBlank() ? Math.floorMod(Integer.parseInt(f[3].trim()) / 90, 4) : 0;
+                String model = f.length > 4 && !f[4].isBlank() ? f[4].trim() : f[1].trim();
+                String banners = f.length > 5 && !f[5].isBlank() ? f[5].trim() : null;
+                defs.add(define(f[0], f[1], f.length > 2 ? Integer.parseInt(f[2].trim()) : 0, turn, model, banners, ids));
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
         STATES.addAll(ids.keySet());
         ALL = List.copyOf(defs);
+        Map<String, List<Def>> models = new LinkedHashMap<>();
+        for (Def d : ALL) {
+            models.computeIfAbsent(d.model(), k -> new ArrayList<>()).add(d);
+        }
+        MODELS = models.values().stream().map(List::copyOf).toList();
         MIN_DEPTH = ALL.stream().mapToInt(Def::depth).min().orElse(0);
         MIN_WIDTH = ALL.stream().mapToInt(Def::front).min().orElse(0);
     }

@@ -1,7 +1,7 @@
 # Abandoned Modern City — NeoForge 1.21.1
 
 Cidades modernas abandonadas geradas proceduralmente: ruas, rodovias, túneis, pontes, quarteirões e parques.
-Os prédios são as 21 estruturas `.nbt` do usuário, sorteadas ao acaso num anel em volta de cada quarteirão, com
+Os prédios são as estruturas `.nbt` do usuário (21 modelos, 43 arquivos com as variações de cor), sorteadas ao acaso num anel em volta de cada quarteirão, com
 limites por cidade para farmácias, oficinas e postos.
 
 > Começou em 7 nov 2026 como cópia do Abandoned Simple City (repositório `abandoned-simple-city`), sem os prédios e
@@ -44,9 +44,11 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
 - **Quarteirões:** as estruturas formam um anel encostado nas calçadas, com a frente (lado -Z do `.nbt`) virada para
   a rua; o resto (o miolo) é tomado pela natureza. Cerca de 1 em 8 quarteirões tem um parque de 110 × 64 num canto,
   com as estruturas em L nas outras duas ruas.
-- **Estruturas (21, `structures/`):** sorteadas ao acaso no anel (cada arquivo com a mesma chance: as 10 casas
-  dão ~43% das estruturas), com limite por cidade: farmácias 3, oficinas 2, postos 2. Nunca duas estruturas iguais
-  (o mesmo arquivo) no mesmo quarteirão.
+- **Estruturas (21 modelos, 43 arquivos, `structures/`):** sorteadas ao acaso no anel (cada modelo com a mesma
+  chance, depois a cor: as 10 casas dão ~43% das estruturas), com limite por cidade: farmácias 3, oficinas 2, postos 2.
+  Nunca duas estruturas iguais (o mesmo modelo, em qualquer cor) no mesmo quarteirão. Variações de cor: farmácia e
+  farmácia grande (5 cores cada, as letras D R U G S T O R E copiadas da original na cor da variação), oficina média
+  (3), oficina pequena (5), posto e posto pequeno (5 cada).
 
   | Estrutura | Tipo | Caixa (frente × fundo × altura) | Chão |
   |---|---|---|---|
@@ -60,12 +62,12 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
   | Casa de subúrbio abandonada | casas | 51 × 43 × 20 | camada 0 |
   | Casa com torre abandonada | casas | 40 × 44 × 24 | camada 0 |
   | Casa vitoriana abandonada | casas | 42 × 47 × 23 | camada 0 |
-  | Farmácia | farmácia (limite 3 com a grande) | 19 × 28 × 16 | camada 0 |
-  | Farmácia grande | farmácia | 26 × 40 × 15 | camada 0 |
-  | Oficina média | oficina (limite 2 com a pequena) | 35 × 26 × 17 | camada 0 |
-  | Oficina pequena | oficina | 22 × 33 × 16 | camada 0 |
-  | Posto padrão | posto (limite 2 com o pequeno) | 45 × 37 × 18 | camada 0 |
-  | Posto pequeno | posto | 25 × 20 × 18 | camada 0 |
+  | Farmácia (vermelha, amarela, azul, roxa, verde) | farmácia (limite 3 com a grande) | 19 × 28 × 16 | camada 0 |
+  | Farmácia grande (amarela, azul, roxa, verde, vermelha) | farmácia | 26 × 40 × 15 | camada 0 |
+  | Oficina média (azul e preto, amarela e azul, amarelo e vermelho) | oficina (limite 2 com a pequena) | 35 × 26 × 17 | camada 0 |
+  | Oficina pequena (verde, amarela, azul, roxa, vermelha) | oficina | 22 × 33 × 16 | camada 0 |
+  | Posto padrão (vermelho, amarelo, azul, roxo, verde) | posto (limite 2 com o pequeno) | 45 × 37 × 18 | camada 0 |
+  | Posto pequeno (vermelho, amarelo, azul, roxo, verde) | posto | 25 × 20 × 18 | camada 0 |
   | Prédio apartamento | prédio | 31 × 29 × 37 | camada 1 (desce 1) |
   | Prédio esqueleto (`predio_esqueleto_31x29`) | prédio | 31 × 29 × 43 | camada 0 |
   | Prédio azulado | prédio | 66 × 46 × 106 | camada 1 (desce 1) |
@@ -103,7 +105,7 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
   | Vaso decorado (`vaso`) | 40%: 1 pilha comum | 80%: 1 pilha normal ou rara |
 
   Difícil acesso (`core/Access`): a 15 ou mais blocos acima da rua, ou fora do alcance de quem entra andando (sem
-  quebrar blocos: pulando 1 bloco, caindo, subindo escadas de mão, vinhas e água, abrindo portas). São 173 dos 882
+  quebrar blocos: pulando 1 bloco, caindo, subindo escadas de mão, vinhas e água, abrindo portas). São 177 dos 1 530
   contêineres: quase todos nos andares altos da torre, do prédio apocalíptico, do azulado e do esqueleto.
 - **Natureza tomando a cidade** (`core/Flora`, `core/Wild`):
   - chão em manchas: grama, musgo, terra grossa e restos do concreto (`gray_concrete_powder`);
@@ -174,7 +176,7 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
   Wreck          buracos nas pontes, por posição ao longo da rodovia
   Wild           o miolo do quarteirão: chão, árvores e vegetação, sem entrar nas estruturas
   Ring           anel de estruturas em volta do quarteirão (lados curtos inteiros, compridos no que sobra), vãos, limites
-  Structures     as 21 estruturas de `amcs/buildings/index.txt`: caixa, camada do chão, piso até a borda, folhas reais, rotação
+  Structures     os 43 arquivos (21 modelos) de `amcs/buildings/index.txt`: caixa, camada do chão, piso até a borda, folhas reais, rotação
   Access         contêineres de difícil acesso das estruturas (altos ou fora do alcance andando): loot mais generoso
   Crowns         onde vão as folhas que completam copas cortadas pela borda das estruturas (gen/Overhangs as põe)
   Park           parques tomados pela natureza, com caminhos e fonte

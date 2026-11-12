@@ -294,8 +294,20 @@ class RingTest {
     @Test
     void pharmacyBannersKeepTheirLetters() {
         assumeFalse(Structures.ALL.isEmpty(), "no structures");
-        for (String name : List.of("farmacia_vermelho", "farmacia_grande_amarela")) {
-            Structures.Def d = Structures.ALL.stream().filter(s -> s.name().equals(name)).findFirst().orElseThrow();
+        // the originals and their color variants (whose letters are copied from the originals, in their color)
+        List<Structures.Def> pharmacies = Structures.ALL.stream().filter(s -> s.type().startsWith("farmacia")).toList();
+        assertEquals(10, pharmacies.size());
+        for (Structures.Def d : pharmacies) {
+            String name = d.name();
+            boolean small = d.model().equals("farmacia");
+            String color = small ? "red" : "yellow";
+            for (String[] c : new String[][]{{"amarelo", "yellow"}, {"azul", "blue"}, {"roxo", "purple"}, {"verde", "green"},
+                    {"grande_azul", "light_blue"}, {"grande_roxo", "purple"}, {"grande_verde", "lime"}, {"grande_vermelho", "red"}}) {
+                if (name.equals("farmacia_" + c[0])) {
+                    color = c[1];
+                }
+            }
+            final String want = color;
             for (int rot = 0; rot < 4; rot++) {
                 int banners = 0;
                 for (int y = -d.ground(); y < d.above(); y++) {
@@ -312,11 +324,20 @@ class RingTest {
                             // every letter is drawn with stripes and framed by a border
                             assertTrue(design.stream().anyMatch(l -> l[0].contains("stripe")), name);
                             assertTrue(design.stream().anyMatch(l -> l[0].equals("minecraft:border")), name);
+                            // the color of the variant: the letters on the small one, the field on the big one
+                            String st = Structures.STATES.get((code - BlockCode.STRUCT) / 4);
+                            if (small) {
+                                assertTrue(st.contains("minecraft:white_wall_banner"), name + " " + st);
+                                assertTrue(design.stream().anyMatch(l -> l[0].contains("stripe") && l[1].equals(want)), name);
+                            } else {
+                                assertTrue(st.contains("minecraft:" + want + "_wall_banner"), name + " " + st);
+                                assertTrue(design.stream().allMatch(l -> !l[0].contains("stripe") || l[1].equals("black")), name);
+                            }
                         }
                     }
                 }
                 // D R U G S T O R E: once on the small pharmacy, twice (front and side) on the big one
-                assertEquals(name.equals("farmacia_vermelho") ? 9 : 18, banners, name + " rot " + rot);
+                assertEquals(small ? 9 : 18, banners, name + " rot " + rot);
             }
         }
     }

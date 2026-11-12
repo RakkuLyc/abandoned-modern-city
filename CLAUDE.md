@@ -24,7 +24,7 @@ Abandoned Modern City (mod id `abandonedmoderncity`, pacote `com.abandonedmodern
 `RakkuLyc/abandoned-modern-city`, pasta `Projetos Claude/AbandonedModernCity`). Começou em 7 nov 2026 como cópia do
 Abandoned Simple City (`RakkuLyc/abandoned-simple-city`, pasta `AbandonedModernCity-Simple`) com o mesmo sistema de
 rodovias, túneis, pontes, quarteirões, parques e plantações, **sem os prédios** (e sem as casinhas das cidades
-3 × 2) e sem o histórico de commits. Os prédios são as estruturas `.nbt` do usuário (21 desde 13 nov 2026: 14 em 12 nov e mais 7 em 13 nov; as 33 primeiras foram removidas em 10 nov). O Abandoned Modern City original
+3 × 2) e sem o histórico de commits. Os prédios são as estruturas `.nbt` do usuário (43 arquivos desde 13 nov 2026: 21 modelos, 6 deles com variações de cor; 14 em 12 nov, mais 7 e as 22 variações em 13 nov; as 33 primeiras foram removidas em 10 nov). O Abandoned Modern City original
 (pasta `AbandonedModernCity-Deprecated`) está descontinuado. Ainda em 7 nov 2026 o usuário mandou remover as cidades
 octogonais e as cidades 3 × 2 das rodovias (com o padrão rural_highway perto delas e as plantações), e depois trocar
 o grid 4 × 4 por 2 × 2 com células de 1024, depois os quarteirões para 105 × 60 com células de 512, e em 8 nov 2026 os quarteirões para 140 × 90 com células de 576
@@ -138,7 +138,19 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   apartamento, prédio esqueleto (13 nov 2026; o arquivo `prédio_esqueleto_31x29.nbt` vira `predio_esqueleto_31x29`,
   sem acento, porque o argumento de `/amcs spawn` só aceita ASCII), prédio azulado, torre, prédio apocalíptico. A
   mansão pós-apocalíptica foi atualizada em 13 nov com a versão nova da pasta (só o estado de 12 portas mudou). As
-  casas são 10 dos 21 arquivos e, com o sorteio por arquivo, ~43% das estruturas. Regras decididas pelo usuário:
+  casas são 10 dos 21 modelos e ~43% das estruturas. Variações de cor (13 nov 2026, pedido do usuário; campo `modelo`
+  do índice): farmácia (amarelo, azul, roxo, verde além da vermelha), farmácia grande (azul, roxo, verde, vermelho além
+  da amarela), oficina média (amarela e azul, amarelo e vermelho além da azul e preto), oficina pequena (amarela,
+  azul, roxa, vermelha além da verde), posto (amarelo, azul, roxo, verde além do vermelho), posto pequeno (amarelo,
+  azul, roxo, verde além do vermelho): 43 arquivos, 21 modelos, cada variação do tamanho, frente e chão da original
+  (99,6 a 100% dos blocos no mesmo lugar). O anel sorteia o modelo (todos com a mesma chance, `Structures.pick`) e
+  depois a cor: as variações não mudam as frequências. As variações de farmácia vieram sem os banners; o índice os
+  copia da original na carga (`Template.withBannersFrom`, campo `banners` = `fonte@dx,dz:cor=cor`): na farmácia
+  pequena as letras ficam na cor da variação sobre fundo branco (como as vermelhas da original), na grande o fundo
+  fica na cor da variação com letras pretas (como o amarelo da original); azul-claro, roxo, verde-limão e vermelho
+  nas grandes, amarelo, azul, roxo e verde nas pequenas. A coluna de banners da lateral da farmácia grande fica fora
+  do molde salvo das variações (25 de largura): o molde cresce 1 bloco. A carga falha se um banner cair sobre um
+  bloco ou não tiver parede atrás. Regras decididas pelo usuário:
   - frente = lado -Z do `.nbt`, virada para a rua; o campo `frente` do índice gira o molde quando a frente é
     outro lado: a casa moderna abandonada e a mansão pós-apocalíptica têm a frente no +Z (180°, achado pelo usuário
     no jogo em 12 nov 2026); as 7 de 13 nov têm a frente no -Z (caminho e degraus de entrada no lado norte do
@@ -156,7 +168,7 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   - limites por cidade (`Structures.LIMITS`): farmácias 3 (as duas), oficinas 2 (as duas), postos 2 (os dois); os
     anéis da cidade inteira são sorteados de uma vez (`City.rings`, quarteirões de norte a sul, oeste a leste), e um
     grupo no limite é sorteado de novo;
-  - nunca duas estruturas iguais (o mesmo arquivo) no mesmo quarteirão (13 nov 2026, pedido do usuário): uma
+  - nunca duas estruturas iguais (o mesmo modelo, em qualquer cor) no mesmo quarteirão (13 nov 2026, pedido do usuário): uma
     estrutura que já está em alguma linha do quarteirão é sorteada de novo (`Ring.row`); antes 80% dos quarteirões
     tinham alguma repetida; em quarteirões vizinhos ela pode aparecer de novo;
   - caixa = a dos blocos sólidos; a camada `chão` do índice fica no nível do chão da cidade e as de baixo ficam
@@ -209,8 +221,8 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   da cidade (`Access.HIGH`) ou fora do alcance de quem entra andando da rua: o percurso pula 1 bloco (nunca sobre
   cerca, muro ou vidraça), cai qualquer altura, sobe escada de mão, vinha, andaime e água, abre portas, alçapões e
   portões (não os de ferro); plantas, teias, tapetes e tochas não bloqueiam; folhas sim; o contêiner precisa estar a
-  1 bloco de lado (diagonal vale) de onde o jogador pisa, de 1 abaixo dos pés a 1 acima da cabeça. Hoje 173 de 882
-  contêineres das 21 estruturas: 166 pela altura (torre 82, prédio apocalíptico 54, azulado 17, esqueleto 9,
+  1 bloco de lado (diagonal vale) de onde o jogador pisa, de 1 abaixo dos pés a 1 acima da cabeça. Hoje 177 de 1 530
+  contêineres dos 43 arquivos (173 de 882 nos 21 modelos originais): 166 pela altura (torre 82, prédio apocalíptico 54, azulado 17, esqueleto 9,
   apartamento 4) e 17 fechados (telhados da casa abandonada e da farmácia grande, um cômodo da mansão abandonada 2
   blocos acima do pátio, salas do prédio apocalíptico e do azulado). As peças de veículo do OAmP e a tabela do Lost
   Cities saíram (a do Lost Cities era rejeitada pelo Minecraft). Baú da fonte do parque continua vazio (50%) ou

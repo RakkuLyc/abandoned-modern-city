@@ -44,6 +44,81 @@ public final class Template {
         return new Template(name, sx, sy, sz, palette, cells, Map.of());
     }
 
+    /**
+     * This template with the banners of {@code src} copied in (asked by the user, 13 nov 2026: the color variants of the
+     * pharmacies were saved without the D R U G S T O R E letters): each banner of {@code src} at (x, y, z) goes to
+     * (x + dx, y, z + dz), with the color {@code from} replaced by {@code to} in its block and in its layers. The
+     * template grows when a banner falls just outside it. Every banner must land on air (or outside) and hang on a
+     * block of this template, or loading fails.
+     */
+    Template withBannersFrom(Template src, int dx, int dz, String from, String to) {
+        int nsx = sx;
+        int nsz = sz;
+        int ox = 0;
+        int oz = 0;
+        for (int k : src.banners.keySet()) {
+            int x = k % src.sx + dx;
+            int z = (k / src.sx) % src.sz + dz;
+            nsx = Math.max(nsx, x + 1);
+            nsz = Math.max(nsz, z + 1);
+            ox = Math.max(ox, -x);
+            oz = Math.max(oz, -z);
+        }
+        nsx += ox;
+        nsz += oz;
+        int[] nc = new int[nsx * sy * nsz];
+        java.util.Arrays.fill(nc, -1);
+        for (int y = 0; y < sy; y++) {
+            for (int z = 0; z < sz; z++) {
+                for (int x = 0; x < sx; x++) {
+                    nc[(x + ox) + nsx * ((z + oz) + nsz * y)] = cells[x + sx * (z + sz * y)];
+                }
+            }
+        }
+        List<String> np = new ArrayList<>(palette);
+        Map<Integer, List<String[]>> nb = new java.util.HashMap<>();
+        for (Map.Entry<Integer, List<String[]>> e : banners.entrySet()) {
+            int k = e.getKey();
+            int x = k % sx + ox;
+            int z = (k / sx) % sz + oz;
+            int y = k / (sx * sz);
+            nb.put(x + nsx * (z + nsz * y), e.getValue());
+        }
+        for (Map.Entry<Integer, List<String[]>> e : src.banners.entrySet()) {
+            int k = e.getKey();
+            int y = k / (src.sx * src.sz);
+            int x = k % src.sx + dx + ox;
+            int z = (k / src.sx) % src.sz + dz + oz;
+            String state = src.palette.get(src.at(k % src.sx, y, (k / src.sx) % src.sz));
+            int i = x + nsx * (z + nsz * y);
+            int here = nc[i];
+            if (here >= 0 && !palette.get(here).startsWith("minecraft:air") && !palette.get(here).startsWith("minecraft:cave_air")) {
+                throw new IllegalStateException(name + ": banner of " + src.name + " at " + x + "," + y + "," + z + " over " + palette.get(here));
+            }
+            // a wall banner hangs on the block behind it (opposite to where it faces)
+            String facing = state.replaceAll(".*facing=(\\w+).*", "$1");
+            int bx = x + (facing.equals("east") ? -1 : facing.equals("west") ? 1 : 0);
+            int bz = z + (facing.equals("south") ? -1 : facing.equals("north") ? 1 : 0);
+            int behind = bx >= 0 && bz >= 0 && bx < nsx && bz < nsz ? nc[bx + nsx * (bz + nsz * y)] : -1;
+            if (state.contains("_wall_banner") && (behind < 0 || palette.get(behind).startsWith("minecraft:air"))) {
+                throw new IllegalStateException(name + ": banner of " + src.name + " at " + x + "," + y + "," + z + " hangs on nothing");
+            }
+            String block = state.replace("minecraft:" + from + "_", "minecraft:" + to + "_");
+            int id = np.indexOf(block);
+            if (id < 0) {
+                np.add(block);
+                id = np.size() - 1;
+            }
+            nc[i] = id;
+            List<String[]> layers = new ArrayList<>();
+            for (String[] l : e.getValue()) {
+                layers.add(new String[]{l[0], l[1].equals(from) ? to : l[1]});
+            }
+            nb.put(i, List.copyOf(layers));
+        }
+        return new Template(name, nsx, sy, nsz, np, nc, nb);
+    }
+
     /** Palette index at template position (x, y, z), or -1 (outside or nothing there). */
     public int at(int x, int y, int z) {
         if (x < 0 || y < 0 || z < 0 || x >= sx || y >= sy || z >= sz) {

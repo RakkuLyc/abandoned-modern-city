@@ -11,8 +11,8 @@ import java.util.List;
  * row, and between the deepest structure of a short row and the long rows. The forest of the core always keeps
  * {@link #CORE_MIN}..{@link #CORE_MAX} blocks (drawn per pair of opposite rows) between the backs of opposite
  * structures. A structure that does not fit what is left of its row, or whose depth would not leave that room, is
- * redrawn; so is a structure already in the block (asked by the user, 13 nov 2026: never two of the same file in one
- * block).
+ * redrawn; so is a structure already in the block (asked by the user, 13 nov 2026: never two of the same structure,
+ * in any of its colors, in one block).
  */
 public final class Ring {
     private Ring() {
@@ -120,13 +120,13 @@ public final class Ring {
         long h = seed;
         while (length - at >= Structures.MIN_WIDTH && failures < TRIES) {
             h = Hash.next(h, 1);
-            Structures.Def def = Structures.ALL.get(Hash.range(h, 0, Structures.ALL.size() - 1));
+            Structures.Def def = Structures.pick(h);
             boolean full = def.group() != null
                     && used.getOrDefault(def.group(), 0) >= Structures.LIMITS.get(def.group());
-            // already in this block (any of its rows): never two of the same structure in one block
+            // already in this block (any of its rows): never two of the same structure (any color of it) in one block
             boolean twice = false;
             for (Lot l : out) {
-                twice |= l.building == def;
+                twice |= l.building.model().equals(def.model());
             }
             if (full || twice || def.depth() > maxDepth || def.front() > length - at) {
                 failures++;
