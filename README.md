@@ -80,10 +80,27 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
   - Para-raios viram tochas de redstone acesas (5: no topo da casa com torre, da mansão pós-apocalíptica, do prédio
     apartamento, do prédio apocalíptico e da torre).
 
-  Os contêineres (baús, barris, dispensers, droppers) recebem a loot table quando são colocados; os banners recebem
-  o desenho do molde; os outros block entities (fornalhas, camas, crânios, estantes entalhadas etc.) saem vazios:
-  - **Todas as estruturas exceto oficinas (tipo que começa com `oficina`):** loot table `lostcities:chests/lostcitychest` (do mod Apocalypse Loot / Lost Cities), com munição TACZ, armas, itens médicos, comida, recursos e raridades.
-  - **Oficinas (médias e pequenas):** baús recebem `oficina_vehicle_parts` (rodas, assentos e motores compatíveis com Camaro e Escargot do OAmP); demais containers recebem `oficina_vehicle_tools` (jumperpack, blowtorch, repairkit).
+  Os contêineres (baús, barris, dispensers, droppers, vasos decorados) recebem a loot table quando são colocados; os
+  banners recebem o desenho do molde; os outros block entities (fornalhas, camas, crânios, estantes entalhadas etc.)
+  saem vazios. Loot só com itens vanilla, em 30 tabelas próprias (`tools/gen_loot.py`): 5 temas × 6 níveis.
+
+  | Tema | Estruturas | Itens típicos | Raros |
+  |---|---|---|---|
+  | `casa` | as 10 casas | comida, linha, papel, tochas, livros, pepitas, esmeraldas | diamante, maçã dourada, livro encantado, discos |
+  | `farmacia` | as farmácias | frascos, açúcar, poções de cura, regeneração, visão noturna, resistência ao fogo | poção de cura II, regeneração longa, frascos de experiência |
+  | `oficina` | as oficinas | ferro, cobre, carvão, correntes, ferramentas de ferro gastas, trilhos, pistões | diamante, bloco de ferro, ferramentas encantadas, funil, bigorna |
+  | `posto` | os postos | lanches, carvão, balde de lava, mapa, bússola, esmeraldas | esmeraldas, ouro, maçã dourada, luneta |
+  | `predio` | os prédios | papel, livros, flechas, lápis, redstone, arco e espada gastos | diamante, armadura de ferro encantada, pérolas do ender, discos |
+
+  | Contêiner | Normal | Difícil acesso (`_dificil`) |
+  |---|---|---|
+  | Baú (`bau`) | sempre: 3 a 6 pilhas (comuns e normais) e 10% de chance de 1 raro | 5 a 8 pilhas e 1 a 2 raros |
+  | Barril, dispenser, dropper (`barril`) | 40% têm algo: 1 a 3 pilhas de comuns | 75%: 2 a 4 pilhas de comuns e normais |
+  | Vaso decorado (`vaso`) | 40%: 1 pilha comum | 80%: 1 pilha normal ou rara |
+
+  Difícil acesso (`core/Access`): a 15 ou mais blocos acima da rua, ou fora do alcance de quem entra andando (sem
+  quebrar blocos: pulando 1 bloco, caindo, subindo escadas de mão, vinhas e água, abrindo portas). São 173 dos 882
+  contêineres: quase todos nos andares altos da torre, do prédio apocalíptico, do azulado e do esqueleto.
 - **Natureza tomando a cidade** (`core/Flora`, `core/Wild`):
   - chão em manchas: grama, musgo, terra grossa e restos do concreto (`gray_concrete_powder`);
   - árvores do mod, ~1 a cada 55 colunas: carvalho, bétula, carvalho escuro e abeto, pequenas e grandes, com vinhas
@@ -134,7 +151,7 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
 | Regra | Como é garantida |
 |---|---|
 | Nada indestrutível | Todos os blocos estão em `gen/Palette`. `Palette.validate()` roda na inicialização e derruba o jogo se algum for indestrutível ou tiver block entity (exceção: o baú da fonte e os block entities das estruturas). Qualquer dureza é permitida. A auditoria no mundo (`hard_block`) confere os blocos gerados. |
-| Sem loot | Containers das estruturas **têm loot tables**: exceto oficinas usam `lostcities:chests/lostcitychest`; oficinas usam `oficina_vehicle_parts` (baús) e `oficina_vehicle_tools` (outros). Baú da fonte do parque continua vazio (50%) ou `mossy_cobblestone` (50%). A auditoria confere: contêiner de estrutura sem loot table é `structure_without_loot`; fora das estruturas, `loot_in_city` e `container_in_city`. |
+| Sem loot | Containers das estruturas **têm loot tables** vanilla próprias por tema (casa, farmácia, oficina, posto, prédio) e por contêiner (baú, barril, vaso), mais generosas nos de difícil acesso. Baú da fonte do parque continua vazio (50%) ou `mossy_cobblestone` (50%). A auditoria confere: contêiner de estrutura sem loot table é `structure_without_loot`, com a tabela errada `structure_wrong_loot`; fora das estruturas, `loot_in_city` e `container_in_city`. |
 | Ruas planas e conectadas | Cada cidade tem uma única altura (`City.level`). Ruas cortadas nunca criam beco sem saída nem separam a cidade (`PlanAudit`: `dead_end`, `city_split`). |
 | Superfície certa | A auditoria no mundo (`surface_block`) confere bloco a bloco a superfície das vias. |
 | Determinismo | Tudo é função pura da semente e do terreno natural: dois chunks vizinhos nunca discordam, em qualquer ordem e thread (`PlanAuditTest.planIsIndependentOfQueryOrderAndThreads`). |
@@ -154,6 +171,7 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
   Wild           o miolo do quarteirão: chão, árvores e vegetação, sem entrar nas estruturas
   Ring           anel de estruturas em volta do quarteirão (lados curtos inteiros, compridos no que sobra), vãos, limites
   Structures     as 21 estruturas de `amcs/buildings/index.txt`: caixa, camada do chão, piso até a borda, folhas reais, rotação
+  Access         contêineres de difícil acesso das estruturas (altos ou fora do alcance andando): loot mais generoso
   Park           parques tomados pela natureza, com caminhos e fonte
   Template       estruturas .nbt do usuário (fonte waterfall.nbt)
   Highway        curva entre duas entradas de cidade, pontos a cada bloco, projeção de colunas

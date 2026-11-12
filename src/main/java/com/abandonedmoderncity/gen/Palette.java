@@ -441,23 +441,19 @@ public final class Palette {
                 || b instanceof net.minecraft.world.level.block.ChiseledBookShelfBlock;
     }
 
-    private static final net.minecraft.resources.ResourceLocation LOOT_CITY =
-            net.minecraft.resources.ResourceLocation.parse("abandonedmoderncity:chests/lostcitychest");
-    private static final net.minecraft.resources.ResourceLocation LOOT_PARTS =
-            net.minecraft.resources.ResourceLocation.parse("abandonedmoderncity:chests/oficina_vehicle_parts");
-    private static final net.minecraft.resources.ResourceLocation LOOT_TOOLS =
-            net.minecraft.resources.ResourceLocation.parse("abandonedmoderncity:chests/oficina_vehicle_tools");
-
     /**
-     * Loot table of a container {@code s} of a structure: the car workshops get vehicle parts in their chests and
-     * tools in their other containers, every other structure the Lost Cities loot (generation and /amcs spawn).
+     * Loot table of a container {@code s} of a structure (asked by the user, 13 nov 2026; tables written by
+     * {@code tools/gen_loot.py}, vanilla items only): one set per kind of structure (casa, farmacia, oficina, posto,
+     * predio) and, in each, the tier of the container: chests normal ({@code bau}), barrels, dispensers and droppers
+     * poorer and often empty ({@code barril}), decorated pots one stack ({@code vaso}); a container hard to get to
+     * ({@link com.abandonedmoderncity.core.Access}) gets the more generous {@code _dificil} table of its tier.
      */
     public static net.minecraft.resources.ResourceKey<net.minecraft.world.level.storage.loot.LootTable> lootTable(
-            com.abandonedmoderncity.core.Structures.Def def, BlockState s) {
-        boolean workshop = def.type().startsWith("oficina");
-        net.minecraft.resources.ResourceLocation table = workshop
-                ? (s.is(Blocks.CHEST) || s.is(Blocks.TRAPPED_CHEST) ? LOOT_PARTS : LOOT_TOOLS) : LOOT_CITY;
-        return net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE, table);
+            com.abandonedmoderncity.core.Structures.Def def, BlockState s, boolean hard) {
+        String tier = s.is(Blocks.CHEST) || s.is(Blocks.TRAPPED_CHEST) ? "bau" : s.is(Blocks.DECORATED_POT) ? "vaso" : "barril";
+        String id = "chests/" + def.lootTheme() + "/" + tier + (hard ? "_dificil" : "");
+        return net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE,
+                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("abandonedmoderncity", id));
     }
 
     /**

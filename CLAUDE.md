@@ -182,7 +182,26 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   Os block entities permitidos são o baú vazio da fonte e os containers das estruturas (baús, barris, suportes de poção, vasos decorados, atris, fornalhas, camas, fogueiras, sensores de luz, jukeboxes,
   banners, crânios, dispensers, droppers e estantes entalhadas, vazias, desde 13 nov 2026 por causa da casa grande; `Palette.exempt`). Os banners recebem o desenho salvo no molde; placas
   saem sem texto.
-  **Loot tables** (postas quando cada contêiner é colocado, pela região, como nas estruturas vanilla; semente por
-  lote e posição; `ChunkBuilder.loot`): exceto oficinas usam `lostcities:chests/lostcitychest` (do Apocalypse Loot / Lost Cities); oficinas usam `oficina_vehicle_parts` (baús: rodas, assentos, motores compatíveis com Camaro/Escargot do OAmP) e `oficina_vehicle_tools` (outros containers: jumperpack, blowtorch, repairkit). Baú da fonte do parque continua vazio (50%) ou `mossy_cobblestone` (50%).
+  **Loot tables** (13 nov 2026, pedido do usuário; postas quando cada contêiner é colocado, pela região, como nas
+  estruturas vanilla; semente por lote e posição; `ChunkBuilder.loot`, `Palette.lootTable`): só itens vanilla, em
+  tabelas próprias geradas por `tools/gen_loot.py` em `data/abandonedmoderncity/loot_table/chests/<tema>/<nível>.json`.
+  Tema pelo tipo da estrutura (`Structures.Def.lootTheme`): `casa` (comida, utensílios, livros, discos), `farmacia`
+  (poções de cura, regeneração, visão noturna, resistência ao fogo, ingredientes de poção), `oficina` (ferro, cobre,
+  carvão, ferramentas de ferro gastas, trilhos, pistões; raras: ferramentas encantadas, bigorna, funil), `posto`
+  (lanches, carvão, baldes de lava, mapas, esmeraldas) e `predio` (os prédios: papel, livros, flechas, lápis, armas
+  gastas; raras: armadura de ferro encantada, pérolas do ender, discos). Nível pelo contêiner: baú `bau` (3 a 6 pilhas
+  de itens comuns e normais e 10% de chance de um raro), barril, dispenser e dropper `barril` (40% têm algo, 1 a 3
+  pilhas só de comuns), vaso decorado `vaso` (40%, uma pilha comum). Contêiner de difícil acesso (`core/Access`) usa
+  a versão `_dificil`, mais generosa: `bau_dificil` 5 a 8 pilhas e 1 a 2 raros, `barril_dificil` 75% com 2 a 4 pilhas
+  de comuns e normais, `vaso_dificil` 80% com uma pilha normal ou rara. Difícil acesso = a 15+ blocos acima do chão
+  da cidade (`Access.HIGH`) ou fora do alcance de quem entra andando da rua: o percurso pula 1 bloco (nunca sobre
+  cerca, muro ou vidraça), cai qualquer altura, sobe escada de mão, vinha, andaime e água, abre portas, alçapões e
+  portões (não os de ferro); plantas, teias, tapetes e tochas não bloqueiam; folhas sim; o contêiner precisa estar a
+  1 bloco de lado (diagonal vale) de onde o jogador pisa, de 1 abaixo dos pés a 1 acima da cabeça. Hoje 173 de 882
+  contêineres das 21 estruturas: 166 pela altura (torre 82, prédio apocalíptico 54, azulado 17, esqueleto 9,
+  apartamento 4) e 17 fechados (telhados da casa abandonada e da farmácia grande, um cômodo da mansão abandonada 2
+  blocos acima do pátio, salas do prédio apocalíptico e do azulado). As peças de veículo do OAmP e a tabela do Lost
+  Cities saíram (a do Lost Cities era rejeitada pelo Minecraft). Baú da fonte do parque continua vazio (50%) ou
+  `mossy_cobblestone` (50%).
 - Paleta (`gen/Palette`): os 8 estilos de material dos prédios do Abandoned Simple City (paredes, janelas, pisos,
   acabamento, escadas, sacadas) continuam na paleta, sem uso, para os prédios novos.

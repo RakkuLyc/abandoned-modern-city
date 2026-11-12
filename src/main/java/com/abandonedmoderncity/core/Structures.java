@@ -48,7 +48,7 @@ public final class Structures {
      *               template whose front is its +Z side, as the user found for casa_moderna_abandonada)
      */
     public record Def(String type, String name, String group, Template t, int ox, int oy, int oz, int w, int h, int d,
-                      int ground, int turn, int[] state, int[] fill, Map<Integer, Integer> cells) {
+                      int ground, int turn, int[] state, int[] fill, Map<Integer, Integer> cells, Access.Result access) {
         /** Footprint size along x after {@code rot} quarter turns. */
         public int sizeX(int rot) {
             return ((rot + turn) & 1) == 0 ? w : d;
@@ -121,6 +121,22 @@ public final class Structures {
             return tc == null ? null : t.banners.get(cell(tc[0], tc[1], tc[2]));
         }
 
+        /** Kind of loot (folder of its loot tables): casa, farmacia, oficina, posto or predio. */
+        public String lootTheme() {
+            for (String k : LOOT_THEMES) {
+                if (type.startsWith(k)) {
+                    return k;
+                }
+            }
+            return "predio";
+        }
+
+        /** Whether the container at (rx, ry, rz) of the rotated box is hard to get to ({@link Access}). */
+        public boolean hard(int rx, int ry, int rz, int rot) {
+            int[] tc = template(rx, ry, rz, rot);
+            return tc != null && access.hard().contains(cell(tc[0], tc[1], tc[2]));
+        }
+
         /** Template coordinates of (rx, ry, rz) of the box turned {@code rot}, or null outside the box. */
         private int[] template(int rx, int ry, int rz, int rot) {
             if (rx < 0 || rz < 0 || ry < -ground || ry >= h - ground || rx >= sizeX(rot) || rz >= sizeZ(rot)) {
@@ -166,6 +182,8 @@ public final class Structures {
      * kinds), gas stations 2 (both kinds). The group is the start of the structure's type.
      */
     public static final Map<String, Integer> LIMITS = Map.of("farmacia", 3, "oficina", 2, "posto", 2);
+    /** Kinds of loot by the start of the structure type; every other type (the buildings) gets {@code predio}. */
+    static final String[] LOOT_THEMES = {"casa", "farmacia", "oficina", "posto"};
 
     static String blockOf(String state) {
         return state.contains("[") ? state.substring(0, state.indexOf('[')) : state;
@@ -203,8 +221,10 @@ public final class Structures {
         Template t = Template.load("buildings/" + name);
         int[] state = new int[t.palette.size()];
         boolean[] solid = new boolean[state.length];
+        String[] placed = new String[state.length];
         for (int p = 0; p < state.length; p++) {
             String s = swap(t.palette.get(p));
+            placed[p] = s;
             String block = blockOf(s);
             if (block.equals("minecraft:air") || block.equals("minecraft:cave_air") || block.equals("minecraft:void_air")) {
                 state[p] = AIR_STATE;
@@ -251,7 +271,8 @@ public final class Structures {
                 group = g;
             }
         }
-        return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, turn, state, fill, cells);
+        Access.Result access = Access.of(t, placed, x0, y0, z0, w, y1 - y0 + 1, d, ground);
+        return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, turn, state, fill, cells, access);
     }
 
     private static int id(Map<String, Integer> ids, String s) {

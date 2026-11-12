@@ -386,7 +386,7 @@ final class ChunkBuilder {
             if (s != null) {
                 set(x, y, z, s);
                 if (lot.building != null && s.hasBlockEntity()) {
-                    loot(lot, s);
+                    loot(lot, s, lot.hardAt(x, y, z, base));
                     List<String[]> banner = lot.bannerAt(x, y, z, base);
                     if (banner != null) {
                         Palette.applyBanner(region.getBlockEntity(pos.set(x, y, z)), banner, region.registryAccess());
@@ -397,15 +397,15 @@ final class ChunkBuilder {
     }
 
     /**
-     * Loot table of the container just placed at {@link #pos} in a structure: the car workshops get vehicle parts in
-     * their chests and tools in their other containers, every other structure the Lost Cities loot. Set through the
-     * region, like vanilla structures do (the block entity of a chunk being generated only exists once asked for), with
-     * a seed from the lot and the position.
+     * Loot table of the container just placed at {@link #pos} in a structure ({@link Palette#lootTable}: the kind of
+     * structure, the kind of container, and whether it is hard to get to). Set through the region, like vanilla
+     * structures do (the block entity of a chunk being generated only exists once asked for), with a seed from the
+     * lot and the position.
      */
-    private void loot(Lot lot, BlockState s) {
-        if (region.getBlockEntity(pos) instanceof net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity c) {
+    private void loot(Lot lot, BlockState s, boolean hard) {
+        if (region.getBlockEntity(pos) instanceof net.minecraft.world.RandomizableContainer c) {
             long seed = com.abandonedmoderncity.core.Hash.of(lot.seed, 0x4C4F4F54L, pos.getX(), pos.getY() * 31L + pos.getZ());
-            c.setLootTable(Palette.lootTable(lot.building, s), seed);
+            c.setLootTable(Palette.lootTable(lot.building, s, hard), seed);
         }
     }
 

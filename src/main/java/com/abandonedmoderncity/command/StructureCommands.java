@@ -22,7 +22,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -194,6 +194,7 @@ public final class StructureCommands {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int placed = 0;
         int containers = 0;
+        int hardOnes = 0;
         for (int ry = -def.ground(); ry < def.above(); ry++) {
             for (int rz = 0; rz < sz; rz++) {
                 for (int rx = 0; rx < sx; rx++) {
@@ -213,20 +214,23 @@ public final class StructureCommands {
                     if (s.hasBlockEntity()) {
                         Palette.applyBanner(level.getBlockEntity(pos), def.banner(rx, ry, rz, rot), level.registryAccess());
                     }
-                    if (s.hasBlockEntity() && level.getBlockEntity(pos) instanceof RandomizableContainerBlockEntity rc) {
-                        rc.setLootTable(Palette.lootTable(def, s), Hash.of(seed, 0x4C4F4F54L, pos.getX(), pos.getY() * 31L + pos.getZ()));
+                    if (s.hasBlockEntity() && level.getBlockEntity(pos) instanceof RandomizableContainer rc) {
+                        boolean hard = def.hard(rx, ry, rz, rot);
+                        rc.setLootTable(Palette.lootTable(def, s, hard), Hash.of(seed, 0x4C4F4F54L, pos.getX(), pos.getY() * 31L + pos.getZ()));
                         containers++;
+                        hardOnes += hard ? 1 : 0;
                     }
                 }
             }
         }
         final int n = placed;
         final int k = containers;
+        final int kh = hardOnes;
         final int fx = x0;
         final int fz = z0;
         c.getSource().sendSuccess(() -> Component.literal("[AMCS] " + def.name() + " placed: box " + fx + "," + fz + " .. "
                 + (fx + sx - 1) + "," + (fz + sz - 1) + ", ground y " + base + ", " + n + " blocks, " + k
-                + " containers with loot"), true);
+                + " containers with loot (" + kh + " hard to get to)"), true);
         return 1;
     }
 }

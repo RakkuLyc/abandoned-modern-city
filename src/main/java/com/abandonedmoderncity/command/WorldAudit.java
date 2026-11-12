@@ -16,7 +16,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -342,7 +341,7 @@ public final class WorldAudit {
         for (BlockEntity be : c.getBlockEntities().values()) {
             BlockPos bp = be.getBlockPos();
             int i = ChunkPlan.idx(bp.getX() & 15, bp.getZ() & 15);
-            boolean loot = be instanceof RandomizableContainerBlockEntity rc && rc.getLootTable() != null;
+            boolean loot = be instanceof net.minecraft.world.RandomizableContainer rc && rc.getLootTable() != null;
             boolean container = be instanceof BaseContainerBlockEntity;
             if (loot) {
                 r.stat("loot_containers_anywhere", 1);
@@ -373,10 +372,18 @@ public final class WorldAudit {
                         r.fail("banner_without_design", bp.toShortString() + " " + id(c.getBlockState(bp)));
                     }
                 }
-                if (be instanceof RandomizableContainerBlockEntity) {
+                if (be instanceof net.minecraft.world.RandomizableContainer rc) {
                     r.stat("structure_loot_containers", 1);
+                    boolean hard = cp.lot[i].hardAt(bp.getX(), bp.getY(), bp.getZ(), cp.h2[i] / 2 - 1);
+                    if (hard) {
+                        r.stat("structure_loot_hard", 1);
+                    }
                     if (!loot) {
                         r.fail("structure_without_loot", bp.toShortString() + " " + id(c.getBlockState(bp)));
+                    } else if (!rc.getLootTable().equals(Palette.lootTable(cp.lot[i].building, c.getBlockState(bp), hard))) {
+                        // the table of the kind of structure, of the kind of container, and of its access
+                        r.fail("structure_wrong_loot", bp.toShortString() + " " + id(c.getBlockState(bp)) + " "
+                                + rc.getLootTable().location());
                     }
                 }
                 continue;

@@ -136,6 +136,11 @@ public final class Lot {
         return building == null ? null : building.banner(x - x0, y - base, z - z0, rot);
     }
 
+    /** Whether the structure container at (x, y, z) is hard to get to ({@link Access}): more generous loot. */
+    public boolean hardAt(int x, int y, int z, int base) {
+        return building != null && building.hard(x - x0, y - base, z - z0, rot);
+    }
+
     /** Layers under its base this lot places blocks in (the buried layers of a structure). */
     public int depthBelowBase() {
         return building != null ? building.ground() : 0;

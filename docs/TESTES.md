@@ -53,7 +53,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 
 ## 2. O que é verificado
 
-### Unitários (30 testes)
+### Unitários (34 testes)
 
 | Teste | Verifica |
 |---|---|
@@ -77,6 +77,10 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `RingTest.structureTreesHaveRealLeaves` | toda folha não persistente das estruturas tem distância 1 a 6 e um vizinho tronco ou folha mais perto (regra do leaf decay); mais de 1 000 folhas reais |
 | `RingTest.housesWithTheirFrontOnPlusZFaceTheStreet` | a casa moderna e a mansão pós-apocalíptica têm giro de 180° no índice e, com a rua ao norte, a fileira encostada na rua é a última fileira (+Z) do molde, bloco a bloco; as outras não têm giro |
 | `RingTest.pharmacyBannersKeepTheirLetters` | nas 4 rotações, a farmácia tem 9 banners e a farmácia grande 18 com desenho (listras e borda), todos em blocos de banner |
+| `AccessTest.closedRoomsDoorsAndLadders` | salas montadas no teste: baú em sala lacrada é de difícil acesso; com porta de madeira não; com porta de ferro ou cerca no vão sim; baú num pilar de 4 só se alcança com escada de mão; degraus de 1 bloco se sobem pulando |
+| `AccessTest.highContainersAreHard` | barril a `Access.HIGH` (15) blocos do chão, alcançável por escada, conta como difícil; baú no chão não |
+| `AccessTest.structuresHardContainers` | nas 21 estruturas: 173 de 882 contêineres de difícil acesso (entre 10% e 33%); os mesmos nas 4 rotações; prédios grandes e médios têm contêineres altos; nas casas no máximo 5% (4 de 356) |
+| `AccessTest.everyStructureHasItsLootTables` | as 6 tabelas do tema de cada estrutura existem; barril e vaso com 40% de chance, `barril_dificil` 75%, `vaso_dificil` 80%, baús sem chance de vir vazios; nada do Lost Cities ou do OAmP |
 | `RingTest.lightningRodsBecomeRedstoneTorches` | nenhum estado de para-raios sobra nas estruturas; 5 tochas de redstone de pé (uma no topo de cada estrutura que tinha para-raios); para-raios de lado vira tocha de parede com a mesma direção |
 | `RingTest.noFloatingCobwebs` | nenhuma teia das estruturas fica sem um bloco em que se prender (o chão conta); mais de 2 000 teias conferidas |
 | `RingTest.spawnLimitsHoldOverACity` | 300 cidades de 4 quarteirões sorteados em sequência: no máximo 3 farmácias, 2 oficinas, 2 postos |
@@ -126,9 +130,10 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
   - `road_plant` (planta planejada numa coluna de via tomada que falta ou mudou; as colunas tomadas são contadas em
     `taken_road_columns`, as plantas em `road_plants`; a superfície tomada é conferida em `surface_block`);
   - `banner_without_design` (banner de estrutura sem o desenho do molde; contados em `structure_banners`);
-  - `structure_without_loot` (contêiner de estrutura — baú, barril, dispenser, dropper — sem loot table; os block
-    entities das estruturas são contados em `structure_block_entities` e os contêineres em
-    `structure_loot_containers`), `loot_in_city` e `container_in_city` (fora das estruturas; baú da fonte vazio,
+  - `structure_without_loot` (contêiner de estrutura — baú, barril, dispenser, dropper, vaso decorado — sem loot
+    table) e `structure_wrong_loot` (com outra tabela que não a do tema da estrutura, do tipo de contêiner e do acesso;
+    os block entities das estruturas são contados em `structure_block_entities`, os contêineres em
+    `structure_loot_containers` e os de difícil acesso em `structure_loot_hard`), `loot_in_city` e `container_in_city` (fora das estruturas; baú da fonte vazio,
     contado em `fountain_chests`);
   - `orphan_road` (conectividade medida nos blocos).
 
@@ -183,6 +188,7 @@ e a regra de escada e apoio no mesmo chunk.
 | 40 | Bateria, 12 nov (quarteirões 180 × 120) | `building_mismatch` (3): folhas de bétula planejadas viraram ar | a limpeza de folhas órfãs (árvores naturais cortadas pela cidade) considerava toda folha não persistente; as das árvores reais do mod ficaram assim, e com o tronco num chunk ainda não gerado pareciam órfãs | a limpeza nunca remove folhas que o plano coloca (`ChunkBuilder.plannedLeaves`) |
 | 41 | `PlanAuditTest`, 12 nov (buracos nas pontes e desabamentos nos túneis, estes depois retirados) | `orphan_road` (18 de 105 auditorias): colunas de pista isoladas | a borda irregular, sorteada coluna a coluna, cercava colunas de pista | contorno irregular mas suave em volta do centro (ondas do ângulo) sem ilhas; 105 de 105 passam |
 | 42 | Bateria, 12 nov (pontes velhas) | servidor travado no viaduto e avisos `Detected setBlock in a far chunk` | nos trechos de muro caído, `wallTop` devolvia `Integer.MIN_VALUE + 1` e o laço da altura livre do reparo de vizinhos percorria ~2 bilhões de alturas; o muro também era posto nos trechos caídos (altura do vizinho) | `wallTop` devolve `Integer.MIN_VALUE` quando a coluna não tem muro e a altura livre começa na superfície |
+| 43 | Bateria e teste por RCON, 12–13 nov | a loot table `lostcitychest` (do Lost Cities) era rejeitada pelo Minecraft ao carregar | escape a mais em `custom_data` | substituída, a pedido do usuário, pelas tabelas vanilla próprias (`tools/gen_loot.py`); o log da bateria não tem mais erro de loot table |
 | — | Bateria (infraestrutura) | servidores falhando com "Address already in use" | um servidor de uma bateria interrompida ainda terminava | o script usa a porta 25591 e se recusa a começar com um servidor de desenvolvimento vivo |
 
 ## 4. Como reproduzir
@@ -229,7 +235,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
 ## 6. Resultados atuais (12 nov 2026, quarteirões 180 × 120 com anel de estruturas com vãos e miolo tomado pela natureza, ruas e rodovias de 33, cidades no meio de células de 736, 4 entradas)
 
-- **Unitários:** 29 passam e 1 é pulado (o teste sem estruturas), 13 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
+- **Unitários:** 33 passam e 1 é pulado (o teste sem estruturas), 13 nov 2026; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
   - **Rede (7 terrenos × 3 seeds, 81 células), cidades no meio da célula de 736, 4 entradas (uma por lado):** 35 a
@@ -245,6 +251,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 13 nov | loot vanilla por tema, contêiner e acesso | PASS: 8 de 8, 0 erros de geração; na cidade do spawn 902 contêineres com a tabela certa, 105 de difícil acesso; 2,68 ms por chunk, 256 s. Por RCON, 300 sorteios de cada uma das 30 tabelas: barril vazio em 58–62% (0,74–0,85 pilha), `barril_dificil` vazio em 19–30% (2,1–2,4 pilhas), baú 4,5–4,6 pilhas, `bau_dificil` 7,9–8,1, vaso vazio em 58–65%, `vaso_dificil` em 19–22%; poções com efeito, ferramentas gastas e encantadas e livros encantados conferidos; `/amcs spawn` do prédio apocalíptico pôs 73 contêineres, 56 de difícil acesso |
   | `20261027` | padrão (8 alvos) | 13 nov | para-raios trocados por tochas de redstone | PASS: 8 de 8, 0 erros de geração, 2,72 ms por chunk, 261 s |
   | `20261027` | padrão (8 alvos) | 13 nov | 7 estruturas novas (6 casas e o prédio esqueleto, 21 no total), mansão pós-apocalíptica atualizada, estantes entalhadas liberadas | PASS: 8 de 8, 0 erros de geração, 2,71 ms por chunk, 253 s |
   | `20261027` | padrão (8 alvos) | 13 nov | parque de 110 × 64 num canto, estruturas em L | PASS: 8 de 8, 0 erros de geração, 1 fonte conferida, 2,69 ms por chunk, 252 s |
@@ -264,4 +271,4 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
   A bateria ainda não rodou depois da remoção das cidades octogonais e 3 × 2 (o alvo "cidade 3 × 2 mais próxima do
   spawn" saiu) nem depois da troca para quarteirões 105 × 60 (células de 512) e 140 × 90 (células de 576). Em 8 nov, no Linux (CachyOS, JDK 21), a bateria `-PselfTest` passou 8 de 8 alvos com os quarteirões 105 × 60 num mundo novo (um mundo de teste velho, gerado antes das mudanças, dá falhas falsas no alvo do spawn: renomeie `run/selftest_world_*`). Vale rodar a bateria completa quando houver mudanças: `tools/selftest.sh full`.
-- Em nenhuma rodada houve degrau, buraco, obstáculo, pilar flutuante, rodovia sem conexão, bloco indestrutível nas vias, pontes e túneis depois das correções 4 e 5. Containers das estruturas agora têm loot tables (exceto oficinas: vehicle parts/tools; demais: Lost Cities), auditados por `loot_in_city` / `container_in_city`.
+- Em nenhuma rodada houve degrau, buraco, obstáculo, pilar flutuante, rodovia sem conexão, bloco indestrutível nas vias, pontes e túneis depois das correções 4 e 5. Containers das estruturas têm loot tables vanilla próprias (13 nov 2026: tema da estrutura × tipo de contêiner × acesso), auditados por `structure_without_loot`, `structure_wrong_loot`, `loot_in_city` e `container_in_city`.

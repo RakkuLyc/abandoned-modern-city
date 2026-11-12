@@ -39,6 +39,11 @@ public final class Template {
         this.cells = cells;
     }
 
+    /** A template built in code (tests): {@code cells[x + sx * (z + sz * y)]} = palette index or -1. */
+    static Template of(String name, int sx, int sy, int sz, List<String> palette, int[] cells) {
+        return new Template(name, sx, sy, sz, palette, cells, Map.of());
+    }
+
     /** Palette index at template position (x, y, z), or -1 (outside or nothing there). */
     public int at(int x, int y, int z) {
         if (x < 0 || y < 0 || z < 0 || x >= sx || y >= sy || z >= sz) {
