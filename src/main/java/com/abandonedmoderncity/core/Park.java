@@ -66,6 +66,9 @@ public final class Park {
     private final double growth;
     private final int armSense;
     final Flora.Trees trees;
+    /** Benches: column (x, z) -> its block code one above the ground ({@link #benches}). */
+    final java.util.Map<Long, Integer> benches;
+    private int benchSites;
 
     Park(int x0, int z0, int x1, int z1, long seed) {
         this.x0 = x0;
@@ -88,6 +91,94 @@ public final class Park {
         // overgrown: trees of several species with vines, no trunk on a path, no crown over the fountain ring
         this.trees = Flora.scatter(x0, z0, x1, z1, Hash.next(seed, 5), TREE_AREA, 5,
                 (x, z, reach) -> radius(x, z) - reach < RING_OUT + 1 || nearPath(x, z, 1));
+        this.benches = benches();
+    }
+
+    /** Blocks of path per bench, and least distance (blocks, along x or z) between two benches. */
+    static final int BENCH_EVERY = 15;
+    static final int BENCH_APART = 8;
+    /** Share of the benches broken: a seat and its armrest gone. */
+    static final double BENCH_BROKEN = 0.20;
+    private static final int[][] DIRS = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}}; // north, east, south, west
+
+    /**
+     * Benches along the paths (asked by the user, 13 nov 2026): two spruce stairs side by side on the edge of a path,
+     * their backs away from it (who sits looks at the path), an open spruce trapdoor at each end as armrests; about one
+     * per {@link #BENCH_EVERY} blocks of path, {@link #BENCH_APART}+ apart, never on a path, the fountain's ring, a
+     * trunk or under a crown; {@link #BENCH_BROKEN} of them broken.
+     */
+    private java.util.Map<Long, Integer> benches() {
+        java.util.Map<Long, Integer> out = new java.util.HashMap<>();
+        int pathCells = 0;
+        java.util.List<int[]> sites = new java.util.ArrayList<>();
+        for (int z = z0; z <= z1; z++) {
+            for (int x = x0; x <= x1; x++) {
+                if (path(x, z)) {
+                    pathCells++;
+                    continue;
+                }
+                for (int k = 0; k < 4; k++) {
+                    // the path in direction k; the bench runs along a = k turned 90 degrees: c - a, c, c + a, c + 2a
+                    int ax = -DIRS[k][1];
+                    int az = DIRS[k][0];
+                    boolean ok = true;
+                    for (int s = -1; s <= 2 && ok; s++) {
+                        int bx = x + s * ax;
+                        int bz = z + s * az;
+                        ok = bx >= x0 && bx <= x1 && bz >= z0 && bz <= z1 && !path(bx, bz)
+                                && path(bx + DIRS[k][0], bz + DIRS[k][1]) && !path(bx - DIRS[k][0], bz - DIRS[k][1])
+                                && radius(bx, bz) >= RING_OUT + 1 && !trees.trunk(bx, bz)
+                                && trees.code(bx, 1, bz, 0) == BlockCode.KEEP && trees.code(bx, 2, bz, 0) == BlockCode.KEEP;
+                    }
+                    if (ok) {
+                        sites.add(new int[]{x, z, k});
+                    }
+                }
+            }
+        }
+        // the path is 3 wide: its length is about a third of its columns
+        int want = Math.max(1, (int) Math.round(pathCells / 3.0 / BENCH_EVERY));
+        sites.sort((p, q) -> Long.compare(Hash.of(seed, 0x42454EL, p[0], p[1] * 4L + p[2]),
+                Hash.of(seed, 0x42454EL, q[0], q[1] * 4L + q[2])));
+        java.util.List<int[]> chosen = new java.util.ArrayList<>();
+        for (int[] s : sites) {
+            if (chosen.size() >= want) {
+                break;
+            }
+            boolean far = true;
+            for (int[] c : chosen) {
+                far &= Math.max(Math.abs(c[0] - s[0]), Math.abs(c[1] - s[1])) >= BENCH_APART;
+            }
+            if (!far) {
+                continue;
+            }
+            chosen.add(s);
+            benchSites++;
+            int k = s[2];
+            int ax = -DIRS[k][1];
+            int az = DIRS[k][0];
+            // the seat's back away from the path: facing the opposite of k
+            int back = (k + 2) & 3;
+            // which way along a: a = DIRS[(k + 1) & 3] (k turned 90 degrees clockwise)
+            int along = (k + 1) & 3;
+            boolean broken = Hash.unit(Hash.of(seed, 0x42524BL, s[0], s[1])) < BENCH_BROKEN;
+            out.put(key(s[0] - ax, s[1] - az), BlockCode.BENCH_ARM + ((along + 2) & 3));
+            out.put(key(s[0], s[1]), BlockCode.BENCH_SEAT + back);
+            if (!broken) {
+                out.put(key(s[0] + ax, s[1] + az), BlockCode.BENCH_SEAT + back);
+                out.put(key(s[0] + 2 * ax, s[1] + 2 * az), BlockCode.BENCH_ARM + along);
+            }
+        }
+        return out;
+    }
+
+    private static long key(int x, int z) {
+        return ((long) x << 32) | (z & 0xffffffffL);
+    }
+
+    /** Number of benches of this park (for the tests). */
+    int benchCount() {
+        return benchSites;
     }
 
     private double radius(int x, int z) {
@@ -189,6 +280,11 @@ public final class Park {
             }
             return BlockCode.TEMPLATE + idx;
         }
+        Integer bench = benches.get(key(x, z));
+        if (bench != null && dy >= 1) {
+            // a bench: its block; above it a crown of a tree stays, no plant grows through it
+            return dy == 1 ? bench : trees.code(x, y, z, base);
+        }
         boolean path = path(x, z);
         // many path columns are taken over: grass, moss or coarse dirt, with weeds
         boolean gap = path && rnd(x, z, 0x50L) < PATH_GAPS;
@@ -197,8 +293,8 @@ public final class Park {
             if (trees.trunk(x, z)) {
                 return BlockCode.LAWN;
             }
-            // the log hidden under a bush
-            boolean open = !(path && !gap) && !onRing(x, z);
+            // the log hidden under a bush (not under a bench)
+            boolean open = !(path && !gap) && !onRing(x, z) && bench == null;
             return open && Flora.isLeaves(plantAt(x, z, 1, ground, gap)) ? Flora.groundUnder(seed, x, z, ground, RUBBLE) : ground;
         }
         if (onRing(x, z)) {

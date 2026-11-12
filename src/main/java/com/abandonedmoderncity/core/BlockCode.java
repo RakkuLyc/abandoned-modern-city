@@ -102,6 +102,10 @@ public final class BlockCode {
     public static final int LANE_SLAB_TEX = 340;
     public static final int SIDEWALK_SLAB_TEX = 360;
     /** Block {@code TEMPLATE + i}: entry i of the palette of {@link Template#WATERFALL}. */
+    /** Park benches ({@code Park}): the seat, a spruce stair, + facing (0 north, 1 east, 2 south, 3 west: where its
+     *  back is); the armrest, an open spruce trapdoor, + facing. */
+    public static final int BENCH_SEAT = 380;
+    public static final int BENCH_ARM = 384;
     public static final int TEMPLATE = 1000;
     /**
      * Block of a building structure ({@link Structures}): {@code STRUCT + 4 * state + rotation}, the state being an index

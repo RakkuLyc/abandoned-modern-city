@@ -69,6 +69,23 @@ public final class Palette {
     public static final BlockState LAMP_POST = Blocks.POLISHED_ANDESITE.defaultBlockState();
     public static final BlockState LAMP_ARM = Blocks.POLISHED_ANDESITE_SLAB.defaultBlockState();
     public static final BlockState LAMP_GLASS = Blocks.LIGHT_GRAY_STAINED_GLASS.defaultBlockState();
+    /** Park benches: spruce stairs (seat, back toward the facing) and open spruce trapdoors (armrests), per facing. */
+    public static final BlockState[] BENCH_SEAT = benchParts(true);
+    public static final BlockState[] BENCH_ARM = benchParts(false);
+
+    private static BlockState[] benchParts(boolean seat) {
+        net.minecraft.core.Direction[] d = {net.minecraft.core.Direction.NORTH, net.minecraft.core.Direction.EAST,
+                net.minecraft.core.Direction.SOUTH, net.minecraft.core.Direction.WEST};
+        BlockState[] out = new BlockState[4];
+        for (int k = 0; k < 4; k++) {
+            out[k] = seat
+                    ? Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, d[k])
+                    : Blocks.SPRUCE_TRAPDOOR.defaultBlockState()
+                    .setValue(net.minecraft.world.level.block.TrapDoorBlock.FACING, d[k])
+                    .setValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN, true);
+        }
+        return out;
+    }
 
     /** What a street light puts at height y of a road column with these flags, or null. */
     public static BlockState lampAt(byte flags, int y, int ys) {
@@ -293,6 +310,12 @@ public final class Palette {
         if (code >= BlockCode.TEMPLATE) {
             return fountain()[code - BlockCode.TEMPLATE];
         }
+        if (code >= BlockCode.BENCH_SEAT && code < BlockCode.BENCH_SEAT + 4) {
+            return BENCH_SEAT[code - BlockCode.BENCH_SEAT];
+        }
+        if (code >= BlockCode.BENCH_ARM && code < BlockCode.BENCH_ARM + 4) {
+            return BENCH_ARM[code - BlockCode.BENCH_ARM];
+        }
         if (code >= BlockCode.FLOWER && code < BlockCode.FLOWER + BlockCode.FLOWERS) {
             return FLOWERS[code - BlockCode.FLOWER];
         }
@@ -515,6 +538,9 @@ public final class Palette {
         set.addAll(List.of(BALCONY_FLOOR));
         set.addAll(List.of(BALCONY_WALL));
         set.addAll(List.of(PATH, RING_SLAB, TALL_GRASS_LOWER, TALL_GRASS_UPPER));
+        set.addAll(List.of(BENCH_SEAT));
+        set.addAll(List.of(BENCH_ARM));
+        set.addAll(List.of(LAMP_POST, LAMP_ARM, LAMP_GLASS));
         set.addAll(List.of(FLOWERS));
         set.addAll(List.of(WILD_LOGS));
         for (BlockState l : WILD_LEAVES) {

@@ -208,7 +208,8 @@ public final class WorldAudit {
             }
         }
         double m = measure(c, p, x, z, ys);
-        if (!cp.drivable(i)) {
+        // a column that is not drivable carries a wall (a street light post is checked above, by street_light)
+        if (!cp.drivable(i) && (cp.flags[i] & ChunkPlan.F_POLE) == 0) {
             BlockState w = at(c, p, x, ys + 1, z);
             boolean gap = st == Profile.BRIDGE && com.abandonedmoderncity.core.RoadDecay.wallGap(plan.seed, x, z);
             if (gap) {
@@ -222,7 +223,8 @@ public final class WorldAudit {
             }
             return m;
         }
-        if (Double.isNaN(m) || Math.abs(m - h2 / 2.0) > 1e-6) {
+        // (a street light post stands on its column: the walking height is not measured there)
+        if ((cp.flags[i] & ChunkPlan.F_POLE) == 0 && (Double.isNaN(m) || Math.abs(m - h2 / 2.0) > 1e-6)) {
             r.fail("height_mismatch", where + " plan " + h2 / 2.0 + " world " + m);
         }
         int free = tunnel ? com.abandonedmoderncity.core.Params.CLEARANCE : 4;

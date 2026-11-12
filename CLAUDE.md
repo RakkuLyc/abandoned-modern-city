@@ -138,6 +138,13 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   `mossy_cobblestone`, `stone_bricks` e `cracked_stone_bricks` → `mossy_stone_bricks`; a bacia, a água, as escadas,
   as lanternas e o baú não mudam.
   Baú vazio em 50% das fontes (senão `mossy_cobblestone`).
+  Bancos (13 nov 2026, pedido do usuário; `Park.benches`): 2 `spruce_stairs` lado a lado na beira de uma trilha,
+  com o encosto para longe dela (quem senta olha a trilha), e um `spruce_trapdoor` aberto em cada ponta como braço;
+  só onde 4 colunas seguidas de grama encostam na trilha (nunca sobre ela, no anel da fonte, num tronco ou sob uma
+  copa baixa), a 8+ blocos uns dos outros (`BENCH_APART`); alvo de 1 a cada 15 blocos de trilha (`BENCH_EVERY`),
+  mas os trechos retos de 4 blocos limitam: nos testes, 565 bancos em 30 parques, 1 a cada 18,6 blocos de trilha;
+  20% quebrados (um assento e o braço daquele lado faltam, `BENCH_BROKEN`). Copas altas passam sobre eles; nenhuma
+  planta nasce através deles.
 - Estruturas novas (pedido do usuário depois de 13 nov 2026, com loot vanilla): casa moderna com garagem
   (42 × 36 × 15), casa de vidro (48 × 40 × 15), prédio pequeno (23 × 31 × 41), prédio brutalista em U (75 × 58 × 125),
   prédio largo (84 × 31 × 80, com estacionamento subterrâneo), torre verde (31 × 31 × 143) e prédio da rampa (pasta

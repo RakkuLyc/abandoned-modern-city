@@ -43,6 +43,78 @@ class WorldPlanTest {
     }
 
     @Test
+    void parkBenchesSitOnTheEdgeOfThePathsFacingThem() {
+        WorldPlan p = plan(SEEDS[0], TestTerrain.Kind.FLAT);
+        int parks = 0;
+        int benches = 0;
+        int seats = 0;
+        long pathLength = 0;
+        int[][] dirs = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+        for (City c : allCities(p)) {
+            int n = c.gridHalf();
+            for (int bj = -n; bj <= n; bj++) {
+                for (int bi = -n; bi <= n; bi++) {
+                    for (Lot l : c.lots(bi, bj)) {
+                        if (l.park == null) {
+                            continue;
+                        }
+                        Park park = l.park;
+                        parks++;
+                        int count = park.benchCount();
+                        int pathCells = 0;
+                        for (int z = l.z0; z <= l.z1; z++) {
+                            for (int x = l.x0; x <= l.x1; x++) {
+                                pathCells += park.path(x, z) ? 1 : 0;
+                            }
+                        }
+                        pathLength += pathCells / 3;
+                        java.util.List<int[]> seatCells = new java.util.ArrayList<>();
+                        for (var e : park.benches.entrySet()) {
+                            int x = (int) (e.getKey() >> 32);
+                            int z = (int) (long) e.getKey();
+                            int code = e.getValue();
+                            assertFalse(park.path(x, z), "bench on a path at " + x + "," + z);
+                            assertEquals(code, park.code(x, 1, z, 0), "bench block");
+                            // nothing grows through a bench (a crown high above may pass)
+                            assertEquals(park.trees.code(x, 2, z, 0), park.code(x, 2, z, 0), "a plant through a bench");
+                            if (code >= BlockCode.BENCH_SEAT && code < BlockCode.BENCH_SEAT + 4) {
+                                seats++;
+                                int back = code - BlockCode.BENCH_SEAT;
+                                int front = (back + 2) & 3;
+                                // who sits looks at the path; the back is away from it
+                                assertTrue(park.path(x + dirs[front][0], z + dirs[front][1]), "seat without a path in front at " + x + "," + z);
+                                assertFalse(park.path(x + dirs[back][0], z + dirs[back][1]), "path behind a seat at " + x + "," + z);
+                                seatCells.add(new int[]{x, z});
+                            } else {
+                                // an armrest: its panel against a seat (the side opposite to its facing)
+                                int f = code - BlockCode.BENCH_ARM;
+                                int sx = x - dirs[f][0];
+                                int sz = z - dirs[f][1];
+                                Integer next = park.benches.get(((long) sx << 32) | (sz & 0xffffffffL));
+                                assertTrue(next != null && next >= BlockCode.BENCH_SEAT && next < BlockCode.BENCH_SEAT + 4,
+                                        "armrest not against a seat at " + x + "," + z);
+                            }
+                        }
+                        benches += count;
+                        assertTrue(count >= 1, "park without a bench");
+                        // benches apart: seats of different benches 12+ away (seats of one bench are side by side)
+                        for (int[] a : seatCells) {
+                            for (int[] b : seatCells) {
+                                int d = Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1]));
+                                assertTrue(d <= 1 || d >= Park.BENCH_APART - 2, "benches too close " + d);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        double perBench = pathLength / (double) benches;
+        System.out.printf("[WorldPlanTest] park benches: %d in %d parks, %d seats, one per %.1f blocks of path%n",
+                benches, parks, seats, perBench);
+        assertTrue(perBench >= 12 && perBench <= 30, "one bench per " + perBench + " blocks of path");
+    }
+
+    @Test
     void streetLightsStandOnTheSidewalksWithTheirArmsOverTheLanes() {
         WorldPlan p = plan(SEEDS[0], TestTerrain.Kind.FLAT);
         int poles = 0;

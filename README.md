@@ -143,6 +143,8 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
 | Rua da cidade | 33 | `smooth_stone` 3 · `polished_deepslate` 27 (faixa `white_concrete` tracejada no 17º bloco) · `smooth_stone` 3 |
 | Rodovia | 33 | `smooth_stone` 3 (o de fora com `stone_brick_wall`) · `polished_deepslate` 27 (faixa `yellow_terracotta`) · `smooth_stone` 3 (o de fora com muro) |
 
+- **Bancos nos parques:** 2 escadas de abeto com alçapões abertos como braços, na beira das trilhas, de frente
+  para elas, ~1 a cada 19 blocos de trilha (o pedido foi 15; faltam trechos retos nas espirais); 20% quebrados.
 - **Faixa central:** traços de 11 com intervalo de 6. Cada cruzamento tem um quadrado 3 × 3 de `smooth_stone` em
   cada esquina.
 - **Ruas abandonadas:** ~30% das colunas de ruas, calçadas, rodovias e pontes são tomadas, em manchas e rachaduras:
