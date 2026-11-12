@@ -100,6 +100,11 @@ class RingTest {
                     assertEquals(ring.get(a).building.name(), again.get(a).building.name());
                 }
                 List<Lot> all = new ArrayList<>(ring);
+                // never two of the same structure in one block
+                Set<String> inBlock = new HashSet<>();
+                for (Lot l : all) {
+                    assertTrue(inBlock.add(l.building.name()), "twice in one block: " + l.building.name());
+                }
                 for (int a = 0; a < all.size(); a++) {
                     Lot l = all.get(a);
                     lots++;

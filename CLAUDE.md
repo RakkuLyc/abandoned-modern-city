@@ -156,6 +156,9 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   - limites por cidade (`Structures.LIMITS`): farmácias 3 (as duas), oficinas 2 (as duas), postos 2 (os dois); os
     anéis da cidade inteira são sorteados de uma vez (`City.rings`, quarteirões de norte a sul, oeste a leste), e um
     grupo no limite é sorteado de novo;
+  - nunca duas estruturas iguais (o mesmo arquivo) no mesmo quarteirão (13 nov 2026, pedido do usuário): uma
+    estrutura que já está em alguma linha do quarteirão é sorteada de novo (`Ring.row`); antes 80% dos quarteirões
+    tinham alguma repetida; em quarteirões vizinhos ela pode aparecer de novo;
   - caixa = a dos blocos sólidos; a camada `chão` do índice fica no nível do chão da cidade e as de baixo ficam
     enterradas: mansão abandonada, torre, prédio azulado e prédio apartamento descem 1 bloco (pedido do usuário; ar
     enterrado vira terra); a casa grande também (13 nov 2026: a camada 0 dela é só terra e a grama do quintal está
@@ -172,8 +175,8 @@ existem as cidades 2 × 2 de quarteirões retangulares.
     (`Ring.GAP_MIN`/`GAP_MAX`; eram 10 a 19, reduzido pelo usuário no mesmo dia); entre os fundos de linhas opostas fica sempre o bosque do miolo, com folga sorteada de
     20 a 30 por par de lados (`Ring.CORE_MIN`/`CORE_MAX`);
   - as linhas dos lados curtos do quarteirão vão de canto a canto e as dos lados compridos preenchem o que sobra
-    entre elas (o contrário deixava os lados curtos quase sempre vazios); ~8,5 estruturas por quarteirão (as 4
-    linhas com ~25% cada), 50% da área livre coberta. Tamanho do quarteirão: 180 × 120, recomendado depois de
+    entre elas (o contrário deixava os lados curtos quase sempre vazios); ~8,2 estruturas por quarteirão (as 4
+    linhas com ~25% cada; 8,4 antes da regra de não repetir), 51% da área livre coberta. Tamanho do quarteirão: 180 × 120, recomendado depois de
     simular os vãos (140 × 90 caía para ~5 estruturas e torre/azulado/prédio apocalíptico ficavam raros).
   - comandos (12 nov 2026, `command/StructureCommands`): `/amcs locate structure <nome|tipo|grupo>` (a mais
     próxima já planejada; coordenada na calçada em frente) e `/amcs spawn <nome>` (2 blocos à frente de quem

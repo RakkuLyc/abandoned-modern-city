@@ -45,7 +45,8 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
   a rua; o resto (o miolo) é tomado pela natureza. Cerca de 1 em 8 quarteirões tem um parque de 110 × 64 num canto,
   com as estruturas em L nas outras duas ruas.
 - **Estruturas (21, `structures/`):** sorteadas ao acaso no anel (cada arquivo com a mesma chance: as 10 casas
-  dão ~43% das estruturas), com limite por cidade: farmácias 3, oficinas 2, postos 2.
+  dão ~43% das estruturas), com limite por cidade: farmácias 3, oficinas 2, postos 2. Nunca duas estruturas iguais
+  (o mesmo arquivo) no mesmo quarteirão.
 
   | Estrutura | Tipo | Caixa (frente × fundo × altura) | Chão |
   |---|---|---|---|

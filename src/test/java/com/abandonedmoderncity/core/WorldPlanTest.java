@@ -61,7 +61,13 @@ class WorldPlanTest {
                 java.util.Map<String, Integer> groups = new java.util.HashMap<>();
                 for (int bj = -n; bj <= n; bj++) {
                     for (int bi = -n; bi <= n; bi++) {
+                        // and never two of the same structure in one block
+                        java.util.Set<String> inBlock = new java.util.HashSet<>();
                         for (Lot l : c.lots(bi, bj)) {
+                            if (l.building != null) {
+                                assertTrue(inBlock.add(l.building.name()), c + " block " + bi + "," + bj + " has two "
+                                        + l.building.name());
+                            }
                             if (l.building != null && l.building.group() != null) {
                                 groups.merge(l.building.group(), 1, Integer::sum);
                             }
