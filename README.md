@@ -187,6 +187,7 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
 | Ruas planas e conectadas | Cada cidade tem uma única altura (`City.level`). Ruas cortadas nunca criam beco sem saída nem separam a cidade (`PlanAudit`: `dead_end`, `city_split`). |
 | Superfície certa | A auditoria no mundo (`surface_block`) confere bloco a bloco a superfície das vias. |
 | Determinismo | Tudo é função pura da semente e do terreno natural: dois chunks vizinhos nunca discordam, em qualquer ordem e thread (`PlanAuditTest.planIsIndependentOfQueryOrderAndThreads`). |
+| Mundo igual numa revisão do código | `FingerprintTest` guarda um SHA-256 por parte do que o planejador produz (cidades, rodovias, planos dos chunks, blocos dos lotes, estruturas, abandono, bancos), e a bateria imprime por alvo `mod blocks:`, o SHA-256 dos blocos que o mod decide no mundo gerado (`command/WorldFingerprint`). Numa mudança só de forma os dois ficam iguais (detalhes em `docs/TESTES.md`). |
 | Sem Immersive Vehicles | Nenhuma referência ao IV no código ou no build. |
 
 ## Arquitetura
@@ -218,7 +219,8 @@ gen/    camada do jogo
   Palette        todos os blocos usados (inclui as estruturas, giradas por `BlockState.rotate`, e os 8 estilos de material herdados, sem uso) + validação
   McTerrain      Terrain sobre ChunkGenerator.getBaseHeight (ruído, igual em qualquer thread)
   Plans          um WorldPlan por dimensão (só o overworld)
-command/  /amcs (StructureCommands: locate structure e spawn), auditoria dos blocos (WorldAudit), renders, bateria (SelfTest)
+command/  /amcs (StructureCommands: locate structure e spawn), auditoria dos blocos (WorldAudit), renders, bateria (SelfTest),
+          impressão digital dos blocos do mod (WorldFingerprint)
 ```
 
 ### Estágios

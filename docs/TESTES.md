@@ -17,6 +17,52 @@ A especificação que os testes conferem está em `CLAUDE.md`.
 
 Para gerar só o jar, sem os testes, use `./gradlew build -x test`.
 
+### Impressão digital (mudanças que não devem alterar o mundo)
+
+Duas conferências guardam o mundo gerado numa revisão do código (desde 12 nov 2026):
+- **`FingerprintTest` (unitário):** um SHA-256 por parte do que o planejador entrega à camada do jogo, nos 7
+  terrenos sintéticos com seeds fixas. As partes:
+  - `layout`: as 1 129 cidades das 7 × 3 combinações e os lotes de cada quarteirão;
+  - `highways`: as 2 013 rodovias (pontos, perfil, pontes, túneis, buracos);
+  - `village`: a área sem criaturas de vila em volta de cada cidade;
+  - `chunks`: o plano de cada coluna de 31 214 chunks, em volta de 2 cidades e ao longo de 1 rodovia por terreno;
+  - `lots`: nesses chunks, o código de bloco de cada coluna de lote em todas as alturas, com o acesso do loot e o
+    desenho dos banners;
+  - `roads`: superfícies gastas, plantas, pedras e muros das pontes, vinhas;
+  - `lamps`: as peças dos postes;
+  - `crowns`: as folhas das copas completadas;
+  - `structures`: as 52 estruturas nas 4 rotações, célula a célula, com aberturas, acesso, banners e folhas de fora;
+  - `weathering`: o que o abandono acrescentou a cada estrutura;
+  - `benches`: os bancos dos parques do terreno plano.
+
+  Os valores esperados ficam no próprio teste (código do commit `4dd94ae`). Um bloco de estrutura entra pelo texto
+  do estado e pela rotação, não pelo índice na lista de estados. O teste também confere uma cobertura mínima, para
+  não passar com um plano vazio. Sensibilidade conferida em 12 nov: mudar `City.LAMP_EVERY`, `RoadDecay.PATCH`,
+  `Park.BENCH_EVERY`, `Weathering.VINES`, `Ring.GAP_MIN`, `Highway.DEADBAND` ou a margem das vilas muda as partes
+  certas, e cada uma das 11 partes muda com alguma dessas mudanças.
+- **`mod blocks:` na bateria:** por alvo, um SHA-256 dos blocos que o mod decide no mundo gerado
+  (`command/WorldFingerprint`), nas posições que o `WorldAudit` compara com o plano:
+  - nas vias, a superfície e o bloco de baixo, o ar ou as plantas acima, os postes, o teto dos túneis e os pilares;
+  - as paredes dos túneis;
+  - nos lotes, todo bloco que o plano define (menos os que seguem o chão natural);
+  - as folhas planejadas das copas completadas;
+  - os block entities das estruturas, camadas enterradas incluídas (loot table e semente, desenho dos banners). Os
+    outros ficam de fora: o baú vazio da fonte do parque, por exemplo, só aparece no chunk depois que ele é salvo e
+    carregado de novo (falta num mundo recém-gerado e está lá depois de recarregar).
+
+  O resto do mundo fica de fora, porque o Minecraft vanilla não gera igual de uma rodada para outra (achado 64).
+  Algumas propriedades o Minecraft recalcula pelos vizinhos ao terminar um chunk, e o resultado depende de o chunk
+  vizinho já existir ou não; elas entram com valor fixo: a distância das folhas, a forma das escadas, as ligações de
+  barras, vidraças e cercas, a neve sobre a grama (`snowy`), o lado de muro ligado baixo ou alto (`low`/`tall`; ligado
+  ou não continua contando) e as faces das vinhas nas colunas da borda do chunk; `cave_air` conta como ar. O arquivo
+  `renders/tNN_blocks.txt`, ao lado do relatório, traz um resumo por chunk (vias, lotes, resto) e por coluna, para
+  achar onde duas rodadas diferem.
+
+Numa mudança que não deve alterar o mundo, o teste passa, e as linhas `mod blocks:` e as contagens `stats:` da
+bateria ficam iguais às da referência (seção 6). A exceção é `loot_containers_anywhere`, que conta também os baús do
+vanilla, que variam. Um commit que mude o mundo de propósito atualiza os valores esperados do teste e a referência
+da bateria, e diz isso.
+
 A **bateria automática** (`tools/selftest.sh`) faz, para cada seed:
 1. cria um mundo novo num servidor dedicado de desenvolvimento (porta 25591);
 2. escolhe os alvos a partir da própria rede planejada;
@@ -53,7 +99,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 
 ## 2. O que é verificado
 
-### Unitários (46 testes)
+### Unitários (47 testes)
 
 | Teste | Verifica |
 |---|---|
@@ -103,6 +149,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `RingTest.structuresNeverTouchAndLeaveTheForest` | 6 000 anéis em 180 × 120 e 120 × 180 (192 108 pares): duas estruturas quaisquer ficam a 4 ou mais blocos; entre lados opostos, 20 ou mais de bosque (menor medido: 4 e 21) |
 | `PlanAuditTest.citiesAndHighwaysPassThePlanAudit` | `PlanAudit` coluna a coluna em 3 cidades inteiras e 2 rodovias inteiras por terreno × seed (105 auditorias); gera `city_*.png` |
 | `PlanAuditTest.planIsIndependentOfQueryOrderAndThreads` | 3 721 chunks planejados de novo em ordem embaralhada por 8 threads: resultado idêntico, campo a campo |
+| `FingerprintTest.plannerOutputIsUnchanged` | as 11 partes da impressão digital do planejador (seção 1) iguais às do commit `4dd94ae`; cobertura: 1 129 cidades, 2 013 rodovias, 31 214 chunks, 1,47 milhão de colunas de via (44 129 de ponte, 26 783 de túnel), 1,22 milhão de colunas de lote (6,6 milhões de blocos de estrutura nos lotes), 10 198 colunas de poste, 1 741 folhas de copa, 16,8 milhões de células de estrutura, 2 036 peças de banco; 15 a 25 s |
 
 ### `PlanAudit` (plano, coluna a coluna, atravessando chunks)
 
@@ -225,6 +272,7 @@ e a regra de escada e apoio no mesmo chunk.
 | 61 | Teste no jogo pelo usuário, 13 nov | duas fileiras de terreno logo antes da rampa da garagem do prédio largo (também com `/amcs spawn`) | só ficava aberto o ar da camada do chão com `cave_air` logo embaixo; no topo da rampa, embaixo está a própria rampa (e na boca da escada, o degrau) | fica aberto também o ar da camada do chão ligado a essas aberturas (`Structures.openings`): 99 células em vez de 87 |
 | 62 | Teste no jogo pelo usuário, 13 nov | aldeões e golem de ferro numa cidade gerada onde havia uma vila | as criaturas da vila nascem com as casas, antes da cidade, e ficavam no chunk quando a cidade era construída por cima | o mod as tira do chunk em geração na cidade e a até 32 blocos dela (aldeões, aldeões zumbis, golens, gatos) |
 | 63 | Bateria, 13 nov (postes abandonados) | `street_light` (até 962 por alvo): vinhas dos postes faltando | o reparo de vizinhos recolocava as peças do poste e logo depois a limpeza de plantas penduradas sobre a via apagava as vinhas | a limpeza poupa as peças planejadas dos postes |
+| 64 | Revisão do código, 12 nov (impressão digital) | os blocos de cada alvo mudaram entre duas rodadas iguais da bateria (mesmo código, mesma seed), também o número de block entities (1 142 e 1 017 na ponte) | o próprio Minecraft não gera igual quando o servidor gera os chunks em paralelo: features de chunks vizinhos postas em outra ordem mudam minérios, sculk, árvores, colmeias e baús (1 073 de 1 369 chunks diferentes na cidade do spawn, de y −64 para cima); nas posições do mod só mudaram propriedades que o Minecraft recalcula pelos vizinhos ao terminar um chunk: a distância das folhas e as ligações de barras e vidraças (na borda do chunk), a forma de uma escada, a neve sobre a grama, `cave_air` no lugar de ar, um lado de muro baixo ou alto, uma face de vinha presa num bloco do chunk vizinho; e o baú vazio de uma fonte só existia como block entity depois de recarregar o mundo | a impressão da bateria (`mod blocks:`) cobre só as posições que o mod decide, com essas propriedades em valor fixo e só os block entities das estruturas; conferida em mundos gerados à parte, recém-gerados e recarregados do disco (seção 6), e sensível a um bloco trocado na paleta (`smooth_basalt` → `basalt` no asfalto gasto: auditoria passa, impressão muda nos 3 alvos) |
 | — | Bateria (infraestrutura) | servidores falhando com "Address already in use" | um servidor de uma bateria interrompida ainda terminava | o script usa a porta 25591 e se recusa a começar com um servidor de desenvolvimento vivo |
 
 ## 4. Como reproduzir
@@ -235,6 +283,10 @@ e a regra de escada e apoio no mesmo chunk.
 tools/selftest.sh quick 20261027                 # bateria rápida (3 alvos), ~4 min
 tools/selftest.sh full 20261027 -3297019724594858492 3478477863671517581 1
 cat run/selftest/<seed>/report.txt               # termina com RESULT: PASS ou FAIL
+./gradlew test --tests '*FingerprintTest'        # impressão digital do planejador, ~30 s
+# comparar duas baterias (mudança que não deve alterar o mundo):
+diff <(grep -E 'mod blocks:|stats:' A/report.txt | sed 's/loot_containers_anywhere=[0-9]*, //') \
+     <(grep -E 'mod blocks:|stats:' B/report.txt | sed 's/loot_containers_anywhere=[0-9]*, //')
 ```
 
 No jogo (op):
@@ -271,7 +323,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
 ## 6. Resultados atuais (12 nov 2026, quarteirões 180 × 120 com anel de estruturas com vãos e miolo tomado pela natureza, ruas e rodovias de 33, cidades no meio de células de 736, 4 entradas)
 
-- **Unitários:** 45 passam e 1 é pulado (o teste sem estruturas), 12 nov 2026, com o teste da escavação por `cave_air`; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
+- **Unitários:** 46 passam e 1 é pulado (o teste sem estruturas), 12 nov 2026, com a impressão digital do planejador; `./gradlew build` em ~2 min (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
   - **Rede (7 terrenos × 3 seeds, 81 células), cidades no meio da célula de 736, 4 entradas (uma por lado):** 35 a
@@ -338,6 +390,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 12 nov | revisão do código, passo 1: impressão digital (`FingerprintTest` e `mod blocks:`); geração igual à do commit `4dd94ae` | PASS: 8 de 8, 0 erros de geração, 218 estados da paleta validados, 16 criaturas de vila retiradas; 2,73 ms por chunk, 252 s. Um mundo novo, o mesmo mundo recarregado do disco e outro mundo (gerado antes, recarregado): as 8 linhas `mod blocks:` iguais (a referência abaixo); contagens `stats:` iguais às de outra rodada, menos `loot_containers_anywhere` |
   | — | RCON | 13 nov | `/amcs spawn <categoria> <nome>` (sem bateria de geração: só o comando mudou) | `predio predio_largo_abandonado` e `delegacia delegacia_abandonada` colocados; `casa predio_largo_abandonado` recusado com a lista das casas; categoria `igreja` recusada com a lista das categorias; o formato antigo de um argumento recusado pelo jogo |
   | `20261027` | padrão (8 alvos) | 13 nov | delegacia (1 por cidade) e prédio do choque (52 arquivos) | PASS: 8 de 8, 0 erros de geração, 1 408 estados de estrutura validados; 2,77 ms por chunk, 256 s. Por RCON, `/amcs spawn delegacia_abandonada` sobre pedra: salas do subsolo cavadas nas camadas 1, 2 e na da rua, pedra fora delas intacta, banner de letra com o desenho; 63 contêineres com loot, 13 de difícil acesso |
   | `20261027` | padrão (8 alvos) | 13 nov | postes abandonados em 5 variações | PASS: 8 de 8, 0 erros de geração, ~3 460 blocos de poste conferidos por cidade (com as vinhas), 218 estados da paleta validados; 2,77 ms por chunk, 274 s |
@@ -372,4 +425,20 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
   A bateria ainda não rodou depois da remoção das cidades octogonais e 3 × 2 (o alvo "cidade 3 × 2 mais próxima do
   spawn" saiu) nem depois da troca para quarteirões 105 × 60 (células de 512) e 140 × 90 (células de 576). Em 8 nov, no Linux (CachyOS, JDK 21), a bateria `-PselfTest` passou 8 de 8 alvos com os quarteirões 105 × 60 num mundo novo (um mundo de teste velho, gerado antes das mudanças, dá falhas falsas no alvo do spawn: renomeie `run/selftest_world_*`). Vale rodar a bateria completa quando houver mudanças: `tools/selftest.sh full`.
+- **Referência da impressão digital da bateria** (`mod blocks:`, seed `20261027`, escopo padrão, 12 nov 2026,
+  geração do commit `4dd94ae`). Numa mudança que não deve alterar o mundo, as 8 linhas ficam iguais a estas:
+
+  | Alvo | SHA-256 | Posições | Block entities |
+  |---|---|---|---|
+  | t01 cidade mais próxima do spawn | `6332a9a1f1ba589565f3e4b3f1d56d626d0c1a188f4296e5301bc206b088cd96` | 1 877 158 | 2 055 |
+  | t02 cidade mais alta (nível 103) | `e9c76bce50254bd36d2c0ed650222c61d13abd335320102e474d63e8dbf9cb6a` | 3 290 072 | 3 387 |
+  | t03 cidade mais acidentada | `92efbcc166cb03ac38acf6a10c8d481d770f82527047dc2dc5823cb08068e7e1` | 2 506 369 | 2 506 |
+  | t04 túnel mais longo (352) | `aa04b3a0c7319245562bf89e7e9dd2419de950fcaad0bb48ea8501329d07d967` | 543 064 | 164 |
+  | t05 ponte mais longa sobre água (349) | `e9c275178d0660b93dad36efc4d2f6fdcb80699b555f10274b814eb627c54713` | 452 586 | 605 |
+  | t06 viaduto seco mais longo (239) | `806cc76601ec663622586341d73b529780b95b6ed86c2e8b240c764617e5919b` | 581 916 | 381 |
+  | t07 rampa mais longa (360) | `f960ad531d4199d12ecf42bb72b87d9a199bc1fccb85235572528b07c3dcc118` | 191 450 | 0 |
+  | t08 rodovia inteira | `fe0310e800f1b7b6492e15424037fe9a3fda24c90ad61d3c50e0b35a6c1cfe10` | 1 280 207 | 850 |
+
+  O relatório completo e o mundo dessa rodada ficam (fora do git) em `run/selftest/ref_4dd94ae/` e
+  `run/selftest_world_ref_4dd94ae/`, para comparar bloco a bloco se alguma linha mudar.
 - Em nenhuma rodada houve degrau, buraco, obstáculo, pilar flutuante, rodovia sem conexão, bloco indestrutível nas vias, pontes e túneis depois das correções 4 e 5. Containers das estruturas têm loot tables vanilla próprias (13 nov 2026: tema da estrutura × tipo de contêiner × acesso), auditados por `structure_without_loot`, `structure_wrong_loot`, `loot_in_city` e `container_in_city`.

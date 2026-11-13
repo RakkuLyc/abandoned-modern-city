@@ -317,6 +317,8 @@ public final class SelfTest {
         PlanAudit.Report pr = PlanAudit.audit(plan, t.cx - t.r, t.cz - t.r, t.cx + t.r, t.cz + t.r);
         PlanAudit.Report wr = WorldAudit.run(level, plan, t.cx - t.r, t.cz - t.r, t.cx + t.r, t.cz + t.r);
         String base = String.format("t%02d", index + 1);
+        WorldFingerprint.Result fp = WorldFingerprint.of(level, plan, t.cx - t.r, t.cz - t.r, t.cx + t.r, t.cz + t.r,
+                new File(outDir(), base + "_blocks.txt"));
         try {
             PlanRender.write(WorldRender.topDown(level, t.cx - t.r, t.cz - t.r, t.cx + t.r, t.cz + t.r), new File(outDir(), base + "_world.png"));
             PlanRender.write(PlanRender.detail(plan, t.cx - t.r, t.cz - t.r, t.cx + t.r, t.cz + t.r), new File(outDir(), base + "_plan.png"));
@@ -337,7 +339,7 @@ public final class SelfTest {
                 .append(" (blocks ").append((t.cx - t.r) * 16).append(',').append((t.cz - t.r) * 16).append(" .. ")
                 .append((t.cx + t.r) * 16 + 15).append(',').append((t.cz + t.r) * 16 + 15).append("), generated in ")
                 .append(genMs).append(" ms\n   ").append(pr.summary().replace("\n", "\n   ")).append(wr.summary().replace("\n", "\n   "))
-                .append('\n');
+                .append("mod blocks: ").append(fp).append('\n');
         AMCSimple.LOGGER.info("[AMCS self-test] {}: plan {}, world {}", t.name, pr.ok() ? "OK" : pr.failures() + " failures",
                 wr.ok() ? "OK" : wr.failures() + " failures");
         for (ChunkPos p : requested) {

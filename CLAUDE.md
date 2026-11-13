@@ -17,6 +17,12 @@
      resultados das últimas rodadas).
    Antes de cada commit, conferir se algum desses arquivos ficou desatualizado. Os valores vêm do código e dos
    testes, nunca da memória. No resumo da etapa, dizer quais documentos foram atualizados.
+7. **Impressão digital do mundo** (desde 12 nov 2026): `FingerprintTest` guarda o que o planejador produz (valores
+   do commit `4dd94ae`) e a bateria imprime por alvo `mod blocks:` (os blocos que o mod decide no mundo gerado; a
+   referência fica em `docs/TESTES.md`, seção 6). Numa mudança que não deve alterar o mundo (limpeza, divisão de
+   arquivos, comentários), o teste passa e as linhas `mod blocks:` e `stats:` ficam iguais (menos
+   `loot_containers_anywhere`, que conta baús do vanilla). Num commit que muda o mundo de propósito, atualizar os
+   valores esperados do teste e a referência da bateria, e dizer isso na mensagem do commit.
 
 ## Projeto
 
