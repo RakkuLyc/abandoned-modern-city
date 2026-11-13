@@ -61,8 +61,8 @@ existem as cidades 2 × 2 de quarteirões retangulares.
 - Trecho de rua de 180 ou 120 blocos (o lado do quarteirão) + 33 de cruzamento; quadrado 3 × 3 de `smooth_stone` em cada esquina de cruzamento.
 - Faixa central no 17º bloco da largura (o do meio), traços de 11 com intervalo de 6 (quantos couberem, centrados); `white_concrete` na cidade,
   `yellow_terracotta` nas rodovias.
-- Postes (pedido do usuário, a partir do exemplo `poste_exemplo.nbt`; `City.lampCandidate`, `City.lampParts`,
-  `ChunkPlan.F_LAMP`/`F_POLE`): em todo trecho de rua da cidade, um a cada 24 blocos (`City.LAMP_EVERY`) dos dois
+- Postes (pedido do usuário, a partir do exemplo `poste_exemplo.nbt`; `StreetLights.lampCandidate`, `StreetLights.lampParts`,
+  `ChunkPlan.F_LAMP`/`F_POLE`): em todo trecho de rua da cidade, um a cada 24 blocos (`StreetLights.LAMP_EVERY`) dos dois
   lados, frente a frente, centralizados no trecho (7 por lado nos trechos de 180, 5 nos de 120; longe das faixas de
   pedestres e fora dos cruzamentos). Coluna de 13 na fileira da calçada junto à pista (não trafegável), braço de 4
   lajes a 12 de altura sobre a pista (acima da altura livre de 7), luminária de vidro (apagada) sob a ponta. Abandonados

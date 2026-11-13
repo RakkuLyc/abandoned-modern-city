@@ -8,6 +8,7 @@ import com.abandonedmoderncity.core.Lot;
 import com.abandonedmoderncity.core.Params;
 import com.abandonedmoderncity.core.Profile;
 import com.abandonedmoderncity.core.RoadDecay;
+import com.abandonedmoderncity.core.StreetLights;
 import com.abandonedmoderncity.core.WorldPlan;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -804,7 +805,7 @@ final class ChunkBuilder {
                             }
                         }
                         // the rest of a street light (post above the free height, arm, lamp)
-                        for (int y = free1 + 1; y <= ys + City.LAMP_TOP && y < maxY; y++) {
+                        for (int y = free1 + 1; y <= ys + StreetLights.LAMP_TOP && y < maxY; y++) {
                             BlockState part = Palette.lampBlock(lamp, y - ys);
                             if (part != null && nc.getBlockState(p.set(x, y, z)) != part) {
                                 region.setBlock(p, part, Block.UPDATE_CLIENTS);

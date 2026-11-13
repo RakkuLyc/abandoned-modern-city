@@ -633,10 +633,10 @@ public final class WorldPlan {
                     }
                     cp.zone[i] = zone;
                     // the street lights: the post and the vine behind it on the sidewalk, the arm over the lanes
-                    int[] lamp = City.lampParts(hit);
+                    int[] lamp = StreetLights.lampParts(hit);
                     if (lamp != null && (hit.lamp <= 0) == (zone == ChunkPlan.SIDEWALK)) {
                         cp.flags[i] |= ChunkPlan.F_LAMP;
-                        if (lamp[1] != BlockCode.KEEP && !City.lampVine(lamp[1])) {
+                        if (lamp[1] != BlockCode.KEEP && !StreetLights.lampVine(lamp[1])) {
                             // a block standing on the street: the post, or the lamp fallen on the lane
                             cp.flags[i] |= ChunkPlan.F_POLE;
                         }

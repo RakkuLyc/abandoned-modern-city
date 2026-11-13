@@ -2,12 +2,12 @@ package com.abandonedmoderncity.command;
 
 import com.abandonedmoderncity.core.BlockCode;
 import com.abandonedmoderncity.core.ChunkPlan;
-import com.abandonedmoderncity.core.City;
 import com.abandonedmoderncity.core.Lot;
 import com.abandonedmoderncity.core.Params;
 import com.abandonedmoderncity.core.PlanAudit;
 import com.abandonedmoderncity.core.Profile;
 import com.abandonedmoderncity.core.RoadDecay;
+import com.abandonedmoderncity.core.StreetLights;
 import com.abandonedmoderncity.core.WorldPlan;
 import com.abandonedmoderncity.gen.Overhangs;
 import com.abandonedmoderncity.gen.Palette;
@@ -247,7 +247,7 @@ public final class WorldAudit {
             // no plant under a street light standing on the column
             decay = BlockCode.KEEP;
         }
-        for (int y = ys + 1; y <= ys + City.LAMP_TOP; y++) {
+        for (int y = ys + 1; y <= ys + StreetLights.LAMP_TOP; y++) {
             BlockState want = Palette.lampBlock(lamp, y - ys);
             if (want != null) {
                 BlockState s = at(c, p, x, y, z);

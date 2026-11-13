@@ -37,7 +37,7 @@ Duas conferências guardam o mundo gerado numa revisão do código (desde 12 nov
 
   Os valores esperados ficam no próprio teste (código do commit `4dd94ae`). Um bloco de estrutura entra pelo texto
   do estado e pela rotação, não pelo índice na lista de estados. O teste também confere uma cobertura mínima, para
-  não passar com um plano vazio. Sensibilidade conferida em 12 nov: mudar `City.LAMP_EVERY`, `RoadDecay.PATCH`,
+  não passar com um plano vazio. Sensibilidade conferida em 12 nov: mudar `StreetLights.LAMP_EVERY` (então `City.LAMP_EVERY`), `RoadDecay.PATCH`,
   `Park.BENCH_EVERY`, `Weathering.VINES`, `Ring.GAP_MIN`, `Highway.DEADBAND` ou a margem das vilas muda as partes
   certas, e cada uma das 11 partes muda com alguma dessas mudanças.
 - **`mod blocks:` na bateria:** por alvo, um SHA-256 dos blocos que o mod decide no mundo gerado
@@ -403,6 +403,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 3a: postes saem de `City` para `core/StreetLights` | PASS: 8 de 8, 0 erros de geração; `mod blocks:` e contagens iguais à referência; 2,93 ms por chunk, 263 s. Impressão digital do planejador igual (com `lamps`); função por função: `lampAt`, `lampVine` e as 28 constantes com o corpo igual, `lampParts` só com outra forma de carregar a mesma constante, `lampCandidate` só lendo a semente do argumento em vez do campo da cidade |
   | `20261027` | rápido (3 alvos) | 13 nov | referência com `structureOvergrowth = false` (log "Structure overgrowth off") | PASS: 3 de 3, 0 erros de geração; mundo novo e recarregado com as mesmas 3 linhas `mod blocks:` (a referência acima); 4,59 ms por chunk, 149 s |
   | `20261027` | padrão (8 alvos) | 13 nov | revisão: 3 constantes que ficaram sem uso (`Params.ARC_RADIUS`, `AVENUE_EVERY`, `LOT_SETBACK`) | PASS: 8 de 8, 0 erros de geração; `mod blocks:` e contagens iguais à referência; 142 estados da paleta; 2,79 ms por chunk, 253 s. Impressão digital do planejador igual |
   | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 2d: ruas cortadas retiradas (`City.MAX_CUTS`, o sorteio dos cortes, `removed_street` e o teste delas) | PASS: 8 de 8, 0 erros de geração; as 8 linhas `mod blocks:` iguais à referência e as contagens iguais (menos `loot_containers_anywhere`); 142 estados da paleta; 2,73 ms por chunk, 248 s. Impressão digital do planejador igual |

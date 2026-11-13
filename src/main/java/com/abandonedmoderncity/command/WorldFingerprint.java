@@ -2,10 +2,10 @@ package com.abandonedmoderncity.command;
 
 import com.abandonedmoderncity.core.BlockCode;
 import com.abandonedmoderncity.core.ChunkPlan;
-import com.abandonedmoderncity.core.City;
 import com.abandonedmoderncity.core.Lot;
 import com.abandonedmoderncity.core.Params;
 import com.abandonedmoderncity.core.Profile;
+import com.abandonedmoderncity.core.StreetLights;
 import com.abandonedmoderncity.core.WorldPlan;
 import com.abandonedmoderncity.gen.Overhangs;
 import com.abandonedmoderncity.gen.Palette;
@@ -162,7 +162,7 @@ public final class WorldFingerprint {
         }
         int[] lamp = Palette.lampParts(cp, i, x, z);
         if (lamp != null) {
-            for (int y = top + 1; y <= ys + City.LAMP_TOP; y++) {
+            for (int y = top + 1; y <= ys + StreetLights.LAMP_TOP; y++) {
                 if (Palette.lampBlock(lamp, y - ys) != null) {
                     part.state(c.getBlockState(p.set(x, y, z)));
                 }

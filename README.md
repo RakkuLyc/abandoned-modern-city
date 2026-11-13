@@ -197,6 +197,7 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
   Params         toda a geometria fixa (larguras, quarteirões, rampas, túneis, pontes) + valores da config
   Terrain        interface: altura natural do chão e água por coluna
   City           estágio 1 (existe? centro, altura) e estágio 2 (ruas, quarteirões, lotes)
+  StreetLights   postes das ruas: onde ficam, as 5 variações abandonadas e o bloco de cada altura
   Lot            lotes: parque (num canto do quarteirão), uma estrutura ou o miolo tomado pela natureza (WILD)
   Flora          árvores (4 espécies, vinhas), chão em manchas, plantas e entulho; índice de árvores por baldes
   RoadDecay      ruas abandonadas: colunas tomadas, textura gasta, plantas; pedras e muros das pontes velhas

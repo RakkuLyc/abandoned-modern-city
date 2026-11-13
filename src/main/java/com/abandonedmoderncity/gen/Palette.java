@@ -5,6 +5,7 @@ import com.abandonedmoderncity.core.Access;
 import com.abandonedmoderncity.core.BlockCode;
 import com.abandonedmoderncity.core.ChunkPlan;
 import com.abandonedmoderncity.core.RoadDecay;
+import com.abandonedmoderncity.core.StreetLights;
 import com.abandonedmoderncity.core.Structures;
 import com.abandonedmoderncity.core.Template;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -91,7 +92,7 @@ public final class Palette {
     public static final BlockState STONE = Blocks.STONE.defaultBlockState();
     /** Tunnel ceiling lights. */
     public static final BlockState LIGHT = Blocks.GLOWSTONE.defaultBlockState();
-    /** Blocks of the street lights, in the order of City.L_* (BlockCode.LAMP + index). */
+    /** Blocks of the street lights, in the order of StreetLights.L_* (BlockCode.LAMP + index). */
     public static final BlockState[] LAMP_STATES = {
             b(Blocks.MOSSY_COBBLESTONE), b(Blocks.MOSSY_STONE_BRICKS), b(Blocks.POLISHED_DEEPSLATE),
             b(Blocks.CRACKED_DEEPSLATE_BRICKS), b(Blocks.COBBLED_DEEPSLATE), b(Blocks.TUFF), b(Blocks.ANDESITE),
@@ -121,7 +122,7 @@ public final class Palette {
         return out;
     }
 
-    /** The block a street light (City.lampParts) puts dy over the street surface, or null. */
+    /** The block a street light (StreetLights.lampParts) puts dy over the street surface, or null. */
     public static BlockState lampBlock(int[] parts, int dy) {
         if (parts == null || dy < 1 || dy >= parts.length || parts[dy] == BlockCode.KEEP) {
             return null;

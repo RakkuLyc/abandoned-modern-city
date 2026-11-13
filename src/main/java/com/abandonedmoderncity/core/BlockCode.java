@@ -64,7 +64,7 @@ public final class BlockCode {
      *  back is); the armrest, an open spruce trapdoor, + facing. */
     public static final int BENCH_SEAT = 380;
     public static final int BENCH_ARM = 384;
-    /** Street lights ({@code City.lampParts}): LAMP + one of City.L_* (20 states). */
+    /** Street lights ({@code StreetLights.lampParts}): LAMP + one of StreetLights.L_* (20 states). */
     public static final int LAMP = 390;
     /** Block {@code TEMPLATE + i}: entry i of the palette of {@link Template#WATERFALL}. */
     public static final int TEMPLATE = 1000;

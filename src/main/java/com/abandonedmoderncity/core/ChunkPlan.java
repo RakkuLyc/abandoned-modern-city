@@ -39,7 +39,7 @@ public final class ChunkPlan {
     public static final byte F_LIGHT = 8;
     /** A hole through the deck of a bridge ({@link Wreck}): nothing there, not drivable. */
     public static final byte F_HOLE = 16;
-    /** Street lights ({@link City#lampParts}): a column with a part of one (F_LAMP), and a column where a part stands
+    /** Street lights ({@link StreetLights#lampParts}): a column with a part of one (F_LAMP), and a column where a part stands
      *  on the street (the post, a fallen lamp: F_POLE, not drivable). */
     public static final byte F_POLE = 32;
     public static final byte F_LAMP = 64;

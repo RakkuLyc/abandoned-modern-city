@@ -152,7 +152,7 @@ class WorldPlanTest {
     @Test
     void streetLightsStandOnTheSidewalksWithTheirArmsOverTheLanes() {
         WorldPlan p = plan(SEEDS[0], TestTerrain.Kind.FLAT);
-        int[] variants = new int[City.LAMP_VARIANTS];
+        int[] variants = new int[StreetLights.LAMP_VARIANTS];
         int poles = 0;
         int cities = 0;
         int[][] dirs = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
@@ -167,7 +167,7 @@ class WorldPlanTest {
             for (int z = c.cz - r; z <= c.cz + r; z++) {
                 for (int x = c.cx - r; x <= c.cx + r; x++) {
                     c.query(x + 0.5, z + 0.5, hit);
-                    int[] lp = City.lampParts(hit);
+                    int[] lp = StreetLights.lampParts(hit);
                     if (lp == null) {
                         continue;
                     }
@@ -188,10 +188,10 @@ class WorldPlanTest {
                 if (offset == 0) {
                     poles++;
                     variants[v]++;
-                    for (int dy = 1; dy <= City.LAMP_POST; dy++) {
-                        assertTrue(lp[dy] != BlockCode.KEEP && !City.lampVine(lp[dy]), where + " post hole at " + dy);
+                    for (int dy = 1; dy <= StreetLights.LAMP_POST; dy++) {
+                        assertTrue(lp[dy] != BlockCode.KEEP && !StreetLights.lampVine(lp[dy]), where + " post hole at " + dy);
                     }
-                    assertEquals(v == City.V_OVERGROWN, lp[City.LAMP_TOP] == BlockCode.LAMP + City.L_LEAVES, where + " tuft");
+                    assertEquals(v == StreetLights.V_OVERGROWN, lp[StreetLights.LAMP_TOP] == BlockCode.LAMP + StreetLights.L_LEAVES, where + " tuft");
                 } else if (offset == -1) {
                     // a vine up the back of the post: the post right beside it at the same height
                     int px = x + dirs[in[2]][0];
@@ -202,21 +202,21 @@ class WorldPlanTest {
                         if (lp[dy] == BlockCode.KEEP) {
                             continue;
                         }
-                        assertEquals(BlockCode.LAMP + City.L_VINE + 1 + in[2], lp[dy], where + " not a vine facing the post");
+                        assertEquals(BlockCode.LAMP + StreetLights.L_VINE + 1 + in[2], lp[dy], where + " not a vine facing the post");
                         assertTrue(dy >= 3, where + " vine in the sidewalk's tall grass");
-                        assertTrue(post[dy] != BlockCode.KEEP && !City.lampVine(post[dy]), where + " vine on nothing at " + dy);
+                        assertTrue(post[dy] != BlockCode.KEEP && !StreetLights.lampVine(post[dy]), where + " vine on nothing at " + dy);
                     }
                 } else {
                     // over the lanes: nothing under the arm's height but the fallen lamp
-                    for (int dy = 1; dy < City.LAMP_ARM_Y - 1; dy++) {
-                        boolean fallen = v == City.V_FALLEN && offset == City.LAMP_ARM && dy == 1;
-                        assertEquals(fallen ? BlockCode.LAMP + City.L_GRAY_GLASS : BlockCode.KEEP, lp[dy], where + " at " + dy);
+                    for (int dy = 1; dy < StreetLights.LAMP_ARM_Y - 1; dy++) {
+                        boolean fallen = v == StreetLights.V_FALLEN && offset == StreetLights.LAMP_ARM && dy == 1;
+                        assertEquals(fallen ? BlockCode.LAMP + StreetLights.L_GRAY_GLASS : BlockCode.KEEP, lp[dy], where + " at " + dy);
                     }
-                    if (lp[City.LAMP_ARM_Y - 1] == BlockCode.LAMP + City.L_VINE) {
-                        assertTrue(lp[City.LAMP_ARM_Y] != BlockCode.KEEP, where + " hanging vine without the arm");
+                    if (lp[StreetLights.LAMP_ARM_Y - 1] == BlockCode.LAMP + StreetLights.L_VINE) {
+                        assertTrue(lp[StreetLights.LAMP_ARM_Y] != BlockCode.KEEP, where + " hanging vine without the arm");
                     }
-                    if (v == City.V_BROKEN) {
-                        assertEquals(offset <= 2, lp[City.LAMP_ARM_Y] != BlockCode.KEEP, where + " broken arm");
+                    if (v == StreetLights.V_BROKEN) {
+                        assertEquals(offset <= 2, lp[StreetLights.LAMP_ARM_Y] != BlockCode.KEEP, where + " broken arm");
                     }
                 }
             }
