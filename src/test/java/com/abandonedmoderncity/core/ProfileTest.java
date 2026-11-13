@@ -3,6 +3,7 @@ package com.abandonedmoderncity.core;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 /** Properties of the highway height profile and of the ground/bridge/tunnel classification, on random terrain. */
@@ -77,7 +78,7 @@ class ProfileTest {
         // a straight climb from 70 to 90: the surface rises half a block every 4 blocks, never two in a row
         int length = 400;
         double[] target = new double[length + 1];
-        java.util.Arrays.fill(target, 90);
+        Arrays.fill(target, 90);
         int[] he = Profile.build(length, 70, 90, target, Params.FLAT_END, 5, 65);
         int last = -1;
         for (int s = 1; s <= length; s++) {

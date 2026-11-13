@@ -2,6 +2,7 @@ package com.abandonedmoderncity.gen;
 
 import com.abandonedmoderncity.core.Cache;
 import com.abandonedmoderncity.core.Terrain;
+import java.util.concurrent.atomic.AtomicLong;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -14,8 +15,8 @@ import net.minecraft.world.level.levelgen.RandomState;
  */
 public final class McTerrain implements Terrain {
     /** Noise samples taken (each one builds a noise column in the game, ~1 ms) and time spent, for the self-test. */
-    public static final java.util.concurrent.atomic.AtomicLong SAMPLES = new java.util.concurrent.atomic.AtomicLong();
-    public static final java.util.concurrent.atomic.AtomicLong NANOS = new java.util.concurrent.atomic.AtomicLong();
+    public static final AtomicLong SAMPLES = new AtomicLong();
+    public static final AtomicLong NANOS = new AtomicLong();
     private final ChunkGenerator generator;
     private final RandomState random;
     private final LevelHeightAccessor heights;

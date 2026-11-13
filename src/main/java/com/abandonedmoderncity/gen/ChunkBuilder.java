@@ -2,19 +2,29 @@ package com.abandonedmoderncity.gen;
 
 import com.abandonedmoderncity.core.BlockCode;
 import com.abandonedmoderncity.core.ChunkPlan;
+import com.abandonedmoderncity.core.City;
+import com.abandonedmoderncity.core.Hash;
 import com.abandonedmoderncity.core.Lot;
 import com.abandonedmoderncity.core.Params;
 import com.abandonedmoderncity.core.Profile;
 import com.abandonedmoderncity.core.RoadDecay;
-import com.abandonedmoderncity.core.Structures;
 import com.abandonedmoderncity.core.WorldPlan;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.SectionPos;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.BambooStalkBlock;
@@ -39,9 +49,10 @@ import net.minecraft.world.level.block.SugarCaneBlock;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.WebBlock;
-import net.minecraft.world.level.block.state.properties.WallSide;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.WallSide;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 
 /**
@@ -97,9 +108,9 @@ final class ChunkBuilder {
         this.maxY = chunk.getMaxBuildHeight();
         int highest = chunk.getHighestFilledSectionIndex();
         this.scanTop = highest < 0 ? minY - 1
-                : Math.min(maxY - 1, net.minecraft.core.SectionPos.sectionToBlockCoord(chunk.getSectionYFromSectionIndex(highest)) + 15);
-        java.util.Arrays.fill(airLo, Integer.MAX_VALUE);
-        java.util.Arrays.fill(airHi, Integer.MIN_VALUE);
+                : Math.min(maxY - 1, SectionPos.sectionToBlockCoord(chunk.getSectionYFromSectionIndex(highest)) + 15);
+        Arrays.fill(airLo, Integer.MAX_VALUE);
+        Arrays.fill(airHi, Integer.MIN_VALUE);
     }
 
     static boolean build(WorldPlan plan, WorldGenRegion region, ChunkAccess chunk) {
@@ -118,36 +129,36 @@ final class ChunkBuilder {
     }
 
     /** Creatures a village brings with its houses ({@link #removeVillageMobs}). */
-    private static final java.util.Set<String> VILLAGE_MOBS = java.util.Set.of("minecraft:villager",
+    private static final Set<String> VILLAGE_MOBS = Set.of("minecraft:villager",
             "minecraft:zombie_villager", "minecraft:iron_golem", "minecraft:cat");
     /** Village creatures removed so far (the self-test reports it). */
-    static final java.util.concurrent.atomic.AtomicInteger VILLAGE_MOBS_REMOVED = new java.util.concurrent.atomic.AtomicInteger();
+    static final AtomicInteger VILLAGE_MOBS_REMOVED = new AtomicInteger();
 
     /**
      * A village generated where a city is (asked by the user, 13 nov 2026): its houses are placed before the city, each
      * with its villagers, iron golem and cats, which stay when the city is built over them. They are taken out of the
      * chunk being generated (the village is placed in this chunk before this feature runs) when they stand in the
-     * city or {@link com.abandonedmoderncity.core.City#VILLAGE_MARGIN} or less from it. Other creatures stay.
+     * city or {@link City#VILLAGE_MARGIN} or less from it. Other creatures stay.
      */
     static int removeVillageMobs(WorldPlan plan, ChunkAccess chunk) {
-        if (!(chunk instanceof net.minecraft.world.level.chunk.ProtoChunk pc) || pc.getEntities().isEmpty()) {
+        if (!(chunk instanceof ProtoChunk pc) || pc.getEntities().isEmpty()) {
             return 0;
         }
         ChunkPos c = chunk.getPos();
-        com.abandonedmoderncity.core.City city = plan.cityNear(c.getMiddleBlockX(), c.getMiddleBlockZ(),
-                16 + com.abandonedmoderncity.core.City.VILLAGE_MARGIN);
+        City city = plan.cityNear(c.getMiddleBlockX(), c.getMiddleBlockZ(),
+                16 + City.VILLAGE_MARGIN);
         if (city == null) {
             return 0;
         }
-        com.abandonedmoderncity.core.City.Hit hit = new com.abandonedmoderncity.core.City.Hit();
+        City.Hit hit = new City.Hit();
         int before = pc.getEntities().size();
         pc.getEntities().removeIf(tag -> {
             if (!VILLAGE_MOBS.contains(tag.getString("id"))) {
                 return false;
             }
-            net.minecraft.nbt.ListTag pos = tag.getList("Pos", net.minecraft.nbt.Tag.TAG_DOUBLE);
+            ListTag pos = tag.getList("Pos", Tag.TAG_DOUBLE);
             return pos.size() == 3 && city.within(pos.getDouble(0), pos.getDouble(2),
-                    com.abandonedmoderncity.core.City.VILLAGE_MARGIN, hit);
+                    City.VILLAGE_MARGIN, hit);
         });
         int removed = before - pc.getEntities().size();
         VILLAGE_MOBS_REMOVED.addAndGet(removed);
@@ -179,15 +190,15 @@ final class ChunkBuilder {
     }
 
     /** Chunk key -> the crown leaves hanging out of structures planned there ({@link Overhangs}). */
-    private final java.util.Map<Long, java.util.Map<Long, BlockState>> overhangCache = new java.util.HashMap<>();
+    private final Map<Long, Map<Long, BlockState>> overhangCache = new HashMap<>();
 
-    private java.util.Map<Long, BlockState> overhangsOf(int cx, int cz) {
+    private Map<Long, BlockState> overhangsOf(int cx, int cz) {
         return overhangCache.computeIfAbsent(ChunkPos.asLong(cx, cz), k -> Overhangs.forChunk(plan, cx, cz));
     }
 
     /** The leaves that complete the crowns cut by a structure's edge, where this chunk has air for them. */
     private void overhangs() {
-        for (java.util.Map.Entry<Long, BlockState> e : overhangsOf(chunk.getPos().x, chunk.getPos().z).entrySet()) {
+        for (Map.Entry<Long, BlockState> e : overhangsOf(chunk.getPos().x, chunk.getPos().z).entrySet()) {
             BlockPos b = BlockPos.of(e.getKey());
             if (chunk.getBlockState(b).isAir()) {
                 set(b.getX(), b.getY(), b.getZ(), e.getValue());
@@ -468,8 +479,8 @@ final class ChunkBuilder {
      * lot and the position.
      */
     private void loot(Lot lot, BlockState s, boolean hard) {
-        if (region.getBlockEntity(pos) instanceof net.minecraft.world.RandomizableContainer c) {
-            long seed = com.abandonedmoderncity.core.Hash.of(lot.seed, 0x4C4F4F54L, pos.getX(), pos.getY() * 31L + pos.getZ());
+        if (region.getBlockEntity(pos) instanceof RandomizableContainer c) {
+            long seed = Hash.of(lot.seed, 0x4C4F4F54L, pos.getX(), pos.getY() * 31L + pos.getZ());
             c.setLootTable(Palette.lootTable(lot.building, s, hard), seed);
         }
     }
@@ -602,9 +613,9 @@ final class ChunkBuilder {
         int d = z1 - z0 + 1;
         int h = y1 - y0 + 1;
         byte[] dist = new byte[w * d * h];
-        java.util.Arrays.fill(dist, Byte.MAX_VALUE);
+        Arrays.fill(dist, Byte.MAX_VALUE);
         boolean[] leaf = new boolean[w * d * h];
-        java.util.ArrayDeque<Integer> queue = new java.util.ArrayDeque<>();
+        ArrayDeque<Integer> queue = new ArrayDeque<>();
         BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
         for (int y = y0; y <= y1; y++) {
             for (int z = z0; z <= z1; z++) {
@@ -694,7 +705,7 @@ final class ChunkBuilder {
                     continue;
                 }
                 // the leaves completing structure crowns planned there are not stray decoration
-                java.util.Map<Long, BlockState> crowns = Overhangs.forChunk(plan, c.x + dx, c.z + dz);
+                Map<Long, BlockState> crowns = Overhangs.forChunk(plan, c.x + dx, c.z + dz);
                 int maxY = nc.getMaxBuildHeight();
                 int nbx = (c.x + dx) << 4;
                 int nbz = (c.z + dz) << 4;
@@ -793,7 +804,7 @@ final class ChunkBuilder {
                             }
                         }
                         // the rest of a street light (post above the free height, arm, lamp)
-                        for (int y = free1 + 1; y <= ys + com.abandonedmoderncity.core.City.LAMP_TOP && y < maxY; y++) {
+                        for (int y = free1 + 1; y <= ys + City.LAMP_TOP && y < maxY; y++) {
                             BlockState part = Palette.lampBlock(lamp, y - ys);
                             if (part != null && nc.getBlockState(p.set(x, y, z)) != part) {
                                 region.setBlock(p, part, Block.UPDATE_CLIENTS);
@@ -831,7 +842,7 @@ final class ChunkBuilder {
      * of buildings, park trees and plazas are put back, and liquids are removed (with the liquid next to them sealed).
      */
     private static void repairLot(WorldGenRegion region, ChunkAccess nc, BlockPos.MutableBlockPos p,
-                                  BlockPos.MutableBlockPos n, java.util.Map<Long, BlockState> crowns, int x, int z,
+                                  BlockPos.MutableBlockPos n, Map<Long, BlockState> crowns, int x, int z,
                                   int base, Lot lot, int yard, int above) {
         boolean paved = yard != BlockCode.GRASS;
         int depth = lot == null ? 0 : lot.depthBelowBase();

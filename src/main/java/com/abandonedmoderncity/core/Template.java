@@ -5,8 +5,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.zip.GZIPInputStream;
 
@@ -67,7 +70,7 @@ public final class Template {
         nsx += ox;
         nsz += oz;
         int[] nc = new int[nsx * sy * nsz];
-        java.util.Arrays.fill(nc, -1);
+        Arrays.fill(nc, -1);
         for (int y = 0; y < sy; y++) {
             for (int z = 0; z < sz; z++) {
                 for (int x = 0; x < sx; x++) {
@@ -76,7 +79,7 @@ public final class Template {
             }
         }
         List<String> np = new ArrayList<>(palette);
-        Map<Integer, List<String[]>> nb = new java.util.HashMap<>();
+        Map<Integer, List<String[]>> nb = new HashMap<>();
         for (Map.Entry<Integer, List<String[]>> e : banners.entrySet()) {
             int k = e.getKey();
             int x = k % sx + ox;
@@ -120,7 +123,7 @@ public final class Template {
     }
 
     /** Neutral facade blocks (white and light stone) that a color variant may have painted. */
-    static final java.util.Set<String> NEUTRAL = java.util.Set.of("minecraft:white_concrete", "minecraft:smooth_quartz",
+    static final Set<String> NEUTRAL = Set.of("minecraft:white_concrete", "minecraft:smooth_quartz",
             "minecraft:calcite", "minecraft:polished_diorite");
 
     /**
@@ -133,7 +136,7 @@ public final class Template {
         if (src.sy != sy || Math.abs(src.sx - sx) > 1 || Math.abs(src.sz - sz) > 1) {
             throw new IllegalStateException(name + ": " + src.name + " has another size");
         }
-        Map<Integer, String> changed = new java.util.HashMap<>();
+        Map<Integer, String> changed = new HashMap<>();
         for (int y = 0; y < sy; y++) {
             for (int z = 0; z < Math.min(sz, src.sz); z++) {
                 for (int x = 0; x < Math.min(sx, src.sx); x++) {
@@ -159,7 +162,7 @@ public final class Template {
     Template withStates(Map<Integer, String> changed) {
         List<String> np = new ArrayList<>(palette);
         int[] nc = cells.clone();
-        for (Map.Entry<Integer, String> e : new java.util.TreeMap<>(changed).entrySet()) {
+        for (Map.Entry<Integer, String> e : new TreeMap<>(changed).entrySet()) {
             int id = np.indexOf(e.getValue());
             if (id < 0) {
                 np.add(e.getValue());
@@ -218,9 +221,9 @@ public final class Template {
                 }
                 palette.add(sb.toString());
             }
-            Map<Integer, List<String[]>> banners = new java.util.HashMap<>();
+            Map<Integer, List<String[]>> banners = new HashMap<>();
             int[] cells = new int[sx * sy * sz];
-            java.util.Arrays.fill(cells, -1);
+            Arrays.fill(cells, -1);
             for (Object o : (List<?>) root.get("blocks")) {
                 Map<?, ?> b = (Map<?, ?>) o;
                 List<?> pos = (List<?>) b.get("pos");

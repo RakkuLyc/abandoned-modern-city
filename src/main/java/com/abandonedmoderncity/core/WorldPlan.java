@@ -249,7 +249,7 @@ public final class WorldPlan {
             }
             final double top = far;
             facing.removeIf(e -> toward(a, e, dx / l, dz / l) < top - 0.5);
-            facing.sort(java.util.Comparator.comparingLong(e -> Hash.of(a.seed, b.id, e.i(), e.j())));
+            facing.sort(Comparator.comparingLong(e -> Hash.of(a.seed, b.id, e.i(), e.j())));
             City.Exit pick = facing.get(0);
             out.put(b.id, pick);
             free.removeIf(e -> e.i() == pick.i() && e.j() == pick.j());

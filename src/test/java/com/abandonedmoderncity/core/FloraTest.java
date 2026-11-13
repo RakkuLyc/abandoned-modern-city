@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.Arrays;
 import java.util.List;
 import javax.imageio.ImageIO;
 import org.junit.jupiter.api.Test;
@@ -100,7 +103,7 @@ class FloraTest {
                 render(wild, "wild_block.png");
             }
         }
-        assertTrue(total[1] > 0 && total[2] > 0 && total[3] > 0, "vines, plants, rubble: " + java.util.Arrays.toString(total));
+        assertTrue(total[1] > 0 && total[2] > 0 && total[3] > 0, "vines, plants, rubble: " + Arrays.toString(total));
         // structures keep the trees out
         Lot building = null;
         Lot wild = Lot.wild(0, 0, 139, 89, 7, List.of(Lot.park(10, 10, 50, 40, 1)));
@@ -184,8 +187,8 @@ class FloraTest {
             File dir = new File("build/test-renders");
             dir.mkdirs();
             ImageIO.write(img, "png", new File(dir, name));
-        } catch (java.io.IOException e) {
-            throw new java.io.UncheckedIOException(e);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 

@@ -7,11 +7,14 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The building structures supplied by the user ({@code .nbt} files in {@code resources/amcs/buildings/}, listed in its
@@ -425,7 +428,7 @@ public final class Structures {
     private static int[] floorFill(Template t, boolean[] solid, int x0, int z0, int w, int d, int gy,
                                    Map<String, Integer> ids) {
         int[] fill = new int[w * d];
-        java.util.Arrays.fill(fill, -1);
+        Arrays.fill(fill, -1);
         boolean[] floor = new boolean[w * d];
         for (int z = 0; z < d; z++) {
             for (int x = 0; x < w; x++) {
@@ -589,7 +592,7 @@ public final class Structures {
             return out;
         }
         // the mirrors out of the box, with the leaf they mirror
-        Map<Long, String> mirror = new java.util.LinkedHashMap<>();
+        Map<Long, String> mirror = new LinkedHashMap<>();
         for (int y = y0; y < y0 + h; y++) {
             for (int z = z0; z < z0 + d; z++) {
                 for (int x = x0; x < x0 + w; x++) {
@@ -699,7 +702,7 @@ public final class Structures {
                         int n = t.at(x + q[0], y + q[1], z + q[2]);
                         if (n >= 0) {
                             String b = blockOf(t.palette.get(n));
-                            held |= !java.util.Arrays.asList(NO_HOLD).contains(b) && !b.endsWith("_carpet");
+                            held |= !Arrays.asList(NO_HOLD).contains(b) && !b.endsWith("_carpet");
                         }
                     }
                     if (!held) {
@@ -719,7 +722,7 @@ public final class Structures {
         if (!blockOf(state).equals("minecraft:lightning_rod")) {
             return state;
         }
-        java.util.regex.Matcher m = java.util.regex.Pattern.compile("facing=(\\w+)").matcher(state);
+        Matcher m = Pattern.compile("facing=(\\w+)").matcher(state);
         String facing = m.find() ? m.group(1) : "up";
         return facing.equals("up") || facing.equals("down") ? "minecraft:redstone_torch[lit=true]"
                 : "minecraft:redstone_wall_torch[facing=" + facing + ",lit=true]";
@@ -763,7 +766,7 @@ public final class Structures {
      */
     static boolean[] openings(Template t, int[] state, int x0, int z0, int w, int d, int gy) {
         boolean[] out = new boolean[w * d];
-        java.util.ArrayDeque<int[]> q = new java.util.ArrayDeque<>();
+        ArrayDeque<int[]> q = new ArrayDeque<>();
         for (int z = 0; z < d; z++) {
             for (int x = 0; x < w; x++) {
                 int p = t.at(x0 + x, gy, z0 + z);

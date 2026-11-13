@@ -3,6 +3,7 @@ package com.abandonedmoderncity.command;
 import com.abandonedmoderncity.core.ChunkPlan;
 import com.abandonedmoderncity.core.City;
 import com.abandonedmoderncity.core.Highway;
+import com.abandonedmoderncity.core.Lot;
 import com.abandonedmoderncity.core.PlanAudit;
 import com.abandonedmoderncity.core.PlanRender;
 import com.abandonedmoderncity.core.Profile;
@@ -13,10 +14,11 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import java.io.File;
 import java.util.List;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
-import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
@@ -249,7 +251,7 @@ public final class SimpleCommands {
         int i = ChunkPlan.idx(x & 15, z & 15);
         StringBuilder sb = new StringBuilder("[AMCS] column ").append(x).append(',').append(z).append(" kind ").append(cp.kind[i])
                 .append(" h2 ").append(cp.h2[i]).append(" struct ").append(cp.struct[i]).append(" zone ").append(cp.zone[i]);
-        com.abandonedmoderncity.core.Lot lot = cp.lot[i];
+        Lot lot = cp.lot[i];
         int base = cp.h2[i] / 2 - 1;
         if (lot != null) {
             sb.append(" lot ").append(lot.type).append(' ').append(lot.x0).append(',').append(lot.z0).append("..")
@@ -258,7 +260,7 @@ public final class SimpleCommands {
         var chunk = level.getChunk(x >> 4, z >> 4);
         for (int y = y1; y >= y0; y--) {
             var s = chunk.getBlockState(new BlockPos(x, y, z));
-            sb.append("\n  ").append(y).append(' ').append(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(s.getBlock()).getPath());
+            sb.append("\n  ").append(y).append(' ').append(BuiltInRegistries.BLOCK.getKey(s.getBlock()).getPath());
             if (lot != null) {
                 sb.append(" (code ").append(lot.code(x, y, z, base)).append(')');
             }

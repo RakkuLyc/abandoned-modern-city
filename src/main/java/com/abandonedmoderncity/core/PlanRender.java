@@ -3,7 +3,9 @@ package com.abandonedmoderncity.core;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.imageio.ImageIO;
 
 /**
@@ -40,7 +42,7 @@ public final class PlanRender {
         int w = (cx1 - cx0 + 1) * 16;
         int d = (cz1 - cz0 + 1) * 16;
         BufferedImage img = new BufferedImage(w, d, BufferedImage.TYPE_INT_RGB);
-        java.util.Map<Long, Integer> terrain = new java.util.HashMap<>();
+        Map<Long, Integer> terrain = new HashMap<>();
         for (int cz = cz0; cz <= cz1; cz++) {
             for (int cx = cx0; cx <= cx1; cx++) {
                 ChunkPlan cp = plan.chunk(cx, cz);

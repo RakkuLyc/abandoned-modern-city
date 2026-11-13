@@ -6,12 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -100,7 +103,7 @@ class WorldPlanTest {
                             }
                         }
                         pathLength += pathCells / 3;
-                        java.util.List<int[]> seatCells = new java.util.ArrayList<>();
+                        List<int[]> seatCells = new ArrayList<>();
                         for (var e : park.benches.entrySet()) {
                             int x = (int) (e.getKey() >> 32);
                             int z = (int) (long) e.getKey();
@@ -159,8 +162,8 @@ class WorldPlanTest {
                 break;
             }
             int r = c.radius + 40;
-            java.util.Map<Long, int[]> parts = new java.util.HashMap<>();
-            java.util.Map<Long, int[]> info = new java.util.HashMap<>();
+            Map<Long, int[]> parts = new HashMap<>();
+            Map<Long, int[]> info = new HashMap<>();
             for (int z = c.cz - r; z <= c.cz + r; z++) {
                 for (int x = c.cx - r; x <= c.cx + r; x++) {
                     c.query(x + 0.5, z + 0.5, hit);
@@ -219,11 +222,11 @@ class WorldPlanTest {
             }
         }
         double perCity = poles / 20.0;
-        System.out.printf("[WorldPlanTest] street lights: %.1f posts per city, variants %s%n", perCity, java.util.Arrays.toString(variants));
+        System.out.printf("[WorldPlanTest] street lights: %.1f posts per city, variants %s%n", perCity, Arrays.toString(variants));
         // 144 places per city, 10% gone; the 5 variants share the rest
         assertTrue(perCity > 144 * 0.8 && perCity < 144 * 0.95, "posts per city " + perCity);
         for (int n : variants) {
-            assertTrue(Math.abs(n - poles / 5.0) < poles * 0.06, "variants " + java.util.Arrays.toString(variants));
+            assertTrue(Math.abs(n - poles / 5.0) < poles * 0.06, "variants " + Arrays.toString(variants));
         }
         // in the chunk plans: posts and fallen lamps stand on the street (not drivable), the rest of a light does not
         City c0 = allCities(p).get(0);
@@ -254,10 +257,10 @@ class WorldPlanTest {
 
     @Test
     void cutCrownsHangOverSidewalksAndCores() {
-        java.util.Map<String, Integer> why = new java.util.TreeMap<>();
+        Map<String, Integer> why = new TreeMap<>();
         int placed = 0;
         WorldPlan p = plan(SEEDS[0], TestTerrain.Kind.FLAT);
-        java.util.Set<Long> chunks = new java.util.HashSet<>();
+        Set<Long> chunks = new HashSet<>();
         for (City c : allCities(p)) {
             int n = c.gridHalf();
             for (int bj = -n; bj <= n; bj++) {
@@ -273,7 +276,7 @@ class WorldPlanTest {
         for (long k : chunks) {
             int cx = (int) (k >> 32);
             int cz = (int) k;
-            java.util.Map<Long, Integer> m = Crowns.forChunk(p, cx, cz, why);
+            Map<Long, Integer> m = Crowns.forChunk(p, cx, cz, why);
             placed += m.size();
             for (long pos : m.keySet()) {
                 // inside the chunk asked for
@@ -291,7 +294,7 @@ class WorldPlanTest {
     }
 
     @Test
-    void cityStreetsHaveNoDeadEndsAndLotsAreBuildable() throws java.io.IOException {
+    void cityStreetsHaveNoDeadEndsAndLotsAreBuildable() throws IOException {
         int cities = 0;
         int lots = 0;
         int parks = 0;
@@ -307,12 +310,12 @@ class WorldPlanTest {
                 assertTrue(c.isCityBlock(0, 0), "center block");
                 cutHistogram[c.streetCuts()]++;
                 // spawn limits per city (pharmacies 3, workshops 2, gas stations 2)
-                java.util.Map<String, Integer> groups = new java.util.HashMap<>();
-                java.util.Map<String, Integer> buildings = new java.util.HashMap<>();
+                Map<String, Integer> groups = new HashMap<>();
+                Map<String, Integer> buildings = new HashMap<>();
                 for (int bj = -n; bj <= n; bj++) {
                     for (int bi = -n; bi <= n; bi++) {
                         // and never two of the same structure in one block
-                        java.util.Set<String> inBlock = new java.util.HashSet<>();
+                        Set<String> inBlock = new HashSet<>();
                         for (Lot l : c.lots(bi, bj)) {
                             if (l.building != null) {
                                 assertTrue(inBlock.add(l.building.name()), c + " block " + bi + "," + bj + " has two "
@@ -403,7 +406,7 @@ class WorldPlanTest {
         System.out.println("[WorldPlanTest] parks " + parks + " with " + parkStructures + " structures");
         System.out.printf("[WorldPlanTest] buildings per city %.2f (each model at most once)%n", buildingsPerCity / (double) cities);
         System.out.println("[WorldPlanTest] cities " + cities + ", lots " + lots + ", removed segments per city "
-                + java.util.Arrays.toString(cutHistogram));
+                + Arrays.toString(cutHistogram));
         int withCuts = 0;
         for (int k = 1; k <= City.MAX_CUTS; k++) {
             withCuts += cutHistogram[k];

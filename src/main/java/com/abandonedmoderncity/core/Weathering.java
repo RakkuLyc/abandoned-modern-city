@@ -1,6 +1,7 @@
 package com.abandonedmoderncity.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -227,7 +228,7 @@ public final class Weathering {
         int sz = e.t.sz;
         // the highest solid block of each column: a top under it is covered by a roof
         int[] roof = new int[sx * sz];
-        java.util.Arrays.fill(roof, -1);
+        Arrays.fill(roof, -1);
         for (int y = 0; y < sy; y++) {
             for (int z = 0; z < sz; z++) {
                 for (int x = 0; x < sx; x++) {

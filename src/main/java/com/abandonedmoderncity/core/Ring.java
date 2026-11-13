@@ -1,7 +1,9 @@
 package com.abandonedmoderncity.core;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A ring of structures along the four sidewalks of a block (the structures are drawn at random, no pattern). The rows
@@ -29,14 +31,14 @@ public final class Ring {
 
     /** The lots of the free rectangle x0..x1, z0..z1 of a block, with no spawn limit. */
     public static List<Lot> lots(int x0, int z0, int x1, int z1, long seed) {
-        return lots(x0, z0, x1, z1, seed, new java.util.HashMap<>());
+        return lots(x0, z0, x1, z1, seed, new HashMap<>());
     }
 
     /**
      * The lots of the free rectangle x0..x1, z0..z1 of a block; {@code used} counts the structures of each limited
      * group ({@link Structures#LIMITS}) already placed in the city, and is updated (a group at its limit is redrawn).
      */
-    public static List<Lot> lots(int x0, int z0, int x1, int z1, long seed, java.util.Map<String, Integer> used) {
+    public static List<Lot> lots(int x0, int z0, int x1, int z1, long seed, Map<String, Integer> used) {
         return lots(x0, z0, x1, z1, seed, used, null);
     }
 
@@ -44,7 +46,7 @@ public final class Ring {
      * The same, keeping out of the rectangle {@code keepOut} = {x0, z0, x1, z1} (a park in a corner of the block) and
      * {@link #GAP_MIN} or more blocks away from it: the rows skip past it.
      */
-    public static List<Lot> lots(int x0, int z0, int x1, int z1, long seed, java.util.Map<String, Integer> used,
+    public static List<Lot> lots(int x0, int z0, int x1, int z1, long seed, Map<String, Integer> used,
                                  int[] keepOut) {
         if (Structures.ALL.isEmpty()) {
             // no structures in resources/amcs/buildings: the block stays free city ground
@@ -111,7 +113,7 @@ public final class Ring {
      * the part between the north and south rows). Returns the depth of its deepest structure (0 for none).
      */
     private static int row(List<Lot> out, int x0, int x1, int z0, int z1, int side, int maxDepth, long seed,
-                           java.util.Map<String, Integer> used, int[] keepOut) {
+                           Map<String, Integer> used, int[] keepOut) {
         boolean alongX = side == Structures.NORTH || side == Structures.SOUTH;
         int length = alongX ? x1 - x0 + 1 : z1 - z0 + 1;
         int at = 0;

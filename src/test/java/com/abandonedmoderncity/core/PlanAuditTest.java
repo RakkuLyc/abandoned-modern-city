@@ -8,6 +8,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -102,7 +103,7 @@ class PlanAuditTest {
         for (int i = 0; i < chunks.size(); i++) {
             order.add(i);
         }
-        Collections.shuffle(order, new java.util.Random(7));
+        Collections.shuffle(order, new Random(7));
         ExecutorService pool = Executors.newFixedThreadPool(8);
         try {
             List<Future<ChunkPlan>> fs = new ArrayList<>();

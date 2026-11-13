@@ -1,6 +1,7 @@
 package com.abandonedmoderncity.core;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,7 +42,7 @@ public final class Crowns {
         }
         // the city whose area covers the chunk (citiesIn wants the city's center inside the rectangle)
         City near = plan.cityNear(bx + 8, bz + 8, 16 + REACH);
-        for (City city : near == null ? java.util.List.<City>of() : java.util.List.of(near)) {
+        for (City city : near == null ? List.<City>of() : List.of(near)) {
             int n = city.gridHalf();
             int base = city.level - 1;
             for (int bj = -n; bj <= n; bj++) {

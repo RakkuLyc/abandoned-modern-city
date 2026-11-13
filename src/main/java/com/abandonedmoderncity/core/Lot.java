@@ -1,5 +1,6 @@
 package com.abandonedmoderncity.core;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -136,7 +137,7 @@ public final class Lot {
     }
 
     /** Banner design ({pattern, color} layers) of the structure block at (x, y, z), or null. */
-    public java.util.List<String[]> bannerAt(int x, int y, int z, int base) {
+    public List<String[]> bannerAt(int x, int y, int z, int base) {
         return building == null ? null : building.banner(x - x0, y - base, z - z0, rot);
     }
 
@@ -148,7 +149,7 @@ public final class Lot {
      */
     public List<int[]> overhangs() {
         if (overhangs == null) {
-            List<int[]> out = new java.util.ArrayList<>();
+            List<int[]> out = new ArrayList<>();
             if (building != null) {
                 for (int[] o : building.overhangs(rot)) {
                     out.add(new int[]{x0 + o[0], o[1], z0 + o[2], o[3]});

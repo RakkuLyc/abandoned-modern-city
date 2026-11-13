@@ -1,31 +1,62 @@
 package com.abandonedmoderncity.gen;
 
 import com.abandonedmoderncity.AMCSimple;
+import com.abandonedmoderncity.core.Access;
 import com.abandonedmoderncity.core.BlockCode;
 import com.abandonedmoderncity.core.ChunkPlan;
+import com.abandonedmoderncity.core.RoadDecay;
+import com.abandonedmoderncity.core.Structures;
+import com.abandonedmoderncity.core.Template;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.EmptyBlockGetter;
+import net.minecraft.world.level.block.AbstractBannerBlock;
+import net.minecraft.world.level.block.AbstractFurnaceBlock;
+import net.minecraft.world.level.block.AbstractSkullBlock;
+import net.minecraft.world.level.block.BarrelBlock;
+import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BrewingStandBlock;
+import net.minecraft.world.level.block.CampfireBlock;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.ChiseledBookShelfBlock;
+import net.minecraft.world.level.block.DaylightDetectorBlock;
+import net.minecraft.world.level.block.DecoratedPotBlock;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.DoublePlantBlock;
+import net.minecraft.world.level.block.JukeboxBlock;
 import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.LeavesBlock;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.ChestBlock;
-import net.minecraft.world.level.block.DoublePlantBlock;
-import net.minecraft.commands.arguments.blocks.BlockStateParser;
-import com.abandonedmoderncity.core.Template;
-import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.LecternBlock;
+import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
-import net.minecraft.world.level.block.state.properties.SlabType;
+import net.minecraft.world.level.block.TrapDoorBlock;
+import net.minecraft.world.level.block.VineBlock;
+import net.minecraft.world.level.block.entity.BannerBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.block.state.properties.SlabType;
+import net.minecraft.world.level.storage.loot.LootTable;
 
 /**
  * Every block the generator places. Any hardness is allowed (the user lifted the old limit), but nothing may be
@@ -71,26 +102,26 @@ public final class Palette {
             b(Blocks.CRACKED_DEEPSLATE_BRICKS), b(Blocks.COBBLED_DEEPSLATE), b(Blocks.TUFF), b(Blocks.ANDESITE),
             b(Blocks.MOSS_BLOCK), b(Blocks.MOSSY_STONE_BRICK_SLAB), b(Blocks.POLISHED_DEEPSLATE_SLAB),
             b(Blocks.COBBLED_DEEPSLATE_SLAB), b(Blocks.GRAY_STAINED_GLASS), b(Blocks.TINTED_GLASS), b(Blocks.CHAIN),
-            Blocks.OAK_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true),
-            Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.UP, true),
-            Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.NORTH, true),
-            Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.EAST, true),
-            Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.SOUTH, true),
-            Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.WEST, true)};
+            Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true),
+            Blocks.VINE.defaultBlockState().setValue(VineBlock.UP, true),
+            Blocks.VINE.defaultBlockState().setValue(VineBlock.NORTH, true),
+            Blocks.VINE.defaultBlockState().setValue(VineBlock.EAST, true),
+            Blocks.VINE.defaultBlockState().setValue(VineBlock.SOUTH, true),
+            Blocks.VINE.defaultBlockState().setValue(VineBlock.WEST, true)};
     /** Park benches: spruce stairs (seat, back toward the facing) and open spruce trapdoors (armrests), per facing. */
     public static final BlockState[] BENCH_SEAT = benchParts(true);
     public static final BlockState[] BENCH_ARM = benchParts(false);
 
     private static BlockState[] benchParts(boolean seat) {
-        net.minecraft.core.Direction[] d = {net.minecraft.core.Direction.NORTH, net.minecraft.core.Direction.EAST,
-                net.minecraft.core.Direction.SOUTH, net.minecraft.core.Direction.WEST};
+        Direction[] d = {Direction.NORTH, Direction.EAST,
+                Direction.SOUTH, Direction.WEST};
         BlockState[] out = new BlockState[4];
         for (int k = 0; k < 4; k++) {
             out[k] = seat
-                    ? Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, d[k])
+                    ? Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, d[k])
                     : Blocks.SPRUCE_TRAPDOOR.defaultBlockState()
-                    .setValue(net.minecraft.world.level.block.TrapDoorBlock.FACING, d[k])
-                    .setValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN, true);
+                    .setValue(TrapDoorBlock.FACING, d[k])
+                    .setValue(TrapDoorBlock.OPEN, true);
         }
         return out;
     }
@@ -104,8 +135,8 @@ public final class Palette {
     }
 
     /** The street light parts of a road column of a chunk plan, or null. */
-    public static int[] lampParts(com.abandonedmoderncity.core.ChunkPlan cp, int i, int x, int z) {
-        if ((cp.flags[i] & com.abandonedmoderncity.core.ChunkPlan.F_LAMP) == 0 || cp.city == null) {
+    public static int[] lampParts(ChunkPlan cp, int i, int x, int z) {
+        if ((cp.flags[i] & ChunkPlan.F_LAMP) == 0 || cp.city == null) {
             return null;
         }
         return cp.city.lampParts(x + 0.5, z + 0.5);
@@ -182,10 +213,10 @@ public final class Palette {
     }
     /** Vines hanging on the block to the west, east, north, south. */
     public static final BlockState[] VINES = {
-            Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.WEST, true),
-            Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.EAST, true),
-            Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.NORTH, true),
-            Blocks.VINE.defaultBlockState().setValue(net.minecraft.world.level.block.VineBlock.SOUTH, true)};
+            Blocks.VINE.defaultBlockState().setValue(VineBlock.WEST, true),
+            Blocks.VINE.defaultBlockState().setValue(VineBlock.EAST, true),
+            Blocks.VINE.defaultBlockState().setValue(VineBlock.NORTH, true),
+            Blocks.VINE.defaultBlockState().setValue(VineBlock.SOUTH, true)};
     public static final BlockState MOSS_BLOCK = Blocks.MOSS_BLOCK.defaultBlockState();
     public static final BlockState FERN = Blocks.FERN.defaultBlockState();
     public static final BlockState LARGE_FERN_LOWER = Blocks.LARGE_FERN.defaultBlockState()
@@ -215,7 +246,7 @@ public final class Palette {
             for (int i = 0; i < out.length; i++) {
                 try {
                     out[i] = BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK.asLookup(), names.get(i), false).blockState();
-                } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
+                } catch (CommandSyntaxException e) {
                     throw new IllegalStateException("bad block state in waterfall.nbt: " + names.get(i), e);
                 }
             }
@@ -233,19 +264,19 @@ public final class Palette {
         if (all == null) {
             synchronized (Palette.class) {
                 if (structures == null) {
-                    List<String> names = com.abandonedmoderncity.core.Structures.STATES;
+                    List<String> names = Structures.STATES;
                     BlockState[] out = new BlockState[names.size() * 4];
                     for (int i = 0; i < names.size(); i++) {
                         BlockState s;
                         try {
                             s = BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK.asLookup(), names.get(i), false).blockState();
-                        } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
+                        } catch (CommandSyntaxException e) {
                             throw new IllegalStateException("bad block state in a structure: " + names.get(i), e);
                         }
                         out[4 * i] = s;
-                        out[4 * i + 1] = s.rotate(net.minecraft.world.level.block.Rotation.CLOCKWISE_90);
-                        out[4 * i + 2] = s.rotate(net.minecraft.world.level.block.Rotation.CLOCKWISE_180);
-                        out[4 * i + 3] = s.rotate(net.minecraft.world.level.block.Rotation.COUNTERCLOCKWISE_90);
+                        out[4 * i + 1] = s.rotate(Rotation.CLOCKWISE_90);
+                        out[4 * i + 2] = s.rotate(Rotation.CLOCKWISE_180);
+                        out[4 * i + 3] = s.rotate(Rotation.COUNTERCLOCKWISE_90);
                     }
                     structures = out;
                 }
@@ -454,11 +485,11 @@ public final class Palette {
      * else the plain surface (markings, the wall column). Generation, neighbour repair and audit use this.
      */
     public static BlockState roadSurfaceAt(long seed, int x, int z, byte zone, byte struct, boolean slab) {
-        int decay = com.abandonedmoderncity.core.RoadDecay.surface(seed, x, z, zone, struct, slab);
+        int decay = RoadDecay.surface(seed, x, z, zone, struct, slab);
         if (decay != BlockCode.KEEP) {
             return of(decay, 0, null);
         }
-        int tex = com.abandonedmoderncity.core.RoadDecay.texture(seed, x, z, zone, slab);
+        int tex = RoadDecay.texture(seed, x, z, zone, slab);
         return tex != BlockCode.KEEP ? of(tex, 0, null) : roadSurface(zone, slab);
     }
 
@@ -480,19 +511,19 @@ public final class Palette {
      */
     public static boolean exempt(BlockState s) {
         Block b = s.getBlock();
-        return b instanceof ChestBlock || b instanceof net.minecraft.world.level.block.BarrelBlock
-                || b instanceof net.minecraft.world.level.block.BrewingStandBlock
-                || b instanceof net.minecraft.world.level.block.DecoratedPotBlock
-                || b instanceof net.minecraft.world.level.block.LecternBlock
-                || b instanceof net.minecraft.world.level.block.AbstractFurnaceBlock
-                || b instanceof net.minecraft.world.level.block.BedBlock
-                || b instanceof net.minecraft.world.level.block.CampfireBlock
-                || b instanceof net.minecraft.world.level.block.DaylightDetectorBlock
-                || b instanceof net.minecraft.world.level.block.JukeboxBlock
-                || b instanceof net.minecraft.world.level.block.AbstractBannerBlock
-                || b instanceof net.minecraft.world.level.block.AbstractSkullBlock
-                || b instanceof net.minecraft.world.level.block.DispenserBlock
-                || b instanceof net.minecraft.world.level.block.ChiseledBookShelfBlock;
+        return b instanceof ChestBlock || b instanceof BarrelBlock
+                || b instanceof BrewingStandBlock
+                || b instanceof DecoratedPotBlock
+                || b instanceof LecternBlock
+                || b instanceof AbstractFurnaceBlock
+                || b instanceof BedBlock
+                || b instanceof CampfireBlock
+                || b instanceof DaylightDetectorBlock
+                || b instanceof JukeboxBlock
+                || b instanceof AbstractBannerBlock
+                || b instanceof AbstractSkullBlock
+                || b instanceof DispenserBlock
+                || b instanceof ChiseledBookShelfBlock;
     }
 
     /**
@@ -500,29 +531,29 @@ public final class Palette {
      * {@code tools/gen_loot.py}, vanilla items only): one set per kind of structure (casa, farmacia, oficina, posto,
      * predio) and, in each, the tier of the container: chests normal ({@code bau}), barrels, dispensers and droppers
      * poorer and often empty ({@code barril}), decorated pots one stack ({@code vaso}); a container hard to get to
-     * ({@link com.abandonedmoderncity.core.Access}) gets the more generous {@code _dificil} table of its tier.
+     * ({@link Access}) gets the more generous {@code _dificil} table of its tier.
      */
-    public static net.minecraft.resources.ResourceKey<net.minecraft.world.level.storage.loot.LootTable> lootTable(
-            com.abandonedmoderncity.core.Structures.Def def, BlockState s, boolean hard) {
+    public static ResourceKey<LootTable> lootTable(
+            Structures.Def def, BlockState s, boolean hard) {
         String tier = s.is(Blocks.CHEST) || s.is(Blocks.TRAPPED_CHEST) ? "bau" : s.is(Blocks.DECORATED_POT) ? "vaso" : "barril";
         String id = "chests/" + def.lootTheme() + "/" + tier + (hard ? "_dificil" : "");
-        return net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE,
-                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("abandonedmoderncity", id));
+        return ResourceKey.create(Registries.LOOT_TABLE,
+                ResourceLocation.fromNamespaceAndPath("abandonedmoderncity", id));
     }
 
     /**
      * Puts a banner design saved in a structure template ({pattern, color} layers) on the banner block entity just
      * placed (the template keeps the design as block entity data, the block state alone is a plain banner).
      */
-    public static void applyBanner(net.minecraft.world.level.block.entity.BlockEntity be, List<String[]> layers,
-                                   net.minecraft.core.HolderLookup.Provider registries) {
-        if (!(be instanceof net.minecraft.world.level.block.entity.BannerBlockEntity) || layers == null) {
+    public static void applyBanner(BlockEntity be, List<String[]> layers,
+                                   HolderLookup.Provider registries) {
+        if (!(be instanceof BannerBlockEntity) || layers == null) {
             return;
         }
-        net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
-        net.minecraft.nbt.ListTag list = new net.minecraft.nbt.ListTag();
+        CompoundTag tag = new CompoundTag();
+        ListTag list = new ListTag();
         for (String[] l : layers) {
-            net.minecraft.nbt.CompoundTag e = new net.minecraft.nbt.CompoundTag();
+            CompoundTag e = new CompoundTag();
             e.putString("pattern", l[0]);
             e.putString("color", l[1]);
             list.add(e);
@@ -572,7 +603,7 @@ public final class Palette {
         set.addAll(List.of(SIDEWALK_SLAB_TEX));
         for (BlockState f : fountain()) {
             // flowing water of the fountain is a fluid, not a block to break
-            if (!(f.getBlock() instanceof net.minecraft.world.level.block.LiquidBlock)) {
+            if (!(f.getBlock() instanceof LiquidBlock)) {
                 set.add(f);
             }
         }
@@ -603,13 +634,13 @@ public final class Palette {
         structures.addAll(List.of(BALCONY_FLOOR));
         structures.addAll(List.of(BALCONY_WALL));
         for (BlockState s : structures) {
-            if (s.is(net.minecraft.tags.BlockTags.BASE_STONE_OVERWORLD) || s.is(net.minecraft.tags.BlockTags.STONE_ORE_REPLACEABLES)
-                    || s.is(net.minecraft.tags.BlockTags.DEEPSLATE_ORE_REPLACEABLES)) {
+            if (s.is(BlockTags.BASE_STONE_OVERWORLD) || s.is(BlockTags.STONE_ORE_REPLACEABLES)
+                    || s.is(BlockTags.DEEPSLATE_ORE_REPLACEABLES)) {
                 bad.add(BuiltInRegistries.BLOCK.getKey(s.getBlock()) + " (replaced by ore blobs)");
             }
         }
         // the building structures: breakable, and no block entity but the empty containers
-        int nStructure = com.abandonedmoderncity.core.Structures.STATES.size();
+        int nStructure = Structures.STATES.size();
         for (int i = 0; i < nStructure; i++) {
             BlockState s = structure(4 * i);
             if (!allowed(s)) {
@@ -629,7 +660,7 @@ public final class Palette {
         if (natural == null || natural.isAir() || !allowed(natural)) {
             return GRASS;
         }
-        if (natural.is(net.minecraft.tags.BlockTags.ICE)) {
+        if (natural.is(BlockTags.ICE)) {
             // frozen water is not a slope surface
             return Blocks.SNOW_BLOCK.defaultBlockState();
         }

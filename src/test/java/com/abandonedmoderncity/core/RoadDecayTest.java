@@ -3,6 +3,7 @@ package com.abandonedmoderncity.core;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 import org.junit.jupiter.api.Test;
@@ -99,7 +100,7 @@ class RoadDecayTest {
                 }
             }
         }
-        System.out.println("[RoadDecayTest] lane variants " + java.util.Arrays.toString(lane) + ", worn marks " + worn + "/" + marks);
+        System.out.println("[RoadDecayTest] lane variants " + Arrays.toString(lane) + ", worn marks " + worn + "/" + marks);
         // polished deepslate stays the most common; every variant shows up
         for (int v = 1; v < lane.length; v++) {
             assertTrue(lane[v] > 0 && lane[v] < lane[0], "variant " + v);

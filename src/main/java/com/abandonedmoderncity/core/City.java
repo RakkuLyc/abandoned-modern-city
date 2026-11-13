@@ -2,6 +2,7 @@ package com.abandonedmoderncity.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -251,7 +252,7 @@ public final class City {
             // the two corners), never the same crossing twice
             List<Exit> picked = new ArrayList<>();
             List<Integer> dirs = new ArrayList<>(List.of(Exit.WEST, Exit.EAST, Exit.NORTH, Exit.SOUTH));
-            dirs.sort(java.util.Comparator.comparingLong(d -> Hash.of(seed, 0x45584FL, d)));
+            dirs.sort(Comparator.comparingLong(d -> Hash.of(seed, 0x45584FL, d)));
             for (int dir : dirs) {
                 List<Exit> c = new ArrayList<>();
                 for (Exit e : ex) {
@@ -264,7 +265,7 @@ public final class City {
                     }
                 }
                 if (!c.isEmpty()) {
-                    c.sort(java.util.Comparator.comparingLong(e -> Hash.of(seed, 0x455854L, Cache.key(e.i(), e.j()))));
+                    c.sort(Comparator.comparingLong(e -> Hash.of(seed, 0x455854L, Cache.key(e.i(), e.j()))));
                     picked.add(c.get(0));
                 }
             }
@@ -826,7 +827,7 @@ public final class City {
             return null;
         }
         int[] p = new int[LAMP_TOP + 1];
-        java.util.Arrays.fill(p, BlockCode.KEEP);
+        Arrays.fill(p, BlockCode.KEEP);
         int v = h.lampVariant;
         int[] post;
         int slab;
@@ -1103,7 +1104,7 @@ public final class City {
     private List<Lot> blockLots(int bi, int bj, int x0, int z0, int x1, int z1) {
         long rs = Hash.of(seed, 0x52494E47L, bi, bj);
         List<Lot> ring = rings().getOrDefault(Cache.key(bi, bj), List.of());
-        List<Lot> out = new java.util.ArrayList<>(ring);
+        List<Lot> out = new ArrayList<>(ring);
         if (parkBlock(bi, bj)) {
             // the park in a corner of the block, the structures along the two other streets (asked by the user)
             int[] p = parkRect(new int[]{x0, z0, x1, z1}, rs);

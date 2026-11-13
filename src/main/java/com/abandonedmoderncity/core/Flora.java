@@ -1,5 +1,6 @@
 package com.abandonedmoderncity.core;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,7 +64,7 @@ public final class Flora {
             int n = side();
             int ny = height + 2;
             byte[] d = new byte[n * n * ny];
-            java.util.ArrayDeque<int[]> q = new java.util.ArrayDeque<>();
+            ArrayDeque<int[]> q = new ArrayDeque<>();
             for (int dy = 1; dy <= height; dy++) {
                 q.add(new int[]{0, dy, 0, 0});
             }

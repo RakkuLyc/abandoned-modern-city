@@ -7,10 +7,14 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HexFormat;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.junit.jupiter.api.Test;
@@ -62,7 +66,7 @@ class FingerprintTest {
     private final Map<String, Digest> digests = new LinkedHashMap<>();
     private final Map<String, Long> counts = new TreeMap<>();
     /** Lots met in the chunk plans (by identity), to count them once. */
-    private final java.util.Set<Lot> seenLots = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+    private final Set<Lot> seenLots = Collections.newSetFromMap(new IdentityHashMap<>());
 
     @Test
     void plannerOutputIsUnchanged() {
@@ -497,7 +501,7 @@ class FingerprintTest {
         counts.merge(k, n, Long::sum);
     }
 
-    private static final Map<Integer, byte[]> STATE_BYTES = new java.util.HashMap<>();
+    private static final Map<Integer, byte[]> STATE_BYTES = new HashMap<>();
 
     /** A block code: structure blocks as their state string and rotation, fountain blocks as their state string. */
     private static void code(Digest d, int code) {

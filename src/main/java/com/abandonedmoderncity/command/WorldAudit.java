@@ -2,18 +2,31 @@ package com.abandonedmoderncity.command;
 
 import com.abandonedmoderncity.core.BlockCode;
 import com.abandonedmoderncity.core.ChunkPlan;
+import com.abandonedmoderncity.core.City;
 import com.abandonedmoderncity.core.Lot;
+import com.abandonedmoderncity.core.Params;
 import com.abandonedmoderncity.core.PlanAudit;
 import com.abandonedmoderncity.core.Profile;
+import com.abandonedmoderncity.core.RoadDecay;
 import com.abandonedmoderncity.core.WorldPlan;
+import com.abandonedmoderncity.gen.Overhangs;
 import com.abandonedmoderncity.gen.Palette;
 import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.RandomizableContainer;
+import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.VineBlock;
+import net.minecraft.world.level.block.entity.BannerBlockEntity;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -60,13 +73,13 @@ public final class WorldAudit {
         double[] walk = new double[w * d];
         boolean[] drivable = new boolean[w * d];
         boolean[] city = new boolean[w * d];
-        java.util.Arrays.fill(walk, Double.NaN);
+        Arrays.fill(walk, Double.NaN);
         BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
         for (int cz = cz0; cz <= cz1; cz++) {
             for (int cx = cx0; cx <= cx1; cx++) {
                 LevelChunk chunk = level.getChunk(cx, cz);
                 ChunkPlan cp = plan.chunk(cx, cz);
-                java.util.Map<Long, BlockState> crowns = com.abandonedmoderncity.gen.Overhangs.forChunk(plan, cx, cz);
+                Map<Long, BlockState> crowns = Overhangs.forChunk(plan, cx, cz);
                 for (int lz = 0; lz < 16; lz++) {
                     for (int lx = 0; lx < 16; lx++) {
                         int i = ChunkPlan.idx(lx, lz);
@@ -91,10 +104,10 @@ public final class WorldAudit {
                 }
                 containers(r, chunk, cp);
                 // the leaves completing the crowns a structure's edge cut: placed where there was air
-                for (java.util.Map.Entry<Long, BlockState> e : crowns.entrySet()) {
+                for (Map.Entry<Long, BlockState> e : crowns.entrySet()) {
                     BlockPos b = BlockPos.of(e.getKey());
                     BlockState s = chunk.getBlockState(b);
-                    if (s.is(net.minecraft.tags.BlockTags.LEAVES)) {
+                    if (s.is(BlockTags.LEAVES)) {
                         r.stat("crown_leaves", 1);
                     } else if (s.isAir()) {
                         r.fail("crown_leaf_missing", b.toShortString() + " expected " + id(e.getValue()));
@@ -146,7 +159,7 @@ public final class WorldAudit {
         if (Palette.exempt(s) || !s.getFluidState().isEmpty()) {
             return false;
         }
-        float h = s.getDestroySpeed(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+        float h = s.getDestroySpeed(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
         return h < 0;
     }
 
@@ -163,7 +176,7 @@ public final class WorldAudit {
     }
 
     private static double road(PlanAudit.Report r, WorldPlan plan, LevelChunk c, ChunkPlan cp, int i, int x, int z,
-                               BlockPos.MutableBlockPos p, java.util.Map<Long, BlockState> crowns) {
+                               BlockPos.MutableBlockPos p, Map<Long, BlockState> crowns) {
         int h2 = cp.h2[i];
         boolean slab = ChunkPlan.isSlab(h2);
         int ys = ChunkPlan.surfaceY(h2);
@@ -185,7 +198,7 @@ public final class WorldAudit {
             return Double.NaN;
         }
         BlockState surface = at(c, p, x, ys, z);
-        int decay = com.abandonedmoderncity.core.RoadDecay.surface(plan.seed, x, z, zone, st, slab);
+        int decay = RoadDecay.surface(plan.seed, x, z, zone, st, slab);
         BlockState expected = Palette.roadSurfaceAt(plan.seed, x, z, zone, st, slab);
         if (decay != BlockCode.KEEP) {
             r.stat("taken_road_columns", 1);
@@ -211,7 +224,7 @@ public final class WorldAudit {
         // a column that is not drivable carries a wall (a street light post is checked above, by street_light)
         if (!cp.drivable(i) && (cp.flags[i] & ChunkPlan.F_POLE) == 0) {
             BlockState w = at(c, p, x, ys + 1, z);
-            boolean gap = st == Profile.BRIDGE && com.abandonedmoderncity.core.RoadDecay.wallGap(plan.seed, x, z);
+            boolean gap = st == Profile.BRIDGE && RoadDecay.wallGap(plan.seed, x, z);
             if (gap) {
                 // a fallen stretch of a bridge wall
                 r.stat("wall_gap_columns", 1);
@@ -227,14 +240,14 @@ public final class WorldAudit {
         if ((cp.flags[i] & ChunkPlan.F_POLE) == 0 && (Double.isNaN(m) || Math.abs(m - h2 / 2.0) > 1e-6)) {
             r.fail("height_mismatch", where + " plan " + h2 / 2.0 + " world " + m);
         }
-        int free = tunnel ? com.abandonedmoderncity.core.Params.CLEARANCE : 4;
+        int free = tunnel ? Params.CLEARANCE : 4;
         // the street light of the column (post, arm, lamp, vines): planned there, checked whole
         int[] lamp = Palette.lampParts(cp, i, x, z);
         if (lamp != null && lamp[1] != BlockCode.KEEP) {
             // no plant under a street light standing on the column
             decay = BlockCode.KEEP;
         }
-        for (int y = ys + 1; y <= ys + com.abandonedmoderncity.core.City.LAMP_TOP; y++) {
+        for (int y = ys + 1; y <= ys + City.LAMP_TOP; y++) {
             BlockState want = Palette.lampBlock(lamp, y - ys);
             if (want != null) {
                 BlockState s = at(c, p, x, y, z);
@@ -251,7 +264,7 @@ public final class WorldAudit {
                 continue;
             }
             int plant = decay == BlockCode.KEEP ? BlockCode.KEEP
-                    : com.abandonedmoderncity.core.RoadDecay.plant(plan.seed, x, z, y - ys, decay);
+                    : RoadDecay.plant(plan.seed, x, z, y - ys, decay);
             if (plant != BlockCode.KEEP) {
                 // the plan's own plant on a taken-over column (no collision)
                 if (s.getBlock() != Palette.of(plant, 0, null).getBlock()) {
@@ -288,13 +301,13 @@ public final class WorldAudit {
                     // a vine or the leaves of a street light (checked above, by street_light)
                     continue;
                 }
-                if (crowns.containsKey(BlockPos.asLong(x, y, z)) && s.is(net.minecraft.tags.BlockTags.LEAVES)) {
+                if (crowns.containsKey(BlockPos.asLong(x, y, z)) && s.is(BlockTags.LEAVES)) {
                     // a crown of a structure's tree completed over the sidewalk, high over it
                     continue;
                 }
-                if (!s.isAir() && (s.is(net.minecraft.tags.BlockTags.LEAVES) || s.is(net.minecraft.tags.BlockTags.LOGS)
-                        || s.getBlock() instanceof net.minecraft.world.level.block.BushBlock
-                        || s.getBlock() instanceof net.minecraft.world.level.block.VineBlock)) {
+                if (!s.isAir() && (s.is(BlockTags.LEAVES) || s.is(BlockTags.LOGS)
+                        || s.getBlock() instanceof BushBlock
+                        || s.getBlock() instanceof VineBlock)) {
                     r.fail("vegetation_over_road", x + "," + y + "," + z + " " + id(s));
                 }
             }
@@ -317,7 +330,7 @@ public final class WorldAudit {
 
     /** Constants shared with the builder. */
     private static final class Params6 {
-        static final int CEILING = com.abandonedmoderncity.core.Params.CLEARANCE + 1;
+        static final int CEILING = Params.CLEARANCE + 1;
     }
 
     private static void tunnelWall(PlanAudit.Report r, LevelChunk c, ChunkPlan cp, int i, int x, int z, BlockPos.MutableBlockPos p) {
@@ -383,7 +396,7 @@ public final class WorldAudit {
         for (BlockEntity be : c.getBlockEntities().values()) {
             BlockPos bp = be.getBlockPos();
             int i = ChunkPlan.idx(bp.getX() & 15, bp.getZ() & 15);
-            boolean loot = be instanceof net.minecraft.world.RandomizableContainer rc && rc.getLootTable() != null;
+            boolean loot = be instanceof RandomizableContainer rc && rc.getLootTable() != null;
             boolean container = be instanceof BaseContainerBlockEntity;
             if (loot) {
                 r.stat("loot_containers_anywhere", 1);
@@ -406,15 +419,15 @@ public final class WorldAudit {
                 // a block entity of a building structure: its containers carry the structure's loot table, its banners
                 // the design saved in the template
                 r.stat("structure_block_entities", 1);
-                java.util.List<String[]> design = cp.lot[i].bannerAt(bp.getX(), bp.getY(), bp.getZ(), cp.h2[i] / 2 - 1);
+                List<String[]> design = cp.lot[i].bannerAt(bp.getX(), bp.getY(), bp.getZ(), cp.h2[i] / 2 - 1);
                 if (design != null) {
                     r.stat("structure_banners", 1);
-                    if (!(be instanceof net.minecraft.world.level.block.entity.BannerBlockEntity bb)
+                    if (!(be instanceof BannerBlockEntity bb)
                             || bb.getPatterns().layers().size() != design.size()) {
                         r.fail("banner_without_design", bp.toShortString() + " " + id(c.getBlockState(bp)));
                     }
                 }
-                if (be instanceof net.minecraft.world.RandomizableContainer rc) {
+                if (be instanceof RandomizableContainer rc) {
                     r.stat("structure_loot_containers", 1);
                     boolean hard = cp.lot[i].hardAt(bp.getX(), bp.getY(), bp.getZ(), cp.h2[i] / 2 - 1);
                     if (hard) {

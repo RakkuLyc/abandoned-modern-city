@@ -1,7 +1,10 @@
 package com.abandonedmoderncity.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A park filling a whole block: grass with weeds and flowers, trees, dirt paths 3 wide (with gaps) in one of two
@@ -67,7 +70,7 @@ public final class Park {
     private final int armSense;
     final Flora.Trees trees;
     /** Benches: column (x, z) -> its block code one above the ground ({@link #benches}). */
-    final java.util.Map<Long, Integer> benches;
+    final Map<Long, Integer> benches;
     private int benchSites;
 
     Park(int x0, int z0, int x1, int z1, long seed) {
@@ -107,10 +110,10 @@ public final class Park {
      * per {@link #BENCH_EVERY} blocks of path, {@link #BENCH_APART}+ apart, never on a path, the fountain's ring, a
      * trunk or under a crown; {@link #BENCH_BROKEN} of them broken.
      */
-    private java.util.Map<Long, Integer> benches() {
-        java.util.Map<Long, Integer> out = new java.util.HashMap<>();
+    private Map<Long, Integer> benches() {
+        Map<Long, Integer> out = new HashMap<>();
         int pathCells = 0;
-        java.util.List<int[]> sites = new java.util.ArrayList<>();
+        List<int[]> sites = new ArrayList<>();
         for (int z = z0; z <= z1; z++) {
             for (int x = x0; x <= x1; x++) {
                 if (path(x, z)) {
@@ -140,7 +143,7 @@ public final class Park {
         int want = Math.max(1, (int) Math.round(pathCells / 3.0 / BENCH_EVERY));
         sites.sort((p, q) -> Long.compare(Hash.of(seed, 0x42454EL, p[0], p[1] * 4L + p[2]),
                 Hash.of(seed, 0x42454EL, q[0], q[1] * 4L + q[2])));
-        java.util.List<int[]> chosen = new java.util.ArrayList<>();
+        List<int[]> chosen = new ArrayList<>();
         for (int[] s : sites) {
             if (chosen.size() >= want) {
                 break;
@@ -381,7 +384,7 @@ public final class Park {
     private static int[] vineFaces() {
         Template t = Template.WATERFALL;
         int[] out = new int[t.sx * t.sy * t.sz];
-        java.util.Arrays.fill(out, -1);
+        Arrays.fill(out, -1);
         int[][] d = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
         for (int y = 1; y < t.sy; y++) {
             for (int z = 0; z < t.sz; z++) {

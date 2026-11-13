@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -45,7 +46,7 @@ class WeatheringTest {
             assertEquals(raw.sz, t.sz);
             assertEquals(raw.banners, t.banners, d.name() + " banners");
             // the box of the structure (every block but air and structure void) does not change
-            assertEquals(java.util.Arrays.toString(box(raw)), java.util.Arrays.toString(box(t)), d.name() + " box");
+            assertEquals(Arrays.toString(box(raw)), Arrays.toString(box(t)), d.name() + " box");
             int changed = 0;
             for (int y = 0; y < t.sy; y++) {
                 for (int z = 0; z < t.sz; z++) {
@@ -150,7 +151,7 @@ class WeatheringTest {
         int walls = 0;
         int vines = 0;
         int[] roof = new int[t.sx * t.sz];
-        java.util.Arrays.fill(roof, -1);
+        Arrays.fill(roof, -1);
         for (int y = 0; y < t.sy; y++) {
             for (int z = 0; z < t.sz; z++) {
                 for (int x = 0; x < t.sx; x++) {

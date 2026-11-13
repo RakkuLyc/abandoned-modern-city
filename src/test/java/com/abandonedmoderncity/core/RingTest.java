@@ -8,9 +8,12 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import org.junit.jupiter.api.Test;
 
 /** The structures (rotation, boxes, block codes) and the ring of them around a block. */
@@ -256,8 +259,8 @@ class RingTest {
     void spawnLimitsHoldOverACity() {
         assumeFalse(Structures.ALL.isEmpty(), "no structures");
         for (long seed = 0; seed < 300; seed++) {
-            java.util.Map<String, Integer> used = new java.util.HashMap<>();
-            java.util.Map<String, Integer> seen = new java.util.HashMap<>();
+            Map<String, Integer> used = new HashMap<>();
+            Map<String, Integer> seen = new HashMap<>();
             // four blocks of one city, one after the other
             for (int b = 0; b < 4; b++) {
                 for (Lot l : Ring.lots(0, 0, 179, 119, Hash.of(seed, 11L, b), used)) {
@@ -464,7 +467,7 @@ class RingTest {
     @Test
     void everyStructureHasASpawnCategory() {
         assumeFalse(Structures.ALL.isEmpty(), "no structures");
-        java.util.Map<String, Integer> n = new java.util.TreeMap<>();
+        Map<String, Integer> n = new TreeMap<>();
         for (Structures.Def d : Structures.ALL) {
             assertTrue(Arrays.asList(Structures.CATEGORIES).contains(d.category()), d.name() + " category " + d.category());
             n.merge(d.category(), 1, Integer::sum);
@@ -472,7 +475,7 @@ class RingTest {
         System.out.println("[RingTest] spawn categories: " + n);
         assertEquals("predio", Structures.ALL.stream().filter(d -> d.name().equals("predio_largo_abandonado")).findFirst().orElseThrow().category());
         assertEquals("posto", Structures.ALL.stream().filter(d -> d.name().equals("posto_pequeno_azul")).findFirst().orElseThrow().category());
-        assertEquals(java.util.Map.of("casa", 12, "delegacia", 1, "especial", 1, "farmacia", 10, "oficina", 8, "posto", 10,
+        assertEquals(Map.of("casa", 12, "delegacia", 1, "especial", 1, "farmacia", 10, "oficina", 8, "posto", 10,
                 "predio", 10), n);
     }
 

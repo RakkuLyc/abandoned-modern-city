@@ -3,11 +3,13 @@ package com.abandonedmoderncity.command;
 import com.abandonedmoderncity.AMCSimple;
 import com.abandonedmoderncity.core.City;
 import com.abandonedmoderncity.core.Highway;
+import com.abandonedmoderncity.core.NetworkStats;
 import com.abandonedmoderncity.core.PlanAudit;
 import com.abandonedmoderncity.core.PlanRender;
 import com.abandonedmoderncity.core.Profile;
 import com.abandonedmoderncity.core.WorldPlan;
 import com.abandonedmoderncity.gen.CityFeature;
+import com.abandonedmoderncity.gen.McTerrain;
 import com.abandonedmoderncity.gen.Palette;
 import com.abandonedmoderncity.gen.Plans;
 import java.io.File;
@@ -84,7 +86,7 @@ public final class SelfTest {
         String scope = System.getProperty("amcs.selftest.scope", "full");
         targets = pickTargets(plan, scope);
         report.append("planning the targets took ").append(System.currentTimeMillis() - started).append(" ms, ")
-                .append(com.abandonedmoderncity.gen.McTerrain.SAMPLES.get()).append(" terrain samples\n");
+                .append(McTerrain.SAMPLES.get()).append(" terrain samples\n");
         report.append("targets: ").append(targets.size()).append(" (scope ").append(scope).append(")\n");
         for (Target t : targets) {
             report.append("  ").append(t.name).append(" chunk ").append(t.cx).append(',').append(t.cz).append(" r=").append(t.r).append('\n');
@@ -96,7 +98,7 @@ public final class SelfTest {
             report.append("network render failed: ").append(e).append('\n');
         }
         // how well the cities around spawn are linked (6 x 6 cells)
-        com.abandonedmoderncity.core.NetworkStats ns = com.abandonedmoderncity.core.NetworkStats.of(plan, -3, -3, 2, 2);
+        NetworkStats ns = NetworkStats.of(plan, -3, -3, 2, 2);
         report.append("network around spawn: ").append(ns).append('\n');
         index = -1;
         nextTarget(level);
@@ -352,12 +354,12 @@ public final class SelfTest {
         int errors = CityFeature.ERRORS.get();
         long chunks = CityFeature.CHUNKS.get();
         report.append("\ngeneration errors: ").append(errors).append('\n');
-        report.append("village creatures removed from cities: ").append(com.abandonedmoderncity.gen.Plans.villageMobsRemoved()).append('\n');
+        report.append("village creatures removed from cities: ").append(Plans.villageMobsRemoved()).append('\n');
         report.append("chunks through the feature: ").append(chunks).append(", mean ")
                 .append(chunks == 0 ? 0 : String.format("%.2f", CityFeature.NANOS.get() / 1e6 / chunks)).append(" ms per chunk\n");
-        long samples = com.abandonedmoderncity.gen.McTerrain.SAMPLES.get();
+        long samples = McTerrain.SAMPLES.get();
         report.append("terrain noise samples for planning: ").append(samples).append(", ")
-                .append(String.format("%.1f", com.abandonedmoderncity.gen.McTerrain.NANOS.get() / 1e9)).append(" s in total\n");
+                .append(String.format("%.1f", McTerrain.NANOS.get() / 1e9)).append(" s in total\n");
         report.append("total time: ").append((System.currentTimeMillis() - started) / 1000).append(" s\n");
         if (errors > 0) {
             failures++;
