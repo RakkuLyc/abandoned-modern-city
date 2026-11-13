@@ -1,367 +1,374 @@
-# Testes — cidades, vias, pontes, túneis e rodovias
+# Tests — cities, roads, bridges, tunnels and highways
 
-Este documento registra:
-- como o mod é testado e o que cada teste verifica;
-- os problemas encontrados e as correções (seção 3);
-- os números das últimas rodadas (seções 5 e 6).
+This document records:
+- how the mod is tested and what each test checks;
+- the problems found and their fixes (section 3);
+- the numbers of the latest runs (sections 5 and 6).
 
-A especificação que os testes conferem está em `CLAUDE.md`.
+The specification the tests check is in `CLAUDE.md`.
 
-## 1. Três camadas de teste
+## 1. Three layers of tests
 
-| Camada | Onde | O que usa | Quando rodar |
+| Layer | Where | What it uses | When to run it |
 |---|---|---|---|
-| Unitária (JUnit) | `src/test/java/.../core` | planejador puro + 7 terrenos sintéticos × 3 seeds | `./gradlew test` (também no `build`; ~2 min) |
-| Plano com terreno real | `core/PlanAudit`, no jogo | ruído de terreno do Minecraft (`getBaseHeight`) | `/amcs plan [raio]` e na bateria |
-| Blocos gerados | `command/WorldAudit`, no jogo | os chunks realmente gerados pelo servidor | `/amcs audit [raio]` e na bateria |
+| Unit (JUnit) | `src/test/java/.../core` | the pure planner + 7 synthetic terrains × 3 seeds | `./gradlew test` (also in `build`; ~2 min) |
+| Plan on real terrain | `core/PlanAudit`, in game | Minecraft's terrain noise (`getBaseHeight`) | `/amcs plan [radius]` and in the battery |
+| Generated blocks | `command/WorldAudit`, in game | the chunks the server really generated | `/amcs audit [radius]` and in the battery |
 
-Para gerar só o jar, sem os testes, use `./gradlew build -x test`.
+To build only the jar, without the tests, use `./gradlew build -x test`.
 
-### Impressão digital (mudanças que não devem alterar o mundo)
+### Fingerprint (changes that must not alter the world)
 
-Duas conferências guardam o mundo gerado numa revisão do código (desde 12 nov 2026):
-- **`FingerprintTest` (unitário):** um SHA-256 por parte do que o planejador entrega à camada do jogo, nos 7
-  terrenos sintéticos com seeds fixas. As partes:
-  - `layout`: as 1 129 cidades das 7 × 3 combinações e os lotes de cada quarteirão;
-  - `highways`: as 2 013 rodovias (pontos, perfil, pontes, túneis, buracos);
-  - `village`: a área sem criaturas de vila em volta de cada cidade;
-  - `chunks`: o plano de cada coluna de 31 214 chunks, em volta de 2 cidades e ao longo de 1 rodovia por terreno;
-  - `lots`: nesses chunks, o código de bloco de cada coluna de lote em todas as alturas, com o acesso do loot e o
-    desenho dos banners;
-  - `roads`: superfícies gastas, plantas, pedras e muros das pontes, vinhas;
-  - `lamps`: as peças dos postes;
-  - `crowns`: as folhas das copas completadas;
-  - `structures`: as 52 estruturas nas 4 rotações, célula a célula, com aberturas, acesso, banners e folhas de fora;
-  - `weathering`: o que o abandono acrescentou a cada estrutura;
-  - `benches`: os bancos dos parques do terreno plano.
+Two checks keep the generated world through a code review (since 12 Nov 2026):
+- **`FingerprintTest` (unit):** a SHA-256 per part of what the planner hands to the game layer, on the 7 synthetic
+  terrains with fixed seeds. The parts:
+  - `layout`: the 1,129 cities of the 7 × 3 combinations and the lots of each block;
+  - `highways`: the 2,013 highways (points, profile, bridges, tunnels, holes);
+  - `village`: the area without village creatures around each city;
+  - `chunks`: the plan of each column of 31,214 chunks, around 2 cities and along 1 highway per terrain;
+  - `lots`: in those chunks, the block code of each lot column at every height, with the loot access and the banner
+    designs;
+  - `roads`: worn surfaces, plants, stones and walls of the bridges, vines;
+  - `lamps`: the parts of the street lights;
+  - `crowns`: the leaves of the completed crowns;
+  - `structures`: the 52 structures in the 4 rotations, cell by cell, with openings, access, banners and outside
+    leaves;
+  - `weathering`: what the overgrowth added to each structure;
+  - `benches`: the park benches of the flat terrain.
 
-  Os valores esperados ficam no próprio teste (código do commit `4dd94ae`; `layout`, `structures` e `weathering`, que
-  guardam os nomes das estruturas, desde os nomes em inglês, achado 66). Um bloco de estrutura entra pelo texto
-  do estado e pela rotação, não pelo índice na lista de estados. O teste também confere uma cobertura mínima, para
-  não passar com um plano vazio. Sensibilidade conferida em 12 nov: mudar `StreetLights.LAMP_EVERY` (então `City.LAMP_EVERY`), `RoadDecay.PATCH`,
-  `Park.BENCH_EVERY`, `Weathering.VINES`, `Ring.GAP_MIN`, `Highway.DEADBAND` ou a margem das vilas muda as partes
-  certas, e cada uma das 11 partes muda com alguma dessas mudanças.
-- **`mod blocks:` na bateria:** por alvo, um SHA-256 dos blocos que o mod decide no mundo gerado
-  (`command/WorldFingerprint`), nas posições que o `WorldAudit` compara com o plano:
-  - nas vias, a superfície e o bloco de baixo, o ar ou as plantas acima, os postes, o teto dos túneis e os pilares;
-  - as paredes dos túneis;
-  - nos lotes, todo bloco que o plano define, menos os códigos que a auditoria também pula (nada planejado, grama,
-    grama baixa e tapete de musgo);
-  - as folhas planejadas das copas completadas;
-  - os block entities das estruturas, camadas enterradas incluídas (loot table e semente, desenho dos banners). Os
-    outros ficam de fora: o baú vazio da fonte do parque, por exemplo, só aparece no chunk depois que ele é salvo e
-    carregado de novo (falta num mundo recém-gerado e está lá depois de recarregar).
+  The expected values are in the test itself (code of commit `4dd94ae`; `layout`, `structures` and `weathering`, which
+  hold the structure names, since the English names, finding 66). A structure block goes in by the text of its state
+  and its rotation, not by its index in the list of states. The test also checks a minimum coverage, so it cannot
+  pass with an empty plan. Sensitivity checked on 12 Nov: changing `StreetLights.LAMP_EVERY` (then
+  `City.LAMP_EVERY`), `RoadDecay.PATCH`, `Park.BENCH_EVERY`, `Weathering.VINES`, `Ring.GAP_MIN`, `Highway.DEADBAND` or
+  the village margin changes the right parts, and each of the 11 parts changes with one of these changes.
+- **`mod blocks:` in the battery:** per target, a SHA-256 of the blocks the mod decides in the generated world
+  (`command/WorldFingerprint`), at the positions `WorldAudit` compares with the plan:
+  - on the roads, the surface and the block under it, the air or the plants above, the street lights, the ceiling of
+    the tunnels and the pillars;
+  - the walls of the tunnels;
+  - in the lots, every block the plan defines, except the codes the audit also skips (nothing planned, grass, short
+    grass and moss carpet);
+  - the planned leaves of the completed crowns;
+  - the block entities of the structures, buried layers included (loot table and seed, banner designs). The others
+    are left out: the empty chest of the park fountain, for example, only shows up in the chunk after it has been
+    saved and loaded again (missing in a freshly generated world and there after a reload).
 
-  O resto do mundo fica de fora, porque o Minecraft vanilla não gera igual de uma rodada para outra (achado 64).
-  Algumas propriedades o Minecraft recalcula pelos vizinhos ao terminar um chunk, e o resultado depende de o chunk
-  vizinho já existir ou não; elas entram com valor fixo: a distância das folhas, a forma das escadas, as ligações de
-  barras, vidraças e cercas, a neve sobre a grama (`snowy`), o lado de muro ligado baixo ou alto (`low`/`tall`; ligado
-  ou não continua contando) e as faces das vinhas nas colunas da borda do chunk; `cave_air` conta como ar. O arquivo
-  `renders/tNN_blocks.txt`, ao lado do relatório, traz um resumo por chunk (vias, lotes, resto) e por coluna, para
-  achar onde duas rodadas diferem.
+  The rest of the world is left out, because vanilla Minecraft does not generate the same from one run to the next
+  (finding 64). Minecraft recomputes some properties from the neighbours when it finishes a chunk, and the result
+  depends on whether the neighbouring chunk exists yet; they go in with a fixed value: the distance of leaves, the
+  shape of stairs, the connections of bars, panes and fences, the snow on grass (`snowy`), a wall side connected low
+  or tall (`low`/`tall`; connected or not still counts) and the faces of vines in the columns at the edge of the
+  chunk; `cave_air` counts as air. The file `renders/tNN_blocks.txt`, next to the report, holds a summary per chunk
+  (roads, lots, rest) and per column, to find where two runs differ.
 
-Numa mudança que não deve alterar o mundo, o teste passa, e as linhas `mod blocks:` e as contagens `stats:` da
-bateria ficam iguais às da referência (seção 6). A exceção é `loot_containers_anywhere`, que conta também os baús do
-vanilla, que variam. Um commit que mude o mundo de propósito atualiza os valores esperados do teste e a referência
-da bateria, e diz isso.
+In a change that must not alter the world, the test passes, and the `mod blocks:` lines and the `stats:` counts of
+the battery stay equal to the reference (section 6). The exception is `loot_containers_anywhere`, which also counts
+the vanilla chests, which vary. A commit that changes the world on purpose updates the expected values of the test
+and the battery reference, and says so.
 
-Com o abandono das estruturas desligado (`structureOvergrowth = false`) as estruturas mudam, então a referência é
-outra: a da bateria rápida com essa opção (seção 6). Para tirá-la, troque a linha em
-`run/config/abandonedmoderncity-common.toml`, rode `-PselfTestScope=quick` e volte a linha depois.
+With the structure overgrowth switched off (`structureOvergrowth = false`) the structures change, so the reference is
+another one: that of the quick battery with this option (section 6). To take it, change the line in
+`run/config/abandonedmoderncity-common.toml`, run `-PselfTestScope=quick` and put the line back afterwards.
 
-O que a impressão da bateria não cobre: as vinhas penduradas nas pontes (achado 65: o lugar delas depende de uma
-árvore do vanilla chegar antes), o aterro sob as vias, os taludes e a vedação de líquidos. Numa mudança que só move
-código de lugar (passo 3 da revisão), a prova para essas partes é comparar a listagem de instruções (`javap -c -p`)
-de cada função movida, antes e depois: o corpo tem de ser o mesmo.
+What the battery fingerprint does not cover: the vines hanging from the bridges (finding 65: where they go depends on
+a vanilla tree getting there first), the fill under the roads, the slopes and the liquid sealing. In a change that
+only moves code (step 3 of the review), the proof for these parts is to compare the bytecode listing
+(`javap -c -p`) of each moved method, before and after: the body must be the same.
 
-A **bateria automática** (`tools/selftest.sh`) faz, para cada seed:
-1. cria um mundo novo num servidor dedicado de desenvolvimento (porta 25591);
-2. escolhe os alvos a partir da própria rede planejada;
-3. gera os chunks;
-4. roda as duas auditorias em cada alvo e grava PNGs;
-5. para o servidor.
+The **automatic battery** (`tools/selftest.sh`) does, for each seed:
+1. creates a new world on a dedicated development server (port 25591);
+2. picks the targets from the planned network itself;
+3. generates the chunks;
+4. runs both audits on each target and writes PNGs;
+5. stops the server.
 
-Alvos por seed:
+Targets per seed:
 
-| Alvo | `quick` | `full` |
+| Target | `quick` | `full` |
 |---|---|---|
-| cidade mais próxima do spawn (inteira, com os taludes) | ✓ | ✓ |
-| cidade mais alta entre as 16 mais próximas | | ✓ |
-| cidade costeira (água a até 96 blocos da área de influência) | | ✓ |
-| cidade de terreno mais acidentado | | ✓ |
-| o túnel mais longo (com as aproximações) | ✓ | ✓ |
-| a ponte mais longa sobre água | ✓ | ✓ |
-| o viaduto seco mais longo | | ✓ |
-| a rampa contínua mais longa | | ✓ |
-| uma rodovia inteira (a mais curta que cabe na área) | | ✓ |
+| the city nearest to the spawn (whole, with the slopes) | ✓ | ✓ |
+| the highest city among the 16 nearest | | ✓ |
+| a coastal city (water up to 96 blocks from the area of influence) | | ✓ |
+| the city on the roughest terrain | | ✓ |
+| the longest tunnel (with its approaches) | ✓ | ✓ |
+| the longest bridge over water | ✓ | ✓ |
+| the longest dry viaduct | | ✓ |
+| the longest continuous ramp | | ✓ |
+| a whole highway (the shortest that fits the area) | | ✓ |
 
-Alvos repetidos (a mesma cidade em dois critérios) entram uma vez só. Seeds fixas: `20261027`,
-`-3297019724594858492`, `3478477863671517581` e `1`.
+Repeated targets (the same city under two criteria) go in only once. Fixed seeds: `20261027`,
+`-3297019724594858492`, `3478477863671517581` and `1`.
 
-### Terrenos sintéticos (testes unitários)
+### Synthetic terrains (unit tests)
 
-- `FLAT` (plano), `HILLS` (colinas ±16) e `MOUNTAINS` (montanhas até ~220).
-- `ISLANDS` (ilhas e mar) e `MIXED` (cristas + vales + rios).
-- `CANYONS` (planalto cortado por cânions estreitos abaixo do nível do mar).
-- `RIVERS` (terra ondulada cortada por rios e salpicada de lagos, como o overworld real perto das seeds da bateria).
+- `FLAT` (flat), `HILLS` (hills ±16) and `MOUNTAINS` (mountains up to ~220).
+- `ISLANDS` (islands and sea) and `MIXED` (ridges + valleys + rivers).
+- `CANYONS` (a plateau cut by narrow canyons below sea level).
+- `RIVERS` (rolling land cut by rivers and dotted with lakes, like the real overworld near the battery seeds).
 
-Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa área de 9 × 9 células de 736
-(~18 000 × 18 000 blocos).
+Each terrain runs with the seeds `20261104`, `-3297019724594858492` and `42`, on an area of 9 × 9 cells of 736
+(~18,000 × 18,000 blocks).
 
-## 2. O que é verificado
+## 2. What is checked
 
-### Unitários (46 testes)
+### Unit (46 tests)
 
-| Teste | Verifica |
+| Test | Checks |
 |---|---|
-| `ProfileTest.profilesAreFlatOrRampAndJoinTheCities` | 4 000 perfis aleatórios (com penhascos): começa e termina no nível de cada cidade, 48 blocos planos nas pontas, variação ≤ 1/8 de bloco por bloco, trechos planos sempre em altura inteira, nunca abaixo do mínimo, superfície (meio-bloco) nunca muda mais de 0,5 entre vizinhos |
-| `ProfileTest.halfBlockStepsAreEvenlySpaced` | numa subida, os degraus de meia-laje ficam a pelo menos 4 blocos um do outro |
-| `ProfileTest.classificationRunsAreClean` | 2 000 perfis: junções sempre no chão, túneis ≥ 16, pontes secas ≥ 8, toda água fora das junções é ponte |
-| `WorldPlanTest.villageCreaturesAreRemovedInTheCityAndItsMargin` | em 30 cidades: o centro conta como cidade; andando do centro para fora, a área vale até 32 blocos (±1) depois da última coluna de rua ou lote e não vale mais longe |
-| `WorldPlanTest.parkBenchesSitOnTheEdgeOfThePathsFacingThem` | nos 30 parques do terreno plano: todo assento com a trilha na frente e sem trilha atrás; todo braço com o painel encostado num assento; nenhum banco sobre a trilha; nada cresce através do banco (só copa alta); bancos a 8+ um do outro; todo parque com banco; 565 bancos, 1 018 assentos, 1 a cada 18,6 blocos de trilha |
-| `WorldPlanTest.streetLightsStandOnTheSidewalksWithTheirArmsOverTheLanes` | em 20 cidades, coluna por coluna: postes só em trechos de rua (nunca em cruzamento nem em faixa de pedestres); coluna inteira de 13 (com tufo de folhas só na variação tomada); vinha de trás sempre virada para a coluna, a 3+ de altura e com coluna ao lado na mesma altura; sobre a pista nada abaixo de 11 além da lâmpada caída; vinha pendurada sempre sob uma laje; braço quebrado só nas 2 primeiras colunas; 129,9 postes por cidade (de 144, 10% faltam), variações 505 / 523 / 533 / 525 / 511; nos planos dos chunks poste e lâmpada caída não trafegáveis |
-| `WorldPlanTest.cutCrownsHangOverSidewalksAndCores` | nas cidades do terreno plano (1 237 chunks com copas completadas): 11 622 folhas no bosque e 892 sobre calçadas; 2 144 baixas demais sobre a rua e 13 onde o bosque já planeja algo ficam de fora; nenhuma em outra estrutura; cada uma no chunk pedido |
-| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (357 cidades 2 × 2 de quarteirões 180 × 120, 11 413 lotes; nenhum prédio repetido na cidade, 6,34 prédios por cidade — estruturas, parques e miolos tomados pela natureza; nenhum quarteirão com duas estruturas iguais; em cada cidade no máximo 3 farmácias, 2 oficinas e 2 postos; 204 quarteirões de parque, cada um com o parque de 110 × 64 num canto e 947 estruturas em volta, nenhuma a menos de 4 blocos dele; gera `park_block.png`): nenhum nó de grau 1 (sem becos), nós de grau 2 só nos cantos (com o arco do canto); toda coluna de lote é lote do quarteirão certo e não toca rua |
-| `WorldPlanTest.streetWidthIsConstantOnStraightStreets` | toda rua reta de cidade tem exatamente 33 colunas; a zebra fica nas linhas 2 a 4 do trecho, com 14 listras, e não existe nas outras linhas |
-| `WorldPlanTest.highwayNetworkIsConsistentAndWellConnected` | 21 combinações terreno × seed: Gabriel simétrico, rodovia começa e termina exatamente na entrada de cada cidade, raio de curva ≥ 60, pontos a ~1 bloco, comprimento máximo, cruzamento de entrada nunca usado duas vezes (um canto tem duas saídas, mas só uma rodovia), no máximo 8 rodovias por cidade, nenhum par de rodovias perto demais (sem cruzamentos); limites: plano/colinas ≥ 85% das ligações e ≤ 5% de cidades sem rodovia, montanhas/rios/cânions ≤ 15%, e pelo menos metade das células com cidade (exceto ilhas); gera `network_*.png` |
-| `FloraTest.overgrownBlocksAreConsistent` | 6 miolos de 140 × 90 (o teste usa esse tamanho fixo): mais de 120 árvores cada, copas dentro do quarteirão, toda vinha presa em folha/tronco ou embaixo de outra vinha, toda folha com distância de 1 a 6 e um vizinho um passo mais perto da madeira (regra do leaf decay do vanilla), plantas só a 1 bloco do chão e só em solo (grama, musgo, terra grossa), metades de cima das plantas altas certas, entulho nunca flutua; nenhuma árvore entra numa estrutura; gera `wild_block.png` |
-| `FloraTest.parksAreOvergrownAndKeepTheirFountain` | 6 parques: as mesmas regras de plantas e vinhas, todo bloco da fonte no lugar (só a troca baú → pedregulho musgoso, as lajes musgosas do anel e o piso de pedra virado musgoso), cachos de vinha na fonte; gera `wild_park.png` |
-| `RoadDecayTest.aboutThreeColumnsInTenAreTakenInPatches` | 1,9 milhão de colunas em 3 seeds: 29,8% tomadas, determinístico, em manchas (73% das tomadas têm a vizinha tomada), os 6 tipos aparecem |
-| `RoadDecayTest.tunnelsRampStepsAndWallsStayClean` | túneis, degraus de meia-laje e a coluna do muro nunca são tomados (pontes podem ser); calçadas racham em pedregulho, nunca em asfalto |
-| `RoadDecayTest.wornTextureAndMarkings` | 250 000 colunas: textura gasta sempre de uma das variantes da pista, da calçada ou das lajes; `polished_deepslate` é a mais comum (54%) e todas as variantes aparecem; 20% das faixas apagadas; a coluna do muro não muda |
-| `WreckTest.holesAreAboutOnePerEightyBlocksOfBridgeInTheMiddleOfTheLanes` | 2 000 perfis de ponte de 60 a 460 blocos: 1 buraco a cada ~85 blocos de ponte, sempre na ponte, longe das pontas, dentro das 27 faixas, do tamanho pedido; nenhum fora das pontes |
-| `RoadDecayTest.plantsOnlyOnGrassAndMossAndWithoutCollision` | plantas só sobre grama e musgo, sempre sem colisão (grama baixa, alta, samambaia), metade de cima da grama alta certa |
-| `RingTest.withoutStructuresBlocksStayEmpty` | (pulado com estruturas) com `index.txt` vazio: nenhum estado de estrutura e o anel não cria lotes |
-| `RingTest.groundLayerAndBuriedLayers` | as estruturas com camada enterrada têm blocos embaixo do chão e nada mais fundo; ar enterrado só no prédio largo e na delegacia (o `cave_air` da garagem e do subsolo, cavado); mansão abandonada, casa grande, torre, azulado e apartamento descem 1, o prédio largo 8 |
-| `RingTest.undergroundGarageKeepsItsRampAndStairsOpen` | no prédio largo, as 99 células de ar da camada do chão ficam abertas (a rampa inteira, com o topo, e o poço da escada), com ar cavado ou a própria rampa embaixo (nunca terreno), nas 4 rotações; a delegacia tem 405 (as salas do subsolo atravessando a camada da rua); nenhuma outra estrutura tem abertura; os 249 contêineres dele são alcançáveis (0 fora de alcance) |
-| `StructuresCarveTest.caveAirIsDugUnderTheGround` | molde sintético 3 × 3 × 3 com chão 2: abaixo do chão o `cave_air` vira ar (escavado) e o `air` comum continua terreno (`KEEP`); a pedra enterrada e a do nível do chão são colocadas |
-| `RingTest.frontsMeetTheSidewalk` | a fileira da frente, no nível do chão, é toda de blocos em 51 dos 52 arquivos (o apartamento tem 22 de 31: as falhas viram o chão da cidade, nivelado) |
-| `RingTest.structureTreesHaveRealLeaves` | toda folha não persistente das estruturas tem distância 1 a 6 e um vizinho tronco ou folha mais perto (regra do leaf decay); mais de 1 000 folhas reais |
-| `RingTest.housesWithTheirFrontOnPlusZFaceTheStreet` | a casa moderna e a mansão pós-apocalíptica têm giro de 180° no índice e, com a rua ao norte, a fileira encostada na rua é a última fileira (+Z) do molde, bloco a bloco; as outras não têm giro |
-| `RingTest.pharmacyVariantsMatchTheirOriginalButTheColor` | nas 8 variações de farmácia, posição por posição contra a original: os mesmos blocos nos mesmos lugares, nenhum bloco neutro (concreto branco, quartzo liso, calcita, diorito polido) pintado e os banners nas mesmas posições; 76 blocos do letreiro F A R M Á C I A devolvidos em cada pequena, 152 em cada grande |
-| `RingTest.pharmacyBannersKeepTheirLetters` | nas 4 rotações, cada uma das 10 farmácias (originais e variações) tem 9 banners (pequena) ou 18 (grande) com desenho (listras e borda), todos em blocos de banner; nas pequenas, banner branco com letras na cor da variação; nas grandes, banner na cor da variação com letras pretas |
-| `AccessTest.closedRoomsDoorsAndLadders` | salas montadas no teste: baú em sala lacrada é de difícil acesso; com porta de madeira não; com porta de ferro ou cerca no vão sim; baú num pilar de 4 só se alcança com escada de mão; degraus de 1 bloco se sobem pulando |
-| `AccessTest.highContainersAreHard` | barril a `Access.HIGH` (15) blocos do chão, alcançável por escada, conta como difícil; baú no chão não |
-| `AccessTest.structuresHardContainers` | nos 52 arquivos, com o abandono: 1 382 de 3 106 contêineres de difícil acesso (entre 10% e 50%: os prédios altos novos têm quase todos os seus acima de 15); os mesmos nas 4 rotações; prédios grandes e médios têm contêineres altos; nas casas no máximo 5% (4 de 356) |
-| `AccessTest.everyStructureHasItsLootTables` | as 6 tabelas do tema de cada estrutura existem; barril e vaso com 40% de chance, `barrel_hard` 75%, `pot_hard` 80%, baús sem chance de vir vazios; nada do Lost Cities ou do OAmP |
-| `WeatheringTest.onlyAllowedChangesAndEverythingHolds` | nos 43 arquivos, célula por célula contra o molde salvo: só mudanças permitidas (rachado e musgoso da mesma pedra, com as mesmas propriedades; piso de pedra ou concreto com ar em cima virando solo; tapete sobre bloco inteiro ou solo; grama, samambaia e arbusto seco só sobre solo; vinha com uma face, presa em bloco inteiro ou na vinha de cima com a mesma face, ou sob beiral); banners iguais; caixa da estrutura igual; o mesmo resultado em duas cargas; relatório igual às mudanças. Total: 17 879 vinhas, 6 712 solos, 3 518 tapetes, 3 263 plantas, 1 768 musgosos, 1 469 rachados |
-| `WeatheringTest.everyStructureReachesTheMeasuresOfTheApocalypticBuilding` | nenhuma medida cai (rachado e vinhas podem cair até 3 pontos quando piso vira musgo: o bloco sai da família ou da parede contada); rachado a 31% (−3) ou mais; o lado menos coberto de vinhas com 19% ou mais (meta 25%); no prédio apocalíptico só as vinhas mudam |
-| `WeatheringTest.wholeNamesAreNotTakenForParts` | `light_gray_concrete`, `smooth_sandstone` e `mud_bricks` são pedra inteira; tábua é inteira mas não pedra; vidro, folhas, laje, baú, banner e o bloco de luz não são inteiros |
-| `RingTest.cutCrownsAreCompletedOutsideTheBox` | 189 folhas completam copas cortadas, só na casa com piscina, com garagem, de subúrbio, com torre, de vidro, no prédio esqueleto e no prédio da rampa; nas 4 rotações: todas fora da caixa e a até 4 dela, não persistentes, distância 1 a 6 com um vizinho um passo mais perto do tronco, sem repetir posição; as da casa com piscina ficam na frente e acima de `CLEARANCE` |
-| `RingTest.everyStructureHasASpawnCategory` | toda estrutura tem uma das 7 categorias do `/amcs spawn`: casa 12, delegacia 1, especial 1, farmácia 10, oficina 8, posto 10, prédio 10 (52) |
-| `RingTest.lightningRodsBecomeRedstoneTorches` | nenhum estado de para-raios sobra nas estruturas; 5 tochas de redstone de pé vindas de para-raios (mais 15 salvas como tochas nas estruturas novas, 3 delas na delegacia: 20) (uma no topo de cada estrutura que tinha para-raios); para-raios de lado vira tocha de parede com a mesma direção |
-| `RingTest.noFloatingCobwebs` | nenhuma teia das estruturas fica sem um bloco em que se prender (o chão conta); mais de 2 000 teias conferidas |
-| `RingTest.spawnLimitsHoldOverACity` | 300 cidades de 4 quarteirões sorteados em sequência: no máximo 3 farmácias, 2 oficinas, 2 postos e 1 de cada prédio; o contador da cidade bate com o que foi posto |
-| `RingTest.structuresHaveSolidBoxesWithAFloorLayer` | toda estrutura tem caixa não vazia e blocos na primeira camada |
-| `RingTest.rotationKeepsEveryBlockAndTurnsTheFrontToTheStreet` | as 4 rotações têm o mesmo número de blocos em todas as estruturas; a rotação de 90, 180 e 270 graus confere célula a célula com a fórmula da transformação |
-| `RingTest.ringsFitTheirBlockTouchTheSidewalksAndDoNotOverlap` | 6 000 anéis em quarteirões 180 × 120 e 120 × 180: dentro do quarteirão, sem sobreposição, cada estrutura encosta na calçada para onde a frente aponta, nenhuma estrutura repetida no mesmo quarteirão, determinístico, as 21 aparecem e os 4 lados são usados |
-| `RingTest.everyStructureFitsNextToTheShallowestInA120Block` | cada estrutura cabe num quarteirão de 180 × 120 junto da mais rasa (20) e do bosque mais largo (30), virada para um lado comprido ou para um lado curto (o prédio da rampa, 102 × 72, só no lado curto) |
-| `RingTest.structuresNeverTouchAndLeaveTheForest` | 6 000 anéis em 180 × 120 e 120 × 180 (192 108 pares): duas estruturas quaisquer ficam a 4 ou mais blocos; entre lados opostos, 20 ou mais de bosque (menor medido: 4 e 21) |
-| `PlanAuditTest.citiesAndHighwaysPassThePlanAudit` | `PlanAudit` coluna a coluna em 3 cidades inteiras e 2 rodovias inteiras por terreno × seed (105 auditorias); gera `city_*.png` |
-| `PlanAuditTest.planIsIndependentOfQueryOrderAndThreads` | 3 721 chunks planejados de novo em ordem embaralhada por 8 threads: resultado idêntico, campo a campo |
-| `FingerprintTest.plannerOutputIsUnchanged` | as 11 partes da impressão digital do planejador (seção 1) iguais às esperadas (as do commit `4dd94ae`, com `layout`, `structures` e `weathering` dos nomes em inglês); cobertura: 1 129 cidades, 2 013 rodovias, 31 214 chunks, 1,47 milhão de colunas de via (44 129 de ponte, 26 783 de túnel), 1,22 milhão de colunas de lote (6,6 milhões de blocos de estrutura nos lotes), 10 198 colunas de poste, 1 741 folhas de copa, 16,8 milhões de células de estrutura, 2 036 peças de banco; 15 a 25 s |
+| `ProfileTest.profilesAreFlatOrRampAndJoinTheCities` | 4,000 random profiles (with cliffs): starts and ends at the level of each city, 48 flat blocks at the ends, a change of ≤ 1/8 of a block per block, flat stretches always at a whole height, never below the minimum, the surface (half block) never changes more than 0.5 between neighbours |
+| `ProfileTest.halfBlockStepsAreEvenlySpaced` | on a climb, the half-slab steps are at least 4 blocks apart |
+| `ProfileTest.classificationRunsAreClean` | 2,000 profiles: junctions always on the ground, tunnels ≥ 16, dry bridges ≥ 8, all the water outside the junctions is bridge |
+| `WorldPlanTest.villageCreaturesAreRemovedInTheCityAndItsMargin` | in 30 cities: the center counts as city; walking out from the center, the area holds up to 32 blocks (±1) past the last street or lot column and not farther |
+| `WorldPlanTest.parkBenchesSitOnTheEdgeOfThePathsFacingThem` | in the 30 parks of the flat terrain: every seat with the path in front and no path behind; every armrest with its panel against a seat; no bench on the path; nothing grows through a bench (only a high crown); benches 8+ apart; every park with a bench; 565 benches, 1,018 seats, 1 per 18.6 blocks of path |
+| `WorldPlanTest.streetLightsStandOnTheSidewalksWithTheirArmsOverTheLanes` | in 20 cities, column by column: street lights only on street segments (never on a crossing or a crosswalk); a whole post of 13 (with a tuft of leaves only on the overgrown variant); the back vine always facing the post, 3+ up and with the post beside it at the same height; over the lanes nothing below 11 but the fallen lamp; a hanging vine always under a slab; a broken arm only on its first 2 columns; 129.9 street lights per city (of 144, 10% gone), variants 505 / 523 / 533 / 525 / 511; in the chunk plans the post and the fallen lamp are not drivable |
+| `WorldPlanTest.cutCrownsHangOverSidewalksAndCores` | in the cities of the flat terrain (1,237 chunks with completed crowns): 11,622 leaves in the woods and 892 over sidewalks; 2,144 too low over the street and 13 where the woods already plan something are left out; none in another structure; each one in the chunk asked for |
+| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | in every city of the 7 terrains (357 2 × 2 cities of 180 × 120 blocks, 11,413 lots; no building repeated in a city, 6.34 buildings per city — structures, parks and cores taken over by nature; no block with two of the same structure; in each city at most 3 pharmacies, 2 workshops and 2 gas stations; 204 park blocks, each with the park of 110 × 64 in a corner and 947 structures around, none less than 4 blocks from it; writes `park_block.png`): no node of degree 1 (no dead ends), nodes of degree 2 only at the corners (with the arc of the corner); every lot column is a lot of the right block and does not touch a street |
+| `WorldPlanTest.streetWidthIsConstantOnStraightStreets` | every straight city street has exactly 33 columns; the zebra is on rows 2 to 4 of the segment, with 14 stripes, and on no other row |
+| `WorldPlanTest.highwayNetworkIsConsistentAndWellConnected` | 21 terrain × seed combinations: Gabriel symmetric, a highway starts and ends exactly at the entrance of each city, curve radius ≥ 60, points ~1 block apart, maximum length, an entrance crossing never used twice (a corner has two exits, but only one highway), at most 8 highways per city, no pair of highways too close (no crossings); limits: flat/hills ≥ 85% of the links and ≤ 5% of cities without a highway, mountains/rivers/canyons ≤ 15%, and at least half of the cells with a city (except islands); writes `network_*.png` |
+| `FloraTest.overgrownBlocksAreConsistent` | 6 cores of 140 × 90 (the test uses this fixed size): more than 120 trees each, crowns inside the block, every vine held by a leaf/log or under another vine, every leaf with a distance of 1 to 6 and a neighbour one step closer to the wood (vanilla's leaf decay rule), plants only 1 block above the ground and only on soil (grass, moss, coarse dirt), the top halves of tall plants right, rubble never floats; no tree enters a structure; writes `wild_block.png` |
+| `FloraTest.parksAreOvergrownAndKeepTheirFountain` | 6 parks: the same rules for plants and vines, every block of the fountain in place (only the chest → mossy cobblestone swap, the mossy slabs of the ring and the stone floor turned mossy), strands of vine on the fountain; writes `wild_park.png` |
+| `RoadDecayTest.aboutThreeColumnsInTenAreTakenInPatches` | 1.9 million columns in 3 seeds: 29.8% taken, deterministic, in patches (73% of the taken ones have a taken neighbour), the 6 kinds appear |
+| `RoadDecayTest.tunnelsRampStepsAndWallsStayClean` | tunnels, half-slab steps and the wall column are never taken (bridges may be); sidewalks crack into cobblestone, never into asphalt |
+| `RoadDecayTest.wornTextureAndMarkings` | 250,000 columns: the worn texture is always one of the variants of the lanes, the sidewalk or the slabs; `polished_deepslate` is the most common (54%) and every variant appears; 20% of the lines faded; the wall column does not change |
+| `WreckTest.holesAreAboutOnePerEightyBlocksOfBridgeInTheMiddleOfTheLanes` | 2,000 bridge profiles of 60 to 460 blocks: 1 hole per ~85 blocks of bridge, always on the bridge, away from the ends, inside the 27 lanes, of the size asked for; none off the bridges |
+| `RoadDecayTest.plantsOnlyOnGrassAndMossAndWithoutCollision` | plants only on grass and moss, always without collision (short grass, tall grass, fern), the top half of tall grass right |
+| `RingTest.withoutStructuresBlocksStayEmpty` | (skipped with structures) with an empty `index.txt`: no structure state and the ring makes no lots |
+| `RingTest.groundLayerAndBuriedLayers` | the structures with a buried layer have blocks below the ground and nothing deeper; buried air only in the wide building and the police station (the `cave_air` of the garage and of the basement, dug); abandoned mansion, large house, tower, bluish and apartment go 1 down, the wide building 8 |
+| `RingTest.undergroundGarageKeepsItsRampAndStairsOpen` | in the wide building, the 99 air cells of the ground layer stay open (the whole ramp, with its top, and the stairwell), with dug air or the ramp itself below (never terrain), in the 4 rotations; the police station has 405 (the rooms of the basement crossing the street layer); no other structure has an opening; its 249 containers are reachable (0 out of reach) |
+| `StructuresCarveTest.caveAirIsDugUnderTheGround` | a synthetic 3 × 3 × 3 template with ground 2: below the ground the `cave_air` becomes air (dug) and plain `air` stays terrain (`KEEP`); the buried stone and the one at ground level are placed |
+| `RingTest.frontsMeetTheSidewalk` | the front row, at ground level, is all blocks in 51 of the 52 files (the apartment has 22 of 31: the gaps become the city ground, level) |
+| `RingTest.structureTreesHaveRealLeaves` | every non-persistent leaf of the structures has a distance of 1 to 6 and a log or leaf neighbour closer (leaf decay rule); more than 1,000 real leaves |
+| `RingTest.housesWithTheirFrontOnPlusZFaceTheStreet` | the modern house and the post-apocalyptic mansion have a 180° turn in the index and, with the street to the north, the row against the street is the last row (+Z) of the template, block by block; the others have no turn |
+| `RingTest.pharmacyVariantsMatchTheirOriginalButTheColor` | in the 8 pharmacy variants, position by position against the original: the same blocks in the same places, no neutral block (white concrete, smooth quartz, calcite, polished diorite) painted and the banners in the same positions; 76 blocks of the F A R M Á C I A sign put back on each small one, 152 on each large one |
+| `RingTest.pharmacyBannersKeepTheirLetters` | in the 4 rotations, each of the 10 pharmacies (originals and variants) has 9 banners (small) or 18 (large) with a design (stripes and border), all on banner blocks; on the small ones, a white banner with letters in the variant's color; on the large ones, a banner in the variant's color with black letters |
+| `AccessTest.closedRoomsDoorsAndLadders` | rooms built in the test: a chest in a sealed room is hard to get to; with a wooden door it is not; with an iron door or a fence in the doorway it is; a chest on a pillar of 4 is only reached with a ladder; steps of 1 block are climbed by jumping |
+| `AccessTest.highContainersAreHard` | a barrel `Access.HIGH` (15) blocks above the ground, reachable by a ladder, counts as hard; a chest on the ground does not |
+| `AccessTest.structuresHardContainers` | in the 52 files, with the overgrowth: 1,382 of 3,106 containers hard to get to (between 10% and 50%: the new tall buildings have nearly all of theirs above 15); the same in the 4 rotations; large and medium buildings have high containers; in the houses at most 5% (4 of 356) |
+| `AccessTest.everyStructureHasItsLootTables` | the 6 tables of the theme of each structure exist; barrel and pot with a 40% chance, `barrel_hard` 75%, `pot_hard` 80%, chests with no chance of coming empty; nothing from Lost Cities or OAmP |
+| `WeatheringTest.onlyAllowedChangesAndEverythingHolds` | in the 43 files, cell by cell against the saved template: only allowed changes (cracked and mossy of the same stone, with the same properties; a stone or concrete floor with air above turned into soil; a carpet on a full block or soil; grass, fern and dead bush only on soil; a vine with one face, held by a full block or by the vine above with the same face, or under eaves); banners equal; the box of the structure equal; the same result in two loads; the report equal to the changes. Total: 17,879 vines, 6,712 soils, 3,518 carpets, 3,263 plants, 1,768 mossy, 1,469 cracked |
+| `WeatheringTest.everyStructureReachesTheMeasuresOfTheApocalypticBuilding` | no measure drops (cracked and vines may drop up to 3 points when a floor turns into moss: the block leaves the family or the counted wall); cracked at 31% (−3) or more; the side least covered with vines at 19% or more (target 25%); on the apocalyptic building only the vines change |
+| `WeatheringTest.wholeNamesAreNotTakenForParts` | `light_gray_concrete`, `smooth_sandstone` and `mud_bricks` are whole stone; planks are whole but not stone; glass, leaves, slab, chest, banner and the light block are not whole |
+| `RingTest.cutCrownsAreCompletedOutsideTheBox` | 189 leaves complete cut crowns, only on the pool house, the garage house, the suburban house, the tower house, the glass house, the skeleton building and the ramp building; in the 4 rotations: all outside the box and up to 4 from it, not persistent, distance 1 to 6 with a neighbour one step closer to the trunk, no repeated position; those of the pool house are in front and above `CLEARANCE` |
+| `RingTest.everyStructureHasASpawnCategory` | every structure has one of the 7 `/amcs spawn` categories: house 12, police_station 1, special 1, pharmacy 10, workshop 8, gas_station 10, building 10 (52) |
+| `RingTest.lightningRodsBecomeRedstoneTorches` | no lightning rod state is left in the structures; 5 standing redstone torches coming from lightning rods (plus 15 saved as torches in the new structures, 3 of them in the police station: 20) (one on top of each structure that had a lightning rod); a sideways lightning rod becomes a wall torch with the same direction |
+| `RingTest.noFloatingCobwebs` | no cobweb of the structures is left without a block to hang on (the ground counts); more than 2,000 cobwebs checked |
+| `RingTest.spawnLimitsHoldOverACity` | 300 cities of 4 blocks drawn in sequence: at most 3 pharmacies, 2 workshops, 2 gas stations and 1 of each building; the city's counter matches what was placed |
+| `RingTest.structuresHaveSolidBoxesWithAFloorLayer` | every structure has a non-empty box and blocks on its first layer |
+| `RingTest.rotationKeepsEveryBlockAndTurnsTheFrontToTheStreet` | the 4 rotations have the same number of blocks in every structure; the rotation of 90, 180 and 270 degrees matches the formula of the transformation cell by cell |
+| `RingTest.ringsFitTheirBlockTouchTheSidewalksAndDoNotOverlap` | 6,000 rings in blocks of 180 × 120 and 120 × 180: inside the block, no overlap, each structure touches the sidewalk its front points to, no structure repeated in the same block, deterministic, the 21 appear and the 4 sides are used |
+| `RingTest.everyStructureFitsNextToTheShallowestInA120Block` | each structure fits in a block of 180 × 120 next to the shallowest one (20) and the widest woods (30), facing a long side or a short side (the ramp building, 102 × 72, only on the short side) |
+| `RingTest.structuresNeverTouchAndLeaveTheForest` | 6,000 rings in 180 × 120 and 120 × 180 (192,108 pairs): any two structures are 4 or more blocks apart; between opposite sides, 20 or more of woods (smallest measured: 4 and 21) |
+| `PlanAuditTest.citiesAndHighwaysPassThePlanAudit` | `PlanAudit` column by column in 3 whole cities and 2 whole highways per terrain × seed (105 audits); writes `city_*.png` |
+| `PlanAuditTest.planIsIndependentOfQueryOrderAndThreads` | 3,721 chunks planned again in shuffled order by 8 threads: an identical result, field by field |
+| `FingerprintTest.plannerOutputIsUnchanged` | the 11 parts of the planner fingerprint (section 1) equal to the expected ones (those of commit `4dd94ae`, with `layout`, `structures` and `weathering` of the English names); coverage: 1,129 cities, 2,013 highways, 31,214 chunks, 1.47 million road columns (44,129 of bridge, 26,783 of tunnel), 1.22 million lot columns (6.6 million structure blocks in the lots), 10,198 street light columns, 1,741 crown leaves, 16.8 million structure cells, 2,036 bench parts; 15 to 25 s |
 
-### `PlanAudit` (plano, coluna a coluna, atravessando chunks)
+### `PlanAudit` (the plan, column by column, across chunks)
 
-- **Vias:**
-  - `step` (degrau > 0,5 entre colunas trafegáveis vizinhas) e `city_level`;
-  - `wall_gap` (muro de rodovia que só encosta no vizinho pela quina);
-  - `highway_hole` (buraco na faixa da rodovia), `highway_height` e `highway_end` (rodovia que não pousa numa rua
-    da cidade, no nível dela);
-  - `short_tunnel` e `ramp` (inclinação ou patamar fracionário no perfil).
-- **Rede de ruas:**
-  - `street_missing` e `dead_end`;
-  - `orphan_road` (trecho de via que não chega a nenhuma cidade nem sai da área);
+- **Roads:**
+  - `step` (a step > 0.5 between neighbouring drivable columns) and `city_level`;
+  - `wall_gap` (a highway wall that touches its neighbour only at the corner);
+  - `highway_hole` (a hole in the highway band), `highway_height` and `highway_end` (a highway that does not land
+    on a street of the city, at its level);
+  - `short_tunnel` and `ramp` (a slope or a fractional landing in the profile).
+- **Street network:**
+  - `street_missing` and `dead_end`;
+  - `orphan_road` (a stretch of road that reaches no city and does not leave the area);
   - `city_split`.
-- **Lotes:** `lot_overlap` (dois lotes de um quarteirão se sobrepõem).
+- **Lots:** `lot_overlap` (two lots of a block overlap).
 
-### `WorldAudit` (blocos gerados)
+### `WorldAudit` (generated blocks)
 
-- **Superfície das vias:**
-  - `hole` (sem superfície), `surface_block` (bloco diferente do planejado) e `no_base`;
-  - `height_mismatch` (altura medida diferente da planejada);
-  - `step` (medido nos blocos, inclusive entre chunks).
-- **Espaço livre e decoração:**
-  - `obstacle`, `cover` e `fluid_on_road` (4 blocos livres acima da pista, 7 em túneis);
-  - `vegetation_over_road` (até 48 acima; as folhas planejadas que completam copas de estruturas não contam);
-  - `street_light` (peça de poste planejada que falta ou mudou: coluna, braço ou vidro; as conferidas contam em
-    `street_light_blocks`);
-  - `crown_leaf_missing` (folha planejada de copa completada que ficou sem bloco; as conferidas são contadas em
+- **Road surface:**
+  - `hole` (no surface), `surface_block` (a block other than the planned one) and `no_base`;
+  - `height_mismatch` (a measured height other than the planned one);
+  - `step` (measured on the blocks, also across chunks).
+- **Clearance and decoration:**
+  - `obstacle`, `cover` and `fluid_on_road` (4 free blocks above the lanes, 7 in tunnels);
+  - `vegetation_over_road` (up to 48 above; the planned leaves that complete the crowns of structures do not count);
+  - `street_light` (a planned street light part that is missing or changed: post, arm or glass; the ones checked
+    count in `street_light_blocks`);
+  - `crown_leaf_missing` (a planned leaf of a completed crown left without a block; the ones checked are counted in
     `crown_leaves`).
-- **Estruturas:** `parapet`, `tunnel_ceiling` (`stone` ou `glowstone`), `tunnel_wall` e `pillar_floating`.
-- **Lotes:**
-  - `lot_hole` (água que a estrutura põe no nível do chão, a piscina da mansão, não conta);
-  - `yard_ground` (chão livre de cidade que não é `gray_concrete_powder`; desde 11 nov não há mais chão livre: o
-    miolo é um lote `WILD`);
-  - `building_mismatch` (nome herdado: bloco de lote — parque, fonte, miolo tomado pela natureza com árvores,
-    vinhas, plantas e entulho, estrutura — diferente da definição;
-    costuras entre chunks apareceriam aqui).
-- **Regras gerais:**
-  - `hard_block` (bloco indestrutível em via, ponte, túnel ou lote; qualquer dureza é permitida);
-  - `hole_filled` (buraco de ponte com bloco na superfície ou na laje; contados em `bridge_hole_columns`),
-    `parapet` (muro de ponte: `stone_brick_wall` ou `mossy_stone_brick_wall`, ou ar num trecho caído; `wall_gap_columns`);
-  - `road_plant` (planta planejada numa coluna de via tomada que falta ou mudou; as colunas tomadas são contadas em
-    `taken_road_columns`, as plantas em `road_plants`; a superfície tomada é conferida em `surface_block`);
-  - `banner_without_design` (banner de estrutura sem o desenho do molde; contados em `structure_banners`);
-  - `structure_without_loot` (contêiner de estrutura — baú, barril, dispenser, dropper, vaso decorado — sem loot
-    table) e `structure_wrong_loot` (com outra tabela que não a do tema da estrutura, do tipo de contêiner e do acesso;
-    os block entities das estruturas são contados em `structure_block_entities`, os contêineres em
-    `structure_loot_containers` e os de difícil acesso em `structure_loot_hard`), `loot_in_city` e `container_in_city` (fora das estruturas; baú da fonte vazio,
-    contado em `fountain_chests`);
-  - `orphan_road` (conectividade medida nos blocos).
+- **Structures:** `parapet`, `tunnel_ceiling` (`stone` or `glowstone`), `tunnel_wall` and `pillar_floating`.
+- **Lots:**
+  - `lot_hole` (water the structure puts at ground level, the pool of the mansion, does not count);
+  - `yard_ground` (free city ground that is not `gray_concrete_powder`; since 11 Nov there is no free ground: the
+    core is a `WILD` lot);
+  - `building_mismatch` (an inherited name: a lot block — park, fountain, core taken over by nature with trees,
+    vines, plants and rubble, structure — other than its definition; seams between chunks would show up here).
+- **General rules:**
+  - `hard_block` (an unbreakable block on a road, bridge, tunnel or lot; any hardness is allowed);
+  - `hole_filled` (a bridge hole with a block at the surface or in the deck; counted in `bridge_hole_columns`),
+    `parapet` (a bridge wall: `stone_brick_wall` or `mossy_stone_brick_wall`, or air in a fallen stretch;
+    `wall_gap_columns`);
+  - `road_plant` (a planned plant on a taken road column that is missing or changed; the taken columns are counted in
+    `taken_road_columns`, the plants in `road_plants`; the taken surface is checked by `surface_block`);
+  - `banner_without_design` (a structure banner without the design of the template; counted in `structure_banners`);
+  - `structure_without_loot` (a structure container — chest, barrel, dispenser, dropper, decorated pot — without a
+    loot table) and `structure_wrong_loot` (with a table other than the one of the structure's theme, the container
+    kind and the access; the block entities of the structures are counted in `structure_block_entities`, the
+    containers in `structure_loot_containers` and the hard to get to ones in `structure_loot_hard`), `loot_in_city`
+    and `container_in_city` (outside the structures; the fountain chest empty, counted in `fountain_chests`);
+  - `orphan_road` (connectivity measured on the blocks).
 
-## 3. Problemas encontrados e corrigidos
+## 3. Problems found and fixed
 
-Histórico herdado do Abandoned Simple City (este mod começou como cópia dele em 7 nov 2026). Os achados sobre
-prédios (8, 13, 15, 17 a 26) não se aplicam mais aqui: os prédios foram removidos. Os achados 1 a 17 são de versões anteriores; alguns citam regras que mudaram depois (quarteirões de 64,
-escadas em "poços" junto às paredes). As correções continuam valendo onde a ideia se aplica: o reparo de vizinhos
-e a regra de escada e apoio no mesmo chunk.
+History inherited from Abandoned Simple City (this mod started as a copy of it on 7 Nov 2026). The findings about
+buildings (8, 13, 15, 17 to 26) no longer apply here: the buildings were removed. Findings 1 to 17 are from earlier
+versions; some cite rules that changed later (blocks of 64, ladders in "shafts" against the walls). The fixes still
+hold where the idea applies: the neighbour repair and the rule of ladder and support in the same chunk.
 
-| # | Onde apareceu | Problema | Causa | Correção |
+| # | Where it showed up | Problem | Cause | Fix |
 |---|---|---|---|---|
-| 1 | `ProfileTest`, `PlanAuditTest` (1 ponto em ~1 de cada 6 rodovias) | patamar de 1 ponto numa altura fracionária | a faixa permitida (cones de rampa das duas cidades) tem um platô de 1 ponto no topo/fundo quando a paridade não fecha; o perfil parava ali | `Profile.build`: bloqueado numa altura fracionária, o perfil inverte o sentido em vez de parar |
-| 2 | Bateria (inicialização) | bateria levava minutos para começar | o PNG da rede amostrava o ruído do jogo em ~750 mil colunas (cada `getBaseHeight` monta um `NoiseChunk`, ~3 ms) | render da rede sem terreno na bateria; renders do plano amostram o terreno a cada 8 blocos |
-| 3 | Bateria (thread dump) | planejamento lento em áreas com muitas rodovias | `tooClose` (distância mínima entre duas rodovias) comparava cada ponto com ~800 pontos da outra | grade espacial com célula = 21 blocos: linear no comprimento |
-| 4 | Bateria, seed 20261027 | `surface_block`, `hard_block`, `tunnel_wall`, `parapet`: minério de cobre/carvão, terra, cascalho, granito, diorito e andesito no lugar da `stone` de calçadas, parapeitos e paredes de túnel | os minérios e bolhas de terra/cascalho/rochas (`ore_*`) de um chunk decorado depois alcançam ~15 blocos dentro do vizinho já construído e substituem `stone` (a `smooth_stone` das pistas não é substituível) | o reparo de vizinhos restaura superfície, base, parapeito, teto e paredes de túnel em todas as colunas de via do vizinho |
-| 5 | Bateria, seed 20261027 | `pillar_floating` (194 colunas): ponte sobre o mar sem pilares | o reparo de vizinhos repavimentava "superfície comida" também em vizinhos **ainda não construídos**; quando esse vizinho era construído, o bloco solto era lido como chão e o pilar não descia | o reparo só atua em vizinhos que já passaram pela etapa `FEATURES` (os demais serão construídos do zero) |
-| 6 | Bateria, seed 20261027 | `building_mismatch`: folhas e cogumelos dentro de prédios | árvores e cogumelos de chunks decorados depois | o reparo remove decoração no volume dos prédios do vizinho, só onde o prédio quer ar |
-| 7 | Bateria (auditoria) | `loot_in_city`: dois baús a y 110 sobre um túnel; `pillar_floating` sob ressaltos de rocha | falsos positivos: a auditoria olhava a coluna inteira | contêineres só no volume construído; pilar "flutuante" só se o ar estiver acima do chão natural do ruído |
-| 8 | Bateria, seed 20261027 | `building_mismatch` (1 724): faltavam as faixas das lajes de um estilo de prédio | o reparo de prédios tratava `stripped_oak_log` (faixa do estilo 7) como tronco de árvore | o reparo nunca remove um bloco que o prédio define; o estilo 7 usa tábuas |
-| 9 | Bateria, seed 20261027 (PNG da rede) | auditorias OK, mas a rede real era pobre: 5 cidades em ~7 × 7 km, quase todas sem rodovia | o estágio 1 sorteava **um** ponto por célula e recusava a célula se ele caísse perto de água ou em morro; o overworld real tem muito mais rios e lagos que os terrenos sintéticos, então poucas cidades e ligações longas demais | o estágio 1 tenta até 10 posições (as últimas com raio menor); ligações candidatas até 2 200 blocos (rodovia até 3 000); novo terreno sintético `RIVERS` e limites de cidades isoladas no teste de rede, para essa classe de problema ser pega no `./gradlew test` |
-| 10 | `WorldPlanTest` (rede) | "nenhuma saída voltada para a outra cidade" era o principal motivo de ligação perdida (até 48 de 126 em terreno misto) | cidades irregulares têm poucos nós em T no contorno, e cada um serve a uma rodovia só | o meio de cada segmento de rua do contorno também é saída (junção em T com a rua externa), com 48 blocos no mínimo entre saídas usadas e saída até ~75° fora do eixo; ligações mantidas subiram de 51–96% para 74–100% e cidades isoladas ficaram entre 0 e 4% |
-| 11 | Bateria, seed 3478477863671517581 (cidade acidentada, nível 114) | `lot_hole` (69) e `building_mismatch` (104): `cave_air` e `stone` no piso de lotes e prédios | um lago de lava de um chunk decorado depois cava o espaço acima do líquido (`cave_air`) e põe uma borda de pedra, dentro do vizinho já construído | o reparo de vizinhos também restaura lotes: aterro sob o piso, piso, e a faixa até 8 blocos acima (prédio, árvores do parque, praça), removendo líquidos e vedando os vizinhos |
-| 12 | Bateria, seed 1 | `building_mismatch`: cascalho no lugar de granito em paredes | o granito (variação "gasta" do estilo de tijolos) é alvo das bolhas de minério, como a pedra | granito polido; `Palette.validate()` agora recusa em prédios e lotes qualquer bloco das tags que os minérios substituem |
-| 13 | Bateria, seed 1 (cidade a 139 de altura) | `building_mismatch`: `dripstone_block` nos andares altos de um prédio | um aglomerado de dripstone de um chunk vizinho tomou as salas fechadas por caverna | nas colunas de prédio perto da borda, tudo onde o prédio quer ar é removido, em toda a altura |
-| 14 | PNG da rede (terreno real) | muitas cidades de 1 quarteirão (64 × 64) | a regra de quarteirão exigia 5 de 5 amostras secas e niveladas | o meio do quarteirão precisa estar firme; 1 dos 4 cantos pode não estar (lagoa ou morrinho aterrados/cortados). Nos testes: 17–37 quarteirões por cidade, quase nenhuma de 1–2 |
-| 15 | Bateria final, seed 20261027 | `building_mismatch`: `mossy_cobblestone` numa parede, num andar alto | uma pedra de floresta (*forest rock*) de um chunk vizinho, acima da faixa que o reparo de lotes cobre | perto da borda, o reparo de prédios restaura todos os blocos do prédio (não só o ar); alcance do reparo ampliado ao vizinho inteiro |
-| 16 | Bateria final, seed 3478477863671517581 | `building_mismatch`: `cave_air` onde o prédio quer ar | falso positivo: `cave_air` é ar | a auditoria aceita qualquer tipo de ar |
-| 17 | Bateria final, seed −3297019724594858492 | `building_mismatch`: 2 blocos de escada de mão viraram `air` a 19 blocos do térreo | investigado no mundo gerado com o comando novo `/amcs column` via RCON: a parede de apoio estava intacta, mas em **outro chunk**; o vanilla reavalia posições marcadas para pós-processamento quando o chunk é promovido e a escada, sem apoio naquele momento, quebra | cada prédio escolhe, entre 4 poços possíveis (um por parede, junto a um canto), um em que escada e apoio ficam no mesmo chunk; no caso raríssimo em que os 4 cruzam a borda (0,015%), o prédio fica 1 bloco mais estreito. Teste novo `laddersAreHeldByWallsOfTheSameChunk`: 32 612 prédios, toda escada com parede sólida atrás e nenhuma apoiada em outro chunk |
-| 18 | `buildingsHaveTheirSizeRoomsAndLadders` (prédios com salas) | área de um andar inalcançável a partir da escada | o pilar de apoio da escada caía bem na passagem entre duas salas e a fechava | as passagens não usam células do pilar nem células com pilar dos dois lados; o teste percorre todo andar a partir da escada |
-| 19 | `buildingsHaveTheirSizeRoomsAndLadders` (teste 3D da escada em zigue-zague) | patamar do 1º andar inalcançável | o último degrau do lance de volta ficava 1 bloco abaixo do patamar seguinte, e a laje de cima impedia o pulo | o último degrau fica embutido no patamar (um stairs no lugar do piso) |
-| 20 | Teste no jogo pelo usuário (jar da escada em zigue-zague) | não dava para subir o lance de volta: a cabeça batia | acima dos degraus do lance de volta só havia 2 blocos livres (a laje do lance de cima descia junto); ao subir um degrau o jogador passa 1 bloco mais alto sobre a coluna que deixa, então precisa de 3. O teste 3D só cobrava 2 | o enchimento sob o lance de cima começa 1 bloco mais alto (3 livres acima de cada degrau); o teste 3D agora exige 3 blocos livres sobre a coluna de origem em toda subida |
-| 21 | Teste no jogo pelo usuário (escada em zigue-zague) | as caixas fechadas eram grandes demais e deixavam corredores de 1 bloco entre a caixa e as paredes das salas | — | a caixa fechada foi trocada pelas escadas abertas dos blueprints do usuário (lance reto por andar com `iron_bars` em volta das aberturas), 1 por prédio médio e 2 por grande |
-| 22 | Teste no jogo pelo usuário (escadas abertas) | buraco em degraus no teto da sala, ao lado da parte de baixo da escada | sob os degraus o vão era aberto inclusive no enchimento do teto | o enchimento continua fechado sob os degraus; só abre sobre eles, onde a cabeça precisa |
-| 23 | `buildingsHaveTheirSizeRoomsAndLadders` (sacadas) | coluna ocupada pelas sacadas de dois prédios médios frente a frente com 3 blocos de vão | a face só exigia 3 blocos livres de outros prédios, mas os dois saem 2 | a faixa livre passou para 2 × alcance + 1 = 5 blocos; na viela de 5 as sacadas dos dois lados ficam com 1 bloco entre elas |
-| 24 | Teste no jogo pelo usuário (sacadas e pilares) | pilares embutidos não agradaram: queria relevo | — | nas faces livres os pilares saem 1 bloco do 1º andar até o telhado (no térreo e nas laterais coladas no vizinho continuam embutidos) e dividem as sacadas que cruzam |
-| 25 | Teste no jogo pelo usuário (pilares em relevo, aprovado) | pediu mais variação: relevo negativo | — | três fachadas sorteadas em terços: lisa, relevo e recuo (faixas das janelas 1 bloco para dentro do 1º andar ao topo) |
-| 26 | `buildingsHaveTheirSizeRoomsAndLadders` (fachada com recuo) | andar de prédio médio com 7 salas (máximo 5) | só a coluna atrás de cada faixa recuada virava parede; as colunas atrás dos pilares e dos cantos ficavam como nichos de 1 bloco presos entre as faixas | nos andares com recuo toda a 1ª coluna junto às paredes vira parede |
-| 27 | Bateria, 8 nov (estruturas, já removidas) | `palette` derrubava o servidor: camas, fornalhas, fogueiras, sensor de luz e jukebox nas estruturas | block entities fora da lista permitida | `Palette.exempt` passou a aceitá-los (vazios) |
-| 28 | Bateria, 8 nov (estruturas, já removidas) | `building_mismatch` (17): diorito e dripstone no lugar de andesito das estruturas, acima de 8 blocos do chão | blobs de minério de chunks decorados depois; o reparo de vizinhos só cobria 8 blocos acima do chão | perto da borda, o reparo cobre a altura inteira do lote |
-| 29 | `FloraTest` (natureza, 11 nov) | vinha sem apoio onde duas copas se encontram | a copa de uma árvore corta o cacho de vinhas da outra | o índice de árvores descarta a vinha que não está presa em folha/tronco nem embaixo da mesma vinha |
-| 30 | `FloraTest` (natureza, 11 nov) | `ArrayIndexOutOfBounds` em `Park.code` | consulta de vinha da fonte acima da altura do molde (as árvores do parque são mais altas que a fonte) | limite de altura na consulta |
-| 31 | `FloraTest` (natureza, 11 nov) | grama sobre o piso da fonte onde falta uma laje do anel | a falha da laje punha grama sem olhar o bloco de baixo | sem grama nas falhas sobre a fonte |
-| 32 | `FloraTest` (piso musgoso, 11 nov) | o piso de pedra da fonte virou grama | a tabela de troca era montada antes do índice do `mossy_cobblestone` existir (ordem da inicialização estática: valia 0) | tabela declarada depois do índice |
-| 33 | Testes, 12 nov (estruturas) | todas as classes de estrutura falhavam ao carregar (`NullPointerException`) | a lista de blocos que não são piso e a fração mínima de piso eram declaradas depois do bloco estático que carrega as estruturas | o bloco de carga foi para o fim da classe |
-| 34 | `RingTest`, 12 nov | os lados curtos dos quarteirões 140 × 90 ficavam quase sempre vazios (9% das estruturas em cada) | as linhas dos lados compridos iam de canto a canto e as estruturas fundas (até 57) não deixavam espaço | os lados curtos vão de canto a canto; agora ~25% por lado |
-| 35 | Revisão, 12 nov | loot das estruturas (código de outra sessão) varria o volume inteiro da estrutura a cada coluna e lia o block entity direto do chunk em geração, onde ele ainda não existe | — | o loot é posto quando cada contêiner é colocado, pela região (como as estruturas vanilla); a auditoria passou a exigir loot nos contêineres das estruturas |
-| 36 | Bateria, 12 nov | `lot_hole` (até 200 por alvo): água e seagrass no nível do chão | a piscina da mansão abandonada, que desceu 1 bloco, fica no nível do chão | água planejada pela estrutura não conta como buraco |
-| 37 | Teste no jogo pelo usuário, 12 nov | a casa moderna abandonada aparecia de costas para a rua | a frente do molde dela é o lado +Z (todas as outras: -Z) | campo `frente` no `index.txt` (180) e giro por estrutura em `Structures.Def` |
-| 38 | Teste no jogo pelo usuário, 12 nov | a mansão pós-apocalíptica de costas para a rua; teias flutuando nela | frente no +Z do molde; teias sem apoio no molde | giro de 180° no índice; teias soltas viram ar em todas as estruturas (18) |
-| 39 | Teste no jogo pelo usuário, 12 nov | banners das farmácias lisos | o leitor de moldes ignorava os dados de block entity, onde ficam os desenhos | `Template.banners` guarda os padrões, aplicados quando o banner é colocado (geração e `/amcs spawn`); auditoria `banner_without_design` |
-| 40 | Bateria, 12 nov (quarteirões 180 × 120) | `building_mismatch` (3): folhas de bétula planejadas viraram ar | a limpeza de folhas órfãs (árvores naturais cortadas pela cidade) considerava toda folha não persistente; as das árvores reais do mod ficaram assim, e com o tronco num chunk ainda não gerado pareciam órfãs | a limpeza nunca remove folhas que o plano coloca (`ChunkBuilder.plannedLeaves`) |
-| 41 | `PlanAuditTest`, 12 nov (buracos nas pontes e desabamentos nos túneis, estes depois retirados) | `orphan_road` (18 de 105 auditorias): colunas de pista isoladas | a borda irregular, sorteada coluna a coluna, cercava colunas de pista | contorno irregular mas suave em volta do centro (ondas do ângulo) sem ilhas; 105 de 105 passam |
-| 42 | Bateria, 12 nov (pontes velhas) | servidor travado no viaduto e avisos `Detected setBlock in a far chunk` | nos trechos de muro caído, `wallTop` devolvia `Integer.MIN_VALUE + 1` e o laço da altura livre do reparo de vizinhos percorria ~2 bilhões de alturas; o muro também era posto nos trechos caídos (altura do vizinho) | `wallTop` devolve `Integer.MIN_VALUE` quando a coluna não tem muro e a altura livre começa na superfície |
-| 43 | Bateria e teste por RCON, 12–13 nov | a loot table `lostcitychest` (do Lost Cities) era rejeitada pelo Minecraft ao carregar | escape a mais em `custom_data` | substituída, a pedido do usuário, pelas tabelas vanilla próprias (`tools/gen_loot.py`); o log da bateria não tem mais erro de loot table |
-| 44 | `WorldPlanTest`, 13 nov (copas completadas) | nenhuma folha de copa planejada | `WorldPlan.citiesIn` só devolve cidades cujo centro cai no retângulo pedido, e o retângulo de um chunk quase nunca contém o centro | `Crowns.forChunk` usa `cityNear` |
-| 45 | Bateria, 13 nov (copas completadas) | `crown_leaf_missing` (todas, até 324 por alvo) e avisos `Detected setBlock in a far chunk` | o reparo de vizinhos tirava as folhas como decoração solta sobre o lote e a rua e, ao conferir os 4 vizinhos do bloco tirado, chamava `ensureCanWrite` 2 chunks longe (o que loga o aviso) | o reparo pula as folhas planejadas (`Overhangs.forChunk` do vizinho) e só confere vizinhos dentro da área de escrita (`canWrite`) |
-| 46 | Revisão, 13 nov (abandono) | a lista de blocos que não são inteiros, por trecho do nome, pegava `light_gray_concrete` (`light`), `sandstone` (`sand`), `mud_bricks` (`mud`), e tábuas e lã ficavam sem tapete de musgo | comparação por trecho em nomes curtos | esses nomes passam a ser comparados inteiros (`NOT_FULL_EXACT`); `WeatheringTest.wholeNamesAreNotTakenForParts` |
-| 47 | `WeatheringTest`, 13 nov | relatório com mais mudanças que as células mudadas (oficina média: 327 / 321) | uma mancha de musgo caía sobre um bloco que já tinha rachado | uma célula já mudada não recebe outra mudança |
-| 48 | `WorldPlanTest`, 13 nov | 11 812 lotes em vez de 11 818: o anel mudou | vinhas e um tapete fora da caixa dos blocos sólidos aumentavam a caixa (a estrutura afastava da calçada) | nada é posto fora da caixa original (`Editor.set` recusa); teste da caixa igual |
-| 49 | Medida, 13 nov | alvo de pedra rachada de 23% | a conta inicial incluía pedras sem versão rachada (`polished_deepslate`) | alvo de 31% da família que racha, a medida do próprio prédio |
-| 50 | `WeatheringTest`, 13 nov (vinhas fortes) | mansão abandonada com 15% no lado menos coberto (meta 25%) | os trechos de vinha que descem abaixo do fim da parede contavam para a meta sem cobrir fachada | só as vinhas na fachada contam |
-| 51 | `WeatheringTest`, 13 nov (vinhas fortes) | cobertura de vinhas da casa abandonada "caía" | o `moss_block` não contava como bloco inteiro: as vinhas ao lado de um piso que virou musgo saíam da conta | `moss_block` conta como parede (a vinha se prende nele) |
-| 52 | Teste no jogo pelo usuário, 13 nov | as variações de farmácia não eram iguais à original | um letreiro F A R M Á C I A em blocos coloridos sobre a parede branca | os blocos neutros da original voltam onde a variação os pintou (`withNeutralFrom`) |
-| 53 | Revisão, 13 nov (mesma comparação) | banners D R U G S T O R E das farmácias pequenas coloridas 1 bloco à esquerda | o deslocamento foi medido alinhando as caixas dos blocos sólidos; nas posições do molde ele é 0 | índice com `@0,0`; teste compara as posições dos banners com as da original |
-| 54 | Análise das 7 novas | a boca da rampa e o poço da escada do prédio largo seriam tapados pelo chão da cidade (todo ar na camada do chão vira chão) | regra antiga da camada do chão | ar ou `cave_air` com `cave_air` embaixo fica aberto (`Def.opening`); a auditoria aceita esse ar planejado (`lot_hole`) |
-| 55 | `RingTest`, 7 novas | folha com distância 7 na casa moderna com garagem | folhas salvas como não persistentes longe de qualquer tronco (cairiam no mundo) | viram persistentes na carga |
-| 56 | Revisão, 7 novas | `/amcs spawn` não cavaria a garagem nem abriria a rampa (ignorava todo ar no chão e abaixo) | regra do comando | o comando cava onde o plano tem ar abaixo do chão (só vem do `cave_air`) e abre as aberturas; conferido por RCON |
-| 57 | Teste no jogo pelo usuário, 13 nov | a escada da casa de vidro começava colada na parede de vidro da frente: só se subia entrando de lado | o molde | molde trocado (commit `7e0b2a9`): escada em L a partir do hall, patamar 2 × 2 no canto e corrimão contínuo de barras de ferro do pé da escada até a galeria |
-| 58 | Bateria, 13 nov (postes) | `parapet` (até 134 por alvo) e depois `height_mismatch` nas colunas dos postes | a auditoria tratava toda coluna de via não trafegável como muro de rodovia e media a altura do piso em todas | a coluna do poste fica fora dessas duas checagens e é conferida inteira por `street_light` |
-| 59 | `WorldPlanTest`, 13 nov (bancos) | vinha de árvore "pendurada no nada" sobre um banco | a coluna do banco devolvia vazio em todas as alturas, apagando a copa acima | acima do banco a árvore continua; só plantas do chão não nascem através dele |
-| 60 | `WorldPlanTest`, 13 nov (bancos) | 1 banco a cada 22,2 blocos de trilha (pedido: 15) | distância mínima de 12 entre bancos e poucos trechos retos de 4 blocos nas espirais | distância mínima de 8: 1 a cada 18,6; o resto é a forma das trilhas |
-| 61 | Teste no jogo pelo usuário, 13 nov | duas fileiras de terreno logo antes da rampa da garagem do prédio largo (também com `/amcs spawn`) | só ficava aberto o ar da camada do chão com `cave_air` logo embaixo; no topo da rampa, embaixo está a própria rampa (e na boca da escada, o degrau) | fica aberto também o ar da camada do chão ligado a essas aberturas (`StructureLoader.openings`, então `Structures.openings`): 99 células em vez de 87 |
-| 62 | Teste no jogo pelo usuário, 13 nov | aldeões e golem de ferro numa cidade gerada onde havia uma vila | as criaturas da vila nascem com as casas, antes da cidade, e ficavam no chunk quando a cidade era construída por cima | o mod as tira do chunk em geração na cidade e a até 32 blocos dela (aldeões, aldeões zumbis, golens, gatos) |
-| 63 | Bateria, 13 nov (postes abandonados) | `street_light` (até 962 por alvo): vinhas dos postes faltando | o reparo de vizinhos recolocava as peças do poste e logo depois a limpeza de plantas penduradas sobre a via apagava as vinhas | a limpeza poupa as peças planejadas dos postes |
-| 64 | Revisão do código, 12 nov (impressão digital) | os blocos de cada alvo mudaram entre duas rodadas iguais da bateria (mesmo código, mesma seed), também o número de block entities (1 142 e 1 017 na ponte) | o próprio Minecraft não gera igual quando o servidor gera os chunks em paralelo: features de chunks vizinhos postas em outra ordem mudam minérios, sculk, árvores, colmeias e baús (1 073 de 1 369 chunks diferentes na cidade do spawn, de y −64 para cima); nas posições do mod só mudaram propriedades que o Minecraft recalcula pelos vizinhos ao terminar um chunk: a distância das folhas e as ligações de barras e vidraças (na borda do chunk), a forma de uma escada, a neve sobre a grama, `cave_air` no lugar de ar, um lado de muro baixo ou alto, uma face de vinha presa num bloco do chunk vizinho; e o baú vazio de uma fonte só existia como block entity depois de recarregar o mundo | a impressão da bateria (`mod blocks:`) cobre só as posições que o mod decide, com essas propriedades em valor fixo e só os block entities das estruturas; conferida em mundos gerados à parte, recém-gerados e recarregados do disco (seção 6), e sensível a um bloco trocado na paleta (`smooth_basalt` → `basalt` no asfalto gasto: auditoria passa, impressão muda nos 3 alvos) |
-| 65 | Revisão do código, 13 nov (impressão digital) | com as vinhas das pontes na impressão da bateria, 3 dos 8 alvos diferiram entre o mundo de referência e um mundo novo do mesmo código | no lugar da vinha (ao lado do tabuleiro, descendo pelo ar) um mundo tinha folhas de uma árvore do vanilla (bétula, abeto) e o outro a vinha; numa coluna havia ar num mundo e vinha no outro. Hipótese (não provada): depende da ordem em que os chunks vizinhos são decorados. Os dois mundos vieram de commits diferentes (`4dd94ae` e `254ca56`); o que indica que não é o código é que o `ChunkBuilder` compilado não mudou entre eles (só as 7 chamadas sem o argumento fixo) e a impressão digital do planejador ficou igual | as vinhas das pontes ficaram fora da impressão; num passo que só move código, a prova é a listagem de instruções igual da função movida |
-| 66 | Revisão do código, 13 nov (nomes em inglês) | trocar os nomes das estruturas mudaria o abandono delas | a semente do abandono de cada estrutura era o `hashCode` do nome do arquivo | coluna `seed` no `index.txt` com o valor do nome antigo. Conferido: um resumo das 52 estruturas sem os nomes (células nas 4 rotações, abandono, acesso do loot, banners, aberturas, copas) igual no código antigo e no novo (`7e3083fc…`); na impressão digital do planejador só mudaram as 3 partes que guardam nomes (`layout`, `structures`, `weathering`); na bateria, vias e lotes iguais à referência em todos os chunks dos 8 alvos e as diferenças só nos block entities, iguais com o nome antigo da loot table trocado pelo novo (2 133 de 2 139 na cidade do spawn; os 6 outros são do vanilla, no subsolo); contagens iguais |
-| — | Bateria (infraestrutura) | servidores falhando com "Address already in use" | um servidor de uma bateria interrompida ainda terminava | o script usa a porta 25591 e se recusa a começar com um servidor de desenvolvimento vivo |
+| 1 | `ProfileTest`, `PlanAuditTest` (1 point in ~1 of every 6 highways) | a landing of 1 point at a fractional height | the allowed band (ramp cones of the two cities) has a plateau of 1 point at the top/bottom when the parity does not close; the profile stopped there | `Profile.build`: blocked at a fractional height, the profile turns back instead of stopping |
+| 2 | Battery (startup) | the battery took minutes to start | the network PNG sampled the game noise in ~750 thousand columns (each `getBaseHeight` builds a `NoiseChunk`, ~3 ms) | network render without terrain in the battery; plan renders sample the terrain every 8 blocks |
+| 3 | Battery (thread dump) | slow planning in areas with many highways | `tooClose` (the minimum distance between two highways) compared each point with ~800 points of the other | a spatial grid with a cell of 21 blocks: linear in the length |
+| 4 | Battery, seed 20261027 | `surface_block`, `hard_block`, `tunnel_wall`, `parapet`: copper/coal ore, dirt, gravel, granite, diorite and andesite in place of the `stone` of sidewalks, parapets and tunnel walls | the ores and blobs of dirt/gravel/rock (`ore_*`) of a chunk decorated later reach ~15 blocks into the neighbour already built and replace `stone` (the `smooth_stone` of the lanes cannot be replaced) | the neighbour repair restores surface, base, parapet, ceiling and tunnel walls on every road column of the neighbour |
+| 5 | Battery, seed 20261027 | `pillar_floating` (194 columns): a bridge over the sea without pillars | the neighbour repair repaved "eaten surface" also in neighbours **not built yet**; when that neighbour was built, the loose block was read as ground and the pillar did not go down | the repair only acts on neighbours that have passed the `FEATURES` stage (the others will be built from scratch) |
+| 6 | Battery, seed 20261027 | `building_mismatch`: leaves and mushrooms inside buildings | trees and mushrooms of chunks decorated later | the repair removes decoration in the volume of the neighbour's buildings, only where the building wants air |
+| 7 | Battery (audit) | `loot_in_city`: two chests at y 110 over a tunnel; `pillar_floating` under rock ledges | false positives: the audit looked at the whole column | containers only in the built volume; a "floating" pillar only if the air is above the natural ground of the noise |
+| 8 | Battery, seed 20261027 | `building_mismatch` (1,724): the slab bands of a building style were missing | the building repair treated `stripped_oak_log` (the band of style 7) as a tree trunk | the repair never removes a block the building defines; style 7 uses planks |
+| 9 | Battery, seed 20261027 (network PNG) | audits OK, but the real network was poor: 5 cities in ~7 × 7 km, nearly all without a highway | stage 1 drew **one** point per cell and refused the cell if it fell near water or on a hill; the real overworld has many more rivers and lakes than the synthetic terrains, so few cities and links too long | stage 1 tries up to 10 positions (the last ones with a smaller radius); candidate links up to 2,200 blocks (highway up to 3,000); a new synthetic terrain `RIVERS` and limits on isolated cities in the network test, so this class of problem is caught by `./gradlew test` |
+| 10 | `WorldPlanTest` (network) | "no exit facing the other city" was the main reason for a lost link (up to 48 of 126 on mixed terrain) | irregular cities have few T nodes on their outline, and each serves only one highway | the middle of each street segment of the outline is also an exit (a T junction with the outer street), with at least 48 blocks between used exits and an exit up to ~75° off the axis; the links kept went up from 51–96% to 74–100% and isolated cities ended between 0 and 4% |
+| 11 | Battery, seed 3478477863671517581 (rough city, level 114) | `lot_hole` (69) and `building_mismatch` (104): `cave_air` and `stone` in the floor of lots and buildings | a lava lake of a chunk decorated later digs the space above the liquid (`cave_air`) and puts a stone rim, inside the neighbour already built | the neighbour repair also restores lots: fill under the floor, floor, and the band up to 8 blocks above (building, park trees, plaza), removing liquids and sealing the neighbours |
+| 12 | Battery, seed 1 | `building_mismatch`: gravel in place of granite in walls | granite (the "worn" variant of the brick style) is a target of the ore blobs, like stone | polished granite; `Palette.validate()` now refuses in buildings and lots any block of the tags the ores replace |
+| 13 | Battery, seed 1 (city at a height of 139) | `building_mismatch`: `dripstone_block` on the high floors of a building | a dripstone cluster of a neighbouring chunk took the closed rooms for a cave | in the building columns near the edge, everything where the building wants air is removed, at every height |
+| 14 | Network PNG (real terrain) | many cities of 1 block (64 × 64) | the block rule demanded 5 of 5 dry, level samples | the middle of the block must be firm; 1 of the 4 corners may not be (a pond or a hillock filled/cut). In the tests: 17–37 blocks per city, almost none of 1–2 |
+| 15 | Final battery, seed 20261027 | `building_mismatch`: `mossy_cobblestone` in a wall, on a high floor | a forest rock of a neighbouring chunk, above the band the lot repair covers | near the edge, the building repair restores every block of the building (not only the air); the reach of the repair widened to the whole neighbour |
+| 16 | Final battery, seed 3478477863671517581 | `building_mismatch`: `cave_air` where the building wants air | a false positive: `cave_air` is air | the audit accepts any kind of air |
+| 17 | Final battery, seed −3297019724594858492 | `building_mismatch`: 2 ladder blocks turned into `air` 19 blocks above the ground floor | investigated in the generated world with the new `/amcs column` command over RCON: the supporting wall was intact, but in **another chunk**; vanilla re-evaluates positions marked for post-processing when the chunk is promoted, and the ladder, without support at that moment, breaks | each building picks, among 4 possible shafts (one per wall, next to a corner), one where ladder and support are in the same chunk; in the very rare case where all 4 cross the edge (0.015%), the building is 1 block narrower. New test `laddersAreHeldByWallsOfTheSameChunk`: 32,612 buildings, every ladder with a solid wall behind it and none supported in another chunk |
+| 18 | `buildingsHaveTheirSizeRoomsAndLadders` (buildings with rooms) | an area of a floor unreachable from the ladder | the support pillar of the ladder fell right in the passage between two rooms and closed it | the passages do not use pillar cells or cells with a pillar on both sides; the test walks every floor from the ladder |
+| 19 | `buildingsHaveTheirSizeRoomsAndLadders` (3D test of the zigzag stairs) | the landing of the 1st floor unreachable | the last step of the return flight was 1 block below the next landing, and the slab above prevented the jump | the last step is built into the landing (a stairs block in place of the floor) |
+| 20 | In-game test by the user (jar of the zigzag stairs) | the return flight could not be climbed: the head hit | above the steps of the return flight there were only 2 free blocks (the slab of the upper flight came down with it); going up a step the player passes 1 block higher over the column they leave, so it needs 3. The 3D test only demanded 2 | the filling under the upper flight starts 1 block higher (3 free above each step); the 3D test now demands 3 free blocks over the column of origin on every climb |
+| 21 | In-game test by the user (zigzag stairs) | the closed boxes were too big and left corridors of 1 block between the box and the walls of the rooms | — | the closed box was replaced by the open stairs of the user's blueprints (a straight flight per floor with `iron_bars` around the openings), 1 per medium building and 2 per large one |
+| 22 | In-game test by the user (open stairs) | a stepped hole in the ceiling of the room, next to the lower part of the stairs | under the steps the opening was open also in the ceiling filling | the filling stays closed under the steps; it only opens over them, where the head needs it |
+| 23 | `buildingsHaveTheirSizeRoomsAndLadders` (balconies) | a column taken by the balconies of two medium buildings facing each other with a gap of 3 blocks | the face only demanded 3 blocks free of other buildings, but both stick out 2 | the free band became 2 × reach + 1 = 5 blocks; in the alley of 5 the balconies of the two sides have 1 block between them |
+| 24 | In-game test by the user (balconies and pillars) | flush pillars did not please: wanted relief | — | on the free faces the pillars stick out 1 block from the 1st floor to the roof (on the ground floor and on the sides against the neighbour they stay flush) and split the balconies that cross them |
+| 25 | In-game test by the user (pillars in relief, approved) | asked for more variety: negative relief | — | three facades drawn in thirds: plain, relief and recess (the window bands 1 block inward from the 1st floor to the top) |
+| 26 | `buildingsHaveTheirSizeRoomsAndLadders` (recessed facade) | a floor of a medium building with 7 rooms (maximum 5) | only the column behind each recessed band became wall; the columns behind the pillars and the corners stayed as niches of 1 block caught between the bands | on recessed floors the whole 1st column against the walls becomes wall |
+| 27 | Battery, 8 Nov (structures, since removed) | `palette` brought the server down: beds, furnaces, campfires, daylight detector and jukebox in the structures | block entities outside the allowed list | `Palette.exempt` now accepts them (empty) |
+| 28 | Battery, 8 Nov (structures, since removed) | `building_mismatch` (17): diorite and dripstone in place of the andesite of the structures, more than 8 blocks above the ground | ore blobs of chunks decorated later; the neighbour repair only covered 8 blocks above the ground | near the edge, the repair covers the whole height of the lot |
+| 29 | `FloraTest` (nature, 11 Nov) | an unsupported vine where two crowns meet | the crown of one tree cuts the strand of vines of the other | the tree index drops the vine that is not held by a leaf/log nor under the same vine |
+| 30 | `FloraTest` (nature, 11 Nov) | `ArrayIndexOutOfBounds` in `Park.code` | a query for a fountain vine above the height of the template (the park trees are taller than the fountain) | a height limit in the query |
+| 31 | `FloraTest` (nature, 11 Nov) | grass on the fountain floor where a slab of the ring is missing | the slab gap put grass without looking at the block below | no grass in the gaps over the fountain |
+| 32 | `FloraTest` (mossy floor, 11 Nov) | the stone floor of the fountain turned into grass | the swap table was built before the index of `mossy_cobblestone` existed (order of the static initialization: it was 0) | the table declared after the index |
+| 33 | Tests, 12 Nov (structures) | every structure class failed to load (`NullPointerException`) | the list of blocks that are not floor and the minimum floor fraction were declared after the static block that loads the structures | the loading block moved to the end of the class |
+| 34 | `RingTest`, 12 Nov | the short sides of the 140 × 90 blocks were nearly always empty (9% of the structures on each) | the rows of the long sides ran corner to corner and the deep structures (up to 57) left no room | the short sides run corner to corner; now ~25% per side |
+| 35 | Review, 12 Nov | the structure loot (code from another session) swept the whole volume of the structure for every column and read the block entity straight from the chunk being generated, where it does not exist yet | — | the loot is set when each container is placed, through the region (like the vanilla structures); the audit now demands loot in the containers of the structures |
+| 36 | Battery, 12 Nov | `lot_hole` (up to 200 per target): water and seagrass at ground level | the pool of the abandoned mansion, which went 1 block down, is at ground level | water planned by the structure does not count as a hole |
+| 37 | In-game test by the user, 12 Nov | the abandoned modern house showed up with its back to the street | the front of its template is the +Z side (all the others: -Z) | a `front` field in `index.txt` (180) and a turn per structure in `Structures.Def` |
+| 38 | In-game test by the user, 12 Nov | the post-apocalyptic mansion with its back to the street; cobwebs floating in it | front on the +Z of the template; unsupported cobwebs in the template | a 180° turn in the index; loose cobwebs become air in every structure (18) |
+| 39 | In-game test by the user, 12 Nov | plain pharmacy banners | the template reader ignored the block entity data, where the designs are | `Template.banners` keeps the patterns, applied when the banner is placed (generation and `/amcs spawn`); audit `banner_without_design` |
+| 40 | Battery, 12 Nov (180 × 120 blocks) | `building_mismatch` (3): planned birch leaves turned into air | the cleanup of orphan leaves (natural trees cut by the city) took every non-persistent leaf; those of the mod's real trees are like that, and with the trunk in a chunk not generated yet they looked orphaned | the cleanup never removes leaves the plan places (`ChunkBuilder.plannedLeaves`) |
+| 41 | `PlanAuditTest`, 12 Nov (holes in the bridges and cave-ins in the tunnels, the latter later taken out) | `orphan_road` (18 of 105 audits): isolated lane columns | the irregular edge, drawn column by column, fenced in lane columns | an irregular but smooth outline around the center (waves of the angle) without islands; 105 of 105 pass |
+| 42 | Battery, 12 Nov (old bridges) | the server froze on the viaduct and `Detected setBlock in a far chunk` warnings | in the fallen wall stretches, `wallTop` returned `Integer.MIN_VALUE + 1` and the clearance loop of the neighbour repair went through ~2 billion heights; the wall was also placed in the fallen stretches (height of the neighbour) | `wallTop` returns `Integer.MIN_VALUE` when the column has no wall and the clearance starts at the surface |
+| 43 | Battery and RCON test, 12–13 Nov | the loot table `lostcitychest` (from Lost Cities) was rejected by Minecraft at load time | an extra escape in `custom_data` | replaced, at the user's request, by its own vanilla tables (`tools/gen_loot.py`); the battery log has no loot table error anymore |
+| 44 | `WorldPlanTest`, 13 Nov (completed crowns) | no planned crown leaf | `WorldPlan.citiesIn` only returns cities whose center falls in the rectangle asked for, and the rectangle of a chunk almost never holds the center | `Crowns.forChunk` uses `cityNear` |
+| 45 | Battery, 13 Nov (completed crowns) | `crown_leaf_missing` (all of them, up to 324 per target) and `Detected setBlock in a far chunk` warnings | the neighbour repair took the leaves away as loose decoration over the lot and the street and, when checking the 4 neighbours of the removed block, called `ensureCanWrite` 2 chunks away (which logs the warning) | the repair skips the planned leaves (`Overhangs.forChunk` of the neighbour) and only checks neighbours inside the writable area (`canWrite`) |
+| 46 | Review, 13 Nov (overgrowth) | the list of blocks that are not full, by part of the name, caught `light_gray_concrete` (`light`), `sandstone` (`sand`), `mud_bricks` (`mud`), and planks and wool got no moss carpet | comparison by part on short names | these names are now compared whole (`NOT_FULL_EXACT`); `WeatheringTest.wholeNamesAreNotTakenForParts` |
+| 47 | `WeatheringTest`, 13 Nov | a report with more changes than changed cells (medium workshop: 327 / 321) | a moss patch fell on a block that had already cracked | a cell already changed gets no other change |
+| 48 | `WorldPlanTest`, 13 Nov | 11,812 lots instead of 11,818: the ring changed | vines and a carpet outside the box of the solid blocks made the box bigger (the structure moved away from the sidewalk) | nothing is placed outside the original box (`Editor.set` refuses); a test of the equal box |
+| 49 | Measurement, 13 Nov | a cracked stone target of 23% | the first count included stones without a cracked version (`polished_deepslate`) | a target of 31% of the family that cracks, the measure of the building itself |
+| 50 | `WeatheringTest`, 13 Nov (strong vines) | the abandoned mansion with 15% on its least covered side (target 25%) | the stretches of vine hanging below the end of the wall counted toward the target without covering facade | only the vines on the facade count |
+| 51 | `WeatheringTest`, 13 Nov (strong vines) | the vine coverage of the abandoned house "dropped" | `moss_block` did not count as a full block: the vines next to a floor turned into moss left the count | `moss_block` counts as wall (the vine holds on it) |
+| 52 | In-game test by the user, 13 Nov | the pharmacy variants were not equal to the original | an F A R M Á C I A sign in colored blocks on the white wall | the neutral blocks of the original come back where the variant painted them (`withNeutralFrom`) |
+| 53 | Review, 13 Nov (same comparison) | the D R U G S T O R E banners of the small pharmacies placed 1 block to the left | the offset was measured by aligning the boxes of the solid blocks; in the template positions it is 0 | the index with `@0,0`; the test compares the banner positions with those of the original |
+| 54 | Analysis of the 7 new ones | the mouth of the ramp and the stairwell of the wide building would be covered by the city ground (all air on the ground layer becomes ground) | the old rule of the ground layer | air or `cave_air` with `cave_air` below stays open (`Def.opening`); the audit accepts this planned air (`lot_hole`) |
+| 55 | `RingTest`, 7 new ones | a leaf with distance 7 in the modern garage house | leaves saved as not persistent far from any trunk (they would fall in the world) | they become persistent at load time |
+| 56 | Review, 7 new ones | `/amcs spawn` would not dig the garage nor open the ramp (it ignored all air on the ground and below) | the rule of the command | the command digs where the plan has air below the ground (it only comes from `cave_air`) and opens the openings; checked over RCON |
+| 57 | In-game test by the user, 13 Nov | the stairs of the glass house started against the glass wall of the front: one could only climb by going in from the side | the template | template replaced (commit `7e0b2a9`): L-shaped stairs from the hall, a 2 × 2 landing in the corner and a continuous iron-bar railing from the foot of the stairs to the gallery |
+| 58 | Battery, 13 Nov (street lights) | `parapet` (up to 134 per target) and then `height_mismatch` on the street light columns | the audit treated every non-drivable road column as a highway wall and measured the floor height on all of them | the street light column is out of these two checks and checked whole by `street_light` |
+| 59 | `WorldPlanTest`, 13 Nov (benches) | a tree vine "hanging from nothing" over a bench | the bench column returned empty at every height, erasing the crown above | above the bench the tree goes on; only ground plants do not grow through it |
+| 60 | `WorldPlanTest`, 13 Nov (benches) | 1 bench per 22.2 blocks of path (asked: 15) | a minimum distance of 12 between benches and few straight stretches of 4 blocks on the spirals | a minimum distance of 8: 1 per 18.6; the rest is the shape of the paths |
+| 61 | In-game test by the user, 13 Nov | two rows of terrain just before the garage ramp of the wide building (also with `/amcs spawn`) | only the air of the ground layer with `cave_air` right below stayed open; at the top of the ramp, below is the ramp itself (and at the mouth of the stairs, the step) | the air of the ground layer joined to those openings also stays open (`StructureLoader.openings`, then `Structures.openings`): 99 cells instead of 87 |
+| 62 | In-game test by the user, 13 Nov | villagers and an iron golem in a city generated where there was a village | the village creatures spawn with the houses, before the city, and stayed in the chunk when the city was built over them | the mod takes them out of the chunk being generated in the city and up to 32 blocks from it (villagers, zombie villagers, golems, cats) |
+| 63 | Battery, 13 Nov (abandoned street lights) | `street_light` (up to 962 per target): street light vines missing | the neighbour repair put the street light parts back and right after it the cleanup of hanging plants over the road erased the vines | the cleanup spares the planned street light parts |
+| 64 | Code review, 12 Nov (fingerprint) | the blocks of each target changed between two equal runs of the battery (same code, same seed), the number of block entities too (1,142 and 1,017 on the bridge) | Minecraft itself does not generate the same when the server generates the chunks in parallel: features of neighbouring chunks placed in another order change ores, sculk, trees, beehives and chests (1,073 of 1,369 chunks different in the spawn city, from y −64 up); at the mod's positions only properties that Minecraft recomputes from the neighbours when it finishes a chunk changed: the distance of leaves and the connections of bars and panes (at the edge of the chunk), the shape of a stairs block, the snow on grass, `cave_air` in place of air, a wall side low or tall, a vine face held by a block of the neighbouring chunk; and the empty chest of a fountain only existed as a block entity after reloading the world | the battery fingerprint (`mod blocks:`) covers only the positions the mod decides, with these properties at a fixed value and only the block entities of the structures; checked on worlds generated apart, freshly generated and reloaded from disk (section 6), and sensitive to one block swapped in the palette (`smooth_basalt` → `basalt` in the worn asphalt: the audit passes, the fingerprint changes on the 3 targets) |
+| 65 | Code review, 13 Nov (fingerprint) | with the bridge vines in the battery fingerprint, 3 of the 8 targets differed between the reference world and a new world of the same code | in place of the vine (next to the deck, hanging through the air) one world had leaves of a vanilla tree (birch, spruce) and the other the vine; in one column there was air in one world and a vine in the other. Hypothesis (not proven): it depends on the order in which the neighbouring chunks are decorated. The two worlds came from different commits (`4dd94ae` and `254ca56`); what indicates it is not the code is that the compiled `ChunkBuilder` did not change between them (only the 7 calls without the fixed argument) and the planner fingerprint stayed the same | the bridge vines stay out of the fingerprint; in a step that only moves code, the proof is the identical bytecode listing of the moved method |
+| 66 | Code review, 13 Nov (English names) | renaming the structures would change their overgrowth | the overgrowth seed of each structure was the `hashCode` of the file name | a `seed` column in `index.txt` with the value of the old name. Checked: a summary of the 52 structures without the names (cells in the 4 rotations, overgrowth, loot access, banners, openings, crowns) equal in the old and the new code (`7e3083fc…`); in the planner fingerprint only the 3 parts that hold names changed (`layout`, `structures`, `weathering`); in the battery, roads and lots equal to the reference in every chunk of the 8 targets and the differences only in the block entities, equal with the old loot table name swapped for the new one (2,133 of 2,139 in the spawn city; the 6 others are vanilla, underground); counts equal |
+| — | Battery (infrastructure) | servers failing with "Address already in use" | a server of an interrupted battery was still shutting down | the script uses port 25591 and refuses to start while a development server is alive |
 
-## 4. Como reproduzir
+## 4. How to reproduce
 
 ```bash
-./gradlew test                                   # unitários, ~2 min (renders em build/test-renders/)
-./gradlew test --tests '*WorldPlanTest.streetWidthIsConstantOnStraightStreets'   # só um teste
-tools/selftest.sh quick 20261027                 # bateria rápida (3 alvos), ~4 min
+./gradlew test                                   # unit tests, ~2 min (renders in build/test-renders/)
+./gradlew test --tests '*WorldPlanTest.streetWidthIsConstantOnStraightStreets'   # a single test
+tools/selftest.sh quick 20261027                 # quick battery (3 targets), ~4 min
 tools/selftest.sh full 20261027 -3297019724594858492 3478477863671517581 1
-cat run/selftest/<seed>/report.txt               # termina com RESULT: PASS ou FAIL
-./gradlew test --tests '*FingerprintTest'        # impressão digital do planejador, ~30 s
-# conferências de uma mudança que não deve alterar o mundo (tools/verify/):
-python3 tools/verify/compare_battery.py run/selftest/<seed>/report.txt      # contra a referência (seção 6)
+cat run/selftest/<seed>/report.txt               # ends with RESULT: PASS or FAIL
+./gradlew test --tests '*FingerprintTest'        # planner fingerprint, ~30 s
+# checks of a change that must not alter the world (tools/verify/):
+python3 tools/verify/compare_battery.py run/selftest/<seed>/report.txt      # against the reference (section 6)
 python3 tools/verify/compare_battery.py R.txt tools/verify/reference/battery-20261027-quick-overgrowth-off.txt
-tools/verify/javap_dump.sh build/verify/antes                # listagem de instruções, antes da mudança
-tools/verify/javap_dump.sh build/verify/depois               # e depois (./gradlew compileJava entre os dois)
-python3 tools/verify/compare_methods.py build/verify/antes build/verify/depois [--owners A,B] [--ignore-slots]
-# se uma linha mod blocks: mudar: onde (por chunk e coluna) e quais blocos
+tools/verify/javap_dump.sh build/verify/before               # bytecode listing, before the change
+tools/verify/javap_dump.sh build/verify/after                # and after (./gradlew compileJava between the two)
+python3 tools/verify/compare_methods.py build/verify/before build/verify/after [--owners A,B] [--ignore-slots]
+# if a mod blocks: line changes: where (per chunk and column) and which blocks
 python3 tools/verify/compare_block_detail.py A/renders/t01_blocks.txt B/renders/t01_blocks.txt
-python3 tools/verify/chunk_diff.py run/selftest_world_ref_english <outro mundo> CX,CZ --ymin 60
+python3 tools/verify/chunk_diff.py run/selftest_world_ref_english <other world> CX,CZ --ymin 60
 ```
 
-O `run/config/abandonedmoderncity-common.toml` do servidor de desenvolvimento tem valores antigos (`cellSize = 512`,
-`maxRadius = 131`) que o mod recusa como inconsistentes: o log diz "Invalid config ... using the defaults" e a
-bateria usa os padrões (736 e 230), como mostra a primeira linha do relatório.
+The `run/config/abandonedmoderncity-common.toml` of the development server has old values (`cellSize = 512`,
+`maxRadius = 131`) that the mod refuses as inconsistent: the log says "Invalid config ... using the defaults" and the
+battery uses the defaults (736 and 230), as the first line of the report shows.
 
-No jogo (op):
-- `/amcs locate city` (ou `highway`, `tunnel`, `bridge`);
-- `/amcs info`, que mostra o que o plano quer na coluna;
-- `/amcs audit 6` e `/amcs plan 12`;
-- `/amcs locate structure <nome|tipo|grupo>` e `/amcs spawn <categoria> <nome>`.
+In game (op):
+- `/amcs locate city` (or `highway`, `tunnel`, `bridge`);
+- `/amcs info`, which shows what the plan wants at the column;
+- `/amcs audit 6` and `/amcs plan 12`;
+- `/amcs locate structure <name|type|group>` and `/amcs spawn <category> <name>`.
 
-Teste dos comandos de estrutura (12 nov 2026, servidor de desenvolvimento via RCON, seed 20261027, a partir de
-0 70 0): `locate structure tower` → 1 707 blocos; `pharmacy` (grupo) → `pharmacy_red` a 290; `houses` (tipo) →
-`abandoned_house` a 331; nome inválido lista os nomes aceitos. No mundo gerado, a coordenada da farmácia cai na
-calçada (`smooth_stone`) e a coluna atrás é o lote da estrutura (`/amcs info`: BUILDING). `spawn tower` olhando
-para o sul: caixa 2 blocos à frente, 62 de largura centralizada, chão no bloco do terreno, 311 793 blocos e 178
-contêineres com loot; `spawn pharmacy_red` olhando para o oeste: frente virada para o leste (para quem
-executou). Depois dos banners: `spawn pharmacy_red` e `data get block` nos banners das pontas: E (listras esquerda,
-topo, meio e base, borda) e D (listras e borda ondulada) — quem olha a fachada lê DRUGSTORE.
+Test of the structure commands (12 Nov 2026, development server over RCON, seed 20261027, from 0 70 0; with the
+Portuguese names of the time, today `tower`, `pharmacy`, `pharmacy_red`, `houses` and `abandoned_house`):
+`locate structure torre` → 1,707 blocks; `farmacia` (group) → `farmacia_vermelho` at 290; `casas` (type) →
+`casa_abandonada` at 331; an invalid name lists the accepted names. In the generated world, the coordinate of the
+pharmacy falls on the sidewalk (`smooth_stone`) and the column behind it is the lot of the structure (`/amcs info`:
+BUILDING). `spawn torre` looking south: the box 2 blocks ahead, 62 wide and centered, its ground on the terrain block,
+311,793 blocks and 178 containers with loot; `spawn farmacia_vermelho` looking west: the front facing east (toward
+the player). After the banners: `spawn farmacia_vermelho` and `data get block` on the banners at the ends: E (left,
+top, middle and bottom stripes, border) and D (stripes and wavy border) — whoever looks at the facade reads
+DRUGSTORE.
 
-Vinhas das pontes (12 nov 2026, RCON): ao redor do viaduto seco mais longo da seed 20261027 (-1965 86 -1382)
-há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um desnível pequeno não tem vinhas
-(as colunas da borda dela são de via no chão, sem muro de ponte).
+Bridge vines (12 Nov 2026, RCON): around the longest dry viaduct of seed 20261027 (-1965 86 -1382) there are ~700
+vine blocks hanging from the edges; a "bridge" of 12 blocks over a small drop has no vines (its edge columns are
+road on the ground, without a bridge wall).
 
-## 5. Desempenho medido
+## 5. Measured performance
 
-- **Amostras de terreno:** cada `getBaseHeight` custa ~2,7 ms, porque monta um `NoiseChunk` de uma coluna. O
-  planejamento usa ~9 amostras por célula para decidir a cidade, ~5 por quarteirão e 1 a cada 4 blocos de rodovia.
-  Tudo fica em cache.
-- **Geração por chunk na feature** (inclui planejamento e reparo dos vizinhos):
-  - 1,2–1,3 ms antes das cidades de 186;
-  - no Abandoned Simple City, com prédios: 2,45 ms com as cidades de 186 (seed 20261027: uma cidade 4 × 4 com 950
-    prédios), entre 2,26 e 2,77 ms nas versões seguintes (escadas, fachadas, profundidade elástica, salas);
-  - 2,25 ms sem prédios (este mod, 7 nov);
-  - para comparar, o próprio Minecraft gasta dezenas de ms por chunk.
-- **Testes unitários:** ~2 min no total (sem o teste dos prédios, que levava ~8 min).
+- **Terrain samples:** each `getBaseHeight` costs ~2.7 ms, because it builds a `NoiseChunk` of one column. Planning
+  uses ~9 samples per cell to decide the city, ~5 per block and 1 every 4 blocks of highway. Everything is cached.
+- **Generation per chunk in the feature** (planning and neighbour repair included):
+  - 1.2–1.3 ms before the cities of 186;
+  - in Abandoned Simple City, with buildings: 2.45 ms with the cities of 186 (seed 20261027: a 4 × 4 city with 950
+    buildings), between 2.26 and 2.77 ms in the following versions (ladders, facades, elastic depth, rooms);
+  - 2.25 ms without buildings (this mod, 7 Nov);
+  - for comparison, Minecraft itself spends tens of ms per chunk.
+- **Unit tests:** ~2 min in all (without the buildings test, which took ~8 min).
 
-## 6. Resultados atuais (12 nov 2026, quarteirões 180 × 120 com anel de estruturas com vãos e miolo tomado pela natureza, ruas e rodovias de 33, cidades no meio de células de 736, 4 entradas)
+## 6. Current results (12 Nov 2026, blocks of 180 × 120 with a ring of structures with gaps and a core taken over by nature, streets and highways of 33, cities in the middle of cells of 736, 4 entrances)
 
-- **Unitários:** 45 passam e 1 é pulado (o teste sem estruturas), 13 nov 2026, depois da retirada das ruas cortadas (e do teste delas); `./gradlew build` em ~2 min (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
-  - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas.
-  - **Rede (7 terrenos × 3 seeds, 81 células), cidades no meio da célula de 736, 4 entradas (uma por lado):** 35 a
-    62 cidades por combinação, 76 a 121 ligações candidatas. Rodovias mantidas: 99–119 no plano, nas colinas e nos
-    cânions (93–98%); 97–112 nas montanhas (91–93%); 85–96 nos rios (83–86%); 91–110 no terreno misto (85–92%);
-    59–64 nas ilhas (76–78%). No máximo 2 cidades sem rodovia por combinação. Com 4 entradas quaisquer das 8
-    (rejeitado em 11 nov): só 82 de 106 no plano, 22 por curva fechada, rede partida em 4 grupos.
-  - **Anel (6 000 quarteirões), vãos de 4 a 17:** ~8,2 estruturas por quarteirão, ~25% em cada lado, 51% da área
-    livre coberta (com vãos de 10 a 19 eram 7,7 e 45%); 13 nov, com 21 estruturas: sem repetir no quarteirão 8,15
-    por quarteirão e 50,9% coberto; antes da regra 8,41 e 51,1%, com 80% dos quarteirões tendo alguma repetida;
-    simulação prévia dos tamanhos com vãos: 140 × 90 → 5,0 por quarteirão, 160 × 110 → 6,5, 180 × 120 → 7,2,
-    200 × 130 → 8,2.
-- **Abandono das estruturas (13 nov):** rachado da família que racha / verde sob teto / verde a céu aberto /
-  fachada externa com vinhas / lado menos coberto (lados de 40+ células), antes → depois (alvos 31% / 8,2% / 35,8% /
-  25% por lado; "-" = sem candidatos):
+- **Unit:** 45 pass and 1 is skipped (the test without structures), 13 Nov 2026, after the cut streets (and their
+  test) were taken out; `./gradlew build` in ~2 min (Linux, JDK 21:
+  `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (the
+  test area shrank with the cell).
+  - **Plan audits:** 105 audits column by column, no failures.
+  - **Network (7 terrains × 3 seeds, 81 cells), cities in the middle of the cell of 736, 4 entrances (one per
+    side):** 35 to 62 cities per combination, 76 to 121 candidate links. Highways kept: 99–119 on the flat, hills and
+    canyons (93–98%); 97–112 on the mountains (91–93%); 85–96 on the rivers (83–86%); 91–110 on the mixed terrain
+    (85–92%); 59–64 on the islands (76–78%). At most 2 cities without a highway per combination. With any 4 entrances
+    of the 8 (rejected on 11 Nov): only 82 of 106 on the flat, 22 lost to a sharp curve, the network split into 4
+    groups.
+  - **Ring (6,000 blocks), gaps of 4 to 17:** ~8.2 structures per block, ~25% on each side, 51% of the free ground
+    covered (with gaps of 10 to 19 it was 7.7 and 45%); 13 Nov, with 21 structures: without repeats in the block 8.15
+    per block and 50.9% covered; before the rule 8.41 and 51.1%, with 80% of the blocks having some repeated one; an
+    earlier simulation of the sizes with gaps: 140 × 90 → 5.0 per block, 160 × 110 → 6.5, 180 × 120 → 7.2,
+    200 × 130 → 8.2.
+- **Structure overgrowth (13 Nov):** cracked of the family that cracks / green under a roof / green under the open
+  sky / outer facade with vines / least covered side (sides of 40+ cells), before → after (targets 31% / 8.2% /
+  35.8% / 25% per side; "-" = no candidates):
 
-  | Estrutura | Antes | Depois |
+  | Structure | Before | After |
   |---|---|---|
   | `abandoned_house` | 48% / 0% / 4% / 38% / 28% | 60% / 8% / 35% / 38% / 28% |
   | `abandoned_modern_house` | 36% / 19% / 36% / 36% / 35% | 36% / 19% / 36% / 36% / 36% |
@@ -407,87 +414,97 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
   | `tower` | 39% / 2% / 4% / 4% / 3% | 49% / 8% / 35% / 26% / 26% |
   | `apocalyptic_building_57x45` | 31% / 9% / 43% / 11% / 9% | 31% / 9% / 43% / 27% / 27% |
 
-- **Bateria no mundo:**
+- **In-world battery** (each row keeps the names in use on its date: before the English names the
+  structures, categories and loot tiers had Portuguese names, such as `predio_largo_abandonado` for
+  `abandoned_wide_building`, `delegacia_abandonada` for `abandoned_police_station`, the categories `casa`, `predio` and
+  `delegacia` for `house`, `building` and `police_station`, and `bau`, `barril` and `vaso` with `_dificil` for
+  `chest`, `barrel` and `pot` with `_hard`):
 
-  | Seed | Escopo | Data | Versão | Resultado |
+  | Seed | Scope | Date | Version | Result |
   |---|---|---|---|---|
-  | — | RCON | 13 nov | comandos com os nomes em inglês (servidor de desenvolvimento, mundo `cmdtest_world`) | `/amcs locate structure abandoned_wide_building` (nome), `pharmacy` (grupo) e `buildings_large` (tipo) acharam as mais próximas; `execute positioned 1000 200 1000 rotated 180 0 run amcs spawn house abandoned_house` pôs a casa (57 contêineres com loot, 1 de difícil acesso) e `... spawn building abandoned_wide_building` o prédio largo (249, 191 de difícil acesso); no mundo salvo os baús têm as tabelas novas (`chests/house/barrel` 46, `house/chest` 10, `house/chest_hard` 1; `building/barrel` 29, `barrel_hard` 87, `chest` 29, `chest_hard` 104); `spawn house abandoned_wide_building` recusado com a lista das casas e a categoria antiga `casa` com a lista das categorias novas |
-  | `20261027` | padrão (8 alvos) e rápido com `structureOvergrowth = false` | 13 nov | nomes das estruturas, categorias, grupos e loot tables em inglês (achado 66) | PASS nos dois, contagens iguais às referências anteriores; vias e lotes iguais em todos os chunks; só os nomes das loot tables nos baús mudaram, e as linhas `mod blocks:` passaram a ser a referência nova (acima); 2,69 ms por chunk, 243 s |
-  | `20261027` | padrão (8 alvos) | 13 nov | revisão: classes com o nome do mod antigo renomeadas (`AMCSimple` → `AbandonedModernCity`, `SimpleConfig` → `AmcsConfig`, `SimpleCommands` → `AmcsCommands`) | PASS: `tools/verify/compare_battery.py` igual à referência (8 de 8); 2,65 ms por chunk, 244 s. Bytecode igual em todos os 1 322 membros com os nomes antigos trocados pelos novos (`compare_methods.py`) |
-  | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 3c: o reparo de vizinhos sai de `ChunkBuilder` para `gen/NeighbourRepair` | PASS: 8 de 8, 0 erros de geração; `mod blocks:` e contagens iguais à referência; 2,69 ms por chunk, 250 s. Impressão digital do planejador igual; função por função, dos 61 membros de `ChunkBuilder` 54 ficaram com o corpo igual (vinhas das pontes, aterro, taludes, vedação de líquidos incluídos) e 7 foram para `NeighbourRepair` com o corpo igual; nenhuma outra classe mudou |
-  | `20261027` | padrão (8 alvos) e rápido com `structureOvergrowth = false` | 13 nov | revisão, passo 3b: o preparo dos moldes sai de `Structures` para `core/StructureLoader` | PASS nos dois: `mod blocks:` e contagens iguais à referência (8 de 8) e à referência com o abandono desligado (3 de 3); 2,71 ms por chunk, 253 s. Impressão digital do planejador igual (com `structures` e `weathering`); função por função: as 14 funções e constantes movidas com o mesmo corpo (a menos de `blockOf`/`isLogName`/`withProps` chamadas agora pelo nome da classe e de `ldc` no lugar de `ldc_w`) |
-  | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 3a: postes saem de `City` para `core/StreetLights` | PASS: 8 de 8, 0 erros de geração; `mod blocks:` e contagens iguais à referência; 2,93 ms por chunk, 263 s. Impressão digital do planejador igual (com `lamps`); função por função: `lampAt`, `lampVine` e as 28 constantes com o corpo igual, `lampParts` só com outra forma de carregar a mesma constante, `lampCandidate` só lendo a semente do argumento em vez do campo da cidade |
-  | `20261027` | rápido (3 alvos) | 13 nov | referência com `structureOvergrowth = false` (log "Structure overgrowth off") | PASS: 3 de 3, 0 erros de geração; mundo novo e recarregado com as mesmas 3 linhas `mod blocks:` (a referência acima); 4,59 ms por chunk, 149 s |
-  | `20261027` | padrão (8 alvos) | 13 nov | revisão: 3 constantes que ficaram sem uso (`Params.ARC_RADIUS`, `AVENUE_EVERY`, `LOT_SETBACK`) | PASS: 8 de 8, 0 erros de geração; `mod blocks:` e contagens iguais à referência; 142 estados da paleta; 2,79 ms por chunk, 253 s. Impressão digital do planejador igual |
-  | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 2d: ruas cortadas retiradas (`City.MAX_CUTS`, o sorteio dos cortes, `removed_street` e o teste delas) | PASS: 8 de 8, 0 erros de geração; as 8 linhas `mod blocks:` iguais à referência e as contagens iguais (menos `loot_containers_anywhere`); 142 estados da paleta; 2,73 ms por chunk, 248 s. Impressão digital do planejador igual |
-  | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 2c: código morto (estilos de prédio do Simple City, tipos de lote praça e vazio, 26 códigos de bloco, argumento `style` de `Palette.of`, 11 declarações sem uso) | PASS: 8 de 8, 0 erros de geração; as 8 linhas `mod blocks:` iguais à referência e as contagens iguais (menos `loot_containers_anywhere`); 142 estados da paleta validados (eram 218: saíram os dos estilos); 2,71 ms por chunk, 250 s. Impressão digital do planejador igual |
-  | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 2b: imports no lugar de nomes completos (213 nomes, 26 arquivos) | PASS: 8 de 8, 0 erros de geração; `mod blocks:` e contagens iguais à referência; bytecode igual instrução por instrução (`javap -c -p`); 2,74 ms por chunk, 253 s |
-  | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 2a: fim de linha LF (`.gitattributes`, 18 arquivos) | PASS: 8 de 8, 0 erros de geração; `mod blocks:` e contagens iguais à referência; classes compiladas idênticas byte a byte; 2,76 ms por chunk, 252 s |
-  | `20261027` | padrão (8 alvos) | 12 nov | revisão do código, passo 1: impressão digital (`FingerprintTest` e `mod blocks:`); geração igual à do commit `4dd94ae` | PASS: 8 de 8, 0 erros de geração, 218 estados da paleta validados, 16 criaturas de vila retiradas; 2,73 ms por chunk, 252 s. Um mundo novo, o mesmo mundo recarregado do disco e outro mundo (gerado antes, recarregado): as 8 linhas `mod blocks:` iguais (a referência abaixo); contagens `stats:` iguais às de outra rodada, menos `loot_containers_anywhere` |
-  | — | RCON | 13 nov | `/amcs spawn <categoria> <nome>` (sem bateria de geração: só o comando mudou) | `building abandoned_wide_building` e `police_station abandoned_police_station` colocados; `house abandoned_wide_building` recusado com a lista das casas; categoria `igreja` recusada com a lista das categorias; o formato antigo de um argumento recusado pelo jogo |
-  | `20261027` | padrão (8 alvos) | 13 nov | delegacia (1 por cidade) e prédio do choque (52 arquivos) | PASS: 8 de 8, 0 erros de geração, 1 408 estados de estrutura validados; 2,77 ms por chunk, 256 s. Por RCON, `/amcs spawn abandoned_police_station` sobre pedra: salas do subsolo cavadas nas camadas 1, 2 e na da rua, pedra fora delas intacta, banner de letra com o desenho; 63 contêineres com loot, 13 de difícil acesso |
-  | `20261027` | padrão (8 alvos) | 13 nov | postes abandonados em 5 variações | PASS: 8 de 8, 0 erros de geração, ~3 460 blocos de poste conferidos por cidade (com as vinhas), 218 estados da paleta validados; 2,77 ms por chunk, 274 s |
-  | `20261027` | padrão (8 alvos) | 13 nov | criaturas de vila retiradas das cidades | PASS: 8 de 8, 0 erros de geração, 16 criaturas de vila retiradas; 2,77 ms por chunk, 259 s. Por RCON, seed 20261027, vila de neve em (−240, 144) numa rua da cidade do spawn: antes 4 aldeões, 1 golem e 1 gato num quadrado de 160 × 160 (um aldeão em y 64, sob a rua de piso 69); depois 1 aldeão, em (−235, 89), ~49 blocos além da rua (fora da margem, de uma casa que ficou de pé fora da cidade) |
-  | `20261027` | padrão (8 alvos) | 13 nov | topo da rampa e boca da escada do prédio largo abertos | PASS: 8 de 8, 0 erros de geração; 2,85 ms por chunk, 251 s. Por RCON, `/amcs spawn abandoned_wide_building` sobre pedra: as duas fileiras do topo da rampa e a boca da escada abertas, a laje e o concreto da rampa no lugar (10 de 10 conferidos) |
-  | `20261027` | padrão (8 alvos) | 13 nov | prédios no máximo 1 por cidade, postes a cada 24, bancos nos parques, escada da casa de vidro em L | PASS: 8 de 8, 0 erros de geração; ~2 300 blocos de poste conferidos por cidade; 214 estados de bloco da paleta validados; 2,68 ms por chunk, 266 s |
-  | `20261027` | padrão (8 alvos) | 13 nov | 7 estruturas novas (50 arquivos), prédio largo com garagem cavada e rampa aberta, prédio da rampa 1 por cidade | PASS: 8 de 8, 0 erros de geração, 1 385 estados de estrutura validados, 59 904 blocos de abandono; 2,75 ms por chunk, 246 s. Por RCON: `/amcs spawn abandoned_wide_building` sobre um volume de pedra: boca da rampa aberta, 4 pontos da garagem cavados, piso de `smooth_stone`, pedra fora da garagem intacta (7 de 7 conferidos); 249 contêineres com loot, 191 de difícil acesso |
-  | `20261027` | padrão (8 alvos) | 13 nov | letreiro F A R M Á C I A apagado das variações; banners das farmácias pequenas na posição da original | PASS: 8 de 8, 0 erros de geração, banners de farmácia conferidos; 2,68 ms por chunk, 257 s |
-  | `20261027` | padrão (8 alvos) | 13 nov | vinhas longas e agressivas nos 4 lados (25% da fachada, cachos de 3 a 12; 34 609 blocos de abandono) | PASS: 8 de 8, 0 erros de geração, nenhum `building_mismatch`; 2,63 ms por chunk, 253 s |
-  | `20261027` | padrão (8 alvos) | 13 nov | natureza tomando conta das estruturas (`structureOvergrowth` ligado, 18 341 blocos) | PASS: 8 de 8, 0 erros de geração, nenhum `building_mismatch` (plantas e vinhas ficaram no mundo como no plano); 2,72 ms por chunk, 266 s |
-  | `20261027` | rápido (3 alvos) | 13 nov | o mesmo com `structureOvergrowth = false` | PASS: 3 de 3; log "Structure overgrowth off" |
-  | `20261027` | padrão (8 alvos) | 13 nov | 22 variações de cor (sorteio por modelo, banners copiados nas farmácias) | PASS: 8 de 8, 0 erros de geração, 1 115 estados de estrutura validados, banners de farmácia conferidos com desenho; 2,70 ms por chunk, 263 s |
-  | `20261027` | padrão (8 alvos) | 13 nov | copas cortadas completadas para fora das estruturas | PASS: 8 de 8, 0 erros de geração, 0 avisos de `far chunk`; 151 folhas de copa conferidas na cidade do spawn, 324 na mais alta, 307 na mais acidentada; 2,62 ms por chunk, 250 s |
-  | `20261027` | padrão (8 alvos) | 13 nov | nunca duas estruturas iguais no mesmo quarteirão | PASS: 8 de 8, 0 erros de geração; na cidade do spawn 906 contêineres com a tabela certa, 156 de difícil acesso; 2,87 ms por chunk, 247 s |
-  | `20261027` | padrão (8 alvos) | 13 nov | loot vanilla por tema, contêiner e acesso | PASS: 8 de 8, 0 erros de geração; na cidade do spawn 902 contêineres com a tabela certa, 105 de difícil acesso; 2,68 ms por chunk, 256 s. Por RCON, 300 sorteios de cada uma das 30 tabelas: barril vazio em 58–62% (0,74–0,85 pilha), `barrel_hard` vazio em 19–30% (2,1–2,4 pilhas), baú 4,5–4,6 pilhas, `chest_hard` 7,9–8,1, vaso vazio em 58–65%, `pot_hard` em 19–22%; poções com efeito, ferramentas gastas e encantadas e livros encantados conferidos; `/amcs spawn` do prédio apocalíptico pôs 73 contêineres, 56 de difícil acesso |
-  | `20261027` | padrão (8 alvos) | 13 nov | para-raios trocados por tochas de redstone | PASS: 8 de 8, 0 erros de geração, 2,72 ms por chunk, 261 s |
-  | `20261027` | padrão (8 alvos) | 13 nov | 7 estruturas novas (6 casas e o prédio esqueleto, 21 no total), mansão pós-apocalíptica atualizada, estantes entalhadas liberadas | PASS: 8 de 8, 0 erros de geração, 2,71 ms por chunk, 253 s |
-  | `20261027` | padrão (8 alvos) | 13 nov | parque de 110 × 64 num canto, estruturas em L | PASS: 8 de 8, 0 erros de geração, 1 fonte conferida, 2,69 ms por chunk, 252 s |
-  | `20261027` | padrão (8 alvos) | 12 nov | asfalto gasto (`polished_deepslate`), 30% tomado, pontes velhas (laje e pilares musgosos, muro quebrado e musgoso, buracos), sem desabamentos nos túneis | PASS: 8 de 8, 0 erros de geração; na ponte mais longa 87 colunas de buraco, 53 de muro caído e 5976 tomadas; 2,74 ms por chunk, 268 s |
-  | `20261027` | padrão (8 alvos) | 12 nov | ruas abandonadas e vinhas das pontes | PASS: 8 de 8, 0 erros de geração; na cidade do spawn 7 717 de 76 027 colunas de via no chão tomadas (10,2%) e 2 413 plantas conferidas; 2,86 ms por chunk, 279 s |
-  | `20261027` | padrão (8 alvos) | 12 nov | vãos de 4 a 17 | PASS: 8 de 8, 0 erros de geração, 2,82 ms por chunk |
-  | `20261027` | padrão (8 alvos) | 12 nov | quarteirões 180 × 120, vãos de 10 a 19 e bosque de 20 a 30 | PASS: 8 de 8, 0 erros de geração; na cidade mais acidentada 1 180 contêineres com loot e 45 banners conferidos; 8 346 chunks, 2,74 ms por chunk, 267 s |
-  | `20261027` | padrão (8 alvos) | 12 nov | mansão pós-apocalíptica girada, teias soltas removidas, banners com desenho | PASS: 8 de 8, 0 erros de geração, 126 banners de farmácia conferidos com desenho, 3,06 ms por chunk |
-  | `20261027` | padrão (8 alvos) | 12 nov | casa moderna girada 180° | PASS: 8 de 8, 0 erros de geração, 2,94 ms por chunk |
-  | `20261027` | padrão (8 alvos) | 12 nov | 14 estruturas, limites por cidade, chão alinhado, piso até a calçada, folhas reais nas estruturas | PASS: 8 de 8, 0 erros de geração; só na cidade do spawn 1 261 block entities de estrutura e 744 contêineres com loot table conferidos; 2,93 ms por chunk, 227 s |
-  | `20261027` | padrão (8 alvos) | 11 nov | piso da fonte musgoso | PASS: 8 de 8, 0 erros de geração, 1 fonte conferida, 2,93 ms por chunk |
-  | `20261027` | padrão (8 alvos) | 11 nov | 4 entradas, células de 648, faixas de pedestres, árvores reais, anel musgoso, vinhas longas | PASS: 8 de 8, 0 erros de geração, 7 948 chunks, 2,91 ms por chunk, 231 s |
-  | `20261027` | padrão (8 alvos) | 11 nov | miolos e parques tomados pela natureza | PASS: 8 de 8, 0 erros de geração, 952 433 blocos de lote conferidos só no alvo do spawn, 9 096 chunks, 9,28 ms por chunk, 352 s |
-  | `20261027` | padrão (8 alvos) | 10 nov | ruas e rodovias de 33, sem estruturas | PASS: 8 de 8 (cidade do spawn, mais alta, mais acidentada, túnel de 282, ponte de 645, viaduto de 172, rampa de 480, rodovia inteira), 0 erros de geração, 9 096 chunks, 8,49 ms por chunk, 324 s |
-  | `20261027` | padrão (8 alvos) | 8 nov | quarteirões 140 × 90 com as 33 estruturas | PASS: 8 de 8, 13,53 ms por chunk (depois de estender o reparo de vizinhos à altura inteira das estruturas) |
-  | `20261027` | `quick` | 7 nov | cópia sem prédios | PASS: 4 alvos, uma cidade 4 × 4 com 2 lotes (parques) e 37 765 colunas de chão livre conferidas, 18 953 colunas de via, 2,25 ms por chunk |
+  | — | RCON | 13 Nov | commands with the English names (development server, world `cmdtest_world`) | `/amcs locate structure abandoned_wide_building` (name), `pharmacy` (group) and `buildings_large` (type) found the nearest ones; `execute positioned 1000 200 1000 rotated 180 0 run amcs spawn house abandoned_house` placed the house (57 containers with loot, 1 hard to get to) and `... spawn building abandoned_wide_building` the wide building (249, 191 hard to get to); in the saved world the chests have the new tables (`chests/house/barrel` 46, `house/chest` 10, `house/chest_hard` 1; `building/barrel` 29, `barrel_hard` 87, `chest` 29, `chest_hard` 104); `spawn house abandoned_wide_building` refused with the list of the houses and the old category `casa` with the list of the new categories |
+  | `20261027` | default (8 targets) and quick with `structureOvergrowth = false` | 13 Nov | structure names, categories, groups and loot tables in English (finding 66) | PASS on both, counts equal to the previous references; roads and lots equal in every chunk; only the names of the loot tables in the chests changed, and the `mod blocks:` lines became the new reference (above); 2.69 ms per chunk, 243 s |
+  | `20261027` | default (8 targets) | 13 Nov | review: classes named after the old mod renamed (`AMCSimple` → `AbandonedModernCity`, `SimpleConfig` → `AmcsConfig`, `SimpleCommands` → `AmcsCommands`) | PASS: `tools/verify/compare_battery.py` equal to the reference (8 of 8); 2.65 ms per chunk, 244 s. Bytecode equal in all 1,322 members with the old names swapped for the new ones (`compare_methods.py`) |
+  | `20261027` | default (8 targets) | 13 Nov | review, step 3c: the neighbour repair moves out of `ChunkBuilder` into `gen/NeighbourRepair` | PASS: 8 of 8, 0 generation errors; `mod blocks:` and counts equal to the reference; 2.69 ms per chunk, 250 s. Planner fingerprint equal; method by method, of the 61 members of `ChunkBuilder` 54 kept the same body (bridge vines, fill, slopes, liquid sealing included) and 7 went to `NeighbourRepair` with the same body; no other class changed |
+  | `20261027` | default (8 targets) and quick with `structureOvergrowth = false` | 13 Nov | review, step 3b: the preparation of the templates moves out of `Structures` into `core/StructureLoader` | PASS on both: `mod blocks:` and counts equal to the reference (8 of 8) and to the reference with the overgrowth off (3 of 3); 2.71 ms per chunk, 253 s. Planner fingerprint equal (with `structures` and `weathering`); method by method: the 14 methods and constants moved with the same body (except for `blockOf`/`isLogName`/`withProps` now called through the class name and `ldc` in place of `ldc_w`) |
+  | `20261027` | default (8 targets) | 13 Nov | review, step 3a: street lights move out of `City` into `core/StreetLights` | PASS: 8 of 8, 0 generation errors; `mod blocks:` and counts equal to the reference; 2.93 ms per chunk, 263 s. Planner fingerprint equal (with `lamps`); method by method: `lampAt`, `lampVine` and the 28 constants with the same body, `lampParts` only with another way of loading the same constant, `lampCandidate` only reading the seed from the argument instead of the city's field |
+  | `20261027` | quick (3 targets) | 13 Nov | reference with `structureOvergrowth = false` (log "Structure overgrowth off") | PASS: 3 of 3, 0 generation errors; a new world and the reloaded one with the same 3 `mod blocks:` lines (the reference above); 4.59 ms per chunk, 149 s |
+  | `20261027` | default (8 targets) | 13 Nov | review: 3 constants left unused (`Params.ARC_RADIUS`, `AVENUE_EVERY`, `LOT_SETBACK`) | PASS: 8 of 8, 0 generation errors; `mod blocks:` and counts equal to the reference; 142 palette states; 2.79 ms per chunk, 253 s. Planner fingerprint equal |
+  | `20261027` | default (8 targets) | 13 Nov | review, step 2d: cut streets taken out (`City.MAX_CUTS`, the drawing of the cuts, `removed_street` and their test) | PASS: 8 of 8, 0 generation errors; the 8 `mod blocks:` lines equal to the reference and the counts equal (except `loot_containers_anywhere`); 142 palette states; 2.73 ms per chunk, 248 s. Planner fingerprint equal |
+  | `20261027` | default (8 targets) | 13 Nov | review, step 2c: dead code (the Simple City building styles, the plaza and empty lot types, 26 block codes, the `style` argument of `Palette.of`, 11 unused declarations) | PASS: 8 of 8, 0 generation errors; the 8 `mod blocks:` lines equal to the reference and the counts equal (except `loot_containers_anywhere`); 142 palette states validated (there were 218: those of the styles left); 2.71 ms per chunk, 250 s. Planner fingerprint equal |
+  | `20261027` | default (8 targets) | 13 Nov | review, step 2b: imports in place of full names (213 names, 26 files) | PASS: 8 of 8, 0 generation errors; `mod blocks:` and counts equal to the reference; bytecode equal instruction by instruction (`javap -c -p`); 2.74 ms per chunk, 253 s |
+  | `20261027` | default (8 targets) | 13 Nov | review, step 2a: LF line endings (`.gitattributes`, 18 files) | PASS: 8 of 8, 0 generation errors; `mod blocks:` and counts equal to the reference; compiled classes identical byte for byte; 2.76 ms per chunk, 252 s |
+  | `20261027` | default (8 targets) | 12 Nov | code review, step 1: fingerprint (`FingerprintTest` and `mod blocks:`); generation equal to that of commit `4dd94ae` | PASS: 8 of 8, 0 generation errors, 218 palette states validated, 16 village creatures removed; 2.73 ms per chunk, 252 s. A new world, the same world reloaded from disk and another world (generated earlier, reloaded): the 8 `mod blocks:` lines equal (the reference below); `stats:` counts equal to those of another run, except `loot_containers_anywhere` |
+  | — | RCON | 13 Nov | `/amcs spawn <category> <name>` (no generation battery: only the command changed) | `predio predio_largo_abandonado` and `delegacia delegacia_abandonada` placed; `casa predio_largo_abandonado` refused with the list of the houses; the category `igreja` refused with the list of the categories; the old one-argument form refused by the game |
+  | `20261027` | default (8 targets) | 13 Nov | police station (1 per city) and crash building (52 files) | PASS: 8 of 8, 0 generation errors, 1,408 structure states validated; 2.77 ms per chunk, 256 s. Over RCON, `/amcs spawn delegacia_abandonada` on stone: the rooms of the basement dug on layers 1, 2 and the street one, the stone outside them intact, a letter banner with its design; 63 containers with loot, 13 hard to get to |
+  | `20261027` | default (8 targets) | 13 Nov | abandoned street lights in 5 variants | PASS: 8 of 8, 0 generation errors, ~3,460 street light blocks checked per city (with the vines), 218 palette states validated; 2.77 ms per chunk, 274 s |
+  | `20261027` | default (8 targets) | 13 Nov | village creatures removed from the cities | PASS: 8 of 8, 0 generation errors, 16 village creatures removed; 2.77 ms per chunk, 259 s. Over RCON, seed 20261027, a snowy village at (−240, 144) on a street of the spawn city: before, 4 villagers, 1 golem and 1 cat in a square of 160 × 160 (a villager at y 64, under the street with its floor at 69); after, 1 villager, at (−235, 89), ~49 blocks past the street (outside the margin, from a house left standing outside the city) |
+  | `20261027` | default (8 targets) | 13 Nov | the top of the ramp and the mouth of the stairs of the wide building open | PASS: 8 of 8, 0 generation errors; 2.85 ms per chunk, 251 s. Over RCON, `/amcs spawn predio_largo_abandonado` on stone: the two rows at the top of the ramp and the mouth of the stairs open, the slab and the concrete of the ramp in place (10 of 10 checked) |
+  | `20261027` | default (8 targets) | 13 Nov | buildings at most 1 per city, street lights every 24, park benches, L-shaped stairs in the glass house | PASS: 8 of 8, 0 generation errors; ~2,300 street light blocks checked per city; 214 palette block states validated; 2.68 ms per chunk, 266 s |
+  | `20261027` | default (8 targets) | 13 Nov | 7 new structures (50 files), the wide building with its garage dug and its ramp open, the ramp building 1 per city | PASS: 8 of 8, 0 generation errors, 1,385 structure states validated, 59,904 overgrowth blocks; 2.75 ms per chunk, 246 s. Over RCON: `/amcs spawn predio_largo_abandonado` on a volume of stone: the mouth of the ramp open, 4 points of the garage dug, a floor of `smooth_stone`, the stone outside the garage intact (7 of 7 checked); 249 containers with loot, 191 hard to get to |
+  | `20261027` | default (8 targets) | 13 Nov | the F A R M Á C I A sign erased from the variants; the banners of the small pharmacies at the position of the original | PASS: 8 of 8, 0 generation errors, pharmacy banners checked; 2.68 ms per chunk, 257 s |
+  | `20261027` | default (8 targets) | 13 Nov | long, aggressive vines on all 4 sides (25% of the facade, strands of 3 to 12; 34,609 overgrowth blocks) | PASS: 8 of 8, 0 generation errors, no `building_mismatch`; 2.63 ms per chunk, 253 s |
+  | `20261027` | default (8 targets) | 13 Nov | nature taking over the structures (`structureOvergrowth` on, 18,341 blocks) | PASS: 8 of 8, 0 generation errors, no `building_mismatch` (plants and vines stayed in the world as in the plan); 2.72 ms per chunk, 266 s |
+  | `20261027` | quick (3 targets) | 13 Nov | the same with `structureOvergrowth = false` | PASS: 3 of 3; log "Structure overgrowth off" |
+  | `20261027` | default (8 targets) | 13 Nov | 22 color variants (drawn per model, banners copied on the pharmacies) | PASS: 8 of 8, 0 generation errors, 1,115 structure states validated, pharmacy banners checked with their design; 2.70 ms per chunk, 263 s |
+  | `20261027` | default (8 targets) | 13 Nov | cut crowns completed outside the structures | PASS: 8 of 8, 0 generation errors, 0 `far chunk` warnings; 151 crown leaves checked in the spawn city, 324 in the highest one, 307 in the roughest one; 2.62 ms per chunk, 250 s |
+  | `20261027` | default (8 targets) | 13 Nov | never two of the same structure in one block | PASS: 8 of 8, 0 generation errors; in the spawn city 906 containers with the right table, 156 hard to get to; 2.87 ms per chunk, 247 s |
+  | `20261027` | default (8 targets) | 13 Nov | vanilla loot per theme, container and access | PASS: 8 of 8, 0 generation errors; in the spawn city 902 containers with the right table, 105 hard to get to; 2.68 ms per chunk, 256 s. Over RCON, 300 draws of each of the 30 tables: barrel empty in 58–62% (0.74–0.85 stacks), `barril_dificil` empty in 19–30% (2.1–2.4 stacks), chest 4.5–4.6 stacks, `bau_dificil` 7.9–8.1, pot empty in 58–65%, `vaso_dificil` in 19–22%; potions with effects, worn and enchanted tools and enchanted books checked; `/amcs spawn` of the apocalyptic building placed 73 containers, 56 hard to get to |
+  | `20261027` | default (8 targets) | 13 Nov | lightning rods swapped for redstone torches | PASS: 8 of 8, 0 generation errors, 2.72 ms per chunk, 261 s |
+  | `20261027` | default (8 targets) | 13 Nov | 7 new structures (6 houses and the skeleton building, 21 in all), the post-apocalyptic mansion updated, chiseled bookshelves allowed | PASS: 8 of 8, 0 generation errors, 2.71 ms per chunk, 253 s |
+  | `20261027` | default (8 targets) | 13 Nov | a park of 110 × 64 in a corner, structures in an L | PASS: 8 of 8, 0 generation errors, 1 fountain checked, 2.69 ms per chunk, 252 s |
+  | `20261027` | default (8 targets) | 12 Nov | worn asphalt (`polished_deepslate`), 30% taken, old bridges (mossy deck and pillars, broken and mossy wall, holes), no cave-ins in the tunnels | PASS: 8 of 8, 0 generation errors; on the longest bridge 87 hole columns, 53 of fallen wall and 5,976 taken; 2.74 ms per chunk, 268 s |
+  | `20261027` | default (8 targets) | 12 Nov | abandoned streets and bridge vines | PASS: 8 of 8, 0 generation errors; in the spawn city 7,717 of 76,027 road columns on the ground taken (10.2%) and 2,413 plants checked; 2.86 ms per chunk, 279 s |
+  | `20261027` | default (8 targets) | 12 Nov | gaps of 4 to 17 | PASS: 8 of 8, 0 generation errors, 2.82 ms per chunk |
+  | `20261027` | default (8 targets) | 12 Nov | blocks of 180 × 120, gaps of 10 to 19 and woods of 20 to 30 | PASS: 8 of 8, 0 generation errors; in the roughest city 1,180 containers with loot and 45 banners checked; 8,346 chunks, 2.74 ms per chunk, 267 s |
+  | `20261027` | default (8 targets) | 12 Nov | the post-apocalyptic mansion turned, loose cobwebs removed, banners with their design | PASS: 8 of 8, 0 generation errors, 126 pharmacy banners checked with their design, 3.06 ms per chunk |
+  | `20261027` | default (8 targets) | 12 Nov | the modern house turned 180° | PASS: 8 of 8, 0 generation errors, 2.94 ms per chunk |
+  | `20261027` | default (8 targets) | 12 Nov | 14 structures, limits per city, aligned ground, floor out to the sidewalk, real leaves in the structures | PASS: 8 of 8, 0 generation errors; in the spawn city alone 1,261 structure block entities and 744 containers with a loot table checked; 2.93 ms per chunk, 227 s |
+  | `20261027` | default (8 targets) | 11 Nov | mossy fountain floor | PASS: 8 of 8, 0 generation errors, 1 fountain checked, 2.93 ms per chunk |
+  | `20261027` | default (8 targets) | 11 Nov | 4 entrances, cells of 648, crosswalks, real trees, mossy ring, long vines | PASS: 8 of 8, 0 generation errors, 7,948 chunks, 2.91 ms per chunk, 231 s |
+  | `20261027` | default (8 targets) | 11 Nov | cores and parks taken over by nature | PASS: 8 of 8, 0 generation errors, 952,433 lot blocks checked on the spawn target alone, 9,096 chunks, 9.28 ms per chunk, 352 s |
+  | `20261027` | default (8 targets) | 10 Nov | streets and highways of 33, no structures | PASS: 8 of 8 (spawn city, highest, roughest, tunnel of 282, bridge of 645, viaduct of 172, ramp of 480, whole highway), 0 generation errors, 9,096 chunks, 8.49 ms per chunk, 324 s |
+  | `20261027` | default (8 targets) | 8 Nov | blocks of 140 × 90 with the 33 structures | PASS: 8 of 8, 13.53 ms per chunk (after extending the neighbour repair to the whole height of the structures) |
+  | `20261027` | `quick` | 7 Nov | copy without buildings | PASS: 4 targets, a 4 × 4 city with 2 lots (parks) and 37,765 columns of free ground checked, 18,953 road columns, 2.25 ms per chunk |
 
-  A bateria ainda não rodou depois da remoção das cidades octogonais e 3 × 2 (o alvo "cidade 3 × 2 mais próxima do
-  spawn" saiu) nem depois da troca para quarteirões 105 × 60 (células de 512) e 140 × 90 (células de 576). Em 8 nov, no Linux (CachyOS, JDK 21), a bateria `-PselfTest` passou 8 de 8 alvos com os quarteirões 105 × 60 num mundo novo (um mundo de teste velho, gerado antes das mudanças, dá falhas falsas no alvo do spawn: renomeie `run/selftest_world_*`). Vale rodar a bateria completa quando houver mudanças: `tools/selftest.sh full`.
-- **Referência da impressão digital da bateria** (`mod blocks:`, seed `20261027`, escopo padrão, 13 nov 2026, com os
-  nomes das estruturas em inglês; os blocos são os do commit `4dd94ae`, achado 66). Numa mudança que não deve alterar o
-  mundo, as 8 linhas ficam iguais a estas:
+  The battery has not run yet after the removal of the octagonal and 3 × 2 cities (the target "nearest 3 × 2 city to
+  the spawn" left) nor after the change to blocks of 105 × 60 (cells of 512) and 140 × 90 (cells of 576). On 8 Nov,
+  on Linux (CachyOS, JDK 21), the `-PselfTest` battery passed 8 of 8 targets with the blocks of 105 × 60 on a new
+  world (an old test world, generated before the changes, gives false failures on the spawn target: rename
+  `run/selftest_world_*`). It is worth running the full battery when there are changes: `tools/selftest.sh full`.
+- **Reference of the battery fingerprint** (`mod blocks:`, seed `20261027`, default scope, 13 Nov 2026, with the
+  structure names in English; the blocks are those of commit `4dd94ae`, finding 66). In a change that must not alter
+  the world, the 8 lines stay equal to these:
 
-  | Alvo | SHA-256 | Posições | Block entities |
+  | Target | SHA-256 | Positions | Block entities |
   |---|---|---|---|
-  | t01 cidade mais próxima do spawn | `de3d7d961fb699a013d4d10f2a55f19e922231d5f0641de74d980e2f14fbde2e` | 1 877 158 | 2 055 |
-  | t02 cidade mais alta (nível 103) | `acbf0208f5ec21b30c6a57e0d6c98c1e47b166d1f1d61c69675a061c327aafc7` | 3 290 072 | 3 387 |
-  | t03 cidade mais acidentada | `2e2476a9f9b45c2f2fa91224efd8d40a3cf4ee57b2c8650cec8a6395aba2c53d` | 2 506 369 | 2 506 |
-  | t04 túnel mais longo (352) | `4bee0f84a14f858c30f6e960db34c37fcb072164186431b0a3b904132a547ef4` | 543 064 | 164 |
-  | t05 ponte mais longa sobre água (349) | `46d3982b52e1be46b834c08a07daeb838b01ed237cc1c7e01d890413e6524d73` | 452 586 | 605 |
-  | t06 viaduto seco mais longo (239) | `ccbe9ee85773c4e7f8040f8f3da6feaa0036c2f6c6405590c367501880e546a8` | 581 916 | 381 |
-  | t07 rampa mais longa (360) | `f960ad531d4199d12ecf42bb72b87d9a199bc1fccb85235572528b07c3dcc118` | 191 450 | 0 |
-  | t08 rodovia inteira | `a4def9aa96ded019f238479bf62ca6c3184ee3df5a80562ba8adc17841f98541` | 1 280 207 | 850 |
+  | t01 city nearest to the spawn | `de3d7d961fb699a013d4d10f2a55f19e922231d5f0641de74d980e2f14fbde2e` | 1,877,158 | 2,055 |
+  | t02 highest city (level 103) | `acbf0208f5ec21b30c6a57e0d6c98c1e47b166d1f1d61c69675a061c327aafc7` | 3,290,072 | 3,387 |
+  | t03 roughest city | `2e2476a9f9b45c2f2fa91224efd8d40a3cf4ee57b2c8650cec8a6395aba2c53d` | 2,506,369 | 2,506 |
+  | t04 longest tunnel (352) | `4bee0f84a14f858c30f6e960db34c37fcb072164186431b0a3b904132a547ef4` | 543,064 | 164 |
+  | t05 longest bridge over water (349) | `46d3982b52e1be46b834c08a07daeb838b01ed237cc1c7e01d890413e6524d73` | 452,586 | 605 |
+  | t06 longest dry viaduct (239) | `ccbe9ee85773c4e7f8040f8f3da6feaa0036c2f6c6405590c367501880e546a8` | 581,916 | 381 |
+  | t07 longest ramp (360) | `f960ad531d4199d12ecf42bb72b87d9a199bc1fccb85235572528b07c3dcc118` | 191,450 | 0 |
+  | t08 whole highway | `a4def9aa96ded019f238479bf62ca6c3184ee3df5a80562ba8adc17841f98541` | 1,280,207 | 850 |
 
-  Antes dos nomes em inglês (geração do `4dd94ae`) eram outras 7 linhas (t07, sem contêineres, é a mesma): só os nomes
-  das loot tables dentro dos baús mudaram. O relatório completo fica no git em
-  `tools/verify/reference/battery-20261027-full.txt` (o que `tools/verify/compare_battery.py` compara); o mundo dessa
-  rodada fica (fora do git) em `run/selftest_world_ref_english/`, e o de antes dos nomes em
-  `run/selftest_world_ref_4dd94ae/` (mesmos blocos), para comparar bloco a bloco se alguma linha mudar.
-- **Referência com o abandono desligado** (`structureOvergrowth = false`, escopo rápido, 13 nov 2026, com os nomes em
-  inglês; a anterior, com os nomes em português, foi tirada no commit `254ca56`, e as duas têm as mesmas vias e lotes
-  em todos os chunks):
+  Before the English names (generation of `4dd94ae`) there were 7 other lines (t07, without containers, is the
+  same): only the names of the loot tables inside the chests changed. The full report is in git in
+  `tools/verify/reference/battery-20261027-full.txt` (what `tools/verify/compare_battery.py` compares); the world of
+  that run is (outside git) in `run/selftest_world_ref_english/`, and the one from before the names in
+  `run/selftest_world_ref_4dd94ae/` (same blocks), to compare block by block if a line changes.
+- **Reference with the overgrowth off** (`structureOvergrowth = false`, quick scope, 13 Nov 2026, with the English
+  names; the previous one, with the Portuguese names, was taken at commit `254ca56`, and the two have the same roads
+  and lots in every chunk):
 
-  | Alvo | SHA-256 | Posições | Block entities |
+  | Target | SHA-256 | Positions | Block entities |
   |---|---|---|---|
-  | t01 cidade mais próxima do spawn | `568ecdfa267505d309938365ec1c11098565de04a95a6ad318ad541d7a7f78c5` | 1 874 811 | 2 055 |
-  | t02 túnel mais longo (352) | `ab44685e225a3839b0d721e92303cc04e8b61b3df462bbda419761e845d2526f` | 541 806 | 164 |
-  | t03 ponte mais longa sobre água (349) | `2349a83efc3e2400fb21a762303507267598659945095c7754b01f06302b8a17` | 452 586 | 605 |
+  | t01 city nearest to the spawn | `568ecdfa267505d309938365ec1c11098565de04a95a6ad318ad541d7a7f78c5` | 1,874,811 | 2,055 |
+  | t02 longest tunnel (352) | `ab44685e225a3839b0d721e92303cc04e8b61b3df462bbda419761e845d2526f` | 541,806 | 164 |
+  | t03 longest bridge over water (349) | `2349a83efc3e2400fb21a762303507267598659945095c7754b01f06302b8a17` | 452,586 | 605 |
 
-  Relatório no git em `tools/verify/reference/battery-20261027-quick-overgrowth-off.txt`; mundo (com os nomes em
-  português, mesmos blocos) em `run/selftest_world_ref_off/` (fora do git).
-- Em nenhuma rodada houve degrau, buraco, obstáculo, pilar flutuante, rodovia sem conexão, bloco indestrutível nas vias, pontes e túneis depois das correções 4 e 5. Containers das estruturas têm loot tables vanilla próprias (13 nov 2026: tema da estrutura × tipo de contêiner × acesso), auditados por `structure_without_loot`, `structure_wrong_loot`, `loot_in_city` e `container_in_city`.
+  Report in git in `tools/verify/reference/battery-20261027-quick-overgrowth-off.txt`; world (with the Portuguese
+  names, same blocks) in `run/selftest_world_ref_off/` (outside git).
+- In no run has there been a step, hole, obstacle, floating pillar, unconnected highway or unbreakable block on the
+  roads, bridges and tunnels after fixes 4 and 5. The containers of the structures have their own vanilla loot tables
+  (13 Nov 2026: theme of the structure × kind of container × access), audited by `structure_without_loot`,
+  `structure_wrong_loot`, `loot_in_city` and `container_in_city`.
