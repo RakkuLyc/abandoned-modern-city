@@ -217,7 +217,8 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
   PlanRender     PNGs do plano (detalhe, rede, perfil lateral)
 gen/    camada do jogo
   CityFeature    feature por chunk (passo top_layer_modification, via biome modifier)
-  ChunkBuilder   escreve o plano do chunk em blocos; veda líquidos; limpa vizinhos
+  ChunkBuilder   escreve o plano do chunk em blocos; veda líquidos; vinhas das pontes
+  NeighbourRepair depois de cada chunk, conserta os vizinhos já construídos (árvores, lagos e minérios de chunks decorados depois)
   Palette        todos os blocos usados (inclui as estruturas, giradas por `BlockState.rotate`) + validação
   McTerrain      Terrain sobre ChunkGenerator.getBaseHeight (ruído, igual em qualquer thread)
   Plans          um WorldPlan por dimensão (só o overworld)
@@ -242,7 +243,7 @@ command/  /amcs (StructureCommands: locate structure e spawn), auditoria dos blo
      talude. O `ChunkBuilder` só executa.
    - Líquidos encostados no ar aberto viram pedra.
    - Árvores e plantas que um chunk vizinho decorado depois coloca sobre a rua são removidas de novo
-     (`ChunkBuilder.repairNeighbours`).
+     (`NeighbourRepair.repairNeighbours`).
 
 ## Configuração (`config/abandonedmoderncity-common.toml`)
 

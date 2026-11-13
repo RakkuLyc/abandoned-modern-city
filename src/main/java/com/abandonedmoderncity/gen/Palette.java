@@ -483,7 +483,7 @@ public final class Palette {
     /**
      * Throws if any block of the palette is unbreakable or a block entity (container), or if a building or
      * lot block is one that ore blobs replace (stone, granite, diorite, andesite, tuff, deepslate): a chunk decorated
-     * later would eat it. Road stone is the one exception, restored by {@code ChunkBuilder.repairNeighbours}.
+     * later would eat it. Road stone is the one exception, restored by {@code NeighbourRepair.repairNeighbours}.
      */
     public static void validate() {
         List<String> bad = new ArrayList<>();
