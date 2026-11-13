@@ -58,7 +58,7 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   between the sides of the city became 120). No position jitter: a cell whose middle is over water or too high has no
   city. The default `maxRadius` is 230 (half the long side of the city). The area of influence (`Params.influence`) is
   the exact half diagonal of the city's rectangle (230 × 170 → 286) + 10 + a slope of 32 + 4 = ~332; with it the cell
-  needs at least 2 × 334 + 64 = 732.
+  needs at least 2 × 335 + 64 = 734 (`Params.margin`: the influence rounded up, + 2).
 - A street 33 wide (10 Nov 2026): 3 `smooth_stone` (sidewalk) + 27 `polished_deepslate` (lanes; until 12 Nov it was
   `polished_blackstone`) + 3 `smooth_stone` (`Params.STREET_HW` = 16.5, `STREET_LANE_HW` = 13.5).
 - A street segment of 180 or 120 blocks (the side of the block) + 33 of crossing; a 3 × 3 square of `smooth_stone` at
@@ -183,8 +183,9 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   layer the mouth of the ramp (5 × 15, on the front edge) and the stairwell stay open: air or `cave_air` with
   `cave_air` under it does not become city ground, nor the air of the ground layer joined to those openings (the top
   of the ramp, which has the ramp itself under it; fixed on 13 Nov 2026 after the user found two rows of terrain
-  there) (`StructureLoader.openings`, `Def.opening`, `Lot.code`; 99 cells, all the air of its ground layer); `/amcs
-  spawn` also digs the garage and opens the ramp. The ramp building only fits the rows of the short sides of the block
+  there) (`StructureLoader.openings`, `Def.opening`, `Lot.code`; 99 cells, all the air of its ground layer);
+  `/amcs spawn` also digs the garage and opens the ramp. The ramp building only fits the rows of the short sides of the
+  block
   (front of 102 in the 120, depth of 72 along the 180) or, on the long sides, when the woods drawn are narrow. Leaves
   saved as not persistent far from any trunk (modern garage house, glass house, brutalist, ramp building) become
   persistent, or they would fall in the world. The stairs of the glass house started against the glass wall of the
@@ -210,7 +211,8 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   skeleton building (13 Nov 2026; the file `prédio_esqueleto_31x29.nbt` became `skeleton_building_31x29`, without the
   accent, because the argument of `/amcs spawn` only takes ASCII), bluish building, tower, apocalyptic building. The
   post-apocalyptic mansion was updated on 13 Nov with the new version of the folder (only the state of 12 doors
-  changed). The houses are 10 of the 21 models and ~43% of the structures. Color variants (13 Nov 2026, asked by the
+  changed). The houses are 12 of the 30 models (these 10, the modern garage house and the glass house) and ~51% of
+  the structures of the cities (39% of a ring without the per-city limits). Color variants (13 Nov 2026, asked by the
   user; the `model` field of the index): pharmacy (yellow, blue, purple, green besides the red one), large pharmacy
   (blue, purple, green, red besides the yellow one), medium workshop (yellow and blue, yellow and red besides the blue
   and black one), small workshop (yellow, blue, purple, red besides the green one), gas station (yellow, blue, purple,
@@ -285,10 +287,11 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     there is always the woods of the core, with a clearance drawn from 20 to 30 per pair of sides
     (`Ring.CORE_MIN`/`CORE_MAX`);
   - the rows of the short sides of the block run corner to corner and those of the long sides fill what is left
-    between them (the other way round left the short sides nearly always empty); ~8.2 structures per block (the 4 rows
-    with ~25% each; 8.4 before the no-repeat rule), 51% of the free ground covered. Block size: 180 × 120,
-    recommended after simulating the gaps (140 × 90 fell to ~5 structures and the tower, the bluish building and the
-    apocalyptic building became rare).
+    between them (the other way round left the short sides nearly always empty); ~7.8 structures per block with the
+    52 files (the 4 rows with ~25% each; in the cities, with the per-city limits, 7.2 in a block without a park; 8.2
+    with the 21 structures of 12–13 Nov, 8.4 before the no-repeat rule), 52.5% of the free ground covered (51% with
+    the 21). Block size: 180 × 120, recommended after simulating the gaps (140 × 90 fell to ~5 structures and the
+    tower, the bluish building and the apocalyptic building became rare).
   - commands (12 Nov 2026, `command/StructureCommands`): `/amcs locate structure <name|type|group>` (the nearest one
     already planned; coordinates on the sidewalk in front of it) and `/amcs spawn <category> <name>` (13 Nov 2026,
     asked by the user: categories `house` 12, `pharmacy` 10, `workshop` 8, `gas_station` 10, `building` 10,

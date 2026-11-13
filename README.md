@@ -10,7 +10,7 @@ ring around each city block, with per-city limits for pharmacies, workshops and 
 
 - modid `abandonedmoderncity` · package `com.abandonedmoderncity` · Java 21 · NeoForge 21.1.219 ·
   ModDevGradle 2.0.140
-- Build: `./gradlew build` → `build/libs/abandonedmoderncity-0.1.0.jar` (also runs the unit tests, ~10 min); the jar
+- Build: `./gradlew build` → `build/libs/abandonedmoderncity-0.1.0.jar` (also runs the unit tests, ~2 min); the jar
   only: `./gradlew build -x test`
 - Unit tests: `./gradlew test` (renders in `build/test-renders/`)
 - In-world test battery: `tools/selftest.sh [full|quick] [seed...]` (reports in `run/selftest/<seed>/`); details in
@@ -31,7 +31,7 @@ ring around each city block, with per-city limits for pharmacies, workshops and 
 
 | Kind | Where | Shape |
 |---|---|---|
-| 2 × 2 city | one in the middle of each cell of 736 blocks (70% of the cells) | a rigid grid of 2 × 2 city blocks of 180 × 120 (street axes 213 and 153 apart, ~459 × ~339 blocks with the streets, 3 × 3 streets; the long side runs east-west or north-south, drawn per city), up to 8 highway entrances (the middle crossing of each side and the 4 corners) |
+| 2 × 2 city | one in the middle of each cell of 736 blocks (70% of the cells) | a rigid grid of 2 × 2 city blocks of 180 × 120 (street axes 213 and 153 apart, ~459 × ~339 blocks with the streets, 3 × 3 streets; the long side runs east-west or north-south, drawn per city), 4 highway entrances, one per side (its middle crossing or one of its two corners, drawn) |
 
 There is only this kind of city: the octagonal cities and the 3 × 2 highway towns (with the rural_highway pattern and
 the fields) were removed on 7 Nov 2026; the grid went from 4 × 4 blocks of 186 (cells of 2,048) to 2 × 2 blocks of
@@ -47,9 +47,10 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   the street; the rest (the core) is taken over by nature. About 1 block in 8 has a park of 110 × 64 in a corner,
   with the structures in an L along the two other streets.
 - **Structures (30 models, 52 files, `structures/`):** drawn at random in the ring (every model with the same chance,
-  then its color: the 10 houses make ~43% of the structures), with a per-city limit: pharmacies 3, workshops 2, gas
-  stations 2, and each building (apartment, skeleton, bluish, tower, apocalyptic, small, brutalist, wide, green
-  tower, ramp) at most 1 per city. Never two of the same structure (the same model, in any color) in one block.
+  then its color: the 12 houses make ~51% of the structures of the cities), with a per-city limit: pharmacies 3,
+  workshops 2, gas stations 2, and each building (apartment, skeleton, bluish, tower, apocalyptic, small, brutalist,
+  wide, green tower, crash, ramp) at most 1 per city. Never two of the same structure (the same model, in any color)
+  in one block.
   Color variants: pharmacy and large pharmacy (5 colors each, the D R U G S T O R E letters copied from the original
   in the variant's color, without the F A R M Á C I A sign in blocks the variants had: the wall stays white as on
   the original), medium workshop (3), small workshop (5), gas station and small gas station (5 each).
@@ -91,8 +92,8 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   - The trees of the structures decay like real trees (leaves linked to a trunk); hedges without a trunk stay
     persistent.
   - Crowns cut by the edge of the template are completed by mirroring the crown around its trunk: 189 leaves in 7
-    structures (pool house, garage house, suburban house, tower house, skeleton building), hanging over the woods
-    or, more than 7 blocks up, over the sidewalk.
+    structures (pool house, garage house, suburban house, tower house, glass house, skeleton building and ramp
+    building), hanging over the woods or, more than 7 blocks up, over the sidewalk.
   - The structures never touch: a gap of 4 to 17 blocks drawn between neighbours, and always 20 to 30 blocks of
     woods between the backs of opposite sides. The trees of the cores stay out of the structures.
   - The banners keep the design of the template: the pharmacies have the letters DRUGSTORE.
@@ -113,7 +114,7 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
 
   | Theme | Structures | Typical items | Rare |
   |---|---|---|---|
-  | `house` | the 10 houses | food, string, paper, torches, books, nuggets, emeralds | diamond, golden apple, enchanted book, music discs |
+  | `house` | the 12 houses | food, string, paper, torches, books, nuggets, emeralds | diamond, golden apple, enchanted book, music discs |
   | `pharmacy` | the pharmacies | bottles, sugar, potions of healing, regeneration, night vision, fire resistance | healing II, long regeneration, bottles o' enchanting |
   | `workshop` | the workshops | iron, copper, coal, chains, worn iron tools, rails, pistons | diamond, iron block, enchanted tools, hopper, anvil |
   | `gas_station` | the gas stations | snacks, coal, lava bucket, map, compass, emeralds | emeralds, gold, golden apple, spyglass |
@@ -127,8 +128,8 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
 
   Hard to get to (`core/Access`): 15 or more blocks above the street, or out of reach of someone walking in (without
   breaking blocks: jumping 1 block, falling, climbing ladders, vines and water, opening doors). That is 1,382 of the
-  3,106 containers (the new tall buildings have nearly all of theirs above 15): nearly all on the high floors of the
-  tower, the apocalyptic building, the bluish building and the skeleton.
+  3,106 containers, nearly all on the high floors of the tall buildings, which have almost all of theirs above 15
+  (the most in the brutalist U building, 359, and the ramp building, 338).
 - **Nature taking the city back** (`core/Flora`, `core/Wild`):
   - the ground in patches: grass, moss, coarse dirt and remains of the concrete (`gray_concrete_powder`);
   - the mod's own trees, ~1 per 55 columns: oak, birch, dark oak and spruce, small and large, with vines hanging from
@@ -260,8 +261,10 @@ command/  /amcs (StructureCommands: locate structure and spawn), the block audit
 read at startup, restart the game after changing it).
 The geometry (widths, blocks, ramps, tunnels, bridges) is in `core/Params` and the cities in `core/City`. Changes
 apply to new chunks and change the plan: use a new world.
-Defaults: `cellSize` = 736 and `maxRadius` = 230. An old config file (with 2048/288, 1024/212, 512/131, 576/166,
-640/190 or 648/190) keeps the old values: delete it or adjust both values.
+Defaults: `cellSize` = 736 and `maxRadius` = 230. An old config file keeps its values when they are still consistent
+(2048/288 and 1024/212: cities farther apart); with 512/131, 576/166, 640/190 or 648/190 the cell is too small for
+the city (it needs at least 734), the log says "Invalid config ... using the defaults" and the defaults are used.
+Delete the old file or adjust both values.
 
 ## Commands (op 2)
 

@@ -87,6 +87,8 @@ class RingTest {
         assumeFalse(Structures.ALL.isEmpty(), "no structures");
         int[][] sizes = {{180, 120}, {120, 180}};
         long lots = 0;
+        long houses = 0;
+        long area = 0;
         long[] bySide = new long[4];
         Set<String> used = new HashSet<>();
         for (int[] size : sizes) {
@@ -126,6 +128,10 @@ class RingTest {
                     };
                     assertTrue(touches, "touches the sidewalk it faces");
                     bySide[l.rot]++;
+                    area += (long) (l.x1 - l.x0 + 1) * (l.z1 - l.z0 + 1);
+                    if (l.building.type().startsWith("houses")) {
+                        houses++;
+                    }
                     for (int b = a + 1; b < all.size(); b++) {
                         Lot m = all.get(b);
                         assertFalse(l.x0 <= m.x1 && m.x0 <= l.x1 && l.z0 <= m.z1 && m.z0 <= l.z1,
@@ -134,6 +140,11 @@ class RingTest {
                 }
             }
         }
+        int rings = 2 * 3000;
+        System.out.printf("[RingTest] %d rings: %.2f structures per block, sides %.1f%% / %.1f%% / %.1f%% / %.1f%%, "
+                        + "%.1f%% of the block covered, %.1f%% houses%n", rings, lots / (double) rings,
+                100.0 * bySide[0] / lots, 100.0 * bySide[1] / lots, 100.0 * bySide[2] / lots, 100.0 * bySide[3] / lots,
+                100.0 * area / (rings * 180.0 * 120.0), 100.0 * houses / lots);
         // every structure shows up somewhere and every side of the ring is used
         assertEquals(Structures.ALL.size(), used.size(), "structures never drawn: " + used);
         for (long n : bySide) {
@@ -197,7 +208,8 @@ class RingTest {
                     front++;
                 }
             }
-            System.out.println("[RingTest] " + d.name() + " front row on the ground " + front + "/" + d.w());
+            System.out.println("[RingTest] " + d.name() + " front row on the ground " + front + "/" + d.w() + " (box "
+                    + d.front() + " x " + d.depth() + " x " + d.h() + ", ground layer " + d.ground() + ")");
             // the floor reaches the front row (vines and banners in front of the floor are kept, the floor under them
             // is filled); only the apartment has gaps there (empty cells become the city ground, level with it)
             assertTrue(front >= 0.7 * d.w(), d.name() + " front row " + front + "/" + d.w());
@@ -342,6 +354,7 @@ class RingTest {
                 // the police station's half-buried basement: its rooms cross the street level, dug out
                 assertTrue(openings > 300, "police_station openings " + openings);
                 assertEquals(3, d.ground());
+                System.out.println("[RingTest] abandoned_police_station: " + openings + " open cells at street level");
             } else {
                 // no other structure has dug-out space under its ground layer
                 assertEquals(0, openings, d.name());

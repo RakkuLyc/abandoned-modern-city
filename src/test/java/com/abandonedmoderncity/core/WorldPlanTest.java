@@ -300,6 +300,9 @@ class WorldPlanTest {
         int parks = 0;
         int parkStructures = 0;
         int buildingsPerCity = 0;
+        int blocks = 0;
+        int structures = 0;
+        int houses = 0;
         for (TestTerrain.Kind kind : TestTerrain.Kind.values()) {
             WorldPlan p = plan(SEEDS[0], kind);
             City.Hit hit = new City.Hit();
@@ -312,12 +315,19 @@ class WorldPlanTest {
                 Map<String, Integer> buildings = new HashMap<>();
                 for (int bj = -n; bj <= n; bj++) {
                     for (int bi = -n; bi <= n; bi++) {
+                        if (!c.lots(bi, bj).isEmpty()) {
+                            blocks++;
+                        }
                         // and never two of the same structure in one block
                         Set<String> inBlock = new HashSet<>();
                         for (Lot l : c.lots(bi, bj)) {
                             if (l.building != null) {
                                 assertTrue(inBlock.add(l.building.name()), c + " block " + bi + "," + bj + " has two "
                                         + l.building.name());
+                                structures++;
+                                if (l.building.type().startsWith("houses")) {
+                                    houses++;
+                                }
                             }
                             if (l.building != null && l.building.group() != null) {
                                 groups.merge(l.building.group(), 1, Integer::sum);
@@ -403,6 +413,10 @@ class WorldPlanTest {
         System.out.println("[WorldPlanTest] parks " + parks + " with " + parkStructures + " structures");
         System.out.printf("[WorldPlanTest] buildings per city %.2f (each model at most once)%n", buildingsPerCity / (double) cities);
         System.out.println("[WorldPlanTest] cities " + cities + ", lots " + lots);
+        System.out.printf("[WorldPlanTest] %d structures in %d blocks: %.2f per block, %.2f in the blocks without a park, "
+                        + "%.2f in those with one; %.1f%% houses%n", structures, blocks, structures / (double) blocks,
+                (structures - parkStructures) / (double) (blocks - parks), parkStructures / (double) parks,
+                100.0 * houses / structures);
         assertTrue(cities > 40, "too few cities: " + cities);
     }
 
