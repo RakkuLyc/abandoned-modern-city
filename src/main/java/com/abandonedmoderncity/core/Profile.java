@@ -6,7 +6,7 @@ package com.abandonedmoderncity.core;
  * <p>Heights are in eighths of a block, one value per block of path. Guarantees (checked by the unit tests):
  * <ul>
  *   <li>it starts at the first city's level and ends at the second's, flat for {@code flat} blocks at both ends;</li>
- *   <li>consecutive values differ by at most 1 (a ramp rises one block every {@link Params#RAMP_RUN} = 8 blocks, so
+ *   <li>consecutive values differ by at most 1 (a ramp rises one block every 8 blocks, so
  *   the surface goes up half a block every 4 blocks);</li>
  *   <li>flat stretches are at whole block heights (no long runs of slabs);</li>
  *   <li>it never goes below {@code floor} (bridge decks stay above the water).</li>

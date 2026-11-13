@@ -15,7 +15,7 @@ public final class Overhangs {
     public static Map<Long, BlockState> forChunk(WorldPlan plan, int cx, int cz) {
         Map<Long, BlockState> out = new HashMap<>();
         for (Map.Entry<Long, Integer> e : Crowns.forChunk(plan, cx, cz).entrySet()) {
-            BlockState s = Palette.of(e.getValue(), 0, null);
+            BlockState s = Palette.of(e.getValue(), null);
             if (s != null) {
                 out.put(e.getKey(), s);
             }

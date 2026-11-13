@@ -334,5 +334,7 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   blocos acima do pátio, salas do prédio apocalíptico e do azulado). As peças de veículo do OAmP e a tabela do Lost
   Cities saíram (a do Lost Cities era rejeitada pelo Minecraft). Baú da fonte do parque continua vazio (50%) ou
   `mossy_cobblestone` (50%).
-- Paleta (`gen/Palette`): os 8 estilos de material dos prédios do Abandoned Simple City (paredes, janelas, pisos,
-  acabamento, escadas, sacadas) continuam na paleta, sem uso, para os prédios novos.
+- Paleta (`gen/Palette`): todos os blocos que o gerador coloca, conferidos na inicialização (`Palette.validate`). Os 8
+  estilos de material dos prédios do Abandoned Simple City (paredes, janelas, pisos, acabamento, escadas, sacadas,
+  portas), os códigos de bloco deles e os tipos de lote praça e vazio foram removidos na revisão do código (13 nov
+  2026, pedido do usuário); ficam no histórico do git (commit `4dd94ae`).

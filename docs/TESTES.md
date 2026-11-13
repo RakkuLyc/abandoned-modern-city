@@ -44,7 +44,8 @@ Duas conferências guardam o mundo gerado numa revisão do código (desde 12 nov
   (`command/WorldFingerprint`), nas posições que o `WorldAudit` compara com o plano:
   - nas vias, a superfície e o bloco de baixo, o ar ou as plantas acima, os postes, o teto dos túneis e os pilares;
   - as paredes dos túneis;
-  - nos lotes, todo bloco que o plano define (menos os que seguem o chão natural);
+  - nos lotes, todo bloco que o plano define, menos os códigos que a auditoria também pula (nada planejado, grama,
+    grama baixa e tapete de musgo);
   - as folhas planejadas das copas completadas;
   - os block entities das estruturas, camadas enterradas incluídas (loot table e semente, desenho dos banners). Os
     outros ficam de fora: o baú vazio da fonte do parque, por exemplo, só aparece no chunk depois que ele é salvo e
@@ -390,6 +391,9 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 2c: código morto (estilos de prédio do Simple City, tipos de lote praça e vazio, 26 códigos de bloco, argumento `style` de `Palette.of`, 11 declarações sem uso) | PASS: 8 de 8, 0 erros de geração; as 8 linhas `mod blocks:` iguais à referência e as contagens iguais (menos `loot_containers_anywhere`); 142 estados da paleta validados (eram 218: saíram os dos estilos); 2,71 ms por chunk, 250 s. Impressão digital do planejador igual |
+  | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 2b: imports no lugar de nomes completos (213 nomes, 26 arquivos) | PASS: 8 de 8, 0 erros de geração; `mod blocks:` e contagens iguais à referência; bytecode igual instrução por instrução (`javap -c -p`); 2,74 ms por chunk, 253 s |
+  | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 2a: fim de linha LF (`.gitattributes`, 18 arquivos) | PASS: 8 de 8, 0 erros de geração; `mod blocks:` e contagens iguais à referência; classes compiladas idênticas byte a byte; 2,76 ms por chunk, 252 s |
   | `20261027` | padrão (8 alvos) | 12 nov | revisão do código, passo 1: impressão digital (`FingerprintTest` e `mod blocks:`); geração igual à do commit `4dd94ae` | PASS: 8 de 8, 0 erros de geração, 218 estados da paleta validados, 16 criaturas de vila retiradas; 2,73 ms por chunk, 252 s. Um mundo novo, o mesmo mundo recarregado do disco e outro mundo (gerado antes, recarregado): as 8 linhas `mod blocks:` iguais (a referência abaixo); contagens `stats:` iguais às de outra rodada, menos `loot_containers_anywhere` |
   | — | RCON | 13 nov | `/amcs spawn <categoria> <nome>` (sem bateria de geração: só o comando mudou) | `predio predio_largo_abandonado` e `delegacia delegacia_abandonada` colocados; `casa predio_largo_abandonado` recusado com a lista das casas; categoria `igreja` recusada com a lista das categorias; o formato antigo de um argumento recusado pelo jogo |
   | `20261027` | padrão (8 alvos) | 13 nov | delegacia (1 por cidade) e prédio do choque (52 arquivos) | PASS: 8 de 8, 0 erros de geração, 1 408 estados de estrutura validados; 2,77 ms por chunk, 256 s. Por RCON, `/amcs spawn delegacia_abandonada` sobre pedra: salas do subsolo cavadas nas camadas 1, 2 e na da rua, pedra fora delas intacta, banner de letra com o desenho; 63 contêineres com loot, 13 de difícil acesso |

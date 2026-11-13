@@ -416,7 +416,7 @@ final class ChunkBuilder {
             for (int dy = 1; dy <= 2; dy++) {
                 int plant = RoadDecay.plant(plan.seed, x, z, dy, decay);
                 if (plant != BlockCode.KEEP) {
-                    set(x, ys + dy, z, Palette.of(plant, 0, null));
+                    set(x, ys + dy, z, Palette.of(plant, null));
                 }
             }
         }
@@ -453,12 +453,12 @@ final class ChunkBuilder {
         }
         Lot lot = cp.lot[i];
         if (lot == null) {
-            set(x, base, z, cp.city != null ? Palette.of(cp.city.yardCode(), 0, null) : Palette.lotGround(natural));
+            set(x, base, z, cp.city != null ? Palette.of(cp.city.yardCode(), null) : Palette.lotGround(natural));
             return;
         }
         int maxH = base + lot.heightAboveBase();
         for (int y = base - lot.depthBelowBase(); y <= maxH; y++) {
-            BlockState s = Palette.of(lot.code(x, y, z, base), 0, natural);
+            BlockState s = Palette.of(lot.code(x, y, z, base), natural);
             if (s != null) {
                 set(x, y, z, s);
                 if (lot.building != null && s.hasBlockEntity()) {
@@ -549,7 +549,7 @@ final class ChunkBuilder {
         if (code == BlockCode.KEEP || code == BlockCode.AIR) {
             return false;
         }
-        BlockState s = Palette.of(code, 0, null);
+        BlockState s = Palette.of(code, null);
         return s != null && s.getBlock() instanceof LeavesBlock;
     }
 
@@ -568,7 +568,7 @@ final class ChunkBuilder {
         if (code == BlockCode.KEEP) {
             return false;
         }
-        BlockState s = Palette.of(code, 0, null);
+        BlockState s = Palette.of(code, null);
         return s != null && !s.getFluidState().isEmpty();
     }
 
@@ -783,7 +783,7 @@ final class ChunkBuilder {
                             int plant = decay == BlockCode.KEEP ? BlockCode.KEEP : RoadDecay.plant(plan.seed, x, z, y - ys, decay);
                             if (plant != BlockCode.KEEP) {
                                 // the plan's own plant on a taken-over column
-                                BlockState want = Palette.of(plant, 0, null);
+                                BlockState want = Palette.of(plant, null);
                                 if (s != want) {
                                     region.setBlock(p, want, Block.UPDATE_CLIENTS);
                                 }
@@ -880,7 +880,7 @@ final class ChunkBuilder {
                 }
                 continue;
             }
-            BlockState want = Palette.of(code, 0, null);
+            BlockState want = Palette.of(code, null);
             if (code == BlockCode.GRASS) {
                 // yards may legitimately be sand (desert) or turned into another soil: only refill holes
                 if (s.isAir() || liquid) {

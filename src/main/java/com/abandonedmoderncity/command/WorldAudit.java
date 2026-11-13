@@ -267,8 +267,8 @@ public final class WorldAudit {
                     : RoadDecay.plant(plan.seed, x, z, y - ys, decay);
             if (plant != BlockCode.KEEP) {
                 // the plan's own plant on a taken-over column (no collision)
-                if (s.getBlock() != Palette.of(plant, 0, null).getBlock()) {
-                    r.fail("road_plant", x + "," + y + "," + z + " " + id(s) + " expected " + id(Palette.of(plant, 0, null)));
+                if (s.getBlock() != Palette.of(plant, null).getBlock()) {
+                    r.fail("road_plant", x + "," + y + "," + z + " " + id(s) + " expected " + id(Palette.of(plant, null)));
                 } else {
                     r.stat("road_plants", 1);
                 }
@@ -350,7 +350,7 @@ public final class WorldAudit {
         Lot lot = cp.lot[i];
         // a structure may have water at the ground level (a pool): that is its plan, checked block by block below
         int planned = lot == null ? BlockCode.KEEP : lot.code(x, base, z, base);
-        BlockState plannedState = planned >= BlockCode.STRUCT ? Palette.of(planned, 0, null) : null;
+        BlockState plannedState = planned >= BlockCode.STRUCT ? Palette.of(planned, null) : null;
         boolean plannedFluid = plannedState != null && !plannedState.getFluidState().isEmpty();
         // the mouth of a garage ramp or stairwell is planned open
         if ((ground.isAir() || !ground.getFluidState().isEmpty()) && !plannedFluid && planned != BlockCode.AIR) {
@@ -359,7 +359,7 @@ public final class WorldAudit {
         if (lot == null) {
             if (cp.city != null) {
                 r.stat("yard_columns", 1);
-                BlockState want = Palette.of(cp.city.yardCode(), 0, null);
+                BlockState want = Palette.of(cp.city.yardCode(), null);
                 if (ground.getBlock() != want.getBlock()) {
                     r.fail("yard_ground", x + "," + base + "," + z + " " + id(ground) + " expected " + id(want));
                 }
@@ -374,8 +374,7 @@ public final class WorldAudit {
                 r.fail("hard_block", x + "," + y + "," + z + " " + id(s));
             }
             int code = lot.code(x, y, z, base);
-            if (code == BlockCode.KEEP || code == BlockCode.GRASS || code == BlockCode.SHRUB || code == BlockCode.ROOF_MOSS
-                    || code == BlockCode.LEAVES) {
+            if (code == BlockCode.KEEP || code == BlockCode.GRASS || code == BlockCode.SHRUB || code == BlockCode.ROOF_MOSS) {
                 continue;
             }
             if (code == BlockCode.AIR) {
@@ -385,7 +384,7 @@ public final class WorldAudit {
                 }
                 continue;
             }
-            BlockState want = Palette.of(code, 0, null);
+            BlockState want = Palette.of(code, null);
             if (want != null && s.getBlock() != want.getBlock()) {
                 r.fail("building_mismatch", x + "," + y + "," + z + " " + id(s) + " expected " + id(want));
             }

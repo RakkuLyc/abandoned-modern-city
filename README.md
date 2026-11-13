@@ -216,7 +216,7 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
 gen/    camada do jogo
   CityFeature    feature por chunk (passo top_layer_modification, via biome modifier)
   ChunkBuilder   escreve o plano do chunk em blocos; veda líquidos; limpa vizinhos
-  Palette        todos os blocos usados (inclui as estruturas, giradas por `BlockState.rotate`, e os 8 estilos de material herdados, sem uso) + validação
+  Palette        todos os blocos usados (inclui as estruturas, giradas por `BlockState.rotate`) + validação
   McTerrain      Terrain sobre ChunkGenerator.getBaseHeight (ruído, igual em qualquer thread)
   Plans          um WorldPlan por dimensão (só o overworld)
 command/  /amcs (StructureCommands: locate structure e spawn), auditoria dos blocos (WorldAudit), renders, bateria (SelfTest),

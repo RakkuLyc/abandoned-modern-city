@@ -33,8 +33,6 @@ public final class Park {
     /** Spiral arms: radius grows by ARM_GROWTH per radian, for ARM_TURN radians. */
     static final double ARM_GROWTH = 48 / Math.PI;
     static final double ARM_TURN = Math.PI * 0.8;
-    /** No trees closer than this to the center. */
-    static final double FREE_RADIUS = 19;
     /** About one tree per this many columns. */
     static final int TREE_AREA = 60;
     /** Share of path columns taken over by grass, moss or coarse dirt. */

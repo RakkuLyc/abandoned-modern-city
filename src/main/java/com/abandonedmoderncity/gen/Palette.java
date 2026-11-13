@@ -38,24 +38,19 @@ import net.minecraft.world.level.block.ChiseledBookShelfBlock;
 import net.minecraft.world.level.block.DaylightDetectorBlock;
 import net.minecraft.world.level.block.DecoratedPotBlock;
 import net.minecraft.world.level.block.DispenserBlock;
-import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.JukeboxBlock;
-import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.LecternBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.entity.BannerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
-import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.storage.loot.LootTable;
 
 /**
@@ -131,7 +126,7 @@ public final class Palette {
         if (parts == null || dy < 1 || dy >= parts.length || parts[dy] == BlockCode.KEEP) {
             return null;
         }
-        return of(parts[dy], 0, null);
+        return of(parts[dy], null);
     }
 
     /** The street light parts of a road column of a chunk plan, or null. */
@@ -150,39 +145,7 @@ public final class Palette {
 
     // ------------------------------------------------------------------ lots
     public static final BlockState COARSE_DIRT = Blocks.COARSE_DIRT.defaultBlockState();
-    public static final BlockState PLAZA = Blocks.POLISHED_ANDESITE.defaultBlockState();
-    public static final BlockState PLAZA_ALT = Blocks.STONE_BRICKS.defaultBlockState();
-    public static final BlockState LOG = Blocks.OAK_LOG.defaultBlockState();
-    public static final BlockState LEAVES = Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true);
     public static final BlockState SHRUB = Blocks.SHORT_GRASS.defaultBlockState();
-    // ------------------------------------------------------------------ town houses and fields
-    public static final BlockState PLANKS = Blocks.OAK_PLANKS.defaultBlockState();
-    public static final BlockState GLASS = Blocks.GLASS_PANE.defaultBlockState();
-    /** Rails of the open stairs in buildings. */
-    public static final BlockState RAIL = Blocks.IRON_BARS.defaultBlockState();
-    /** Indexed by direction: west, east, north, south (0..3). */
-    private static final Direction[] DIRS = {Direction.WEST, Direction.EAST, Direction.NORTH, Direction.SOUTH};
-    public static final BlockState[] DOOR_LOWER = new BlockState[4];
-    public static final BlockState[] DOOR_UPPER = new BlockState[4];
-    public static final BlockState[] STAIR = new BlockState[4];
-
-    /** Double doors of the buildings: index facing + 4 * (hinge right) + 8 * (upper half). */
-    public static final BlockState[] BUILDING_DOOR = new BlockState[16];
-
-    static {
-        for (int k = 0; k < 16; k++) {
-            BUILDING_DOOR[k] = Blocks.OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING, DIRS[k & 3])
-                    .setValue(DoorBlock.HINGE, (k & 4) != 0 ? DoorHingeSide.RIGHT : DoorHingeSide.LEFT)
-                    .setValue(DoorBlock.HALF, (k & 8) != 0 ? DoubleBlockHalf.UPPER : DoubleBlockHalf.LOWER);
-        }
-        for (int d = 0; d < 4; d++) {
-            BlockState door = Blocks.OAK_DOOR.defaultBlockState().setValue(DoorBlock.FACING, DIRS[d]);
-            DOOR_LOWER[d] = door.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER);
-            DOOR_UPPER[d] = door.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER);
-            STAIR[d] = Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, DIRS[d]);
-        }
-    }
-
     // ------------------------------------------------------------------ parks
     public static final BlockState PATH = Blocks.DIRT_PATH.defaultBlockState();
     public static final BlockState RING_SLAB = Blocks.SMOOTH_STONE_SLAB.defaultBlockState();
@@ -289,61 +252,13 @@ public final class Palette {
     /** Yards of paved cities. */
     public static final BlockState CITY_GROUND = Blocks.GRAY_CONCRETE_POWDER.defaultBlockState();
     public static final BlockState ROOF_MOSS = Blocks.MOSS_CARPET.defaultBlockState();
-    public static final BlockState LADDER_EAST = Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.EAST);
-    public static final BlockState LADDER_WEST = Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.WEST);
-    public static final BlockState LADDER_SOUTH = Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.SOUTH);
-    public static final BlockState LADDER_NORTH = Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.NORTH);
-
-    // ------------------------------------------------------------------ building styles
-    // wall, worn wall, window, floor, trim, parapet
-    private static final BlockState[][] STYLES = {
-            {b(Blocks.WHITE_CONCRETE), b(Blocks.LIGHT_GRAY_CONCRETE), b(Blocks.GLASS_PANE), b(Blocks.SMOOTH_STONE), b(Blocks.LIGHT_GRAY_CONCRETE), b(Blocks.WHITE_CONCRETE)},
-            {b(Blocks.LIGHT_GRAY_CONCRETE), b(Blocks.GRAY_CONCRETE), b(Blocks.GRAY_STAINED_GLASS_PANE), b(Blocks.POLISHED_ANDESITE), b(Blocks.STONE_BRICKS), b(Blocks.LIGHT_GRAY_CONCRETE)},
-            {b(Blocks.BRICKS), b(Blocks.POLISHED_GRANITE), b(Blocks.GLASS_PANE), b(Blocks.SPRUCE_PLANKS), b(Blocks.STONE_BRICKS), b(Blocks.BRICKS)},
-            {b(Blocks.STONE_BRICKS), b(Blocks.CRACKED_STONE_BRICKS), b(Blocks.BLACK_STAINED_GLASS_PANE), b(Blocks.SMOOTH_STONE), b(Blocks.POLISHED_ANDESITE), b(Blocks.MOSSY_STONE_BRICKS)},
-            {b(Blocks.TERRACOTTA), b(Blocks.BROWN_TERRACOTTA), b(Blocks.GLASS_PANE), b(Blocks.SMOOTH_SANDSTONE), b(Blocks.SMOOTH_SANDSTONE), b(Blocks.TERRACOTTA)},
-            {b(Blocks.GRAY_CONCRETE), b(Blocks.CYAN_TERRACOTTA), b(Blocks.LIGHT_BLUE_STAINED_GLASS_PANE), b(Blocks.POLISHED_ANDESITE), b(Blocks.WHITE_CONCRETE), b(Blocks.GRAY_CONCRETE)},
-            {b(Blocks.QUARTZ_BLOCK), b(Blocks.CALCITE), b(Blocks.BLACK_STAINED_GLASS_PANE), b(Blocks.SMOOTH_STONE), b(Blocks.SMOOTH_QUARTZ), b(Blocks.QUARTZ_BLOCK)},
-            {b(Blocks.MUD_BRICKS), b(Blocks.PACKED_MUD), b(Blocks.GLASS_PANE), b(Blocks.OAK_PLANKS), b(Blocks.DARK_OAK_PLANKS), b(Blocks.MUD_BRICKS)},
-    };
-
-    /** Stairwell steps of each style, close in color to its floor; [style][facing]. */
-    private static final Block[] STYLE_STAIRS = {Blocks.STONE_STAIRS, Blocks.POLISHED_ANDESITE_STAIRS, Blocks.SPRUCE_STAIRS,
-            Blocks.STONE_BRICK_STAIRS, Blocks.SMOOTH_SANDSTONE_STAIRS, Blocks.POLISHED_ANDESITE_STAIRS, Blocks.QUARTZ_STAIRS,
-            Blocks.OAK_STAIRS};
-    private static final BlockState[][] BUILDING_STAIR = new BlockState[STYLE_STAIRS.length][4];
-    /** Balcony floors of each style: a top slab of (or close to) its floor material. */
-    private static final BlockState[] BALCONY_FLOOR = {top(Blocks.SMOOTH_STONE_SLAB), top(Blocks.POLISHED_ANDESITE_SLAB),
-            top(Blocks.SPRUCE_SLAB), top(Blocks.SMOOTH_STONE_SLAB), top(Blocks.SMOOTH_SANDSTONE_SLAB),
-            top(Blocks.POLISHED_ANDESITE_SLAB), top(Blocks.SMOOTH_STONE_SLAB), top(Blocks.OAK_SLAB)};
-    /** Stone balcony parapets of each style: a wall block close to its wall colors. */
-    private static final BlockState[] BALCONY_WALL = {b(Blocks.DIORITE_WALL), b(Blocks.ANDESITE_WALL), b(Blocks.BRICK_WALL),
-            b(Blocks.STONE_BRICK_WALL), b(Blocks.GRANITE_WALL), b(Blocks.POLISHED_DEEPSLATE_WALL), b(Blocks.DIORITE_WALL),
-            b(Blocks.MUD_BRICK_WALL)};
-
-    static {
-        for (int s = 0; s < STYLE_STAIRS.length; s++) {
-            for (int d = 0; d < 4; d++) {
-                BUILDING_STAIR[s][d] = STYLE_STAIRS[s].defaultBlockState().setValue(StairBlock.FACING, DIRS[d]);
-            }
-        }
-        if (STYLE_STAIRS.length != STYLES.length || BALCONY_FLOOR.length != STYLES.length
-                || BALCONY_WALL.length != STYLES.length) {
-            throw new IllegalStateException("Palette styles of different lengths");
-        }
-    }
 
     private static BlockState b(Block block) {
         return block.defaultBlockState();
     }
 
-    private static BlockState top(Block slab) {
-        return slab.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP);
-    }
-
-    /** Block for a building/lot code, or null for {@link BlockCode#KEEP}. */
-    public static BlockState of(int code, int style, BlockState naturalTop) {
-        BlockState[] s = STYLES[Math.floorMod(style, STYLES.length)];
+    /** Block for a plan code, or null for {@link BlockCode#KEEP}. */
+    public static BlockState of(int code, BlockState naturalTop) {
         if (code >= BlockCode.STRUCT) {
             return structure(code - BlockCode.STRUCT);
         }
@@ -408,48 +323,14 @@ public final class Palette {
             default:
                 break;
         }
-        if (code >= BlockCode.BUILDING_DOOR && code < BlockCode.BUILDING_DOOR_END) {
-            return BUILDING_DOOR[code - BlockCode.BUILDING_DOOR];
-        }
-        if (code >= BlockCode.BUILDING_STAIR && code < BlockCode.BUILDING_STAIR_END) {
-            return BUILDING_STAIR[Math.floorMod(style, STYLES.length)][code - BlockCode.BUILDING_STAIR];
-        }
-        if (code >= BlockCode.DOOR_LOWER && code < BlockCode.DOOR_LOWER + 4) {
-            return DOOR_LOWER[code - BlockCode.DOOR_LOWER];
-        }
-        if (code >= BlockCode.DOOR_UPPER && code < BlockCode.DOOR_UPPER + 4) {
-            return DOOR_UPPER[code - BlockCode.DOOR_UPPER];
-        }
-        if (code >= BlockCode.STAIR && code < BlockCode.STAIR + 4) {
-            return STAIR[code - BlockCode.STAIR];
-        }
         return switch (code) {
             case BlockCode.KEEP -> null;
             case BlockCode.AIR -> AIR;
-            case BlockCode.WALL -> s[0];
-            case BlockCode.WALL_WORN -> s[1];
-            case BlockCode.WINDOW -> s[2];
-            case BlockCode.FLOOR -> s[3];
-            case BlockCode.TRIM -> s[4];
-            case BlockCode.PARAPET -> s[5];
-            case BlockCode.LADDER_EAST -> LADDER_EAST;
-            case BlockCode.LADDER_WEST -> LADDER_WEST;
-            case BlockCode.LADDER_SOUTH -> LADDER_SOUTH;
-            case BlockCode.LADDER_NORTH -> LADDER_NORTH;
             case BlockCode.ROOF_MOSS -> ROOF_MOSS;
-            case BlockCode.RAIL -> RAIL;
-            case BlockCode.BALCONY_FLOOR -> BALCONY_FLOOR[Math.floorMod(style, STYLES.length)];
-            case BlockCode.BALCONY_WALL -> BALCONY_WALL[Math.floorMod(style, STYLES.length)];
             case BlockCode.GRASS -> lotGround(naturalTop);
             case BlockCode.COARSE_DIRT -> COARSE_DIRT;
-            case BlockCode.PLAZA -> PLAZA;
-            case BlockCode.PLAZA_ALT -> PLAZA_ALT;
-            case BlockCode.LOG -> LOG;
-            case BlockCode.LEAVES -> LEAVES;
             case BlockCode.SHRUB -> SHRUB;
             case BlockCode.CITY_GROUND -> CITY_GROUND;
-            case BlockCode.PLANKS -> PLANKS;
-            case BlockCode.GLASS -> GLASS;
             case BlockCode.LAWN -> GRASS;
             case BlockCode.PATH -> PATH;
             case BlockCode.RING_SLAB -> RING_SLAB;
@@ -487,10 +368,10 @@ public final class Palette {
     public static BlockState roadSurfaceAt(long seed, int x, int z, byte zone, byte struct, boolean slab) {
         int decay = RoadDecay.surface(seed, x, z, zone, struct, slab);
         if (decay != BlockCode.KEEP) {
-            return of(decay, 0, null);
+            return of(decay, null);
         }
         int tex = RoadDecay.texture(seed, x, z, zone, slab);
-        return tex != BlockCode.KEEP ? of(tex, 0, null) : roadSurface(zone, slab);
+        return tex != BlockCode.KEEP ? of(tex, null) : roadSurface(zone, slab);
     }
 
     public static BlockState roadBase(byte zone) {
@@ -565,21 +446,9 @@ public final class Palette {
 
     /** All fixed states the generator places (natural surface blocks reused for slopes are checked when used). */
     public static List<BlockState> all() {
-        Set<BlockState> set = new LinkedHashSet<>(List.of(LANE, LANE_SLAB, SIDEWALK, SIDEWALK_SLAB, CITY_MARK, HIGHWAY_MARK, WALL, STONE, LIGHT, DIRT, GRASS, SANDSTONE,
-                RED_SANDSTONE, COARSE_DIRT, CITY_GROUND, PLANKS, GLASS, RAIL, PLAZA, PLAZA_ALT, LOG, LEAVES, SHRUB, ROOF_MOSS, LADDER_EAST, LADDER_WEST, LADDER_SOUTH, LADDER_NORTH,
+        Set<BlockState> set = new LinkedHashSet<>(List.of(LANE, LANE_SLAB, SIDEWALK, SIDEWALK_SLAB, CITY_MARK, HIGHWAY_MARK,
+                WALL, STONE, LIGHT, DIRT, GRASS, SANDSTONE, RED_SANDSTONE, COARSE_DIRT, CITY_GROUND, SHRUB, ROOF_MOSS,
                 Blocks.SAND.defaultBlockState(), Blocks.RED_SAND.defaultBlockState()));
-        for (BlockState[] style : STYLES) {
-            set.addAll(List.of(style));
-        }
-        set.addAll(List.of(DOOR_LOWER));
-        set.addAll(List.of(DOOR_UPPER));
-        set.addAll(List.of(STAIR));
-        set.addAll(List.of(BUILDING_DOOR));
-        for (BlockState[] stairs : BUILDING_STAIR) {
-            set.addAll(List.of(stairs));
-        }
-        set.addAll(List.of(BALCONY_FLOOR));
-        set.addAll(List.of(BALCONY_WALL));
         set.addAll(List.of(PATH, RING_SLAB, TALL_GRASS_LOWER, TALL_GRASS_UPPER));
         set.addAll(List.of(BENCH_SEAT));
         set.addAll(List.of(BENCH_ARM));
@@ -623,16 +492,7 @@ public final class Palette {
                         + s.getDestroySpeed(EmptyBlockGetter.INSTANCE, BlockPos.ZERO) + ")");
             }
         }
-        List<BlockState> structures = new ArrayList<>(List.of(PLAZA, PLAZA_ALT, COARSE_DIRT, LOG, ROOF_MOSS, PLANKS, GLASS,
-                CITY_GROUND));
-        for (BlockState[] style : STYLES) {
-            structures.addAll(List.of(style));
-        }
-        for (BlockState[] stairs : BUILDING_STAIR) {
-            structures.addAll(List.of(stairs));
-        }
-        structures.addAll(List.of(BALCONY_FLOOR));
-        structures.addAll(List.of(BALCONY_WALL));
+        List<BlockState> structures = List.of(COARSE_DIRT, ROOF_MOSS, CITY_GROUND);
         for (BlockState s : structures) {
             if (s.is(BlockTags.BASE_STONE_OVERWORLD) || s.is(BlockTags.STONE_ORE_REPLACEABLES)
                     || s.is(BlockTags.DEEPSLATE_ORE_REPLACEABLES)) {

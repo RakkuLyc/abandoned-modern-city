@@ -34,7 +34,6 @@ public final class City {
     public final int SZ;
     /** Whether the long side of the blocks runs east-west (along x). */
     public final boolean longX;
-    static final double R_ARC = Params.ARC_RADIUS;
     /** Grid-space search radius for street primitives: the widest street plus its slopes, with slack for the waves. */
     static final double SEARCH = (Params.AVENUE_HW + Params.CITY_SKIRT) * 1.05 + 2;
     private static final long SALT = 0x43495459L;
@@ -540,15 +539,6 @@ public final class City {
         return new double[]{dx / len, dz / len};
     }
 
-    /** Whether the street that continues into the city from this exit is an avenue. */
-    public boolean exitOnAvenue(Exit e) {
-        if (e.mid()) {
-            return false;
-        }
-        int line = e.dir() == Exit.EAST || e.dir() == Exit.WEST ? e.j() : e.i();
-        return Math.floorMod(line, Params.AVENUE_EVERY) == 0;
-    }
-
     // ------------------------------------------------------------------ column query
 
     /** Result of {@link #query}. Reused between calls (not thread safe: one per thread / per chunk job). */
@@ -765,7 +755,6 @@ public final class City {
     public static final int L_LEAVES = 14;
     /** Vines: + 0 holding by the top (under the arm), + 1 + face (0 north .. 3 west) holding on the post. */
     public static final int L_VINE = 15;
-    public static final int L_COUNT = 20;
 
     /** Positions along a segment {@code run} long where its lights stand (centered, {@link #LAMP_EVERY} apart). */
     static boolean lampAt(int t, int run) {
@@ -1114,13 +1103,6 @@ public final class City {
         List<Lot> obstacles = List.copyOf(out);
         out.add(Lot.wild(x0, z0, x1, z1, Hash.next(rs, 3), obstacles));
         return List.copyOf(out);
-    }
-
-    /** 0 at the outskirts, 1 at the center. */
-    public double centrality(double x, double z) {
-        double dx = x - cx;
-        double dz = z - cz;
-        return Math.max(0, Math.min(1, 1 - Math.sqrt(dx * dx + dz * dz) / (radius * 1.15)));
     }
 
     @Override

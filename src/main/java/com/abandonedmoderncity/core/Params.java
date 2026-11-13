@@ -38,9 +38,8 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
     public static final int DASH_GAP = 6;
     /** Radius of the curved corners on the outside of the city (convex corners of the street ring). */
     public static final double ARC_RADIUS = 24;
-    /** Largest amplitude of the gentle street waves (blocks) and the shortest wavelength. */
+    /** Largest amplitude of the gentle street waves (blocks). */
     public static final double MAX_WARP = 10;
-    public static final double MIN_WAVELENGTH = 288;
     /** Every third grid line is an avenue. */
     public static final int AVENUE_EVERY = 3;
 
@@ -60,8 +59,6 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
     public static final double HIGHWAY_LANE_HW = STREET_LANE_HW;
     /** Smooth stone columns between the lanes and the edge column with the wall. */
     public static final int HIGHWAY_SHOULDER = 2;
-    /** Tunnel side walls: the column just outside the highway band. */
-    public static final double TUNNEL_WALL_HW = HIGHWAY_HW + 1;
     /** Center marking half width. */
     public static final double MARK_HW = 0.5;
 
@@ -71,16 +68,11 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
     public static final int CITY_SKIRT = 32;
     /** Slopes (1:1) beside a highway on the ground reach this far beyond its edge. */
     public static final int HIGHWAY_SKIRT = 20;
-    /** City blocks are only built where the terrain is within [level - FILL, level + CUT]. */
-    public static final int CITY_MAX_FILL = 10;
-    public static final int CITY_MAX_CUT = 14;
     /** Gap between the outer street edge and lots. */
     public static final double LOT_SETBACK = 1.0;
 
     // ------------------------------------------------------------------ highways
 
-    /** Ramps rise 1 block every RAMP_RUN blocks (half a block every RAMP_RUN / 2). */
-    public static final int RAMP_RUN = 8;
     /** Highways stay at the city level for this many blocks after leaving a city. */
     public static final int FLAT_END = 48;
     /** Highways run in a tunnel where the ground is at least this many blocks above the walking height. */

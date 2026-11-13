@@ -43,8 +43,8 @@ import net.minecraft.world.level.chunk.LevelChunk;
 /**
  * SHA-256 of the blocks the mod decides in a rectangle of chunks: the positions {@link WorldAudit} compares with the
  * plan. On roads, the surface and the block under it, the air or plants over it, the street lights, the tunnel ceiling
- * and the bridge pillars; the tunnel walls; on lots, every block the plan gives (not those that follow the natural
- * ground); the leaves completing the crowns of structures; and the block entities of the structures (their saved data
+ * and the bridge pillars; the tunnel walls; on lots, every block the plan gives but the codes the audit leaves out;
+ * the leaves completing the crowns of structures; and the block entities of the structures (their saved data
  * with the keys sorted: loot table and seed, banner designs). Block states are hashed with their properties, except
  * those Minecraft works out again from the neighbours when it finishes a chunk ({@link #normal}).
  * <p>
@@ -205,9 +205,9 @@ public final class WorldFingerprint {
         int top = base + lot.heightAboveBase();
         for (int y = base - lot.depthBelowBase(); y <= top; y++) {
             int code = lot.code(x, y, z, base);
-            // what the audit leaves out: nothing planned, or blocks that follow the natural ground
+            // the codes the audit also leaves out (nothing planned, grass, short grass, moss carpet)
             if (code == BlockCode.KEEP || code == BlockCode.GRASS || code == BlockCode.SHRUB
-                    || code == BlockCode.ROOF_MOSS || code == BlockCode.LEAVES) {
+                    || code == BlockCode.ROOF_MOSS) {
                 continue;
             }
             part.state(c.getBlockState(p.set(x, y, z)));

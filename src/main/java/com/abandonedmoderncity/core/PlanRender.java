@@ -139,9 +139,6 @@ public final class PlanRender {
                     if (c == BlockCode.SHRUB) {
                         return rgb(170, 175, 60);
                     }
-                    if (c == BlockCode.LEAVES || c == BlockCode.LOG) {
-                        return rgb(30, 110, 40);
-                    }
                     if (c != BlockCode.KEEP && c != BlockCode.AIR) {
                         return rgb(150, 140, 160);
                     }
@@ -152,8 +149,6 @@ public final class PlanRender {
                         yield rgb(g + 40, g, g - 20);
                     }
                     case PARK -> groundColor(lot.code(x, base, z, base));
-                    case PLAZA -> rgb(200, 195, 175);
-                    case EMPTY -> rgb(170, 150, 110);
                     default -> rgb(120, 175, 100);
                 };
             }

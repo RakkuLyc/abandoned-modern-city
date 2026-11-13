@@ -238,7 +238,7 @@ public final class StructureCommands {
                     if (code == BlockCode.KEEP || code == BlockCode.AIR && ry == 0 && !def.opening(rx, rz, rot)) {
                         continue;
                     }
-                    BlockState s = Palette.of(code, 0, null);
+                    BlockState s = Palette.of(code, null);
                     if (s == null) {
                         continue;
                     }
@@ -261,7 +261,7 @@ public final class StructureCommands {
         // the leaves completing the crowns its template cut, where there is air
         for (int[] o : def.overhangs(rot)) {
             pos.set(x0 + o[0], base + o[1], z0 + o[2]);
-            BlockState s = Palette.of(o[3], 0, null);
+            BlockState s = Palette.of(o[3], null);
             if (s != null && level.getBlockState(pos).isAir()) {
                 level.setBlock(pos, s, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
                 placed++;

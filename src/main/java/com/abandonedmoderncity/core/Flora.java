@@ -27,10 +27,6 @@ public final class Flora {
         return c >= BlockCode.WILD_LEAVES && c < BlockCode.WILD_LEAVES_END;
     }
 
-    public static boolean isVine(int c) {
-        return c >= BlockCode.VINE && c < BlockCode.VINE + 4;
-    }
-
     /** Leaves code of a species at a distance (1..6) from a log. */
     public static int leaves(int species, int distance) {
         return BlockCode.WILD_LEAVES + 8 * species + distance;
