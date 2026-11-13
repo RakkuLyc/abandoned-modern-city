@@ -440,6 +440,7 @@ road on the ground, without a bridge wall).
   |---|---|---|---|---|
   | `20261027` | default (8 targets) | 13 Nov | review, step 4: code comments without dates, the docs in English (`docs/TESTES.md` → `docs/TESTING.md`), the numbers audit, `WeatheringTest` with the seed of the index (finding 67) and new prints in `RingTest` and `WorldPlanTest`; the code of the mod unchanged since the comments commit (`5eb5b74`), whose bytecode was equal to the commit before in all 1,322 members of the mod and 176 of the tests | PASS: 8 of 8, 0 generation errors; `tools/verify/compare_battery.py` equal to the reference (the 8 `mod blocks:` lines and the counts); 142 palette states, 16 village creatures removed; 2.62 ms per chunk, 240 s |
   | `20261027` | default (8 targets) | 13 Nov | loot theme `building_large` (buildings with 100+ containers) | PASS: 8 of 8, 0 generation errors; counts equal to the reference; t01–t05 and t08 changed only in the loot table names of the big buildings' containers (checked on the saved worlds); 2.72 ms per chunk |
+  | `20261027` | quick with `structureOvergrowth = false` | 13 Nov | loot theme `building_large` | PASS: 3 of 3, 0 generation errors, log "Structure overgrowth off"; counts equal to the reference; the 3 `mod blocks:` lines changed only in loot table names (checked on the saved worlds): the new reference; 4.48 ms per chunk |
   | `20261027` | default (8 targets) | 13 Nov | special structures in ~1 city in 10 (`City.SPECIAL_CHANCE` = 0.40) | PASS: 8 of 8, 0 generation errors, 16 village creatures removed; t01, t02 and t04–t07 equal to the reference; t03 and t08 changed only in their structures (lots 30 → 33 and 66 → 68, roads and streets equal): the new reference (section 6); 2.81 ms per chunk (8,346 chunks). Not run: the quick reference with `structureOvergrowth = false`, whose 3 targets (t01, the longest tunnel and bridge) are equal in this run |
   | — | RCON | 13 Nov | `/amcs locate structure <category> [name]` (development server, a new world `cmdtest_world`, from 0 70 0) | `pharmacy` → `pharmacy_large_yellow` at 360 blocks; `house` → `abandoned_modern_garage_house` at 315; `special` → `abandoned_ramp_building` at 990; `building abandoned_wide_building` → at 1,241; `police_station abandoned_police_station` → at 465; `building pharmacy_red` refused with the 10 names of `building`; `shop` and `tower` (the old one-word form) refused with the 7 categories; `locate city` and `highway` unchanged; `spawn pharmacy pharmacy_red` placed it (22 containers with loot), `spawn building pharmacy_red` and `spawn shop x` refused; the server log only with the known warning of the old dev config |
   | — | RCON | 13 Nov | commands with the English names (development server, world `cmdtest_world`) | `/amcs locate structure abandoned_wide_building` (name), `pharmacy` (group) and `buildings_large` (type) found the nearest ones; `execute positioned 1000 200 1000 rotated 180 0 run amcs spawn house abandoned_house` placed the house (57 containers with loot, 1 hard to get to) and `... spawn building abandoned_wide_building` the wide building (249, 191 hard to get to); in the saved world the chests have the new tables (`chests/house/barrel` 46, `house/chest` 10, `house/chest_hard` 1; `building/barrel` 29, `barrel_hard` 87, `chest` 29, `chest_hard` 104); `spawn house abandoned_wide_building` refused with the list of the houses and the old category `casa` with the list of the new categories |
@@ -522,14 +523,16 @@ road on the ground, without a bridge wall).
   that run is (outside git) in `run/selftest_world_ref_english/`, and the one from before the names in
   `run/selftest_world_ref_4dd94ae/` (same blocks), to compare block by block if a line changes.
 - **Reference with the overgrowth off** (`structureOvergrowth = false`, quick scope, 13 Nov 2026, with the English
-  names; the previous one, with the Portuguese names, was taken at commit `254ca56`, and the two have the same roads
+  names and the loot theme `building_large`: the 3 lines changed only in the loot table names of the containers,
+  checked on the saved worlds, 0 containers of the mod at other positions; the world of this run is in
+  `run/selftest_world_ref_off_large/`; the previous one, with the Portuguese names, was taken at commit `254ca56`, and the two have the same roads
   and lots in every chunk):
 
   | Target | SHA-256 | Positions | Block entities |
   |---|---|---|---|
-  | t01 city nearest to the spawn | `568ecdfa267505d309938365ec1c11098565de04a95a6ad318ad541d7a7f78c5` | 1,874,811 | 2,055 |
-  | t02 longest tunnel (352) | `ab44685e225a3839b0d721e92303cc04e8b61b3df462bbda419761e845d2526f` | 541,806 | 164 |
-  | t03 longest bridge over water (349) | `2349a83efc3e2400fb21a762303507267598659945095c7754b01f06302b8a17` | 452,586 | 605 |
+  | t01 city nearest to the spawn | `4268b62afd924076693665a43fb4c6910fbcbe9170ec7c9a2669194c953fcc78` | 1,874,811 | 2,055 |
+  | t02 longest tunnel (352) | `68f2d4d7fbcbcb77f9bf2bb3e4d212e43dff707711964f4b0027c5a00352fd7c` | 541,806 | 164 |
+  | t03 longest bridge over water (349) | `0af82fb59545bff4cd053d0e8b4bc797a39719ec80386ccb3732d493519fb905` | 452,586 | 605 |
 
   Report in git in `tools/verify/reference/battery-20261027-quick-overgrowth-off.txt`; world (with the Portuguese
   names, same blocks) in `run/selftest_world_ref_off/` (outside git).
