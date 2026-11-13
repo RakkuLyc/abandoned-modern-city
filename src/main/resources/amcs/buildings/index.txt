@@ -58,3 +58,5 @@ predios_grandes|predio_brutalista_u_75x58|0
 predios_grandes|predio_largo_abandonado|8
 predios_grandes|torre_verde_abandonada|0
 especial|predio_rampa_abandonado|0
+predios_grandes|predio_choque_abandonado|0
+delegacia|delegacia_abandonada|3

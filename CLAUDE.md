@@ -24,7 +24,7 @@ Abandoned Modern City (mod id `abandonedmoderncity`, pacote `com.abandonedmodern
 `RakkuLyc/abandoned-modern-city`, pasta `Projetos Claude/AbandonedModernCity`). Começou em 7 nov 2026 como cópia do
 Abandoned Simple City (`RakkuLyc/abandoned-simple-city`, pasta `AbandonedModernCity-Simple`) com o mesmo sistema de
 rodovias, túneis, pontes, quarteirões, parques e plantações, **sem os prédios** (e sem as casinhas das cidades
-3 × 2) e sem o histórico de commits. Os prédios são as estruturas `.nbt` do usuário (50 arquivos desde 13 nov 2026: 28 modelos, 6 deles com variações de cor; 14 em 12 nov, mais 7 e as 22 variações em 13 nov, mais 7 depois; as 33 primeiras foram removidas em 10 nov). O Abandoned Modern City original
+3 × 2) e sem o histórico de commits. Os prédios são as estruturas `.nbt` do usuário (52 arquivos desde 13 nov 2026: 30 modelos, 6 deles com variações de cor; 14 em 12 nov, mais 7 e as 22 variações em 13 nov, mais 7 e depois mais 2; as 33 primeiras foram removidas em 10 nov). O Abandoned Modern City original
 (pasta `AbandonedModernCity-Deprecated`) está descontinuado. Ainda em 7 nov 2026 o usuário mandou remover as cidades
 octogonais e as cidades 3 × 2 das rodovias (com o padrão rural_highway perto delas e as plantações), e depois trocar
 o grid 4 × 4 por 2 × 2 com células de 1024, depois os quarteirões para 105 × 60 com células de 512, e em 8 nov 2026 os quarteirões para 140 × 90 com células de 576
@@ -152,6 +152,15 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   mas os trechos retos de 4 blocos limitam: nos testes, 565 bancos em 30 parques, 1 a cada 18,6 blocos de trilha;
   20% quebrados (um assento e o braço daquele lado faltam, `BENCH_BROKEN`). Copas altas passam sobre eles; nenhuma
   planta nasce através deles.
+- Delegacia e prédio do choque (pedido do usuário depois de 13 nov 2026): delegacia abandonada (54 × 38 × 33, tipo
+  `delegacia`, no máximo 1 por cidade, regra do usuário; `Structures.LIMITS`): chão na camada 3 (as 3 de baixo
+  enterradas), com um subsolo meio enterrado (salas de `cave_air` das camadas 1 a 5, piso na 0, escada interna)
+  cavado no terreno; as salas atravessam a camada da rua abertas (as mesmas aberturas da garagem do prédio largo:
+  405 células); 13 banners azuis com as letras na fachada (desenho do molde), 3 tochas de redstone salvas, folhas
+  não persistentes sem tronco viram persistentes; frente no -Z (banners e escadaria de entrada); 63 contêineres, 13
+  de difícil acesso (salas fechadas do subsolo); loot do tema `predio`. Prédio do choque (91 × 44 × 90, duas torres
+  inclinadas uma contra a outra, `predios_grandes`, 1 por cidade como os outros prédios): chão na camada 0, frente
+  no -Z (escadaria e porta sob o vão entre as torres), 201 contêineres, 169 acima de 15.
 - Estruturas novas (pedido do usuário depois de 13 nov 2026, com loot vanilla): casa moderna com garagem
   (42 × 36 × 15), casa de vidro (48 × 40 × 15), prédio pequeno (23 × 31 × 41), prédio brutalista em U (75 × 58 × 125),
   prédio largo (84 × 31 × 80, com estacionamento subterrâneo), torre verde (31 × 31 × 143) e prédio da rampa (pasta
@@ -213,7 +222,7 @@ existem as cidades 2 × 2 de quarteirões retangulares.
     `Palette.applyBanner`): as letras D R U G S T O R E das farmácias (9 na farmácia, 18 na farmácia grande); encostadas na calçada, formando um anel; sorteio por arquivo,
     sem padrão;
   - limites por cidade (`Structures.LIMITS`): farmácias 3 (as duas), oficinas 2 (as duas), postos 2 (os dois),
-    especial 1 (o prédio da rampa); e cada prédio (tipos `predios_*` e `especial`, `Def.onePerCity`) no máximo 1
+    especial 1 (o prédio da rampa), delegacia 1; e cada prédio (tipos `predios_*` e `especial`, `Def.onePerCity`) no máximo 1
     vez por cidade, em qualquer quarteirão (13 nov 2026, pedido do usuário: havia cidades com 2 ou 3 prédios
     azulados; casas, farmácias, oficinas e postos podem repetir dentro dos limites); 6,24 prédios por cidade nos
     testes; os
@@ -280,8 +289,8 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   - `cobblestone` e `stone_bricks` (e suas escadas, lajes e muros) a até 2 blocos do verde novo viram musgosos (50%).
   Nunca mexe em folhas, troncos, vidro, block entities (contêineres, banners, camas...), portas, água ou blocos
   parciais; planta só sobre solo, tapete só sobre bloco inteiro, vinha só presa em bloco inteiro ou na vinha de cima.
-  Nos 50 arquivos: 34 047 vinhas, 9 945 pisos viram solo, 5 014 tapetes, 4 827 plantas, 3 621 musgosos, 2 450
-  rachados (59 904 blocos; 34 609 nos 43 de antes das 7 novas). As medidas antes e depois de cada estrutura ficam em `docs/TESTES.md`.
+  Nos 52 arquivos: 38 501 vinhas, 10 192 pisos viram solo, 5 088 tapetes, 4 947 plantas, 3 907 musgosos, 2 451
+  rachados (65 086 blocos). As medidas antes e depois de cada estrutura ficam em `docs/TESTES.md`.
 - Vilas dentro das cidades (13 nov 2026, pedido do usuário: aldeões e golem de ferro numa cidade gerada onde havia
   uma vila): as casas da vila são geradas antes da cidade, cada uma com suas criaturas, que ficavam quando a cidade
   era construída por cima (no teste, um aldeão preso dentro do aterro da rua). Ao construir cada chunk, o mod tira
@@ -308,8 +317,8 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   da cidade (`Access.HIGH`) ou fora do alcance de quem entra andando da rua: o percurso pula 1 bloco (nunca sobre
   cerca, muro ou vidraça), cai qualquer altura, sobe escada de mão, vinha, andaime e água, abre portas, alçapões e
   portões (não os de ferro); plantas, teias, tapetes e tochas não bloqueiam; folhas sim; o contêiner precisa estar a
-  1 bloco de lado (diagonal vale) de onde o jogador pisa, de 1 abaixo dos pés a 1 acima da cabeça. Hoje 1 200 de 2 842
-  contêineres dos 50 arquivos com o abandono ligado (os prédios altos novos têm quase todos acima de 15; o
+  1 bloco de lado (diagonal vale) de onde o jogador pisa, de 1 abaixo dos pés a 1 acima da cabeça. Hoje 1 382 de 3 106
+  contêineres dos 52 arquivos com o abandono ligado (os prédios altos novos têm quase todos acima de 15; o
   estacionamento do prédio largo é alcançado pela rampa: 0 fora de alcance nele); antes das 7 novas, 172 de 1 530
   (173 de 882 nos 21 modelos sem o abandono): 166 pela altura (torre 82, prédio apocalíptico 54, azulado 17, esqueleto 9,
   apartamento 4) e 17 fechados (telhados da casa abandonada e da farmácia grande, um cômodo da mansão abandonada 2

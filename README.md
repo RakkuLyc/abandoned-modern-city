@@ -1,7 +1,7 @@
 # Abandoned Modern City — NeoForge 1.21.1
 
 Cidades modernas abandonadas geradas proceduralmente: ruas, rodovias, túneis, pontes, quarteirões e parques.
-Os prédios são as estruturas `.nbt` do usuário (28 modelos, 50 arquivos com as variações de cor), sorteadas ao acaso num anel em volta de cada quarteirão, com
+Os prédios são as estruturas `.nbt` do usuário (30 modelos, 52 arquivos com as variações de cor), sorteadas ao acaso num anel em volta de cada quarteirão, com
 limites por cidade para farmácias, oficinas e postos.
 
 > Começou em 7 nov 2026 como cópia do Abandoned Simple City (repositório `abandoned-simple-city`), sem os prédios e
@@ -44,7 +44,7 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
 - **Quarteirões:** as estruturas formam um anel encostado nas calçadas, com a frente (lado -Z do `.nbt`) virada para
   a rua; o resto (o miolo) é tomado pela natureza. Cerca de 1 em 8 quarteirões tem um parque de 110 × 64 num canto,
   com as estruturas em L nas outras duas ruas.
-- **Estruturas (28 modelos, 50 arquivos, `structures/`):** sorteadas ao acaso no anel (cada modelo com a mesma
+- **Estruturas (30 modelos, 52 arquivos, `structures/`):** sorteadas ao acaso no anel (cada modelo com a mesma
   chance, depois a cor: as 10 casas dão ~43% das estruturas), com limite por cidade: farmácias 3, oficinas 2, postos 2, e cada prédio (apartamento, esqueleto, azulado, torre,
   apocalíptico, pequeno, brutalista, largo, torre verde, rampa) no máximo 1 vez por cidade.
   Nunca duas estruturas iguais (o mesmo modelo, em qualquer cor) no mesmo quarteirão. Variações de cor: farmácia e
@@ -82,6 +82,8 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
   | Prédio largo (estacionamento subterrâneo cavado no terreno, rampa inteira e escada abertas) | prédio | 84 × 31 × 80 | camada 8 (8 enterradas) |
   | Torre verde | prédio | 31 × 31 × 143 | camada 0 |
   | Prédio da rampa (pasta Especial) | especial (no máximo 1 por cidade) | 102 × 72 × 134 | camada 0 |
+  | Prédio do choque (duas torres inclinadas) | prédio | 91 × 44 × 90 | camada 0 |
+  | Delegacia (subsolo meio enterrado cavado no terreno, letras em banners) | delegacia (no máximo 1 por cidade) | 54 × 38 × 33 | camada 3 (3 enterradas) |
 
   - Encostadas na calçada sem vão: as fileiras da borda sem piso recebem o piso da primeira fileira que tem.
   - As árvores das estruturas têm leaf decay (folhas ligadas a um tronco); sebes sem tronco continuam persistentes.
@@ -97,7 +99,7 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
     tamanho: pedra rachada em manchas (31% dos tijolos e ladrilhos que racham), pontos de musgo, grama e terra nos
     pisos (8% sob teto, 36% a céu aberto) com tapete de musgo, grama, samambaia ou arbusto seco, vinhas longas e
     agressivas nos 4 lados (25% da fachada externa de cada lado, cachos de 3 a 12 blocos em manchas, em todas as
-    estruturas) e pedregulho e tijolo de pedra musgosos perto do verde. 59 904 blocos nos 50 arquivos.
+    estruturas) e pedregulho e tijolo de pedra musgosos perto do verde. 65 086 blocos nos 52 arquivos.
   - Para-raios viram tochas de redstone acesas (5: no topo da casa com torre, da mansão pós-apocalíptica, do prédio
     apartamento, do prédio apocalíptico e da torre).
 
@@ -120,7 +122,7 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
   | Vaso decorado (`vaso`) | 40%: 1 pilha comum | 80%: 1 pilha normal ou rara |
 
   Difícil acesso (`core/Access`): a 15 ou mais blocos acima da rua, ou fora do alcance de quem entra andando (sem
-  quebrar blocos: pulando 1 bloco, caindo, subindo escadas de mão, vinhas e água, abrindo portas). São 1 200 dos 2 842 (os prédios altos novos têm quase todos os seus acima de 15)
+  quebrar blocos: pulando 1 bloco, caindo, subindo escadas de mão, vinhas e água, abrindo portas). São 1 382 dos 3 106 (os prédios altos novos têm quase todos os seus acima de 15)
   contêineres: quase todos nos andares altos da torre, do prédio apocalíptico, do azulado e do esqueleto.
 - **Natureza tomando a cidade** (`core/Flora`, `core/Wild`):
   - chão em manchas: grama, musgo, terra grossa e restos do concreto (`gray_concrete_powder`);
@@ -200,7 +202,7 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
   Wreck          buracos nas pontes, por posição ao longo da rodovia
   Wild           o miolo do quarteirão: chão, árvores e vegetação, sem entrar nas estruturas
   Ring           anel de estruturas em volta do quarteirão (lados curtos inteiros, compridos no que sobra), vãos, limites
-  Structures     os 50 arquivos (28 modelos) de `amcs/buildings/index.txt`: caixa, camada do chão, piso até a borda, folhas reais, rotação, escavação com `cave_air`
+  Structures     os 52 arquivos (30 modelos) de `amcs/buildings/index.txt`: caixa, camada do chão, piso até a borda, folhas reais, rotação, escavação com `cave_air`
   Access         contêineres de difícil acesso das estruturas (altos ou fora do alcance andando): loot mais generoso
   Crowns         onde vão as folhas que completam copas cortadas pela borda das estruturas (gen/Overhangs as põe)
   Park           parques tomados pela natureza, com caminhos e fonte

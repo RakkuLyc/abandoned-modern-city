@@ -275,7 +275,7 @@ public final class Structures {
      * Most structures of a group per city (asked by the user): pharmacies 3 (both kinds), car workshops 2 (both
      * kinds), gas stations 2 (both kinds). The group is the start of the structure's type.
      */
-    public static final Map<String, Integer> LIMITS = Map.of("farmacia", 3, "oficina", 2, "posto", 2, "especial", 1);
+    public static final Map<String, Integer> LIMITS = Map.of("farmacia", 3, "oficina", 2, "posto", 2, "especial", 1, "delegacia", 1);
     /** Kinds of loot by the start of the structure type; every other type (the buildings) gets {@code predio}. */
     static final String[] LOOT_THEMES = {"casa", "farmacia", "oficina", "posto"};
 

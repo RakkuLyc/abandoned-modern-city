@@ -166,7 +166,8 @@ class RingTest {
                         below++;
                     }
                     // air under the ground only where the template has cave_air (the underground garage)
-                    if (d.code(x, -1, z, 0) == BlockCode.AIR && !d.name().equals("predio_largo_abandonado")) {
+                    if (d.code(x, -1, z, 0) == BlockCode.AIR && !d.name().equals("predio_largo_abandonado")
+                            && !d.name().equals("delegacia_abandonada")) {
                         below++;
                     }
                 }
@@ -333,6 +334,10 @@ class RingTest {
                 assertEquals(8, d.ground());
                 System.out.println("[RingTest] predio_largo_abandonado: " + openings + " open cells at street level, "
                         + d.access().containers() + " containers, " + d.access().closed() + " out of reach");
+            } else if (d.name().equals("delegacia_abandonada")) {
+                // the police station's half-buried basement: its rooms cross the street level, dug out
+                assertTrue(openings > 300, "delegacia openings " + openings);
+                assertEquals(3, d.ground());
             } else {
                 // no other structure has dug-out space under its ground layer
                 assertEquals(0, openings, d.name());
@@ -474,8 +479,8 @@ class RingTest {
         }
         // one from a rod on top of each: casa_torre_abandonada, mansao_pos_apocaliptica, predio_apartamento,
         // predio_apocaliptico, torre; 12 more were saved as torches in the 13 nov structures (brutalista 4, rampa 4,
-        // torre verde 2, largo 1, pequeno 1)
-        assertEquals(5 + 12, torches, "redstone torches");
+        // torre verde 2, largo 1, pequeno 1), 3 in the police station
+        assertEquals(5 + 12 + 3, torches, "redstone torches");
         assertEquals("minecraft:redstone_wall_torch[facing=east,lit=true]",
                 Structures.swap("minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]"));
         assertEquals("minecraft:stone", Structures.swap("minecraft:stone"));
