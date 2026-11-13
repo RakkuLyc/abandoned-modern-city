@@ -11,6 +11,7 @@ import com.abandonedmoderncity.gen.Plans;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.TreeSet;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -29,9 +30,9 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Commands for the building structures ({@link Structures}):
  * <ul>
- *   <li>{@code /amcs locate structure <name|type|group>}: the nearest one the plan put in a city (a file name such as
- *   {@code tower}, a type such as {@code buildings_large}, or a limit group: {@code pharmacy}, {@code workshop},
- *   {@code gas_station}); the clickable coordinates are on the sidewalk in front of it.</li>
+ *   <li>{@code /amcs locate structure <category> [name]} (the categories of spawn): the nearest one the plan put in a
+ *   city, of the category (any structure of it) or with that name; the clickable coordinates are on the sidewalk in
+ *   front of it.</li>
  *   <li>{@code /amcs spawn <category> <name>} (house, pharmacy, workshop, gas_station, building, police_station, special): places
  *   the structure 2 blocks in front of you, centered on where you look, its
  *   front turned to you, its ground layer level with the block you stand on. Same rules as in the cities: buried
@@ -42,33 +43,39 @@ public final class StructureCommands {
     private StructureCommands() {
     }
 
-    /** Names, types and groups the commands accept. */
-    static TreeSet<String> names(boolean groupsAndTypes) {
-        TreeSet<String> out = new TreeSet<>();
-        for (Structures.Def d : Structures.ALL) {
-            out.add(d.name());
-            if (groupsAndTypes) {
-                out.add(d.type());
-                if (d.group() != null) {
-                    out.add(d.group());
-                }
-            }
-        }
-        return out;
+    /** A structure of the category, and with that name when {@code name} is not null. */
+    static boolean matches(Structures.Def d, String category, String name) {
+        return d.category().equals(category) && (name == null || d.name().equals(name));
     }
 
-    static boolean matches(Structures.Def d, String q) {
-        return d.name().equals(q) || d.type().equals(q) || q.equals(d.group());
-    }
-
-    /** {@code structure <query>} under {@code /amcs locate}. */
+    /**
+     * {@code structure <category> [name]} under {@code /amcs locate}: the nearest structure of the category (e.g.
+     * {@code /amcs locate structure pharmacy}, any pharmacy of any color) or the nearest with that name (e.g.
+     * {@code /amcs locate structure building abandoned_wide_building}); the names suggested are those of the category.
+     */
     static ArgumentBuilder<CommandSourceStack, ?> locateNode() {
-        return Commands.literal("structure").then(Commands.argument("query", StringArgumentType.word())
+        return Commands.literal("structure").then(Commands.argument("category", StringArgumentType.word())
                 .suggests((c, b) -> {
-                    names(true).forEach(b::suggest);
+                    suggestCategories(b);
                     return b.buildFuture();
                 })
-                .executes(c -> locate(c, StringArgumentType.getString(c, "query"))));
+                .executes(c -> locate(c, StringArgumentType.getString(c, "category"), null))
+                .then(Commands.argument("name", StringArgumentType.word())
+                        .suggests((c, b) -> {
+                            namesOf(StringArgumentType.getString(c, "category")).forEach(b::suggest);
+                            return b.buildFuture();
+                        })
+                        .executes(c -> locate(c, StringArgumentType.getString(c, "category"),
+                                StringArgumentType.getString(c, "name")))));
+    }
+
+    /** The categories that have structures. */
+    static void suggestCategories(SuggestionsBuilder b) {
+        for (String k : Structures.CATEGORIES) {
+            if (!namesOf(k).isEmpty()) {
+                b.suggest(k);
+            }
+        }
     }
 
     /** The names of the structures of a category ({@link Structures.Def#category}). */
@@ -89,11 +96,7 @@ public final class StructureCommands {
     static ArgumentBuilder<CommandSourceStack, ?> spawnNode() {
         return Commands.literal("spawn").then(Commands.argument("category", StringArgumentType.word())
                 .suggests((c, b) -> {
-                    for (String k : Structures.CATEGORIES) {
-                        if (!namesOf(k).isEmpty()) {
-                            b.suggest(k);
-                        }
-                    }
+                    suggestCategories(b);
                     return b.buildFuture();
                 })
                 .then(Commands.argument("name", StringArgumentType.word())
@@ -105,11 +108,27 @@ public final class StructureCommands {
                                 StringArgumentType.getString(c, "name")))));
     }
 
-    private static int locate(CommandContext<CommandSourceStack> c, String q) {
-        if (Structures.ALL.stream().noneMatch(d -> matches(d, q))) {
-            c.getSource().sendFailure(Component.literal("[AMCS] unknown structure '" + q + "' (" + String.join(", ", names(true)) + ")"));
+    /** The category is unknown or the name is not one of it: says so with the accepted list and returns false. */
+    private static boolean checkCategory(CommandContext<CommandSourceStack> c, String category, String name) {
+        TreeSet<String> inCategory = namesOf(category);
+        if (inCategory.isEmpty()) {
+            c.getSource().sendFailure(Component.literal("[AMCS] unknown category '" + category + "' ("
+                    + String.join(", ", Structures.CATEGORIES) + ")"));
+            return false;
+        }
+        if (name != null && !inCategory.contains(name)) {
+            c.getSource().sendFailure(Component.literal("[AMCS] no " + category + " named '" + name + "' ("
+                    + String.join(", ", inCategory) + ")"));
+            return false;
+        }
+        return true;
+    }
+
+    private static int locate(CommandContext<CommandSourceStack> c, String category, String name) {
+        if (!checkCategory(c, category, name)) {
             return 0;
         }
+        String q = name != null ? name : category;
         WorldPlan plan = Plans.get(c.getSource().getLevel());
         if (plan == null) {
             c.getSource().sendFailure(Component.literal("No cities in this dimension (or disabled in the config)"));
@@ -128,7 +147,7 @@ public final class StructureCommands {
                 for (int bj = -n; bj <= n; bj++) {
                     for (int bi = -n; bi <= n; bi++) {
                         for (Lot lot : city.lots(bi, bj)) {
-                            if (lot.building == null || !matches(lot.building, q)) {
+                            if (lot.building == null || !matches(lot.building, category, name)) {
                                 continue;
                             }
                             double d = Math.hypot((lot.x0 + lot.x1) / 2.0 - px, (lot.z0 + lot.z1) / 2.0 - pz);
@@ -174,19 +193,10 @@ public final class StructureCommands {
     }
 
     private static int spawn(CommandContext<CommandSourceStack> c, String category, String name) {
-        TreeSet<String> inCategory = namesOf(category);
-        if (inCategory.isEmpty()) {
-            c.getSource().sendFailure(Component.literal("[AMCS] unknown category '" + category + "' ("
-                    + String.join(", ", Structures.CATEGORIES) + ")"));
+        if (!checkCategory(c, category, name)) {
             return 0;
         }
-        Structures.Def def = Structures.ALL.stream().filter(d -> d.name().equals(name) && d.category().equals(category))
-                .findFirst().orElse(null);
-        if (def == null) {
-            c.getSource().sendFailure(Component.literal("[AMCS] no " + category + " named '" + name + "' ("
-                    + String.join(", ", inCategory) + ")"));
-            return 0;
-        }
+        Structures.Def def = Structures.ALL.stream().filter(d -> matches(d, category, name)).findFirst().orElseThrow();
         ServerLevel level = c.getSource().getLevel();
         Vec3 p = c.getSource().getPosition();
         // the direction you look at; the structure's front (its -Z side) faces back toward you

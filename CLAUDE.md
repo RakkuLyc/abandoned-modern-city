@@ -298,8 +298,10 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     with the 21 structures of 12–13 Nov, 8.4 before the no-repeat rule), 52.5% of the free ground covered (51% with
     the 21). Block size: 180 × 120, recommended after simulating the gaps (140 × 90 fell to ~5 structures and the
     tower, the bluish building and the apocalyptic building became rare).
-  - commands (12 Nov 2026, `command/StructureCommands`): `/amcs locate structure <name|type|group>` (the nearest one
-    already planned; coordinates on the sidewalk in front of it) and `/amcs spawn <category> <name>` (13 Nov 2026,
+  - commands (12 Nov 2026, `command/StructureCommands`): `/amcs locate structure <category> [name]` (asked by the user
+    after 13 Nov 2026: the categories of `spawn`; the category alone finds the nearest of any structure of it, with a
+    name that structure; a name of another category is refused with the right list; the old form by name, type or
+    group no longer exists) (the nearest one already planned; coordinates on the sidewalk in front of it) and `/amcs spawn <category> <name>` (13 Nov 2026,
     asked by the user: categories `house` 12, `pharmacy` 10, `workshop` 8, `gas_station` 10, `building` 10,
     `police_station` 1, `special` 1, by the start of the type, `Structures.CATEGORIES`/`Def.category`; the game
     suggests only the names of the chosen category; a name of another category is refused with the right list; the

@@ -270,9 +270,11 @@ Delete the old file or adjust both values.
 
 - `/amcs info` — what the plan wants at the column you stand on (kind, height, structure, city, highway, lot).
 - `/amcs locate city|highway|tunnel|bridge` — the nearest one, with clickable coordinates (they suggest a `/tp`).
-- `/amcs locate structure <name|type|group>` — the nearest structure already planned in the cities: by file
-  (`tower`, `pharmacy_red`...), by type (`houses`, `buildings_large`...) or by group (`pharmacy`, `workshop`,
-  `gas_station`), with completion. The clickable coordinates are on the sidewalk, 2 blocks in front of the middle of
+- `/amcs locate structure <category> [name]` — the nearest structure already planned in the cities, with the
+  categories of `spawn`: the category alone finds the nearest of any structure of it (`/amcs locate structure
+  pharmacy`: any pharmacy, of any size and color), with a name that structure (`/amcs locate structure building
+  tower`); the game suggests the names of the chosen category, and a name of another category is refused with the
+  right list. The clickable coordinates are on the sidewalk, 2 blocks in front of the middle of
   the facade.
 - `/amcs spawn <category> <name>` — categories `house`, `pharmacy`, `workshop`, `gas_station`, `building`,
   `police_station` and `special` (the game suggests the names of the chosen category; e.g.
