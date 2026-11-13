@@ -73,7 +73,7 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
   | Posto padrão (vermelho, amarelo, azul, roxo, verde) | posto (limite 2 com o pequeno) | 45 × 37 × 18 | camada 0 |
   | Posto pequeno (vermelho, amarelo, azul, roxo, verde) | posto | 25 × 20 × 18 | camada 0 |
   | Prédio apartamento | prédio | 31 × 29 × 37 | camada 1 (desce 1) |
-  | Prédio esqueleto (`predio_esqueleto_31x29`) | prédio | 31 × 29 × 43 | camada 0 |
+  | Prédio esqueleto (`skeleton_building_31x29`) | prédio | 31 × 29 × 43 | camada 0 |
   | Prédio azulado | prédio | 66 × 46 × 106 | camada 1 (desce 1) |
   | Torre | prédio | 62 × 53 × 118 | camada 1 (desce 1) |
   | Prédio apocalíptico | prédio | 57 × 45 × 110 | camada 0 |
@@ -111,17 +111,17 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
 
   | Tema | Estruturas | Itens típicos | Raros |
   |---|---|---|---|
-  | `casa` | as 10 casas | comida, linha, papel, tochas, livros, pepitas, esmeraldas | diamante, maçã dourada, livro encantado, discos |
-  | `farmacia` | as farmácias | frascos, açúcar, poções de cura, regeneração, visão noturna, resistência ao fogo | poção de cura II, regeneração longa, frascos de experiência |
-  | `oficina` | as oficinas | ferro, cobre, carvão, correntes, ferramentas de ferro gastas, trilhos, pistões | diamante, bloco de ferro, ferramentas encantadas, funil, bigorna |
-  | `posto` | os postos | lanches, carvão, balde de lava, mapa, bússola, esmeraldas | esmeraldas, ouro, maçã dourada, luneta |
-  | `predio` | os prédios | papel, livros, flechas, lápis, redstone, arco e espada gastos | diamante, armadura de ferro encantada, pérolas do ender, discos |
+  | `house` | as 10 casas | comida, linha, papel, tochas, livros, pepitas, esmeraldas | diamante, maçã dourada, livro encantado, discos |
+  | `pharmacy` | as farmácias | frascos, açúcar, poções de cura, regeneração, visão noturna, resistência ao fogo | poção de cura II, regeneração longa, frascos de experiência |
+  | `workshop` | as oficinas | ferro, cobre, carvão, correntes, ferramentas de ferro gastas, trilhos, pistões | diamante, bloco de ferro, ferramentas encantadas, funil, bigorna |
+  | `gas_station` | os postos | lanches, carvão, balde de lava, mapa, bússola, esmeraldas | esmeraldas, ouro, maçã dourada, luneta |
+  | `building` | os prédios | papel, livros, flechas, lápis, redstone, arco e espada gastos | diamante, armadura de ferro encantada, pérolas do ender, discos |
 
   | Contêiner | Normal | Difícil acesso (`_dificil`) |
   |---|---|---|
-  | Baú (`bau`) | sempre: 3 a 6 pilhas (comuns e normais) e 10% de chance de 1 raro | 5 a 8 pilhas e 1 a 2 raros |
-  | Barril, dispenser, dropper (`barril`) | 40% têm algo: 1 a 3 pilhas de comuns | 75%: 2 a 4 pilhas de comuns e normais |
-  | Vaso decorado (`vaso`) | 40%: 1 pilha comum | 80%: 1 pilha normal ou rara |
+  | Baú (`chest`) | sempre: 3 a 6 pilhas (comuns e normais) e 10% de chance de 1 raro | 5 a 8 pilhas e 1 a 2 raros |
+  | Barril, dispenser, dropper (`barrel`) | 40% têm algo: 1 a 3 pilhas de comuns | 75%: 2 a 4 pilhas de comuns e normais |
+  | Vaso decorado (`pot`) | 40%: 1 pilha comum | 80%: 1 pilha normal ou rara |
 
   Difícil acesso (`core/Access`): a 15 ou mais blocos acima da rua, ou fora do alcance de quem entra andando (sem
   quebrar blocos: pulando 1 bloco, caindo, subindo escadas de mão, vinhas e água, abrindo portas). São 1 382 dos 3 106 (os prédios altos novos têm quase todos os seus acima de 15)
@@ -261,10 +261,10 @@ valores velhos: apague-o ou ajuste os dois valores.
 - `/amcs info` — o que o plano quer na coluna onde você está (tipo, altura, estrutura, cidade, rodovia, lote).
 - `/amcs locate city|highway|tunnel|bridge` — o mais próximo, com coordenadas clicáveis (sugerem um `/tp`).
 - `/amcs locate structure <nome|tipo|grupo>` — a estrutura mais próxima já planejada nas cidades: pelo arquivo
-  (`torre`, `farmacia_vermelho`...), pelo tipo (`casas`, `predios_grandes`...) ou pelo grupo (`farmacia`, `oficina`,
-  `posto`), com autocompletar. A coordenada clicável fica na calçada, 2 blocos em frente ao meio da fachada.
-- `/amcs spawn <categoria> <nome>` — categorias `casa`, `farmacia`, `oficina`, `posto`, `predio`, `delegacia` e
-  `especial` (o jogo sugere os nomes da categoria escolhida; ex.: `/amcs spawn predio predio_largo_abandonado`); coloca a estrutura 2 blocos à sua frente, centralizada na direção em que você olha, com a
+  (`tower`, `pharmacy_red`...), pelo tipo (`houses`, `buildings_large`...) ou pelo grupo (`pharmacy`, `workshop`,
+  `gas_station`), com autocompletar. A coordenada clicável fica na calçada, 2 blocos em frente ao meio da fachada.
+- `/amcs spawn <categoria> <nome>` — categorias `house`, `pharmacy`, `workshop`, `gas_station`, `building`, `police_station` e
+  `special` (o jogo sugere os nomes da categoria escolhida; ex.: `/amcs spawn building abandoned_wide_building`); coloca a estrutura 2 blocos à sua frente, centralizada na direção em que você olha, com a
   frente virada para você e o chão no nível do bloco em que você pisa. Mesmas regras da cidade: camada enterrada,
   piso até a borda, folhas reais e loot tables nos contêineres. O ar do molde limpa o terreno dentro da caixa (acima
   do chão); abaixo do chão só o `cave_air` do molde escava o terreno (subsolos, como garagens subterrâneas).

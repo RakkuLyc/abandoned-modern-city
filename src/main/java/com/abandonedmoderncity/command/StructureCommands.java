@@ -30,9 +30,9 @@ import net.minecraft.world.phys.Vec3;
  * Commands for the building structures ({@link Structures}):
  * <ul>
  *   <li>{@code /amcs locate structure <name|type|group>}: the nearest one the plan put in a city (a file name such as
- *   {@code torre}, a type such as {@code predios_grandes}, or a limit group: {@code farmacia}, {@code oficina},
- *   {@code posto}); the clickable coordinates are on the sidewalk in front of it.</li>
- *   <li>{@code /amcs spawn <category> <name>} (casa, farmacia, oficina, posto, predio, delegacia, especial): places
+ *   {@code tower}, a type such as {@code buildings_large}, or a limit group: {@code pharmacy}, {@code workshop},
+ *   {@code gas_station}); the clickable coordinates are on the sidewalk in front of it.</li>
+ *   <li>{@code /amcs spawn <category> <name>} (house, pharmacy, workshop, gas_station, building, police_station, special): places
  *   the structure 2 blocks in front of you, centered on where you look, its
  *   front turned to you, its ground layer level with the block you stand on. Same rules as in the cities: buried
  *   layers, floor filled to the edge, real leaves, loot tables.</li>
@@ -84,7 +84,7 @@ public final class StructureCommands {
 
     /**
      * {@code spawn <category> <name>} under {@code /amcs} (asked by the user, 13 nov 2026: the structures by category,
-     * e.g. {@code /amcs spawn predio predio_largo_abandonado}); the names suggested are those of the category.
+     * e.g. {@code /amcs spawn building abandoned_wide_building}); the names suggested are those of the category.
      */
     static ArgumentBuilder<CommandSourceStack, ?> spawnNode() {
         return Commands.literal("spawn").then(Commands.argument("category", StringArgumentType.word())

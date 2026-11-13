@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 /** Containers hard to get to ({@link Access}) and the loot tables of the structures. */
 class AccessTest {
-    static final String[] TIERS = {"barril", "barril_dificil", "bau", "bau_dificil", "vaso", "vaso_dificil"};
+    static final String[] TIERS = {"barrel", "barrel_hard", "chest", "chest_hard", "pot", "pot_hard"};
 
     /** A small template: a floor of stone at y = 0 (the ground layer), drawn layer by layer from y = 1. */
     private static final class Box {
@@ -155,10 +155,10 @@ class AccessTest {
             }
             System.out.printf("[AccessTest] %-28s containers %3d, high %3d, closed %3d, hard %3d%n", d.name(),
                     a.containers(), a.high(), a.closed(), a.hard().size());
-            if (d.type().startsWith("predios_grandes") || d.type().startsWith("predios_medios")) {
+            if (d.type().startsWith("buildings_large") || d.type().startsWith("buildings_medium")) {
                 assertTrue(a.high() > 0, d.name() + " has no container up high");
             }
-            if (d.type().startsWith("casa")) {
+            if (d.type().startsWith("house")) {
                 houses += a.containers();
                 housesHard += a.hard().size();
             }
@@ -168,7 +168,7 @@ class AccessTest {
         // houses are low and open: nearly all their containers are reached on foot (the mansion's room 2 blocks over
         // its yard, with no step, is one of the few that are not)
         assertTrue(housesHard * 20 <= houses, housesHard + " of " + houses + " in houses");
-        // the tall buildings (torre, torre verde, predio da rampa, brutalista...) have most of theirs 15+ blocks up
+        // the tall buildings (tower, tower verde, building da rampa, brutalista...) have most of theirs 15+ blocks up
         assertTrue(hard * 10 >= containers && hard * 2 <= containers, hard + " of " + containers);
     }
 
@@ -183,9 +183,9 @@ class AccessTest {
                     String json = new String(in.readAllBytes(), StandardCharsets.UTF_8);
                     // barrels and pots are often empty (40%, 75% and 80% have anything); a chest always has items
                     String chance = switch (tier) {
-                        case "barril", "vaso" -> "\"chance\": 0.4";
-                        case "barril_dificil" -> "\"chance\": 0.75";
-                        case "vaso_dificil" -> "\"chance\": 0.8";
+                        case "barrel", "pot" -> "\"chance\": 0.4";
+                        case "barrel_hard" -> "\"chance\": 0.75";
+                        case "pot_hard" -> "\"chance\": 0.8";
                         default -> null;
                     };
                     if (chance != null) {
@@ -197,9 +197,9 @@ class AccessTest {
                 }
             }
         }
-        assertEquals("oficina", Structures.ALL.stream().filter(d -> d.type().startsWith("oficina")).findFirst()
+        assertEquals("workshop", Structures.ALL.stream().filter(d -> d.type().startsWith("workshop")).findFirst()
                 .orElseThrow().lootTheme());
-        assertEquals("predio", Structures.ALL.stream().filter(d -> d.name().equals("torre")).findFirst()
+        assertEquals("building", Structures.ALL.stream().filter(d -> d.name().equals("tower")).findFirst()
                 .orElseThrow().lootTheme());
     }
 }

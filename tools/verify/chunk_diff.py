@@ -2,7 +2,7 @@
 
     python3 tools/verify/chunk_diff.py WORLD_A WORLD_B CX,CZ [CX,CZ ...] [--ymin Y] [--ymax Y]
 
-For example: python3 tools/verify/chunk_diff.py run/selftest_world_ref_4dd94ae run/selftest_world_20261027 -17,24
+For example: python3 tools/verify/chunk_diff.py run/selftest_world_ref_english run/selftest_world_20261027 -17,24
 Reads the region files directly (no game needed): prints, per chunk, how many blocks differ and the first ones with
 their full block states, then a count of the differing pairs by block. Use it after compare_block_detail.py has found
 the chunks. Vanilla terrain differs between two runs anyway (ores, caves, trees), so look at the heights and columns

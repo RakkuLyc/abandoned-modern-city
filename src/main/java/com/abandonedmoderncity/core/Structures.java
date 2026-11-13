@@ -38,7 +38,7 @@ public final class Structures {
     /**
      * One structure. The box (w x h x d) is the box of the non-air blocks of the template.
      *
-     * @param type   the folder it came from (farmacia, posto_de_gasolina_padrao, casas, ...)
+     * @param type   the kind of structure (houses, pharmacy, gas_station_small, buildings_large, ...)
      * @param name   the file name
      * @param group  the spawn-limit group ({@link #LIMITS}), or null
      * @param w      size along x before rotation (the width of the front)
@@ -46,7 +46,7 @@ public final class Structures {
      * @param d      size along z before rotation (the depth, from the front to the back)
      * @param ground layers of the box under the city ground
      * @param turn   quarter turns clockwise that bring the template's front to its -Z side (0 for most; 2 for a
-     *               template whose front is its +Z side, as the user found for casa_moderna_abandonada)
+     *               template whose front is its +Z side, as the user found for abandoned_modern_house)
      */
     public record Def(String type, String name, String group, Template t, int ox, int oy, int oz, int w, int h, int d,
                       int ground, int turn, int[] state, int[] fill, Map<Integer, Integer> cells, Access.Result access,
@@ -174,16 +174,16 @@ public final class Structures {
 
         /**
          * Whether at most one of this structure (any color of it) may stand in a city (asked by the user, 13 nov
-         * 2026: two or three predio_azulado in one city): the buildings, not the houses, pharmacies, workshops or gas
+         * 2026: two or three bluish_building in one city): the buildings, not the houses, pharmacies, workshops or gas
          * stations.
          */
         public boolean onePerCity() {
-            return type.startsWith("predios") || type.equals("especial");
+            return type.startsWith("buildings") || type.equals("special");
         }
 
         /**
-         * Category of the structure for {@code /amcs spawn <category> <name>} (asked by the user, 13 nov 2026): casa,
-         * farmacia, oficina, posto, predio, delegacia or especial.
+         * Category of the structure for {@code /amcs spawn <category> <name>} (asked by the user, 13 nov 2026): house,
+         * pharmacy, workshop, gas_station, building, police_station or special.
          */
         public String category() {
             for (String k : CATEGORIES) {
@@ -194,14 +194,14 @@ public final class Structures {
             return type;
         }
 
-        /** Kind of loot (folder of its loot tables): casa, farmacia, oficina, posto or predio. */
+        /** Kind of loot (folder of its loot tables): house, pharmacy, workshop, gas_station or building. */
         public String lootTheme() {
             for (String k : LOOT_THEMES) {
                 if (type.startsWith(k)) {
                     return k;
                 }
             }
-            return "predio";
+            return "building";
         }
 
         /** Whether the container at (rx, ry, rz) of the rotated box is hard to get to ({@link Access}). */
@@ -290,11 +290,13 @@ public final class Structures {
      * Most structures of a group per city (asked by the user): pharmacies 3 (both kinds), car workshops 2 (both
      * kinds), gas stations 2 (both kinds). The group is the start of the structure's type.
      */
-    public static final Map<String, Integer> LIMITS = Map.of("farmacia", 3, "oficina", 2, "posto", 2, "especial", 1, "delegacia", 1);
-    /** Kinds of loot by the start of the structure type; every other type (the buildings) gets {@code predio}. */
-    static final String[] LOOT_THEMES = {"casa", "farmacia", "oficina", "posto"};
+    public static final Map<String, Integer> LIMITS = Map.of("pharmacy", 3, "workshop", 2, "gas_station", 2, "special", 1,
+            "police_station", 1);
+    /** Kinds of loot by the start of the structure type; every other type (the buildings) gets {@code building}. */
+    static final String[] LOOT_THEMES = {"house", "pharmacy", "workshop", "gas_station"};
     /** Categories of {@code /amcs spawn}, by the start of the structure type. */
-    public static final String[] CATEGORIES = {"casa", "farmacia", "oficina", "posto", "predio", "delegacia", "especial"};
+    public static final String[] CATEGORIES = {"house", "pharmacy", "workshop", "gas_station", "building", "police_station",
+            "special"};
 
     static String blockOf(String state) {
         return state.contains("[") ? state.substring(0, state.indexOf('[')) : state;
@@ -309,7 +311,7 @@ public final class Structures {
     }
 
     private static Def define(String type, String name, int ground, int turn, String model, String bannerSpec,
-                              String neutralFrom, Map<String, Integer> ids) {
+                              String neutralFrom, int seed, Map<String, Integer> ids) {
         if (bannerSpec != null) {
             BANNER_SPECS.put(name, bannerSpec);
         }
@@ -319,7 +321,7 @@ public final class Structures {
         Template t = source(name);
         if (Weathering.enabled) {
             // nature taking over (config structureOvergrowth): before anything below reads the template
-            Weathering.Result w = Weathering.apply(t, ground, name.hashCode());
+            Weathering.Result w = Weathering.apply(t, ground, seed);
             t = w.template();
             WEATHERING.put(name, w.report());
         }
@@ -466,8 +468,10 @@ public final class Structures {
                 String model = f.length > 4 && !f[4].isBlank() ? f[4].trim() : f[1].trim();
                 String banners = f.length > 5 && !f[5].isBlank() ? f[5].trim() : null;
                 String neutral = f.length > 6 && !f[6].isBlank() ? f[6].trim() : null;
+                // the overgrowth seed: the index's, else the hash of the file name
+                int seed = f.length > 7 && !f[7].isBlank() ? Integer.parseInt(f[7].trim()) : f[1].hashCode();
                 defs.add(define(f[0], f[1], f.length > 2 ? Integer.parseInt(f[2].trim()) : 0, turn, model, banners,
-                        neutral, ids));
+                        neutral, seed, ids));
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);

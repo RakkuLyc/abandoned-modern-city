@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Writes the loot tables of the structures' containers (asked by the user, 13 nov 2026): vanilla items only, one set
-per kind of structure (casa, farmacia, oficina, posto, predio) and six tables per kind:
+per kind of structure (house, pharmacy, workshop, gas_station, building) and six tables per kind:
 
-  barril          barrels, dispensers, droppers: 40% have anything, 1 to 3 stacks of common items
-  barril_dificil  the same, hard to get to (Access): 75%, 2 to 4 stacks of common and normal items
-  bau             chests: 3 to 6 stacks of common and normal items, and a 10% chance of one rare item
-  bau_dificil     chests hard to get to: 5 to 8 stacks of common and normal items and 1 to 2 rare items
-  vaso            decorated pots (one slot): 40% have one stack of a common item
-  vaso_dificil    pots hard to get to: 80% have one stack of a normal or rare item
+  barrel       barrels, dispensers, droppers: 40% have anything, 1 to 3 stacks of common items
+  barrel_hard  the same, hard to get to (Access): 75%, 2 to 4 stacks of common and normal items
+  chest        chests: 3 to 6 stacks of common and normal items, and a 10% chance of one rare item
+  chest_hard   chests hard to get to: 5 to 8 stacks of common and normal items and 1 to 2 rare items
+  pot          decorated pots (one slot): 40% have one stack of a common item
+  pot_hard     pots hard to get to: 80% have one stack of a normal or rare item
 
 Run from the repository root: python3 tools/gen_loot.py
 """
@@ -41,7 +41,7 @@ def ench(lo, hi):
 
 
 THEMES = {
-    "casa": {
+    "house": {
         "common": [it("bread", 10, 1, 3), it("potato", 8, 1, 4), it("carrot", 6, 1, 4), it("apple", 8, 1, 3),
                    it("rotten_flesh", 8, 1, 4), it("string", 8, 1, 4), it("stick", 8, 1, 6), it("paper", 8, 1, 5),
                    it("bowl", 5, 1, 2), it("glass_bottle", 5, 1, 3), it("candle", 4, 1, 2), it("white_wool", 4, 1, 3),
@@ -55,7 +55,7 @@ THEMES = {
                  it("music_disc_13", 1), it("music_disc_far", 1), it("music_disc_mall", 1), it("emerald", 4, 3, 6),
                  it("gold_ingot", 4, 2, 4), it("spyglass", 2)],
     },
-    "farmacia": {
+    "pharmacy": {
         "common": [it("glass_bottle", 10, 1, 4), it("paper", 8, 1, 4), it("sugar", 8, 1, 4), it("spider_eye", 5, 1, 2),
                    it("apple", 6, 1, 3), it("honey_bottle", 4), it("milk_bucket", 3), it("bowl", 4),
                    it("string", 4, 1, 3), it("white_wool", 4, 1, 2), it("rotten_flesh", 4, 1, 3),
@@ -70,7 +70,7 @@ THEMES = {
                  it("splash_potion", 3, 1, 1, potion("strong_healing")), it("experience_bottle", 5, 2, 6),
                  it("blaze_powder", 3, 1, 3), it("ghast_tear", 2), it("book", 3, 1, 1, BOOK)],
     },
-    "oficina": {
+    "workshop": {
         "common": [it("iron_nugget", 10, 2, 9), it("stick", 6, 1, 4), it("coal", 8, 1, 6), it("copper_ingot", 7, 1, 4),
                    it("string", 4, 1, 3), it("leather", 4, 1, 3), it("chain", 5, 1, 3), it("redstone", 5, 1, 4),
                    it("iron_bars", 3, 1, 4), it("torch", 4, 1, 4), it("black_dye", 3, 1, 2), it("slime_ball", 2)],
@@ -83,7 +83,7 @@ THEMES = {
                  it("iron_axe", 2, 1, 1, ench(10, 25)), it("hopper", 3), it("anvil", 2), it("book", 2, 1, 1, BOOK),
                  it("emerald", 2, 2, 5), it("redstone_block", 2)],
     },
-    "posto": {
+    "gas_station": {
         "common": [it("cookie", 8, 1, 4), it("bread", 6, 1, 2), it("dried_kelp", 6, 2, 6), it("melon_slice", 5, 1, 4),
                    it("sweet_berries", 5, 1, 4), it("paper", 8, 1, 5), it("coal", 8, 1, 5), it("charcoal", 6, 1, 4),
                    it("glass_bottle", 5, 1, 2), it("torch", 5, 1, 4), it("string", 3, 1, 2), it("rotten_flesh", 4, 1, 3)],
@@ -94,7 +94,7 @@ THEMES = {
         "rare": [it("emerald", 5, 3, 7), it("gold_ingot", 4, 1, 3), it("golden_apple", 3), it("book", 3, 1, 1, BOOK),
                  it("spyglass", 2), it("diamond", 2), it("golden_carrot", 3, 2, 5)],
     },
-    "predio": {
+    "building": {
         "common": [it("paper", 10, 1, 6), it("book", 5, 1, 2), it("glass_bottle", 5, 1, 3), it("candle", 4, 1, 2),
                    it("bread", 6, 1, 2), it("string", 5, 1, 3), it("rotten_flesh", 7, 1, 4), it("bone", 6, 1, 3),
                    it("arrow", 5, 2, 8), it("iron_nugget", 5, 1, 6), it("stick", 5, 1, 4), it("torch", 4, 1, 4),
@@ -123,12 +123,12 @@ def pool(entries, lo, hi, chance=None):
 def tables(t):
     c, n, r = t["common"], t["normal"], t["rare"]
     return {
-        "barril": [pool(c, 1, 3, 0.40)],
-        "barril_dificil": [pool(c + n, 2, 4, 0.75)],
-        "bau": [pool(c + n, 3, 6), pool(r, 1, 1, 0.10)],
-        "bau_dificil": [pool(c + n, 5, 8), pool(r, 1, 2)],
-        "vaso": [pool(c, 1, 1, 0.40)],
-        "vaso_dificil": [pool(n + r, 1, 1, 0.80)],
+        "barrel": [pool(c, 1, 3, 0.40)],
+        "barrel_hard": [pool(c + n, 2, 4, 0.75)],
+        "chest": [pool(c + n, 3, 6), pool(r, 1, 1, 0.10)],
+        "chest_hard": [pool(c + n, 5, 8), pool(r, 1, 2)],
+        "pot": [pool(c, 1, 1, 0.40)],
+        "pot_hard": [pool(n + r, 1, 1, 0.80)],
     }
 
 

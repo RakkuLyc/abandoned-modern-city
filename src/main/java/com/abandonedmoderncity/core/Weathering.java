@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Nature taking over the structures (asked by the user, 13 nov 2026), modeled on predio_apocaliptico_57x45: applied to
+ * Nature taking over the structures (asked by the user, 13 nov 2026), modeled on apocalyptic_building_57x45: applied to
  * every template when it is loaded, before anything else reads it, and switched off by the config option
  * {@code structureOvergrowth} ({@link #enabled}). It only adds what a structure lacks to reach the measures of that
  * building; one that already has as much keeps what it has. Above the ground layer only (the yard stays as built):
@@ -34,7 +34,7 @@ public final class Weathering {
     /** Set from the config before the structures load ({@code structureOvergrowth}); on by default. */
     public static volatile boolean enabled = true;
 
-    /** The measures of predio_apocaliptico_57x45. */
+    /** The measures of apocalyptic_building_57x45. */
     static final double CRACKED = 0.31;
     static final double GREEN_COVERED = 0.082;
     static final double GREEN_OPEN = 0.358;

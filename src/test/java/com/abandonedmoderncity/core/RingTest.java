@@ -169,8 +169,8 @@ class RingTest {
                         below++;
                     }
                     // air under the ground only where the template has cave_air (the underground garage)
-                    if (d.code(x, -1, z, 0) == BlockCode.AIR && !d.name().equals("predio_largo_abandonado")
-                            && !d.name().equals("delegacia_abandonada")) {
+                    if (d.code(x, -1, z, 0) == BlockCode.AIR && !d.name().equals("abandoned_wide_building")
+                            && !d.name().equals("abandoned_police_station")) {
                         below++;
                     }
                 }
@@ -181,7 +181,7 @@ class RingTest {
             assertEquals(d.h(), d.above() + d.ground(), d.name());
         }
         // the four the user named (and the big house, whose lowest layer is all dirt) are one layer lower than their template's lowest layer
-        for (String n : List.of("mansao_abandonada", "casa_grande_abandonada", "torre", "predio_azulado", "predio_apartamento")) {
+        for (String n : List.of("abandoned_mansion", "abandoned_large_house", "tower", "bluish_building", "apartment_building")) {
             assertEquals(1, Structures.ALL.stream().filter(d -> d.name().equals(n)).findFirst().orElseThrow().ground(), n);
         }
     }
@@ -200,7 +200,7 @@ class RingTest {
             // the floor reaches the front row (vines and banners in front of the floor are kept, the floor under them
             // is filled); only the apartment has gaps there (empty cells become the city ground, level with it)
             assertTrue(front >= 0.7 * d.w(), d.name() + " front row " + front + "/" + d.w());
-            if (!d.name().equals("predio_apartamento")) {
+            if (!d.name().equals("apartment_building")) {
                 assertEquals(d.w(), front, d.name() + " front row");
             }
         }
@@ -285,7 +285,7 @@ class RingTest {
     void housesWithTheirFrontOnPlusZFaceTheStreet() {
         assumeFalse(Structures.ALL.isEmpty(), "no structures");
         // the user found the front of these two on the template's +Z side
-        List<String> turned = List.of("casa_moderna_abandonada", "mansao_pos_apocaliptica");
+        List<String> turned = List.of("abandoned_modern_house", "post_apocalyptic_mansion");
         for (Structures.Def c : Structures.ALL) {
             assertEquals(turned.contains(c.name()) ? 2 : 0, c.turn(), c.name());
             if (c.turn() != 2) {
@@ -331,15 +331,15 @@ class RingTest {
                     assertEquals(openings, n, d.name() + " rot " + rot);
                 }
             }
-            if (d.name().equals("predio_largo_abandonado")) {
+            if (d.name().equals("abandoned_wide_building")) {
                 // every air cell of its street level is open: the car ramp (5 x 15, its top too) and the stairwell
-                assertEquals(99, openings, "predio_largo openings");
+                assertEquals(99, openings, "abandoned_wide_building openings");
                 assertEquals(8, d.ground());
-                System.out.println("[RingTest] predio_largo_abandonado: " + openings + " open cells at street level, "
+                System.out.println("[RingTest] abandoned_wide_building: " + openings + " open cells at street level, "
                         + d.access().containers() + " containers, " + d.access().closed() + " out of reach");
-            } else if (d.name().equals("delegacia_abandonada")) {
+            } else if (d.name().equals("abandoned_police_station")) {
                 // the police station's half-buried basement: its rooms cross the street level, dug out
-                assertTrue(openings > 300, "delegacia openings " + openings);
+                assertTrue(openings > 300, "police_station openings " + openings);
                 assertEquals(3, d.ground());
             } else {
                 // no other structure has dug-out space under its ground layer
@@ -353,16 +353,16 @@ class RingTest {
         assumeFalse(Structures.ALL.isEmpty(), "no structures");
         int variants = 0;
         for (Structures.Def d : Structures.ALL) {
-            if (!d.type().startsWith("farmacia") || d.name().equals("farmacia_vermelho") || d.name().equals("farmacia_grande_amarela")) {
+            if (!d.type().startsWith("pharmacy") || d.name().equals("pharmacy_red") || d.name().equals("pharmacy_large_yellow")) {
                 continue;
             }
             variants++;
-            String original = d.model().equals("farmacia") ? "farmacia_vermelho" : "farmacia_grande_amarela";
+            String original = d.model().equals("pharmacy") ? "pharmacy_red" : "pharmacy_large_yellow";
             Template o = Structures.source(original);
             Template v = Structures.source(d.name());
             // the F A R M Á C I A letters (colored blocks on the white wall) are gone: 76 blocks on the small one (its
             // side), 152 on the big one (front and side)
-            assertEquals(d.model().equals("farmacia") ? 76 : 152, Structures.LETTERS_REMOVED.get(d.name()), d.name());
+            assertEquals(d.model().equals("pharmacy") ? 76 : 152, Structures.LETTERS_REMOVED.get(d.name()), d.name());
             for (int y = 0; y < o.sy; y++) {
                 for (int z = 0; z < o.sz; z++) {
                     for (int x = 0; x < o.sx; x++) {
@@ -387,15 +387,16 @@ class RingTest {
     void pharmacyBannersKeepTheirLetters() {
         assumeFalse(Structures.ALL.isEmpty(), "no structures");
         // the originals and their color variants (whose letters are copied from the originals, in their color)
-        List<Structures.Def> pharmacies = Structures.ALL.stream().filter(s -> s.type().startsWith("farmacia")).toList();
+        List<Structures.Def> pharmacies = Structures.ALL.stream().filter(s -> s.type().startsWith("pharmacy")).toList();
         assertEquals(10, pharmacies.size());
         for (Structures.Def d : pharmacies) {
             String name = d.name();
-            boolean small = d.model().equals("farmacia");
+            boolean small = d.model().equals("pharmacy");
             String color = small ? "red" : "yellow";
-            for (String[] c : new String[][]{{"amarelo", "yellow"}, {"azul", "blue"}, {"roxo", "purple"}, {"verde", "green"},
-                    {"grande_azul", "light_blue"}, {"grande_roxo", "purple"}, {"grande_verde", "lime"}, {"grande_vermelho", "red"}}) {
-                if (name.equals("farmacia_" + c[0])) {
+            for (String[] c : new String[][]{{"pharmacy_yellow", "yellow"}, {"pharmacy_blue", "blue"},
+                    {"pharmacy_purple", "purple"}, {"pharmacy_green", "green"}, {"pharmacy_large_blue", "light_blue"},
+                    {"pharmacy_large_purple", "purple"}, {"pharmacy_large_green", "lime"}, {"pharmacy_large_red", "red"}}) {
+                if (name.equals(c[0])) {
                     color = c[1];
                 }
             }
@@ -473,10 +474,10 @@ class RingTest {
             n.merge(d.category(), 1, Integer::sum);
         }
         System.out.println("[RingTest] spawn categories: " + n);
-        assertEquals("predio", Structures.ALL.stream().filter(d -> d.name().equals("predio_largo_abandonado")).findFirst().orElseThrow().category());
-        assertEquals("posto", Structures.ALL.stream().filter(d -> d.name().equals("posto_pequeno_azul")).findFirst().orElseThrow().category());
-        assertEquals(Map.of("casa", 12, "delegacia", 1, "especial", 1, "farmacia", 10, "oficina", 8, "posto", 10,
-                "predio", 10), n);
+        assertEquals("building", Structures.ALL.stream().filter(d -> d.name().equals("abandoned_wide_building")).findFirst().orElseThrow().category());
+        assertEquals("gas_station", Structures.ALL.stream().filter(d -> d.name().equals("gas_station_small_blue")).findFirst().orElseThrow().category());
+        assertEquals(Map.of("house", 12, "police_station", 1, "special", 1, "pharmacy", 10, "workshop", 8, "gas_station", 10,
+                "building", 10), n);
     }
 
     @Test
@@ -495,9 +496,9 @@ class RingTest {
                 }
             }
         }
-        // one from a rod on top of each: casa_torre_abandonada, mansao_pos_apocaliptica, predio_apartamento,
-        // predio_apocaliptico, torre; 12 more were saved as torches in the 13 nov structures (brutalista 4, rampa 4,
-        // torre verde 2, largo 1, pequeno 1), 3 in the police station
+        // one from a rod on top of each: abandoned_tower_house, post_apocalyptic_mansion, apartment_building,
+        // predio_apocaliptico, tower; 12 more were saved as torches in the 13 nov structures (brutalista 4, rampa 4,
+        // tower verde 2, largo 1, pequeno 1), 3 in the police station
         assertEquals(5 + 12 + 3, torches, "redstone torches");
         assertEquals("minecraft:redstone_wall_torch[facing=east,lit=true]",
                 Structures.swap("minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]"));
@@ -562,14 +563,14 @@ class RingTest {
         }
         System.out.println("[RingTest] crowns completed outside the box: " + total + " leaves in " + with);
         // the tree in front of the house with the pool (asked by the user): its crown hangs over the sidewalk, high
-        Structures.Def pool = Structures.ALL.stream().filter(d -> d.name().equals("casa_piscina_abandonada")).findFirst()
+        Structures.Def pool = Structures.ALL.stream().filter(d -> d.name().equals("abandoned_pool_house")).findFirst()
                 .orElseThrow();
         assertFalse(pool.overhangs(0).isEmpty(), "casa_piscina crown not completed");
         for (int[] q : pool.overhangs(0)) {
             assertTrue(q[2] < 0 && q[1] > Params.CLEARANCE, "casa_piscina crown " + Arrays.toString(q));
         }
-        assertEquals(Set.of("casa_piscina_abandonada", "casa_garagem_abandonada", "casa_suburbio_abandonada",
-                "casa_torre_abandonada", "predio_esqueleto_31x29", "casa_vidro_abandonada", "predio_rampa_abandonado"), with);
+        assertEquals(Set.of("abandoned_pool_house", "abandoned_garage_house", "abandoned_suburban_house",
+                "abandoned_tower_house", "skeleton_building_31x29", "abandoned_glass_house", "abandoned_ramp_building"), with);
     }
 
     private static String name(int code) {

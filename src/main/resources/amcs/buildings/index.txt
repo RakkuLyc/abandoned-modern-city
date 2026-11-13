@@ -1,4 +1,4 @@
-# type|file (without .nbt)|ground|front
+# type|file (without .nbt)|ground|front|model|banners|neutral|seed
 # ground: the template layer (from its lowest solid one) that lies at the city ground (1 = the lowest layer is buried)
 # front (optional, default 0): degrees clockwise that turn the template's front to its -Z side (180: front on +Z)
 # model (optional, default the file): color variants of one structure share a model; the ring draws a model, then a
@@ -7,56 +7,59 @@
 #   turned to <to> (the pharmacy variants were saved without the D R U G S T O R E letters)
 # neutral (optional): <source> puts back the neutral blocks (white concrete, smooth quartz, calcite, polished
 #   diorite) of <source> where this file painted them (the F A R M Á C I A letters of the pharmacy variants)
-# The originals are in structures/ at the repo root (file names here are ASCII: prédio_esqueleto -> predio_esqueleto).
-casas|casa_abandonada|0
-casas|casa_moderna_abandonada|0|180
-casas|mansao_abandonada|1
-casas|mansao_pos_apocaliptica|0|180
-casas|casa_garagem_abandonada|0
-casas|casa_grande_abandonada|1
-casas|casa_piscina_abandonada|0
-casas|casa_suburbio_abandonada|0
-casas|casa_torre_abandonada|0
-casas|casa_vitoriana_abandonada|0
-farmacia|farmacia_vermelho|0||farmacia
-farmacia|farmacia_amarelo|0||farmacia|farmacia_vermelho@0,0:red=yellow|farmacia_vermelho
-farmacia|farmacia_azul|0||farmacia|farmacia_vermelho@0,0:red=blue|farmacia_vermelho
-farmacia|farmacia_roxo|0||farmacia|farmacia_vermelho@0,0:red=purple|farmacia_vermelho
-farmacia|farmacia_verde|0||farmacia|farmacia_vermelho@0,0:red=green|farmacia_vermelho
-farmacia_grande|farmacia_grande_amarela|0||farmacia_grande
-farmacia_grande|farmacia_grande_azul|0||farmacia_grande|farmacia_grande_amarela@0,0:yellow=light_blue|farmacia_grande_amarela
-farmacia_grande|farmacia_grande_roxo|0||farmacia_grande|farmacia_grande_amarela@0,0:yellow=purple|farmacia_grande_amarela
-farmacia_grande|farmacia_grande_verde|0||farmacia_grande|farmacia_grande_amarela@0,0:yellow=lime|farmacia_grande_amarela
-farmacia_grande|farmacia_grande_vermelho|0||farmacia_grande|farmacia_grande_amarela@0,0:yellow=red|farmacia_grande_amarela
-oficina_de_carros_medio|oficina_media_azul_preto|0||oficina_media
-oficina_de_carros_medio|oficina_media_amarela_azul|0||oficina_media
-oficina_de_carros_medio|oficina_media_amarelo_vermelho|0||oficina_media
-oficina_de_carros_pequena|oficina_pequena_verde|0||oficina_pequena
-oficina_de_carros_pequena|oficina_pequena_amarela|0||oficina_pequena
-oficina_de_carros_pequena|oficina_pequena_azul|0||oficina_pequena
-oficina_de_carros_pequena|oficina_pequena_roxa|0||oficina_pequena
-oficina_de_carros_pequena|oficina_pequena_vermelha|0||oficina_pequena
-posto_de_gasolina_padrao|posto_vermelho|0||posto
-posto_de_gasolina_padrao|posto_amarelo|0||posto
-posto_de_gasolina_padrao|posto_azul|0||posto
-posto_de_gasolina_padrao|posto_roxo|0||posto
-posto_de_gasolina_padrao|posto_verde|0||posto
-posto_de_gasolina_pequeno|posto_pequeno_vermelho|0||posto_pequeno
-posto_de_gasolina_pequeno|posto_pequeno_amarelo|0||posto_pequeno
-posto_de_gasolina_pequeno|posto_pequeno_azul|0||posto_pequeno
-posto_de_gasolina_pequeno|posto_pequeno_roxo|0||posto_pequeno
-posto_de_gasolina_pequeno|posto_pequeno_verde|0||posto_pequeno
-predios_pequenos|predio_apartamento|1
-predios_pequenos|predio_esqueleto_31x29|0
-predios_grandes|predio_azulado|1
-predios_grandes|torre|1
-predios_medios|predio_apocaliptico_57x45|0
-casas|casa_moderna_garagem_abandonada|0
-casas|casa_vidro_abandonada|0
-predios_pequenos|predio_pequeno_abandonado|0
-predios_grandes|predio_brutalista_u_75x58|0
-predios_grandes|predio_largo_abandonado|8
-predios_grandes|torre_verde_abandonada|0
-especial|predio_rampa_abandonado|0
-predios_grandes|predio_choque_abandonado|0
-delegacia|delegacia_abandonada|3
+# seed (optional, default the hash of the file name): seed of the overgrowth (structureOvergrowth); the structures keep
+#   the seed of the Portuguese names they had until 13 nov 2026, so their overgrowth did not change with the names
+# The originals are in structures/ at the repo root, under their Portuguese names (prédio_esqueleto ->
+#   skeleton_building_31x29, casa_abandonada -> abandoned_house, ...).
+houses|abandoned_house|0|||||-1087930116
+houses|abandoned_modern_house|0|180||||-68841159
+houses|abandoned_mansion|1|||||-196711167
+houses|post_apocalyptic_mansion|0|180||||1978835819
+houses|abandoned_garage_house|0|||||720205237
+houses|abandoned_large_house|1|||||1227599580
+houses|abandoned_pool_house|0|||||-123135864
+houses|abandoned_suburban_house|0|||||-321081814
+houses|abandoned_tower_house|0|||||-858121135
+houses|abandoned_victorian_house|0|||||1693048556
+pharmacy|pharmacy_red|0||pharmacy|||1422822791
+pharmacy|pharmacy_yellow|0||pharmacy|pharmacy_red@0,0:red=yellow|pharmacy_red|1156976348
+pharmacy|pharmacy_blue|0||pharmacy|pharmacy_red@0,0:red=blue|pharmacy_red|-83854977
+pharmacy|pharmacy_purple|0||pharmacy|pharmacy_red@0,0:red=purple|pharmacy_red|-83359005
+pharmacy|pharmacy_green|0||pharmacy|pharmacy_red@0,0:red=green|pharmacy_red|1714228309
+pharmacy_large|pharmacy_large_yellow|0||pharmacy_large|||-620922138
+pharmacy_large|pharmacy_large_blue|0||pharmacy_large|pharmacy_large_yellow@0,0:yellow=light_blue|pharmacy_large_yellow|219563111
+pharmacy_large|pharmacy_large_purple|0||pharmacy_large|pharmacy_large_yellow@0,0:yellow=purple|pharmacy_large_yellow|220059083
+pharmacy_large|pharmacy_large_green|0||pharmacy_large|pharmacy_large_yellow@0,0:yellow=lime|pharmacy_large_yellow|-1764712851
+pharmacy_large|pharmacy_large_red|0||pharmacy_large|pharmacy_large_yellow@0,0:yellow=red|pharmacy_large_yellow|2142545007
+workshop_medium|workshop_medium_blue_black|0||workshop_medium|||260675550
+workshop_medium|workshop_medium_yellow_blue|0||workshop_medium|||-1508733535
+workshop_medium|workshop_medium_yellow_red|0||workshop_medium|||-1634078629
+workshop_small|workshop_small_green|0||workshop_small|||-1768295856
+workshop_small|workshop_small_yellow|0||workshop_small|||230777353
+workshop_small|workshop_small_blue|0||workshop_small|||-2135857116
+workshop_small|workshop_small_purple|0||workshop_small|||-2135361158
+workshop_small|workshop_small_red|0||workshop_small|||-1519541858
+gas_station|gas_station_red|0||gas_station|||-1562664312
+gas_station|gas_station_yellow|0||gas_station|||-463350341
+gas_station|gas_station_blue|0||gas_station|||-1894107392
+gas_station|gas_station_purple|0||gas_station|||-1893611420
+gas_station|gas_station_green|0||gas_station|||1430978292
+gas_station_small|gas_station_small_red|0||gas_station_small|||270562074
+gas_station_small|gas_station_small_yellow|0||gas_station_small|||-1512592663
+gas_station_small|gas_station_small_blue|0||gas_station_small|||-1536024430
+gas_station_small|gas_station_small_purple|0||gas_station_small|||-1535528458
+gas_station_small|gas_station_small_green|0||gas_station_small|||-353351774
+buildings_small|apartment_building|1|||||1282637484
+buildings_small|skeleton_building_31x29|0|||||670250417
+buildings_large|bluish_building|1|||||607607012
+buildings_large|tower|1|||||110548426
+buildings_medium|apocalyptic_building_57x45|0|||||-502023098
+houses|abandoned_modern_garage_house|0|||||1693055218
+houses|abandoned_glass_house|0|||||1739114893
+buildings_small|abandoned_small_building|0|||||-1959586207
+buildings_large|brutalist_u_building_75x58|0|||||1132278429
+buildings_large|abandoned_wide_building|8|||||-935023223
+buildings_large|abandoned_green_tower|0|||||878824345
+special|abandoned_ramp_building|0|||||-1623252993
+buildings_large|abandoned_crash_building|0|||||1303918151
+police_station|abandoned_police_station|3|||||-1614901983

@@ -410,15 +410,15 @@ public final class Palette {
 
     /**
      * Loot table of a container {@code s} of a structure (asked by the user, 13 nov 2026; tables written by
-     * {@code tools/gen_loot.py}, vanilla items only): one set per kind of structure (casa, farmacia, oficina, posto,
-     * predio) and, in each, the tier of the container: chests normal ({@code bau}), barrels, dispensers and droppers
-     * poorer and often empty ({@code barril}), decorated pots one stack ({@code vaso}); a container hard to get to
-     * ({@link Access}) gets the more generous {@code _dificil} table of its tier.
+     * {@code tools/gen_loot.py}, vanilla items only): one set per kind of structure (house, pharmacy, workshop, gas_station,
+     * building) and, in each, the tier of the container: chests normal ({@code chest}), barrels, dispensers and droppers
+     * poorer and often empty ({@code barrel}), decorated pots one stack ({@code pot}); a container hard to get to
+     * ({@link Access}) gets the more generous {@code _hard} table of its tier.
      */
     public static ResourceKey<LootTable> lootTable(
             Structures.Def def, BlockState s, boolean hard) {
-        String tier = s.is(Blocks.CHEST) || s.is(Blocks.TRAPPED_CHEST) ? "bau" : s.is(Blocks.DECORATED_POT) ? "vaso" : "barril";
-        String id = "chests/" + def.lootTheme() + "/" + tier + (hard ? "_dificil" : "");
+        String tier = s.is(Blocks.CHEST) || s.is(Blocks.TRAPPED_CHEST) ? "chest" : s.is(Blocks.DECORATED_POT) ? "pot" : "barrel";
+        String id = "chests/" + def.lootTheme() + "/" + tier + (hard ? "_hard" : "");
         return ResourceKey.create(Registries.LOOT_TABLE,
                 ResourceLocation.fromNamespaceAndPath("abandonedmoderncity", id));
     }

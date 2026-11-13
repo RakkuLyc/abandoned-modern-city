@@ -35,7 +35,8 @@ Duas conferências guardam o mundo gerado numa revisão do código (desde 12 nov
   - `weathering`: o que o abandono acrescentou a cada estrutura;
   - `benches`: os bancos dos parques do terreno plano.
 
-  Os valores esperados ficam no próprio teste (código do commit `4dd94ae`). Um bloco de estrutura entra pelo texto
+  Os valores esperados ficam no próprio teste (código do commit `4dd94ae`; `layout`, `structures` e `weathering`, que
+  guardam os nomes das estruturas, desde os nomes em inglês, achado 66). Um bloco de estrutura entra pelo texto
   do estado e pela rotação, não pelo índice na lista de estados. O teste também confere uma cobertura mínima, para
   não passar com um plano vazio. Sensibilidade conferida em 12 nov: mudar `StreetLights.LAMP_EVERY` (então `City.LAMP_EVERY`), `RoadDecay.PATCH`,
   `Park.BENCH_EVERY`, `Weathering.VINES`, `Ring.GAP_MIN`, `Highway.DEADBAND` ou a margem das vilas muda as partes
@@ -142,7 +143,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `AccessTest.closedRoomsDoorsAndLadders` | salas montadas no teste: baú em sala lacrada é de difícil acesso; com porta de madeira não; com porta de ferro ou cerca no vão sim; baú num pilar de 4 só se alcança com escada de mão; degraus de 1 bloco se sobem pulando |
 | `AccessTest.highContainersAreHard` | barril a `Access.HIGH` (15) blocos do chão, alcançável por escada, conta como difícil; baú no chão não |
 | `AccessTest.structuresHardContainers` | nos 52 arquivos, com o abandono: 1 382 de 3 106 contêineres de difícil acesso (entre 10% e 50%: os prédios altos novos têm quase todos os seus acima de 15); os mesmos nas 4 rotações; prédios grandes e médios têm contêineres altos; nas casas no máximo 5% (4 de 356) |
-| `AccessTest.everyStructureHasItsLootTables` | as 6 tabelas do tema de cada estrutura existem; barril e vaso com 40% de chance, `barril_dificil` 75%, `vaso_dificil` 80%, baús sem chance de vir vazios; nada do Lost Cities ou do OAmP |
+| `AccessTest.everyStructureHasItsLootTables` | as 6 tabelas do tema de cada estrutura existem; barril e vaso com 40% de chance, `barrel_hard` 75%, `pot_hard` 80%, baús sem chance de vir vazios; nada do Lost Cities ou do OAmP |
 | `WeatheringTest.onlyAllowedChangesAndEverythingHolds` | nos 43 arquivos, célula por célula contra o molde salvo: só mudanças permitidas (rachado e musgoso da mesma pedra, com as mesmas propriedades; piso de pedra ou concreto com ar em cima virando solo; tapete sobre bloco inteiro ou solo; grama, samambaia e arbusto seco só sobre solo; vinha com uma face, presa em bloco inteiro ou na vinha de cima com a mesma face, ou sob beiral); banners iguais; caixa da estrutura igual; o mesmo resultado em duas cargas; relatório igual às mudanças. Total: 17 879 vinhas, 6 712 solos, 3 518 tapetes, 3 263 plantas, 1 768 musgosos, 1 469 rachados |
 | `WeatheringTest.everyStructureReachesTheMeasuresOfTheApocalypticBuilding` | nenhuma medida cai (rachado e vinhas podem cair até 3 pontos quando piso vira musgo: o bloco sai da família ou da parede contada); rachado a 31% (−3) ou mais; o lado menos coberto de vinhas com 19% ou mais (meta 25%); no prédio apocalíptico só as vinhas mudam |
 | `WeatheringTest.wholeNamesAreNotTakenForParts` | `light_gray_concrete`, `smooth_sandstone` e `mud_bricks` são pedra inteira; tábua é inteira mas não pedra; vidro, folhas, laje, baú, banner e o bloco de luz não são inteiros |
@@ -158,7 +159,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `RingTest.structuresNeverTouchAndLeaveTheForest` | 6 000 anéis em 180 × 120 e 120 × 180 (192 108 pares): duas estruturas quaisquer ficam a 4 ou mais blocos; entre lados opostos, 20 ou mais de bosque (menor medido: 4 e 21) |
 | `PlanAuditTest.citiesAndHighwaysPassThePlanAudit` | `PlanAudit` coluna a coluna em 3 cidades inteiras e 2 rodovias inteiras por terreno × seed (105 auditorias); gera `city_*.png` |
 | `PlanAuditTest.planIsIndependentOfQueryOrderAndThreads` | 3 721 chunks planejados de novo em ordem embaralhada por 8 threads: resultado idêntico, campo a campo |
-| `FingerprintTest.plannerOutputIsUnchanged` | as 11 partes da impressão digital do planejador (seção 1) iguais às do commit `4dd94ae`; cobertura: 1 129 cidades, 2 013 rodovias, 31 214 chunks, 1,47 milhão de colunas de via (44 129 de ponte, 26 783 de túnel), 1,22 milhão de colunas de lote (6,6 milhões de blocos de estrutura nos lotes), 10 198 colunas de poste, 1 741 folhas de copa, 16,8 milhões de células de estrutura, 2 036 peças de banco; 15 a 25 s |
+| `FingerprintTest.plannerOutputIsUnchanged` | as 11 partes da impressão digital do planejador (seção 1) iguais às esperadas (as do commit `4dd94ae`, com `layout`, `structures` e `weathering` dos nomes em inglês); cobertura: 1 129 cidades, 2 013 rodovias, 31 214 chunks, 1,47 milhão de colunas de via (44 129 de ponte, 26 783 de túnel), 1,22 milhão de colunas de lote (6,6 milhões de blocos de estrutura nos lotes), 10 198 colunas de poste, 1 741 folhas de copa, 16,8 milhões de células de estrutura, 2 036 peças de banco; 15 a 25 s |
 
 ### `PlanAudit` (plano, coluna a coluna, atravessando chunks)
 
@@ -283,6 +284,7 @@ e a regra de escada e apoio no mesmo chunk.
 | 63 | Bateria, 13 nov (postes abandonados) | `street_light` (até 962 por alvo): vinhas dos postes faltando | o reparo de vizinhos recolocava as peças do poste e logo depois a limpeza de plantas penduradas sobre a via apagava as vinhas | a limpeza poupa as peças planejadas dos postes |
 | 64 | Revisão do código, 12 nov (impressão digital) | os blocos de cada alvo mudaram entre duas rodadas iguais da bateria (mesmo código, mesma seed), também o número de block entities (1 142 e 1 017 na ponte) | o próprio Minecraft não gera igual quando o servidor gera os chunks em paralelo: features de chunks vizinhos postas em outra ordem mudam minérios, sculk, árvores, colmeias e baús (1 073 de 1 369 chunks diferentes na cidade do spawn, de y −64 para cima); nas posições do mod só mudaram propriedades que o Minecraft recalcula pelos vizinhos ao terminar um chunk: a distância das folhas e as ligações de barras e vidraças (na borda do chunk), a forma de uma escada, a neve sobre a grama, `cave_air` no lugar de ar, um lado de muro baixo ou alto, uma face de vinha presa num bloco do chunk vizinho; e o baú vazio de uma fonte só existia como block entity depois de recarregar o mundo | a impressão da bateria (`mod blocks:`) cobre só as posições que o mod decide, com essas propriedades em valor fixo e só os block entities das estruturas; conferida em mundos gerados à parte, recém-gerados e recarregados do disco (seção 6), e sensível a um bloco trocado na paleta (`smooth_basalt` → `basalt` no asfalto gasto: auditoria passa, impressão muda nos 3 alvos) |
 | 65 | Revisão do código, 13 nov (impressão digital) | com as vinhas das pontes na impressão da bateria, 3 dos 8 alvos diferiram entre o mundo de referência e um mundo novo do mesmo código | no lugar da vinha (ao lado do tabuleiro, descendo pelo ar) um mundo tinha folhas de uma árvore do vanilla (bétula, abeto) e o outro a vinha; numa coluna havia ar num mundo e vinha no outro. Hipótese (não provada): depende da ordem em que os chunks vizinhos são decorados. Os dois mundos vieram de commits diferentes (`4dd94ae` e `254ca56`); o que indica que não é o código é que o `ChunkBuilder` compilado não mudou entre eles (só as 7 chamadas sem o argumento fixo) e a impressão digital do planejador ficou igual | as vinhas das pontes ficaram fora da impressão; num passo que só move código, a prova é a listagem de instruções igual da função movida |
+| 66 | Revisão do código, 13 nov (nomes em inglês) | trocar os nomes das estruturas mudaria o abandono delas | a semente do abandono de cada estrutura era o `hashCode` do nome do arquivo | coluna `seed` no `index.txt` com o valor do nome antigo. Conferido: um resumo das 52 estruturas sem os nomes (células nas 4 rotações, abandono, acesso do loot, banners, aberturas, copas) igual no código antigo e no novo (`7e3083fc…`); na impressão digital do planejador só mudaram as 3 partes que guardam nomes (`layout`, `structures`, `weathering`); na bateria, vias e lotes iguais à referência em todos os chunks dos 8 alvos e as diferenças só nos block entities, iguais com o nome antigo da loot table trocado pelo novo (2 133 de 2 139 na cidade do spawn; os 6 outros são do vanilla, no subsolo); contagens iguais |
 | — | Bateria (infraestrutura) | servidores falhando com "Address already in use" | um servidor de uma bateria interrompida ainda terminava | o script usa a porta 25591 e se recusa a começar com um servidor de desenvolvimento vivo |
 
 ## 4. Como reproduzir
@@ -302,7 +304,7 @@ tools/verify/javap_dump.sh build/verify/depois               # e depois (./gradl
 python3 tools/verify/compare_methods.py build/verify/antes build/verify/depois [--owners A,B] [--ignore-slots]
 # se uma linha mod blocks: mudar: onde (por chunk e coluna) e quais blocos
 python3 tools/verify/compare_block_detail.py A/renders/t01_blocks.txt B/renders/t01_blocks.txt
-python3 tools/verify/chunk_diff.py run/selftest_world_ref_4dd94ae <outro mundo> CX,CZ --ymin 60
+python3 tools/verify/chunk_diff.py run/selftest_world_ref_english <outro mundo> CX,CZ --ymin 60
 ```
 
 O `run/config/abandonedmoderncity-common.toml` do servidor de desenvolvimento tem valores antigos (`cellSize = 512`,
@@ -316,12 +318,12 @@ No jogo (op):
 - `/amcs locate structure <nome|tipo|grupo>` e `/amcs spawn <categoria> <nome>`.
 
 Teste dos comandos de estrutura (12 nov 2026, servidor de desenvolvimento via RCON, seed 20261027, a partir de
-0 70 0): `locate structure torre` → 1 707 blocos; `farmacia` (grupo) → `farmacia_vermelho` a 290; `casas` (tipo) →
-`casa_abandonada` a 331; nome inválido lista os nomes aceitos. No mundo gerado, a coordenada da farmácia cai na
-calçada (`smooth_stone`) e a coluna atrás é o lote da estrutura (`/amcs info`: BUILDING). `spawn torre` olhando
+0 70 0): `locate structure tower` → 1 707 blocos; `pharmacy` (grupo) → `pharmacy_red` a 290; `houses` (tipo) →
+`abandoned_house` a 331; nome inválido lista os nomes aceitos. No mundo gerado, a coordenada da farmácia cai na
+calçada (`smooth_stone`) e a coluna atrás é o lote da estrutura (`/amcs info`: BUILDING). `spawn tower` olhando
 para o sul: caixa 2 blocos à frente, 62 de largura centralizada, chão no bloco do terreno, 311 793 blocos e 178
-contêineres com loot; `spawn farmacia_vermelho` olhando para o oeste: frente virada para o leste (para quem
-executou). Depois dos banners: `spawn farmacia_vermelho` e `data get block` nos banners das pontas: E (listras esquerda,
+contêineres com loot; `spawn pharmacy_red` olhando para o oeste: frente virada para o leste (para quem
+executou). Depois dos banners: `spawn pharmacy_red` e `data get block` nos banners das pontas: E (listras esquerda,
 topo, meio e base, borda) e D (listras e borda ondulada) — quem olha a fachada lê DRUGSTORE.
 
 Vinhas das pontes (12 nov 2026, RCON): ao redor do viaduto seco mais longo da seed 20261027 (-1965 86 -1382)
@@ -361,54 +363,55 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
   | Estrutura | Antes | Depois |
   |---|---|---|
-  | `casa_abandonada` | 48% / 0% / 4% / 38% / 28% | 60% / 8% / 35% / 38% / 28% |
-  | `casa_moderna_abandonada` | 36% / 19% / 36% / 36% / 35% | 36% / 19% / 36% / 36% / 36% |
-  | `mansao_abandonada` | 48% / 6% / 16% / 10% / 7% | 63% / 8% / 35% / 26% / 25% |
-  | `mansao_pos_apocaliptica` | 61% / 4% / 5% / 18% / 9% | 70% / 8% / 35% / 26% / 25% |
-  | `casa_garagem_abandonada` | 13% / 6% / 38% / 4% / 1% | 31% / 8% / 40% / 26% / 25% |
-  | `casa_grande_abandonada` | 30% / 9% / 5% / 29% / 22% | 32% / 9% / 36% / 31% / 26% |
-  | `casa_piscina_abandonada` | 19% / 7% / 1% / 11% / 5% | 34% / 8% / 36% / 26% / 25% |
-  | `casa_suburbio_abandonada` | 0% / 9% / 48% / 8% / 0% | 31% / 9% / 50% / 26% / 25% |
-  | `casa_torre_abandonada` | 31% / 7% / 17% / 18% / 5% | 34% / 8% / 35% / 26% / 25% |
-  | `casa_vitoriana_abandonada` | 27% / 8% / 1% / 10% / 8% | 35% / 8% / 36% / 26% / 25% |
-  | `farmacia_vermelho` | 100% / 5% / 12% / 20% / 0% | 100% / 8% / 34% / 34% / 26% |
-  | `farmacia_amarelo` | 100% / 5% / 12% / 20% / 0% | 100% / 7% / 34% / 34% / 26% |
-  | `farmacia_azul` | 100% / 5% / 12% / 20% / 0% | 100% / 8% / 34% / 34% / 25% |
-  | `farmacia_roxo` | 100% / 5% / 12% / 20% / 0% | 100% / 8% / 35% / 34% / 25% |
-  | `farmacia_verde` | 100% / 5% / 12% / 20% / 0% | 100% / 8% / 35% / 35% / 26% |
-  | `farmacia_grande_amarela` | - / 5% / 15% / 0% / 0% | - / 8% / 34% / 27% / 26% |
-  | `farmacia_grande_azul` | - / 5% / 15% / 0% / 0% | - / 8% / 35% / 26% / 26% |
-  | `farmacia_grande_roxo` | - / 5% / 15% / 0% / 0% | - / 8% / 34% / 26% / 25% |
-  | `farmacia_grande_verde` | - / 5% / 15% / 0% / 0% | - / 8% / 35% / 26% / 25% |
-  | `farmacia_grande_vermelho` | - / 5% / 15% / 0% / 0% | - / 8% / 35% / 26% / 26% |
-  | `oficina_media_azul_preto` | 0% / 5% / 13% / 1% / 0% | 35% / 7% / 33% / 28% / 25% |
-  | `oficina_media_amarela_azul` | - / 5% / 13% / 1% / 0% | - / 8% / 35% / 28% / 25% |
-  | `oficina_media_amarelo_vermelho` | - / 5% / 13% / 1% / 0% | - / 8% / 35% / 29% / 26% |
-  | `oficina_pequena_verde` | 18% / 14% / 15% / 20% / 8% | 35% / 15% / 33% / 28% / 25% |
-  | `oficina_pequena_amarela` | 18% / 14% / 15% / 21% / 4% | 36% / 15% / 33% / 29% / 26% |
-  | `oficina_pequena_azul` | 18% / 14% / 15% / 20% / 8% | 35% / 14% / 34% / 29% / 25% |
-  | `oficina_pequena_roxa` | 18% / 14% / 15% / 20% / 8% | 33% / 16% / 34% / 29% / 25% |
-  | `oficina_pequena_vermelha` | 18% / 14% / 15% / 20% / 8% | 34% / 15% / 34% / 29% / 25% |
-  | `posto_vermelho` | 34% / 0% / 7% / 22% / 14% | 34% / 7% / 34% / 26% / 25% |
-  | `posto_amarelo` | 34% / 0% / 7% / 21% / 14% | 34% / 8% / 34% / 26% / 25% |
-  | `posto_azul` | 34% / 0% / 7% / 22% / 14% | 33% / 7% / 35% / 26% / 25% |
-  | `posto_roxo` | 34% / 0% / 7% / 21% / 14% | 36% / 8% / 35% / 26% / 25% |
-  | `posto_verde` | 34% / 0% / 7% / 22% / 14% | 35% / 7% / 35% / 26% / 25% |
-  | `posto_pequeno_vermelho` | 31% / 0% / 2% / 23% / 10% | 33% / 11% / 35% / 29% / 25% |
-  | `posto_pequeno_amarelo` | 31% / 0% / 2% / 23% / 10% | 34% / 10% / 35% / 29% / 25% |
-  | `posto_pequeno_azul` | 31% / 0% / 2% / 23% / 10% | 32% / 11% / 33% / 29% / 26% |
-  | `posto_pequeno_roxo` | 31% / 0% / 2% / 23% / 11% | 30% / 14% / 35% / 29% / 25% |
-  | `posto_pequeno_verde` | 31% / 0% / 2% / 23% / 10% | 35% / 10% / 34% / 29% / 26% |
-  | `predio_apartamento` | 40% / 6% / 0% / 18% / 15% | 45% / 8% / 35% / 26% / 25% |
-  | `predio_esqueleto_31x29` | 39% / 22% / 41% / 51% / 48% | 39% / 22% / 41% / 51% / 48% |
-  | `predio_azulado` | 22% / 0% / 7% / 7% / 6% | 31% / 8% / 35% / 26% / 26% |
-  | `torre` | 39% / 2% / 4% / 4% / 3% | 49% / 8% / 35% / 26% / 26% |
-  | `predio_apocaliptico_57x45` | 31% / 9% / 43% / 11% / 9% | 31% / 9% / 43% / 27% / 27% |
+  | `abandoned_house` | 48% / 0% / 4% / 38% / 28% | 60% / 8% / 35% / 38% / 28% |
+  | `abandoned_modern_house` | 36% / 19% / 36% / 36% / 35% | 36% / 19% / 36% / 36% / 36% |
+  | `abandoned_mansion` | 48% / 6% / 16% / 10% / 7% | 63% / 8% / 35% / 26% / 25% |
+  | `post_apocalyptic_mansion` | 61% / 4% / 5% / 18% / 9% | 70% / 8% / 35% / 26% / 25% |
+  | `abandoned_garage_house` | 13% / 6% / 38% / 4% / 1% | 31% / 8% / 40% / 26% / 25% |
+  | `abandoned_large_house` | 30% / 9% / 5% / 29% / 22% | 32% / 9% / 36% / 31% / 26% |
+  | `abandoned_pool_house` | 19% / 7% / 1% / 11% / 5% | 34% / 8% / 36% / 26% / 25% |
+  | `abandoned_suburban_house` | 0% / 9% / 48% / 8% / 0% | 31% / 9% / 50% / 26% / 25% |
+  | `abandoned_tower_house` | 31% / 7% / 17% / 18% / 5% | 34% / 8% / 35% / 26% / 25% |
+  | `abandoned_victorian_house` | 27% / 8% / 1% / 10% / 8% | 35% / 8% / 36% / 26% / 25% |
+  | `pharmacy_red` | 100% / 5% / 12% / 20% / 0% | 100% / 8% / 34% / 34% / 26% |
+  | `pharmacy_yellow` | 100% / 5% / 12% / 20% / 0% | 100% / 7% / 34% / 34% / 26% |
+  | `pharmacy_blue` | 100% / 5% / 12% / 20% / 0% | 100% / 8% / 34% / 34% / 25% |
+  | `pharmacy_purple` | 100% / 5% / 12% / 20% / 0% | 100% / 8% / 35% / 34% / 25% |
+  | `pharmacy_green` | 100% / 5% / 12% / 20% / 0% | 100% / 8% / 35% / 35% / 26% |
+  | `pharmacy_large_yellow` | - / 5% / 15% / 0% / 0% | - / 8% / 34% / 27% / 26% |
+  | `pharmacy_large_blue` | - / 5% / 15% / 0% / 0% | - / 8% / 35% / 26% / 26% |
+  | `pharmacy_large_purple` | - / 5% / 15% / 0% / 0% | - / 8% / 34% / 26% / 25% |
+  | `pharmacy_large_green` | - / 5% / 15% / 0% / 0% | - / 8% / 35% / 26% / 25% |
+  | `pharmacy_large_red` | - / 5% / 15% / 0% / 0% | - / 8% / 35% / 26% / 26% |
+  | `workshop_medium_blue_black` | 0% / 5% / 13% / 1% / 0% | 35% / 7% / 33% / 28% / 25% |
+  | `workshop_medium_yellow_blue` | - / 5% / 13% / 1% / 0% | - / 8% / 35% / 28% / 25% |
+  | `workshop_medium_yellow_red` | - / 5% / 13% / 1% / 0% | - / 8% / 35% / 29% / 26% |
+  | `workshop_small_green` | 18% / 14% / 15% / 20% / 8% | 35% / 15% / 33% / 28% / 25% |
+  | `workshop_small_yellow` | 18% / 14% / 15% / 21% / 4% | 36% / 15% / 33% / 29% / 26% |
+  | `workshop_small_blue` | 18% / 14% / 15% / 20% / 8% | 35% / 14% / 34% / 29% / 25% |
+  | `workshop_small_purple` | 18% / 14% / 15% / 20% / 8% | 33% / 16% / 34% / 29% / 25% |
+  | `workshop_small_red` | 18% / 14% / 15% / 20% / 8% | 34% / 15% / 34% / 29% / 25% |
+  | `gas_station_red` | 34% / 0% / 7% / 22% / 14% | 34% / 7% / 34% / 26% / 25% |
+  | `gas_station_yellow` | 34% / 0% / 7% / 21% / 14% | 34% / 8% / 34% / 26% / 25% |
+  | `gas_station_blue` | 34% / 0% / 7% / 22% / 14% | 33% / 7% / 35% / 26% / 25% |
+  | `gas_station_purple` | 34% / 0% / 7% / 21% / 14% | 36% / 8% / 35% / 26% / 25% |
+  | `gas_station_green` | 34% / 0% / 7% / 22% / 14% | 35% / 7% / 35% / 26% / 25% |
+  | `gas_station_small_red` | 31% / 0% / 2% / 23% / 10% | 33% / 11% / 35% / 29% / 25% |
+  | `gas_station_small_yellow` | 31% / 0% / 2% / 23% / 10% | 34% / 10% / 35% / 29% / 25% |
+  | `gas_station_small_blue` | 31% / 0% / 2% / 23% / 10% | 32% / 11% / 33% / 29% / 26% |
+  | `gas_station_small_purple` | 31% / 0% / 2% / 23% / 11% | 30% / 14% / 35% / 29% / 25% |
+  | `gas_station_small_green` | 31% / 0% / 2% / 23% / 10% | 35% / 10% / 34% / 29% / 26% |
+  | `apartment_building` | 40% / 6% / 0% / 18% / 15% | 45% / 8% / 35% / 26% / 25% |
+  | `skeleton_building_31x29` | 39% / 22% / 41% / 51% / 48% | 39% / 22% / 41% / 51% / 48% |
+  | `bluish_building` | 22% / 0% / 7% / 7% / 6% | 31% / 8% / 35% / 26% / 26% |
+  | `tower` | 39% / 2% / 4% / 4% / 3% | 49% / 8% / 35% / 26% / 26% |
+  | `apocalyptic_building_57x45` | 31% / 9% / 43% / 11% / 9% | 31% / 9% / 43% / 27% / 27% |
 
 - **Bateria no mundo:**
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) e rápido com `structureOvergrowth = false` | 13 nov | nomes das estruturas, categorias, grupos e loot tables em inglês (achado 66) | PASS nos dois, contagens iguais às referências anteriores; vias e lotes iguais em todos os chunks; só os nomes das loot tables nos baús mudaram, e as linhas `mod blocks:` passaram a ser a referência nova (acima); 2,69 ms por chunk, 243 s |
   | `20261027` | padrão (8 alvos) | 13 nov | revisão: classes com o nome do mod antigo renomeadas (`AMCSimple` → `AbandonedModernCity`, `SimpleConfig` → `AmcsConfig`, `SimpleCommands` → `AmcsCommands`) | PASS: `tools/verify/compare_battery.py` igual à referência (8 de 8); 2,65 ms por chunk, 244 s. Bytecode igual em todos os 1 322 membros com os nomes antigos trocados pelos novos (`compare_methods.py`) |
   | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 3c: o reparo de vizinhos sai de `ChunkBuilder` para `gen/NeighbourRepair` | PASS: 8 de 8, 0 erros de geração; `mod blocks:` e contagens iguais à referência; 2,69 ms por chunk, 250 s. Impressão digital do planejador igual; função por função, dos 61 membros de `ChunkBuilder` 54 ficaram com o corpo igual (vinhas das pontes, aterro, taludes, vedação de líquidos incluídos) e 7 foram para `NeighbourRepair` com o corpo igual; nenhuma outra classe mudou |
   | `20261027` | padrão (8 alvos) e rápido com `structureOvergrowth = false` | 13 nov | revisão, passo 3b: o preparo dos moldes sai de `Structures` para `core/StructureLoader` | PASS nos dois: `mod blocks:` e contagens iguais à referência (8 de 8) e à referência com o abandono desligado (3 de 3); 2,71 ms por chunk, 253 s. Impressão digital do planejador igual (com `structures` e `weathering`); função por função: as 14 funções e constantes movidas com o mesmo corpo (a menos de `blockOf`/`isLogName`/`withProps` chamadas agora pelo nome da classe e de `ldc` no lugar de `ldc_w`) |
@@ -420,13 +423,13 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
   | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 2b: imports no lugar de nomes completos (213 nomes, 26 arquivos) | PASS: 8 de 8, 0 erros de geração; `mod blocks:` e contagens iguais à referência; bytecode igual instrução por instrução (`javap -c -p`); 2,74 ms por chunk, 253 s |
   | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 2a: fim de linha LF (`.gitattributes`, 18 arquivos) | PASS: 8 de 8, 0 erros de geração; `mod blocks:` e contagens iguais à referência; classes compiladas idênticas byte a byte; 2,76 ms por chunk, 252 s |
   | `20261027` | padrão (8 alvos) | 12 nov | revisão do código, passo 1: impressão digital (`FingerprintTest` e `mod blocks:`); geração igual à do commit `4dd94ae` | PASS: 8 de 8, 0 erros de geração, 218 estados da paleta validados, 16 criaturas de vila retiradas; 2,73 ms por chunk, 252 s. Um mundo novo, o mesmo mundo recarregado do disco e outro mundo (gerado antes, recarregado): as 8 linhas `mod blocks:` iguais (a referência abaixo); contagens `stats:` iguais às de outra rodada, menos `loot_containers_anywhere` |
-  | — | RCON | 13 nov | `/amcs spawn <categoria> <nome>` (sem bateria de geração: só o comando mudou) | `predio predio_largo_abandonado` e `delegacia delegacia_abandonada` colocados; `casa predio_largo_abandonado` recusado com a lista das casas; categoria `igreja` recusada com a lista das categorias; o formato antigo de um argumento recusado pelo jogo |
-  | `20261027` | padrão (8 alvos) | 13 nov | delegacia (1 por cidade) e prédio do choque (52 arquivos) | PASS: 8 de 8, 0 erros de geração, 1 408 estados de estrutura validados; 2,77 ms por chunk, 256 s. Por RCON, `/amcs spawn delegacia_abandonada` sobre pedra: salas do subsolo cavadas nas camadas 1, 2 e na da rua, pedra fora delas intacta, banner de letra com o desenho; 63 contêineres com loot, 13 de difícil acesso |
+  | — | RCON | 13 nov | `/amcs spawn <categoria> <nome>` (sem bateria de geração: só o comando mudou) | `building abandoned_wide_building` e `police_station abandoned_police_station` colocados; `house abandoned_wide_building` recusado com a lista das casas; categoria `igreja` recusada com a lista das categorias; o formato antigo de um argumento recusado pelo jogo |
+  | `20261027` | padrão (8 alvos) | 13 nov | delegacia (1 por cidade) e prédio do choque (52 arquivos) | PASS: 8 de 8, 0 erros de geração, 1 408 estados de estrutura validados; 2,77 ms por chunk, 256 s. Por RCON, `/amcs spawn abandoned_police_station` sobre pedra: salas do subsolo cavadas nas camadas 1, 2 e na da rua, pedra fora delas intacta, banner de letra com o desenho; 63 contêineres com loot, 13 de difícil acesso |
   | `20261027` | padrão (8 alvos) | 13 nov | postes abandonados em 5 variações | PASS: 8 de 8, 0 erros de geração, ~3 460 blocos de poste conferidos por cidade (com as vinhas), 218 estados da paleta validados; 2,77 ms por chunk, 274 s |
   | `20261027` | padrão (8 alvos) | 13 nov | criaturas de vila retiradas das cidades | PASS: 8 de 8, 0 erros de geração, 16 criaturas de vila retiradas; 2,77 ms por chunk, 259 s. Por RCON, seed 20261027, vila de neve em (−240, 144) numa rua da cidade do spawn: antes 4 aldeões, 1 golem e 1 gato num quadrado de 160 × 160 (um aldeão em y 64, sob a rua de piso 69); depois 1 aldeão, em (−235, 89), ~49 blocos além da rua (fora da margem, de uma casa que ficou de pé fora da cidade) |
-  | `20261027` | padrão (8 alvos) | 13 nov | topo da rampa e boca da escada do prédio largo abertos | PASS: 8 de 8, 0 erros de geração; 2,85 ms por chunk, 251 s. Por RCON, `/amcs spawn predio_largo_abandonado` sobre pedra: as duas fileiras do topo da rampa e a boca da escada abertas, a laje e o concreto da rampa no lugar (10 de 10 conferidos) |
+  | `20261027` | padrão (8 alvos) | 13 nov | topo da rampa e boca da escada do prédio largo abertos | PASS: 8 de 8, 0 erros de geração; 2,85 ms por chunk, 251 s. Por RCON, `/amcs spawn abandoned_wide_building` sobre pedra: as duas fileiras do topo da rampa e a boca da escada abertas, a laje e o concreto da rampa no lugar (10 de 10 conferidos) |
   | `20261027` | padrão (8 alvos) | 13 nov | prédios no máximo 1 por cidade, postes a cada 24, bancos nos parques, escada da casa de vidro em L | PASS: 8 de 8, 0 erros de geração; ~2 300 blocos de poste conferidos por cidade; 214 estados de bloco da paleta validados; 2,68 ms por chunk, 266 s |
-  | `20261027` | padrão (8 alvos) | 13 nov | 7 estruturas novas (50 arquivos), prédio largo com garagem cavada e rampa aberta, prédio da rampa 1 por cidade | PASS: 8 de 8, 0 erros de geração, 1 385 estados de estrutura validados, 59 904 blocos de abandono; 2,75 ms por chunk, 246 s. Por RCON: `/amcs spawn predio_largo_abandonado` sobre um volume de pedra: boca da rampa aberta, 4 pontos da garagem cavados, piso de `smooth_stone`, pedra fora da garagem intacta (7 de 7 conferidos); 249 contêineres com loot, 191 de difícil acesso |
+  | `20261027` | padrão (8 alvos) | 13 nov | 7 estruturas novas (50 arquivos), prédio largo com garagem cavada e rampa aberta, prédio da rampa 1 por cidade | PASS: 8 de 8, 0 erros de geração, 1 385 estados de estrutura validados, 59 904 blocos de abandono; 2,75 ms por chunk, 246 s. Por RCON: `/amcs spawn abandoned_wide_building` sobre um volume de pedra: boca da rampa aberta, 4 pontos da garagem cavados, piso de `smooth_stone`, pedra fora da garagem intacta (7 de 7 conferidos); 249 contêineres com loot, 191 de difícil acesso |
   | `20261027` | padrão (8 alvos) | 13 nov | letreiro F A R M Á C I A apagado das variações; banners das farmácias pequenas na posição da original | PASS: 8 de 8, 0 erros de geração, banners de farmácia conferidos; 2,68 ms por chunk, 257 s |
   | `20261027` | padrão (8 alvos) | 13 nov | vinhas longas e agressivas nos 4 lados (25% da fachada, cachos de 3 a 12; 34 609 blocos de abandono) | PASS: 8 de 8, 0 erros de geração, nenhum `building_mismatch`; 2,63 ms por chunk, 253 s |
   | `20261027` | padrão (8 alvos) | 13 nov | natureza tomando conta das estruturas (`structureOvergrowth` ligado, 18 341 blocos) | PASS: 8 de 8, 0 erros de geração, nenhum `building_mismatch` (plantas e vinhas ficaram no mundo como no plano); 2,72 ms por chunk, 266 s |
@@ -434,7 +437,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
   | `20261027` | padrão (8 alvos) | 13 nov | 22 variações de cor (sorteio por modelo, banners copiados nas farmácias) | PASS: 8 de 8, 0 erros de geração, 1 115 estados de estrutura validados, banners de farmácia conferidos com desenho; 2,70 ms por chunk, 263 s |
   | `20261027` | padrão (8 alvos) | 13 nov | copas cortadas completadas para fora das estruturas | PASS: 8 de 8, 0 erros de geração, 0 avisos de `far chunk`; 151 folhas de copa conferidas na cidade do spawn, 324 na mais alta, 307 na mais acidentada; 2,62 ms por chunk, 250 s |
   | `20261027` | padrão (8 alvos) | 13 nov | nunca duas estruturas iguais no mesmo quarteirão | PASS: 8 de 8, 0 erros de geração; na cidade do spawn 906 contêineres com a tabela certa, 156 de difícil acesso; 2,87 ms por chunk, 247 s |
-  | `20261027` | padrão (8 alvos) | 13 nov | loot vanilla por tema, contêiner e acesso | PASS: 8 de 8, 0 erros de geração; na cidade do spawn 902 contêineres com a tabela certa, 105 de difícil acesso; 2,68 ms por chunk, 256 s. Por RCON, 300 sorteios de cada uma das 30 tabelas: barril vazio em 58–62% (0,74–0,85 pilha), `barril_dificil` vazio em 19–30% (2,1–2,4 pilhas), baú 4,5–4,6 pilhas, `bau_dificil` 7,9–8,1, vaso vazio em 58–65%, `vaso_dificil` em 19–22%; poções com efeito, ferramentas gastas e encantadas e livros encantados conferidos; `/amcs spawn` do prédio apocalíptico pôs 73 contêineres, 56 de difícil acesso |
+  | `20261027` | padrão (8 alvos) | 13 nov | loot vanilla por tema, contêiner e acesso | PASS: 8 de 8, 0 erros de geração; na cidade do spawn 902 contêineres com a tabela certa, 105 de difícil acesso; 2,68 ms por chunk, 256 s. Por RCON, 300 sorteios de cada uma das 30 tabelas: barril vazio em 58–62% (0,74–0,85 pilha), `barrel_hard` vazio em 19–30% (2,1–2,4 pilhas), baú 4,5–4,6 pilhas, `chest_hard` 7,9–8,1, vaso vazio em 58–65%, `pot_hard` em 19–22%; poções com efeito, ferramentas gastas e encantadas e livros encantados conferidos; `/amcs spawn` do prédio apocalíptico pôs 73 contêineres, 56 de difícil acesso |
   | `20261027` | padrão (8 alvos) | 13 nov | para-raios trocados por tochas de redstone | PASS: 8 de 8, 0 erros de geração, 2,72 ms por chunk, 261 s |
   | `20261027` | padrão (8 alvos) | 13 nov | 7 estruturas novas (6 casas e o prédio esqueleto, 21 no total), mansão pós-apocalíptica atualizada, estantes entalhadas liberadas | PASS: 8 de 8, 0 erros de geração, 2,71 ms por chunk, 253 s |
   | `20261027` | padrão (8 alvos) | 13 nov | parque de 110 × 64 num canto, estruturas em L | PASS: 8 de 8, 0 erros de geração, 1 fonte conferida, 2,69 ms por chunk, 252 s |
@@ -454,34 +457,36 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
   A bateria ainda não rodou depois da remoção das cidades octogonais e 3 × 2 (o alvo "cidade 3 × 2 mais próxima do
   spawn" saiu) nem depois da troca para quarteirões 105 × 60 (células de 512) e 140 × 90 (células de 576). Em 8 nov, no Linux (CachyOS, JDK 21), a bateria `-PselfTest` passou 8 de 8 alvos com os quarteirões 105 × 60 num mundo novo (um mundo de teste velho, gerado antes das mudanças, dá falhas falsas no alvo do spawn: renomeie `run/selftest_world_*`). Vale rodar a bateria completa quando houver mudanças: `tools/selftest.sh full`.
-- **Referência da impressão digital da bateria** (`mod blocks:`, seed `20261027`, escopo padrão, 12 nov 2026,
-  geração do commit `4dd94ae`). Numa mudança que não deve alterar o mundo, as 8 linhas ficam iguais a estas:
+- **Referência da impressão digital da bateria** (`mod blocks:`, seed `20261027`, escopo padrão, 13 nov 2026, com os
+  nomes das estruturas em inglês; os blocos são os do commit `4dd94ae`, achado 66). Numa mudança que não deve alterar o
+  mundo, as 8 linhas ficam iguais a estas:
 
   | Alvo | SHA-256 | Posições | Block entities |
   |---|---|---|---|
-  | t01 cidade mais próxima do spawn | `6332a9a1f1ba589565f3e4b3f1d56d626d0c1a188f4296e5301bc206b088cd96` | 1 877 158 | 2 055 |
-  | t02 cidade mais alta (nível 103) | `e9c76bce50254bd36d2c0ed650222c61d13abd335320102e474d63e8dbf9cb6a` | 3 290 072 | 3 387 |
-  | t03 cidade mais acidentada | `92efbcc166cb03ac38acf6a10c8d481d770f82527047dc2dc5823cb08068e7e1` | 2 506 369 | 2 506 |
-  | t04 túnel mais longo (352) | `aa04b3a0c7319245562bf89e7e9dd2419de950fcaad0bb48ea8501329d07d967` | 543 064 | 164 |
-  | t05 ponte mais longa sobre água (349) | `e9c275178d0660b93dad36efc4d2f6fdcb80699b555f10274b814eb627c54713` | 452 586 | 605 |
-  | t06 viaduto seco mais longo (239) | `806cc76601ec663622586341d73b529780b95b6ed86c2e8b240c764617e5919b` | 581 916 | 381 |
+  | t01 cidade mais próxima do spawn | `de3d7d961fb699a013d4d10f2a55f19e922231d5f0641de74d980e2f14fbde2e` | 1 877 158 | 2 055 |
+  | t02 cidade mais alta (nível 103) | `acbf0208f5ec21b30c6a57e0d6c98c1e47b166d1f1d61c69675a061c327aafc7` | 3 290 072 | 3 387 |
+  | t03 cidade mais acidentada | `2e2476a9f9b45c2f2fa91224efd8d40a3cf4ee57b2c8650cec8a6395aba2c53d` | 2 506 369 | 2 506 |
+  | t04 túnel mais longo (352) | `4bee0f84a14f858c30f6e960db34c37fcb072164186431b0a3b904132a547ef4` | 543 064 | 164 |
+  | t05 ponte mais longa sobre água (349) | `46d3982b52e1be46b834c08a07daeb838b01ed237cc1c7e01d890413e6524d73` | 452 586 | 605 |
+  | t06 viaduto seco mais longo (239) | `ccbe9ee85773c4e7f8040f8f3da6feaa0036c2f6c6405590c367501880e546a8` | 581 916 | 381 |
   | t07 rampa mais longa (360) | `f960ad531d4199d12ecf42bb72b87d9a199bc1fccb85235572528b07c3dcc118` | 191 450 | 0 |
-  | t08 rodovia inteira | `fe0310e800f1b7b6492e15424037fe9a3fda24c90ad61d3c50e0b35a6c1cfe10` | 1 280 207 | 850 |
+  | t08 rodovia inteira | `a4def9aa96ded019f238479bf62ca6c3184ee3df5a80562ba8adc17841f98541` | 1 280 207 | 850 |
 
-  O relatório completo fica no git em `tools/verify/reference/battery-20261027-full.txt` (o que
-  `tools/verify/compare_battery.py` compara); o mundo dessa rodada fica (fora do git) em
-  `run/selftest_world_ref_4dd94ae/`, para comparar bloco a bloco se alguma linha mudar.
-- **Referência com o abandono desligado** (`structureOvergrowth = false`, escopo rápido, 13 nov 2026, tirada no commit
-  `254ca56`; que a geração seja a do `4dd94ae` é dedução: as conferências dos passos 1 e 2 mostraram o mesmo mundo com
-  o abandono ligado, e o código do abandono não mudou). O mundo novo e o mesmo mundo recarregado deram estes 3
-  valores:
+  Antes dos nomes em inglês (geração do `4dd94ae`) eram outras 7 linhas (t07, sem contêineres, é a mesma): só os nomes
+  das loot tables dentro dos baús mudaram. O relatório completo fica no git em
+  `tools/verify/reference/battery-20261027-full.txt` (o que `tools/verify/compare_battery.py` compara); o mundo dessa
+  rodada fica (fora do git) em `run/selftest_world_ref_english/`, e o de antes dos nomes em
+  `run/selftest_world_ref_4dd94ae/` (mesmos blocos), para comparar bloco a bloco se alguma linha mudar.
+- **Referência com o abandono desligado** (`structureOvergrowth = false`, escopo rápido, 13 nov 2026, com os nomes em
+  inglês; a anterior, com os nomes em português, foi tirada no commit `254ca56`, e as duas têm as mesmas vias e lotes
+  em todos os chunks):
 
   | Alvo | SHA-256 | Posições | Block entities |
   |---|---|---|---|
-  | t01 cidade mais próxima do spawn | `c7eaaa5b7a0a3f1c866d536c2420716dba9dc13efdc50c7f3fb55730842c73f0` | 1 874 811 | 2 055 |
-  | t02 túnel mais longo (352) | `cda3911413a903abc703d9e623e12e08ea508adaf2441cd7c4e8fcd1743a3722` | 541 806 | 164 |
-  | t03 ponte mais longa sobre água (349) | `6d7016e75a48abb1314cae4d0762c13913f02d1929cd679b4e581609238c4fa4` | 452 586 | 605 |
+  | t01 cidade mais próxima do spawn | `568ecdfa267505d309938365ec1c11098565de04a95a6ad318ad541d7a7f78c5` | 1 874 811 | 2 055 |
+  | t02 túnel mais longo (352) | `ab44685e225a3839b0d721e92303cc04e8b61b3df462bbda419761e845d2526f` | 541 806 | 164 |
+  | t03 ponte mais longa sobre água (349) | `2349a83efc3e2400fb21a762303507267598659945095c7754b01f06302b8a17` | 452 586 | 605 |
 
-  Relatório no git em `tools/verify/reference/battery-20261027-quick-overgrowth-off.txt`; mundo em
-  `run/selftest_world_ref_off/` (fora do git).
+  Relatório no git em `tools/verify/reference/battery-20261027-quick-overgrowth-off.txt`; mundo (com os nomes em
+  português, mesmos blocos) em `run/selftest_world_ref_off/` (fora do git).
 - Em nenhuma rodada houve degrau, buraco, obstáculo, pilar flutuante, rodovia sem conexão, bloco indestrutível nas vias, pontes e túneis depois das correções 4 e 5. Containers das estruturas têm loot tables vanilla próprias (13 nov 2026: tema da estrutura × tipo de contêiner × acesso), auditados por `structure_without_loot`, `structure_wrong_loot`, `loot_in_city` e `container_in_city`.

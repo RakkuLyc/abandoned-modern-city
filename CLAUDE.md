@@ -18,7 +18,7 @@
    Antes de cada commit, conferir se algum desses arquivos ficou desatualizado. Os valores vêm do código e dos
    testes, nunca da memória. No resumo da etapa, dizer quais documentos foram atualizados.
 7. **Impressão digital do mundo** (desde 12 nov 2026): `FingerprintTest` guarda o que o planejador produz (valores
-   do commit `4dd94ae`) e a bateria imprime por alvo `mod blocks:` (os blocos que o mod decide no mundo gerado; a
+   do commit `4dd94ae`; `layout`, `structures` e `weathering`, que guardam os nomes, desde os nomes em inglês) e a bateria imprime por alvo `mod blocks:` (os blocos que o mod decide no mundo gerado; a
    referência fica em `docs/TESTES.md`, seção 6, com outra para `structureOvergrowth = false`). Numa mudança que não
    deve alterar o mundo (limpeza, divisão de arquivos, comentários), o teste passa e as linhas `mod blocks:` e
    `stats:` ficam iguais (menos `loot_containers_anywhere`, que conta baús do vanilla). O que a bateria não cobre
@@ -161,18 +161,18 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   20% quebrados (um assento e o braço daquele lado faltam, `BENCH_BROKEN`). Copas altas passam sobre eles; nenhuma
   planta nasce através deles.
 - Delegacia e prédio do choque (pedido do usuário depois de 13 nov 2026): delegacia abandonada (54 × 38 × 33, tipo
-  `delegacia`, no máximo 1 por cidade, regra do usuário; `Structures.LIMITS`): chão na camada 3 (as 3 de baixo
+  `police_station`, no máximo 1 por cidade, regra do usuário; `Structures.LIMITS`): chão na camada 3 (as 3 de baixo
   enterradas), com um subsolo meio enterrado (salas de `cave_air` das camadas 1 a 5, piso na 0, escada interna)
   cavado no terreno; as salas atravessam a camada da rua abertas (as mesmas aberturas da garagem do prédio largo:
   405 células); 13 banners azuis com as letras na fachada (desenho do molde), 3 tochas de redstone salvas, folhas
   não persistentes sem tronco viram persistentes; frente no -Z (banners e escadaria de entrada); 63 contêineres, 13
-  de difícil acesso (salas fechadas do subsolo); loot do tema `predio`. Prédio do choque (91 × 44 × 90, duas torres
-  inclinadas uma contra a outra, `predios_grandes`, 1 por cidade como os outros prédios): chão na camada 0, frente
+  de difícil acesso (salas fechadas do subsolo); loot do tema `building`. Prédio do choque (91 × 44 × 90, duas torres
+  inclinadas uma contra a outra, `buildings_large`, 1 por cidade como os outros prédios): chão na camada 0, frente
   no -Z (escadaria e porta sob o vão entre as torres), 201 contêineres, 169 acima de 15.
 - Estruturas novas (pedido do usuário depois de 13 nov 2026, com loot vanilla): casa moderna com garagem
   (42 × 36 × 15), casa de vidro (48 × 40 × 15), prédio pequeno (23 × 31 × 41), prédio brutalista em U (75 × 58 × 125),
   prédio largo (84 × 31 × 80, com estacionamento subterrâneo), torre verde (31 × 31 × 143) e prédio da rampa (pasta
-  "Especial", 102 × 72 × 134; tipo `especial`, no máximo 1 por cidade, `Structures.LIMITS`; o usuário quer deixá-lo
+  "Especial", 102 × 72 × 134; tipo `special`, no máximo 1 por cidade, `Structures.LIMITS`; o usuário quer deixá-lo
   mais raro depois). Todas com a frente no -Z (hipótese pelos desenhos dos moldes: portas, pátio do U, rampa da
   garagem, fachada de vidro; a conferir no jogo com `/amcs spawn`) e o chão na camada 0, menos o prédio largo: chão
   na camada 8, as 8 de baixo enterradas; a garagem (camadas 1 a 7 de `cave_air`) é cavada no terreno, e na camada do
@@ -186,13 +186,22 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   persistentes, senão cairiam no mundo. A escada da casa de vidro começava colada na parede de vidro da frente (só se
   subia de lado); o molde foi trocado (13 nov 2026, commit `7e0b2a9`) por uma escada em L a partir do hall, com
   patamar 2 × 2 no canto e corrimão contínuo de barras de ferro até a galeria. As 7 já vêm tomadas pela natureza; o abandono completa o que falta. O loot
-  vale sem mudança: as casas usam o tema `casa`, os prédios e o especial o tema `predio`.
+  vale sem mudança: as casas usam o tema `house`, os prédios e o especial o tema `building`.
+- Nomes das estruturas em inglês (13 nov 2026, pedido do usuário): arquivos (`abandoned_house`, `pharmacy_red`,
+  `workshop_small_green`, `gas_station_small_blue`, `abandoned_wide_building`, `abandoned_police_station`...), tipos
+  (`houses`, `pharmacy_large`, `workshop_medium`, `gas_station_small`, `buildings_large`, `special`, `police_station`),
+  categorias do `/amcs spawn` e grupos dos limites (`house`, `pharmacy`, `workshop`, `gas_station`, `building`,
+  `police_station`, `special`) e loot tables (`chests/<theme>/<tier>`, temas `house`, `pharmacy`, `workshop`,
+  `gas_station`, `building`; níveis `chest`, `barrel`, `pot` e `_hard`). O abandono de cada estrutura continua o mesmo:
+  a semente dele vinha do nome do arquivo e agora vem da coluna `seed` do `index.txt`, com o valor do nome antigo
+  (`String.hashCode` do nome em português). Os originais em `structures/` (na raiz) continuam com os nomes em
+  português. Baús não abertos de mundos gerados antes desta troca apontam para as tabelas antigas e saem vazios.
 - Estruturas (12 nov 2026, `core/Structures` carrega, mede e gira; `core/Ring` monta o anel): as 21 `.nbt` de
   `structures/` (cópias em `src/main/resources/amcs/buildings/`, listadas em `index.txt` como `tipo|arquivo|chão|frente`):
   10 casas (casa abandonada, casa moderna abandonada, mansão abandonada, mansão pós-apocalíptica e, desde 13 nov
   2026, casa com garagem, casa grande, casa com piscina, casa de subúrbio, casa com torre e casa vitoriana, todas
   abandonadas), farmácia, farmácia grande, oficina média, oficina pequena, posto padrão, posto pequeno, prédio
-  apartamento, prédio esqueleto (13 nov 2026; o arquivo `prédio_esqueleto_31x29.nbt` vira `predio_esqueleto_31x29`,
+  apartamento, prédio esqueleto (13 nov 2026; o arquivo `prédio_esqueleto_31x29.nbt` vira `skeleton_building_31x29`,
   sem acento, porque o argumento de `/amcs spawn` só aceita ASCII), prédio azulado, torre, prédio apocalíptico. A
   mansão pós-apocalíptica foi atualizada em 13 nov com a versão nova da pasta (só o estado de 12 portas mudou). As
   casas são 10 dos 21 modelos e ~43% das estruturas. Variações de cor (13 nov 2026, pedido do usuário; campo `modelo`
@@ -230,7 +239,7 @@ existem as cidades 2 × 2 de quarteirões retangulares.
     `Palette.applyBanner`): as letras D R U G S T O R E das farmácias (9 na farmácia, 18 na farmácia grande); encostadas na calçada, formando um anel; sorteio por arquivo,
     sem padrão;
   - limites por cidade (`Structures.LIMITS`): farmácias 3 (as duas), oficinas 2 (as duas), postos 2 (os dois),
-    especial 1 (o prédio da rampa), delegacia 1; e cada prédio (tipos `predios_*` e `especial`, `Def.onePerCity`) no máximo 1
+    especial 1 (o prédio da rampa), delegacia 1; e cada prédio (tipos `buildings_*` e `special`, `Def.onePerCity`) no máximo 1
     vez por cidade, em qualquer quarteirão (13 nov 2026, pedido do usuário: havia cidades com 2 ou 3 prédios
     azulados; casas, farmácias, oficinas e postos podem repetir dentro dos limites); 6,34 prédios por cidade nos
     testes; os
@@ -272,7 +281,7 @@ existem as cidades 2 × 2 de quarteirões retangulares.
     simular os vãos (140 × 90 caía para ~5 estruturas e torre/azulado/prédio apocalíptico ficavam raros).
   - comandos (12 nov 2026, `command/StructureCommands`): `/amcs locate structure <nome|tipo|grupo>` (a mais
     próxima já planejada; coordenada na calçada em frente) e `/amcs spawn <categoria> <nome>` (13 nov 2026, pedido do
-    usuário: categorias `casa` 12, `farmacia` 10, `oficina` 8, `posto` 10, `predio` 10, `delegacia` 1, `especial` 1,
+    usuário: categorias `house` 12, `pharmacy` 10, `workshop` 8, `gas_station` 10, `building` 10, `police_station` 1, `special` 1,
     pelo início do tipo, `Structures.CATEGORIES`/`Def.category`; o jogo sugere só os nomes da categoria escolhida;
     nome de outra categoria é recusado com a lista certa; o formato antigo de um argumento não existe mais) (2 blocos à frente de quem
     executa, centralizada, frente virada para ele, chão no bloco em que ele pisa; mesmas regras da cidade, com loot).
@@ -315,16 +324,16 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   saem sem texto.
   **Loot tables** (13 nov 2026, pedido do usuário; postas quando cada contêiner é colocado, pela região, como nas
   estruturas vanilla; semente por lote e posição; `ChunkBuilder.loot`, `Palette.lootTable`): só itens vanilla, em
-  tabelas próprias geradas por `tools/gen_loot.py` em `data/abandonedmoderncity/loot_table/chests/<tema>/<nível>.json`.
-  Tema pelo tipo da estrutura (`Structures.Def.lootTheme`): `casa` (comida, utensílios, livros, discos), `farmacia`
-  (poções de cura, regeneração, visão noturna, resistência ao fogo, ingredientes de poção), `oficina` (ferro, cobre,
-  carvão, ferramentas de ferro gastas, trilhos, pistões; raras: ferramentas encantadas, bigorna, funil), `posto`
-  (lanches, carvão, baldes de lava, mapas, esmeraldas) e `predio` (os prédios: papel, livros, flechas, lápis, armas
-  gastas; raras: armadura de ferro encantada, pérolas do ender, discos). Nível pelo contêiner: baú `bau` (3 a 6 pilhas
-  de itens comuns e normais e 10% de chance de um raro), barril, dispenser e dropper `barril` (40% têm algo, 1 a 3
-  pilhas só de comuns), vaso decorado `vaso` (40%, uma pilha comum). Contêiner de difícil acesso (`core/Access`) usa
-  a versão `_dificil`, mais generosa: `bau_dificil` 5 a 8 pilhas e 1 a 2 raros, `barril_dificil` 75% com 2 a 4 pilhas
-  de comuns e normais, `vaso_dificil` 80% com uma pilha normal ou rara. Difícil acesso = a 15+ blocos acima do chão
+  tabelas próprias geradas por `tools/gen_loot.py` em `data/abandonedmoderncity/loot_table/chests/<theme>/<tier>.json`.
+  Tema pelo tipo da estrutura (`Structures.Def.lootTheme`): `house` (comida, utensílios, livros, discos), `pharmacy`
+  (poções de cura, regeneração, visão noturna, resistência ao fogo, ingredientes de poção), `workshop` (ferro, cobre,
+  carvão, ferramentas de ferro gastas, trilhos, pistões; raras: ferramentas encantadas, bigorna, funil), `gas_station`
+  (lanches, carvão, baldes de lava, mapas, esmeraldas) e `building` (os prédios: papel, livros, flechas, lápis, armas
+  gastas; raras: armadura de ferro encantada, pérolas do ender, discos). Nível pelo contêiner: baú `chest` (3 a 6 pilhas
+  de itens comuns e normais e 10% de chance de um raro), barril, dispenser e dropper `barrel` (40% têm algo, 1 a 3
+  pilhas só de comuns), vaso decorado `pot` (40%, uma pilha comum). Contêiner de difícil acesso (`core/Access`) usa
+  a versão `_dificil`, mais generosa: `chest_hard` 5 a 8 pilhas e 1 a 2 raros, `barrel_hard` 75% com 2 a 4 pilhas
+  de comuns e normais, `pot_hard` 80% com uma pilha normal ou rara. Difícil acesso = a 15+ blocos acima do chão
   da cidade (`Access.HIGH`) ou fora do alcance de quem entra andando da rua: o percurso pula 1 bloco (nunca sobre
   cerca, muro ou vidraça), cai qualquer altura, sobe escada de mão, vinha, andaime e água, abre portas, alçapões e
   portões (não os de ferro); plantas, teias, tapetes e tochas não bloqueiam; folhas sim; o contêiner precisa estar a
