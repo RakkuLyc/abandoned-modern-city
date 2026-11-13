@@ -177,7 +177,7 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   chão a boca da rampa (5 × 15, na borda da frente) e o poço da escada ficam abertos: ar ou `cave_air` com `cave_air`
   embaixo não vira chão da cidade, nem o ar da camada do chão ligado a essas aberturas (o topo da rampa, que tem a
   própria rampa embaixo; corrigido em 13 nov 2026 depois que o usuário achou duas fileiras de terreno ali)
-  (`Structures.openings`, `Def.opening`, `Lot.code`; 99 células, todo o ar da camada do chão dele); o `/amcs spawn` também cava a garagem e
+  (`StructureLoader.openings`, `Def.opening`, `Lot.code`; 99 células, todo o ar da camada do chão dele); o `/amcs spawn` também cava a garagem e
   abre a rampa. O prédio da rampa cabe só nas linhas dos lados curtos do quarteirão (frente de 102 nos 120, fundo de
   72 no sentido dos 180) ou, nos lados compridos, quando o bosque sorteado é estreito. Folhas salvas como não
   persistentes longe de qualquer tronco (casa moderna com garagem, casa de vidro, brutalista, prédio da rampa) viram
@@ -245,12 +245,12 @@ existem as cidades 2 × 2 de quarteirões retangulares.
     na camada 1); as outras casas novas têm o quintal de grama na camada 0, que fica no nível do chão;
   - sem vão até a calçada: na camada do chão, as fileiras da borda sem piso de verdade (menos de 25% de piso, só
     vinhas, banners ou lajes soltas) recebem o bloco de piso da primeira fileira que tem piso, nos 4 lados
-    (`Structures.floorFill`); os enfeites (banners da farmácia, vinhas das oficinas) ficam;
+    (`StructureLoader.floorFill`); os enfeites (banners da farmácia, vinhas das oficinas) ficam;
   - árvores das estruturas com leaf decay: folhas a até 6 (pelas folhas) de um tronco do molde viram não
     persistentes com a distância certa; folhas sem tronco perto (sebes, arbustos) continuam ou passam a ser
     persistentes (mesmo as salvas como não persistentes);
   - copas cortadas pela borda do molde são completadas para fora da estrutura (13 nov 2026, pedido do usuário pela
-    árvore em frente à casa com piscina; `Structures.crowns`, `core/Crowns`, `gen/Overhangs`): cada folha real de uma
+    árvore em frente à casa com piscina; `StructureLoader.crowns`, `core/Crowns`, `gen/Overhangs`): cada folha real de uma
     copa (a até 4 blocos na horizontal de um tronco de 3+ troncos naturais, não descascados, e 2+ acima do pé dele) é
     espelhada em volta do tronco, em x, em z e nos dois; o espelho que cai fora da caixa vira folha não persistente,
     com a distância contada pelas folhas (até 6). São 189 folhas em 7 estruturas: casa com piscina 11 (sobre a

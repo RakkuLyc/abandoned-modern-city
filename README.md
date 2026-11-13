@@ -204,7 +204,8 @@ core/   planejador puro (sem classes do Minecraft) — testado com JUnit
   Wreck          buracos nas pontes, por posição ao longo da rodovia
   Wild           o miolo do quarteirão: chão, árvores e vegetação, sem entrar nas estruturas
   Ring           anel de estruturas em volta do quarteirão (lados curtos inteiros, compridos no que sobra), vãos, limites
-  Structures     os 52 arquivos (30 modelos) de `amcs/buildings/index.txt`: caixa, camada do chão, piso até a borda, folhas reais, rotação, escavação com `cave_air`
+  Structures     os 52 arquivos (30 modelos) de `amcs/buildings/index.txt`: carga em ordem, caixa, camada do chão, rotação, limites por cidade, escavação com `cave_air`
+  StructureLoader o preparo de cada molde: piso até a borda, folhas reais, copas cortadas completadas, teias soltas, aberturas da garagem
   Access         contêineres de difícil acesso das estruturas (altos ou fora do alcance andando): loot mais generoso
   Crowns         onde vão as folhas que completam copas cortadas pela borda das estruturas (gen/Overhangs as põe)
   Park           parques tomados pela natureza, com caminhos e fonte
