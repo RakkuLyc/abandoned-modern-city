@@ -6,7 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -17,6 +23,31 @@ class WeatheringTest {
     private static final Set<String> SOIL = Set.of("minecraft:moss_block", "minecraft:grass_block", "minecraft:dirt",
             "minecraft:coarse_dirt", "minecraft:rooted_dirt");
     private static final Set<String> PLANTS = Set.of("minecraft:short_grass", "minecraft:fern", "minecraft:dead_bush");
+    /** The overgrowth seed of each file, read from the index as {@link Structures} reads it. */
+    private static final Map<String, Integer> SEEDS = seeds();
+
+    private static Map<String, Integer> seeds() {
+        Map<String, Integer> out = new HashMap<>();
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(
+                WeatheringTest.class.getResourceAsStream("/amcs/buildings/index.txt"), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (line.isBlank() || line.startsWith("#")) {
+                    continue;
+                }
+                String[] f = line.trim().split("\\|");
+                // the seed column, else the hash of the file name
+                out.put(f[1], f.length > 7 && !f[7].isBlank() ? Integer.parseInt(f[7].trim()) : f[1].hashCode());
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        return out;
+    }
+
+    private static int seed(Structures.Def d) {
+        return SEEDS.get(d.name());
+    }
 
     private static String block(Template t, int x, int y, int z) {
         if (x < 0 || y < 0 || z < 0 || x >= t.sx || y >= t.sy || z >= t.sz) {
@@ -38,8 +69,10 @@ class WeatheringTest {
         Map<String, Integer> kinds = new TreeMap<>();
         for (Structures.Def d : Structures.ALL) {
             Template raw = Structures.source(d.name());
-            Weathering.Result w = Weathering.apply(raw, d.ground(), d.name().hashCode());
-            Weathering.Result again = Weathering.apply(Structures.source(d.name()), d.ground(), d.name().hashCode());
+            Weathering.Result w = Weathering.apply(raw, d.ground(), seed(d));
+            Weathering.Result again = Weathering.apply(Structures.source(d.name()), d.ground(), seed(d));
+            // the overgrowth checked here is the one the game applied when the structures loaded
+            assertEquals(Structures.WEATHERING.get(d.name()), w.report(), d.name() + " not the game's overgrowth");
             Template t = w.template();
             assertEquals(raw.sx, t.sx);
             assertEquals(raw.sy, t.sy);
@@ -227,7 +260,7 @@ class WeatheringTest {
         System.out.println("[WeatheringTest] structure: cracked, green under a roof, green open, facade with vines, least covered side (before -> after)");
         for (Structures.Def d : Structures.ALL) {
             Template raw = Structures.source(d.name());
-            Weathering.Result w = Weathering.apply(raw, d.ground(), d.name().hashCode());
+            Weathering.Result w = Weathering.apply(raw, d.ground(), seed(d));
             int gy = lowest(raw) + d.ground();
             double[] a = measures(raw, gy);
             double[] b = measures(w.template(), gy);
@@ -251,11 +284,11 @@ class WeatheringTest {
         }
         // the apocalyptic building itself
         Structures.Def ref = Structures.ALL.stream().filter(d -> d.name().equals("apocalyptic_building_57x45")).findFirst().orElseThrow();
-        Weathering.Report r = Weathering.apply(Structures.source(ref.name()), ref.ground(), ref.name().hashCode()).report();
+        Weathering.Report r = Weathering.apply(Structures.source(ref.name()), ref.ground(), seed(ref)).report();
         // it is the model of the stone and the floors (nothing there changes); only vines are added (the target share
         // is higher than the model's)
-        assertEquals(0, r.cracked() + r.floors() + r.carpets() + r.plants() + r.mossy(), "predio_apocaliptico changed " + r);
-        assertTrue(r.vines() > 0, "predio_apocaliptico without the stronger vines");
+        assertEquals(0, r.cracked() + r.floors() + r.carpets() + r.plants() + r.mossy(), ref.name() + " changed " + r);
+        assertTrue(r.vines() > 0, ref.name() + " without the stronger vines");
     }
 
     private static int lowest(Template t) {
