@@ -53,7 +53,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 
 ## 2. O que é verificado
 
-### Unitários (45 testes)
+### Unitários (46 testes)
 
 | Teste | Verifica |
 |---|---|
@@ -92,6 +92,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `WeatheringTest.everyStructureReachesTheMeasuresOfTheApocalypticBuilding` | nenhuma medida cai (rachado e vinhas podem cair até 3 pontos quando piso vira musgo: o bloco sai da família ou da parede contada); rachado a 31% (−3) ou mais; o lado menos coberto de vinhas com 19% ou mais (meta 25%); no prédio apocalíptico só as vinhas mudam |
 | `WeatheringTest.wholeNamesAreNotTakenForParts` | `light_gray_concrete`, `smooth_sandstone` e `mud_bricks` são pedra inteira; tábua é inteira mas não pedra; vidro, folhas, laje, baú, banner e o bloco de luz não são inteiros |
 | `RingTest.cutCrownsAreCompletedOutsideTheBox` | 189 folhas completam copas cortadas, só na casa com piscina, com garagem, de subúrbio, com torre, de vidro, no prédio esqueleto e no prédio da rampa; nas 4 rotações: todas fora da caixa e a até 4 dela, não persistentes, distância 1 a 6 com um vizinho um passo mais perto do tronco, sem repetir posição; as da casa com piscina ficam na frente e acima de `CLEARANCE` |
+| `RingTest.everyStructureHasASpawnCategory` | toda estrutura tem uma das 7 categorias do `/amcs spawn`: casa 12, delegacia 1, especial 1, farmácia 10, oficina 8, posto 10, prédio 10 (52) |
 | `RingTest.lightningRodsBecomeRedstoneTorches` | nenhum estado de para-raios sobra nas estruturas; 5 tochas de redstone de pé vindas de para-raios (mais 15 salvas como tochas nas estruturas novas, 3 delas na delegacia: 20) (uma no topo de cada estrutura que tinha para-raios); para-raios de lado vira tocha de parede com a mesma direção |
 | `RingTest.noFloatingCobwebs` | nenhuma teia das estruturas fica sem um bloco em que se prender (o chão conta); mais de 2 000 teias conferidas |
 | `RingTest.spawnLimitsHoldOverACity` | 300 cidades de 4 quarteirões sorteados em sequência: no máximo 3 farmácias, 2 oficinas, 2 postos e 1 de cada prédio; o contador da cidade bate com o que foi posto |
@@ -240,7 +241,7 @@ No jogo (op):
 - `/amcs locate city` (ou `highway`, `tunnel`, `bridge`);
 - `/amcs info`, que mostra o que o plano quer na coluna;
 - `/amcs audit 6` e `/amcs plan 12`;
-- `/amcs locate structure <nome|tipo|grupo>` e `/amcs spawn <nome>`.
+- `/amcs locate structure <nome|tipo|grupo>` e `/amcs spawn <categoria> <nome>`.
 
 Teste dos comandos de estrutura (12 nov 2026, servidor de desenvolvimento via RCON, seed 20261027, a partir de
 0 70 0): `locate structure torre` → 1 707 blocos; `farmacia` (grupo) → `farmacia_vermelho` a 290; `casas` (tipo) →
@@ -270,7 +271,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
 ## 6. Resultados atuais (12 nov 2026, quarteirões 180 × 120 com anel de estruturas com vãos e miolo tomado pela natureza, ruas e rodovias de 33, cidades no meio de células de 736, 4 entradas)
 
-- **Unitários:** 44 passam e 1 é pulado (o teste sem estruturas), 12 nov 2026, com o teste da escavação por `cave_air`; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
+- **Unitários:** 45 passam e 1 é pulado (o teste sem estruturas), 12 nov 2026, com o teste da escavação por `cave_air`; `./gradlew build` em ~30 s (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
   - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
     cortadas.
   - **Rede (7 terrenos × 3 seeds, 81 células), cidades no meio da célula de 736, 4 entradas (uma por lado):** 35 a
@@ -337,6 +338,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | — | RCON | 13 nov | `/amcs spawn <categoria> <nome>` (sem bateria de geração: só o comando mudou) | `predio predio_largo_abandonado` e `delegacia delegacia_abandonada` colocados; `casa predio_largo_abandonado` recusado com a lista das casas; categoria `igreja` recusada com a lista das categorias; o formato antigo de um argumento recusado pelo jogo |
   | `20261027` | padrão (8 alvos) | 13 nov | delegacia (1 por cidade) e prédio do choque (52 arquivos) | PASS: 8 de 8, 0 erros de geração, 1 408 estados de estrutura validados; 2,77 ms por chunk, 256 s. Por RCON, `/amcs spawn delegacia_abandonada` sobre pedra: salas do subsolo cavadas nas camadas 1, 2 e na da rua, pedra fora delas intacta, banner de letra com o desenho; 63 contêineres com loot, 13 de difícil acesso |
   | `20261027` | padrão (8 alvos) | 13 nov | postes abandonados em 5 variações | PASS: 8 de 8, 0 erros de geração, ~3 460 blocos de poste conferidos por cidade (com as vinhas), 218 estados da paleta validados; 2,77 ms por chunk, 274 s |
   | `20261027` | padrão (8 alvos) | 13 nov | criaturas de vila retiradas das cidades | PASS: 8 de 8, 0 erros de geração, 16 criaturas de vila retiradas; 2,77 ms por chunk, 259 s. Por RCON, seed 20261027, vila de neve em (−240, 144) numa rua da cidade do spawn: antes 4 aldeões, 1 golem e 1 gato num quadrado de 160 × 160 (um aldeão em y 64, sob a rua de piso 69); depois 1 aldeão, em (−235, 89), ~49 blocos além da rua (fora da margem, de uma casa que ficou de pé fora da cidade) |

@@ -256,7 +256,8 @@ valores velhos: apague-o ou ajuste os dois valores.
 - `/amcs locate structure <nome|tipo|grupo>` — a estrutura mais próxima já planejada nas cidades: pelo arquivo
   (`torre`, `farmacia_vermelho`...), pelo tipo (`casas`, `predios_grandes`...) ou pelo grupo (`farmacia`, `oficina`,
   `posto`), com autocompletar. A coordenada clicável fica na calçada, 2 blocos em frente ao meio da fachada.
-- `/amcs spawn <nome>` — coloca a estrutura 2 blocos à sua frente, centralizada na direção em que você olha, com a
+- `/amcs spawn <categoria> <nome>` — categorias `casa`, `farmacia`, `oficina`, `posto`, `predio`, `delegacia` e
+  `especial` (o jogo sugere os nomes da categoria escolhida; ex.: `/amcs spawn predio predio_largo_abandonado`); coloca a estrutura 2 blocos à sua frente, centralizada na direção em que você olha, com a
   frente virada para você e o chão no nível do bloco em que você pisa. Mesmas regras da cidade: camada enterrada,
   piso até a borda, folhas reais e loot tables nos contêineres. O ar do molde limpa o terreno dentro da caixa (acima
   do chão); abaixo do chão só o `cave_air` do molde escava o terreno (subsolos, como garagens subterrâneas).

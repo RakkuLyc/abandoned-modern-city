@@ -263,7 +263,10 @@ existem as cidades 2 × 2 de quarteirões retangulares.
     linhas com ~25% cada; 8,4 antes da regra de não repetir), 51% da área livre coberta. Tamanho do quarteirão: 180 × 120, recomendado depois de
     simular os vãos (140 × 90 caía para ~5 estruturas e torre/azulado/prédio apocalíptico ficavam raros).
   - comandos (12 nov 2026, `command/StructureCommands`): `/amcs locate structure <nome|tipo|grupo>` (a mais
-    próxima já planejada; coordenada na calçada em frente) e `/amcs spawn <nome>` (2 blocos à frente de quem
+    próxima já planejada; coordenada na calçada em frente) e `/amcs spawn <categoria> <nome>` (13 nov 2026, pedido do
+    usuário: categorias `casa` 12, `farmacia` 10, `oficina` 8, `posto` 10, `predio` 10, `delegacia` 1, `especial` 1,
+    pelo início do tipo, `Structures.CATEGORIES`/`Def.category`; o jogo sugere só os nomes da categoria escolhida;
+    nome de outra categoria é recusado com a lista certa; o formato antigo de um argumento não existe mais) (2 blocos à frente de quem
     executa, centralizada, frente virada para ele, chão no bloco em que ele pisa; mesmas regras da cidade, com loot).
 - Abandono das estruturas (13 nov 2026, pedido do usuário: "natureza tomando conta", no modelo do prédio
   apocalíptico; `core/Weathering`): aplicado a cada molde na carga, antes de tudo que o lê (folhas reais, acesso dos

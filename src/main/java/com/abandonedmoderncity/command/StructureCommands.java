@@ -32,7 +32,8 @@ import net.minecraft.world.phys.Vec3;
  *   <li>{@code /amcs locate structure <name|type|group>}: the nearest one the plan put in a city (a file name such as
  *   {@code torre}, a type such as {@code predios_grandes}, or a limit group: {@code farmacia}, {@code oficina},
  *   {@code posto}); the clickable coordinates are on the sidewalk in front of it.</li>
- *   <li>{@code /amcs spawn <name>}: places the structure 2 blocks in front of you, centered on where you look, its
+ *   <li>{@code /amcs spawn <category> <name>} (casa, farmacia, oficina, posto, predio, delegacia, especial): places
+ *   the structure 2 blocks in front of you, centered on where you look, its
  *   front turned to you, its ground layer level with the block you stand on. Same rules as in the cities: buried
  *   layers, floor filled to the edge, real leaves, loot tables.</li>
  * </ul>
@@ -70,14 +71,38 @@ public final class StructureCommands {
                 .executes(c -> locate(c, StringArgumentType.getString(c, "query"))));
     }
 
-    /** {@code spawn <name>} under {@code /amcs}. */
+    /** The names of the structures of a category ({@link Structures.Def#category}). */
+    static TreeSet<String> namesOf(String category) {
+        TreeSet<String> out = new TreeSet<>();
+        for (Structures.Def d : Structures.ALL) {
+            if (d.category().equals(category)) {
+                out.add(d.name());
+            }
+        }
+        return out;
+    }
+
+    /**
+     * {@code spawn <category> <name>} under {@code /amcs} (asked by the user, 13 nov 2026: the structures by category,
+     * e.g. {@code /amcs spawn predio predio_largo_abandonado}); the names suggested are those of the category.
+     */
     static ArgumentBuilder<CommandSourceStack, ?> spawnNode() {
-        return Commands.literal("spawn").then(Commands.argument("name", StringArgumentType.word())
+        return Commands.literal("spawn").then(Commands.argument("category", StringArgumentType.word())
                 .suggests((c, b) -> {
-                    names(false).forEach(b::suggest);
+                    for (String k : Structures.CATEGORIES) {
+                        if (!namesOf(k).isEmpty()) {
+                            b.suggest(k);
+                        }
+                    }
                     return b.buildFuture();
                 })
-                .executes(c -> spawn(c, StringArgumentType.getString(c, "name"))));
+                .then(Commands.argument("name", StringArgumentType.word())
+                        .suggests((c, b) -> {
+                            namesOf(StringArgumentType.getString(c, "category")).forEach(b::suggest);
+                            return b.buildFuture();
+                        })
+                        .executes(c -> spawn(c, StringArgumentType.getString(c, "category"),
+                                StringArgumentType.getString(c, "name")))));
     }
 
     private static int locate(CommandContext<CommandSourceStack> c, String q) {
@@ -148,10 +173,18 @@ public final class StructureCommands {
         return 1;
     }
 
-    private static int spawn(CommandContext<CommandSourceStack> c, String name) {
-        Structures.Def def = Structures.ALL.stream().filter(d -> d.name().equals(name)).findFirst().orElse(null);
+    private static int spawn(CommandContext<CommandSourceStack> c, String category, String name) {
+        TreeSet<String> inCategory = namesOf(category);
+        if (inCategory.isEmpty()) {
+            c.getSource().sendFailure(Component.literal("[AMCS] unknown category '" + category + "' ("
+                    + String.join(", ", Structures.CATEGORIES) + ")"));
+            return 0;
+        }
+        Structures.Def def = Structures.ALL.stream().filter(d -> d.name().equals(name) && d.category().equals(category))
+                .findFirst().orElse(null);
         if (def == null) {
-            c.getSource().sendFailure(Component.literal("[AMCS] unknown structure '" + name + "' (" + String.join(", ", names(false)) + ")"));
+            c.getSource().sendFailure(Component.literal("[AMCS] no " + category + " named '" + name + "' ("
+                    + String.join(", ", inCategory) + ")"));
             return 0;
         }
         ServerLevel level = c.getSource().getLevel();

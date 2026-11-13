@@ -179,6 +179,19 @@ public final class Structures {
             return type.startsWith("predios") || type.equals("especial");
         }
 
+        /**
+         * Category of the structure for {@code /amcs spawn <category> <name>} (asked by the user, 13 nov 2026): casa,
+         * farmacia, oficina, posto, predio, delegacia or especial.
+         */
+        public String category() {
+            for (String k : CATEGORIES) {
+                if (type.startsWith(k)) {
+                    return k;
+                }
+            }
+            return type;
+        }
+
         /** Kind of loot (folder of its loot tables): casa, farmacia, oficina, posto or predio. */
         public String lootTheme() {
             for (String k : LOOT_THEMES) {
@@ -278,6 +291,8 @@ public final class Structures {
     public static final Map<String, Integer> LIMITS = Map.of("farmacia", 3, "oficina", 2, "posto", 2, "especial", 1, "delegacia", 1);
     /** Kinds of loot by the start of the structure type; every other type (the buildings) gets {@code predio}. */
     static final String[] LOOT_THEMES = {"casa", "farmacia", "oficina", "posto"};
+    /** Categories of {@code /amcs spawn}, by the start of the structure type. */
+    public static final String[] CATEGORIES = {"casa", "farmacia", "oficina", "posto", "predio", "delegacia", "especial"};
 
     static String blockOf(String state) {
         return state.contains("[") ? state.substring(0, state.indexOf('[')) : state;
