@@ -20,7 +20,6 @@ import java.util.TreeMap;
  *   <li>{@code dead_end}: a street node with a single street.</li>
  *   <li>{@code orphan_road}: a connected piece of road with no city street that does not leave the region.</li>
  *   <li>{@code city_split}: a city whose streets are not all connected.</li>
- *   <li>{@code removed_street}: the middle of a randomly removed street segment is not lot ground.</li>
  *   <li>{@code building_on_road}: a building footprint column that is not lot ground.</li>
  *   <li>{@code building_overlap}: two lots (buildings, houses) of a block overlap (touching is allowed).</li>
  *   <li>{@code building_setback}: a building of a paved city touches a street, or its front is not 1 to 3 columns
@@ -178,7 +177,6 @@ public final class PlanAudit {
         int n = c.gridHalf();
         boolean fullyInside = true;
         List<int[]> streets = new ArrayList<>();
-        List<int[]> removed = new ArrayList<>();
         for (int j = -n - 1; j <= n + 2; j++) {
             for (int i = -n - 1; i <= n + 2; i++) {
                 // node degree
@@ -197,13 +195,6 @@ public final class PlanAudit {
                 if (c.zSegment(i, j)) {
                     streets.add(mid(c, c.U(i) + c.SX / 2.0, c.V(j)));
                 }
-                // removed segments: their middle is ground of the joined blocks, never road
-                if (c.xRemoved(i, j)) {
-                    removed.add(mid(c, c.U(i), c.V(j) + c.SZ / 2.0));
-                }
-                if (c.zRemoved(i, j)) {
-                    removed.add(mid(c, c.U(i) + c.SX / 2.0, c.V(j)));
-                }
             }
         }
         int[] first = null;
@@ -219,14 +210,6 @@ public final class PlanAudit {
                 r.fail("street_missing", c + " at " + p[0] + "," + p[1]);
             } else if (first == null) {
                 first = p;
-            }
-        }
-        for (int[] p : removed) {
-            int gx = p[0] - x0;
-            int gz = p[1] - z0;
-            r.stat("removed_segments", 1);
-            if (inRegion(gx, gz, w, d) && kind[gx + gz * w] != ChunkPlan.LOT) {
-                r.fail("removed_street", c + " removed segment at " + p[0] + "," + p[1] + " kind " + kind[gx + gz * w]);
             }
         }
         r.stat("cities", 1);

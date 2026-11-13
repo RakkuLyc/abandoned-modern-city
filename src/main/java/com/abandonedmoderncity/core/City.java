@@ -93,12 +93,6 @@ public final class City {
      * the 8 left many cities without an entrance toward their neighbour (23% of the highways lost).
      */
     public static final int EXITS = 4;
-    /**
-     * Most street segments removed from a grid city (the count is uniform in 0..MAX_CUTS). 0 = switched off (asked by
-     * the user for the 2 x 2 grid, where only the inner cross could be cut); the cutting code stays for later.
-     */
-    public static final int MAX_CUTS = 0;
-    static final long CUT_SALT = 0x43555453L;
     /** Grid blocks of a city: FIRST..LAST in both directions (-1..0 for the 2 x 2 grid, -2..1 for 4 x 4). */
     public static final int FIRST = -(Params.GRID / 2);
     public static final int LAST = (Params.GRID + 1) / 2 - 1;
@@ -199,12 +193,8 @@ public final class City {
         final int nw;
         final List<Exit> exits;
         final AtomicReferenceArray<List<Lot>> lots;
-        /** Removed street segments (same indexing as {@link #corner}); null while the layout is being built. */
-        boolean[] xCut;
-        boolean[] zCut;
-        final int cuts;
 
-        Layout(int n, boolean[] city, long seed, int maxCuts) {
+        Layout(int n, boolean[] city, long seed) {
             this.n = n;
             this.w = 2 * n + 1;
             this.city = city;
@@ -270,117 +260,6 @@ public final class City {
             }
             ex = picked;
             this.exits = List.copyOf(ex);
-            this.xCut = new boolean[nw * nw];
-            this.zCut = new boolean[nw * nw];
-            this.cuts = cutStreets(seed, maxCuts);
-        }
-
-        /**
-         * Removes 0..{@link #MAX_CUTS} street segments (uniform), picked in a random order; a segment is only removed
-         * if no node becomes a dead end and all the streets stay connected. The ground of a removed segment joins the
-         * two blocks beside it.
-         */
-        private int cutStreets(long seed, int maxCuts) {
-            int target = Hash.range(Hash.of(seed, CUT_SALT, 0), 0, maxCuts);
-            if (target == 0) {
-                return 0;
-            }
-            List<int[]> segs = new ArrayList<>();
-            for (int j = -n; j <= n + 1; j++) {
-                for (int i = -n; i <= n + 1; i++) {
-                    if (xDrawn(i, j)) {
-                        segs.add(new int[]{0, i, j});
-                    }
-                    if (zDrawn(i, j)) {
-                        segs.add(new int[]{1, i, j});
-                    }
-                }
-            }
-            for (int k = segs.size() - 1; k > 0; k--) {
-                int r = Hash.range(Hash.of(seed, CUT_SALT, 1 + k), 0, k);
-                int[] t = segs.get(k);
-                segs.set(k, segs.get(r));
-                segs.set(r, t);
-            }
-            int done = 0;
-            for (int[] sg : segs) {
-                if (done >= target) {
-                    break;
-                }
-                boolean[] arr = sg[0] == 0 ? xCut : zCut;
-                int idx = (sg[1] + n) + (sg[2] + n) * nw;
-                arr[idx] = true;
-                int bi = sg[0] == 0 ? sg[1] : sg[1] + 1;
-                int bj = sg[0] == 0 ? sg[2] + 1 : sg[2];
-                if (degree(sg[1], sg[2]) == 1 || degree(bi, bj) == 1 || !connected()) {
-                    arr[idx] = false;
-                } else {
-                    done++;
-                }
-            }
-            return done;
-        }
-
-        int degree(int i, int j) {
-            return (xDrawn(i, j) ? 1 : 0) + (xDrawn(i, j - 1) ? 1 : 0) + (zDrawn(i, j) ? 1 : 0) + (zDrawn(i - 1, j) ? 1 : 0);
-        }
-
-        /** Whether every street node is reachable from every other one. */
-        private boolean connected() {
-            boolean[] seen = new boolean[nw * nw];
-            int total = 0;
-            int start = -1;
-            for (int j = -n; j <= n + 1; j++) {
-                for (int i = -n; i <= n + 1; i++) {
-                    if (degree(i, j) > 0) {
-                        total++;
-                        start = (i + n) + (j + n) * nw;
-                    }
-                }
-            }
-            if (start < 0) {
-                return true;
-            }
-            int[] stack = new int[nw * nw];
-            int sp = 0;
-            stack[sp++] = start;
-            seen[start] = true;
-            int reached = 0;
-            while (sp > 0) {
-                int g = stack[--sp];
-                reached++;
-                int i = g % nw - n;
-                int j = g / nw - n;
-                int[][] nb = {
-                        {i, j + 1, xDrawn(i, j) ? 1 : 0}, {i, j - 1, xDrawn(i, j - 1) ? 1 : 0},
-                        {i + 1, j, zDrawn(i, j) ? 1 : 0}, {i - 1, j, zDrawn(i - 1, j) ? 1 : 0}};
-                for (int[] q : nb) {
-                    if (q[2] == 1) {
-                        int h = (q[0] + n) + (q[1] + n) * nw;
-                        if (!seen[h]) {
-                            seen[h] = true;
-                            stack[sp++] = h;
-                        }
-                    }
-                }
-            }
-            return reached == total;
-        }
-
-        private boolean cut(boolean[] arr, int i, int j) {
-            if (arr == null || i < -n || i > n + 1 || j < -n || j > n + 1) {
-                return false;
-            }
-            return arr[(i + n) + (j + n) * nw];
-        }
-
-        /** Whether the street segment was in the grid but has been removed. */
-        boolean xRemoved(int i, int j) {
-            return (isCity(i - 1, j) || isCity(i, j)) && cut(xCut, i, j);
-        }
-
-        boolean zRemoved(int i, int j) {
-            return (isCity(i, j - 1) || isCity(i, j)) && cut(zCut, i, j);
         }
 
         boolean isCity(int i, int j) {
@@ -396,12 +275,12 @@ public final class City {
 
         /** North-south line i, block row j. */
         boolean xDrawn(int i, int j) {
-            return (isCity(i - 1, j) || isCity(i, j)) && !cut(xCut, i, j);
+            return isCity(i - 1, j) || isCity(i, j);
         }
 
         /** East-west line j, block column i. */
         boolean zDrawn(int i, int j) {
-            return (isCity(i, j - 1) || isCity(i, j)) && !cut(zCut, i, j);
+            return isCity(i, j - 1) || isCity(i, j);
         }
     }
 
@@ -442,7 +321,7 @@ public final class City {
                 city[(i + n) + (j + n) * w] = true;
             }
         }
-        return new Layout(n, city, seed, MAX_CUTS);
+        return new Layout(n, city, seed);
     }
 
     public int blockCount() {
@@ -463,31 +342,6 @@ public final class City {
 
     public boolean zSegment(int i, int j) {
         return layout().zDrawn(i, j);
-    }
-
-    /** Whether the north-south segment (line i, row j) was removed by the random street cuts. */
-    public boolean xRemoved(int i, int j) {
-        return layout().xRemoved(i, j);
-    }
-
-    public boolean zRemoved(int i, int j) {
-        return layout().zRemoved(i, j);
-    }
-
-    /** Whether column (x, z) lies on the band of a removed street segment. */
-    public boolean onRemovedStreet(double x, double z) {
-        Layout L = layout();
-        int i = (int) Math.round((x - u0) / SX);
-        int j = (int) Math.round((z - v0) / SZ);
-        int bi = (int) Math.floor((x - u0) / SX);
-        int bj = (int) Math.floor((z - v0) / SZ);
-        return Math.abs(x - U(i)) <= Params.STREET_HW && L.xRemoved(i, bj)
-                || Math.abs(z - V(j)) <= Params.STREET_HW && L.zRemoved(bi, j);
-    }
-
-    /** Number of street segments removed from the grid (0..{@link #MAX_CUTS}). */
-    public int streetCuts() {
-        return layout().cuts;
     }
 
     public int cornerAt(int i, int j) {
@@ -672,30 +526,6 @@ public final class City {
         h.crosswalk = h.count == 1 && crossCandidate && !h.mark;
         if (!h.road && L.isCity(bi, bj)) {
             h.lot = true;
-        } else if (!h.road) {
-            // outside the blocks: the band of a removed border street is still city ground (joined to its block)
-            for (int i = iLo; i <= iHi; i++) {
-                if (L.xRemoved(i, bj) && v >= V(bj) && v <= V(bj + 1)) {
-                    double e = Math.abs(u - U(i)) - hw;
-                    if (e > 0) {
-                        h.edge = Math.min(h.edge, e);
-                    } else {
-                        h.lot = true;
-                        h.bi = L.isCity(i - 1, bj) ? i - 1 : i;
-                    }
-                }
-            }
-            for (int j = jLo; j <= jHi; j++) {
-                if (L.zRemoved(bi, j) && u >= U(bi) && u <= U(bi + 1)) {
-                    double e = Math.abs(v - V(j)) - hw;
-                    if (e > 0) {
-                        h.edge = Math.min(h.edge, e);
-                    } else {
-                        h.lot = true;
-                        h.bj = L.isCity(bi, j - 1) ? j - 1 : j;
-                    }
-                }
-            }
         }
     }
 
@@ -988,11 +818,6 @@ public final class City {
         return null;
     }
 
-    private boolean buildable(Hit h, int bi, int bj, int x, int z, boolean setback) {
-        query(x + 0.5, z + 0.5, h);
-        return h.lot && !h.road && h.bi == bi && h.bj == bj && (!setback || h.edge >= Params.LOT_SETBACK);
-    }
-
     /** Free ground of the city: gray concrete powder. */
     public int yardCode() {
         return BlockCode.CITY_GROUND;
@@ -1003,26 +828,13 @@ public final class City {
         return blockLots(bi, bj, r[0], r[1], r[2], r[3]);
     }
 
-    /** Free rectangle {x0, z0, x1, z1} of block (bi, bj). */
+    /** Free rectangle {x0, z0, x1, z1} of block (bi, bj): the ground between its four sidewalks. */
     private int[] freeRect(int bi, int bj) {
-        // the free rectangle of a grid block: from the sidewalks; across a removed street up to its middle (the
-        // two blocks join), or over the whole band of a removed street on the border of the city
-        Layout L = layout();
         double hw = Params.STREET_HW;
-        boolean[] street = {L.xDrawn(bi, bj), L.xDrawn(bi + 1, bj), L.zDrawn(bi, bj), L.zDrawn(bi, bj + 1)};
-        int x0 = (int) Math.round(street[0] ? U(bi) + hw : L.isCity(bi - 1, bj) ? U(bi) - 0.5 : U(bi) - hw);
-        int x1 = (int) Math.round(street[1] ? U(bi + 1) - hw - 1 : L.isCity(bi + 1, bj) ? U(bi + 1) - 1.5 : U(bi + 1) + hw - 1);
-        int z0 = (int) Math.round(street[2] ? V(bj) + hw : L.isCity(bi, bj - 1) ? V(bj) - 0.5 : V(bj) - hw);
-        int z1 = (int) Math.round(street[3] ? V(bj + 1) - hw - 1 : L.isCity(bi, bj + 1) ? V(bj + 1) - 1.5 : V(bj + 1) + hw - 1);
-        // a corner over two removed streets can still be a crossing of the other two streets (or lie outside the
-        // city when both are border streets): that side then stops at the street line
-        Hit h = new Hit();
-        if (!buildable(h, bi, bj, x0, z0, false) || !buildable(h, bi, bj, x1, z0, false)) {
-            z0 = (int) Math.round(V(bj) + hw);
-        }
-        if (!buildable(h, bi, bj, x0, z1, false) || !buildable(h, bi, bj, x1, z1, false)) {
-            z1 = (int) Math.round(V(bj + 1) - hw - 1);
-        }
+        int x0 = (int) Math.round(U(bi) + hw);
+        int x1 = (int) Math.round(U(bi + 1) - hw - 1);
+        int z0 = (int) Math.round(V(bj) + hw);
+        int z1 = (int) Math.round(V(bj + 1) - hw - 1);
         return new int[]{x0, z0, x1, z1};
     }
 
@@ -1084,8 +896,7 @@ public final class City {
     /** Share of the city blocks with a park in a corner (grass, trees, paths, the fountain). */
     public static final double PARK_BLOCK_CHANCE = 0.125;
     /**
-     * The lots of block (bi, bj), inside its free rectangle x0..x1, z0..z1 (whose outline touches the sidewalks, and
-     * reaches across removed streets): a ring of structures against the sidewalks ({@link Ring}, drawn at random
+     * The lots of block (bi, bj), inside its free rectangle x0..x1, z0..z1 (whose outline touches the sidewalks): a ring of structures against the sidewalks ({@link Ring}, drawn at random
      * under the per-city limits of {@link Structures#LIMITS}); some blocks have a park of {@link #PARK_LONG} x
      * {@link #PARK_SHORT} in a corner, the structures then only along the two other streets; the rest is left to
      * nature ({@link Wild}).

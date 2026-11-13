@@ -115,16 +115,14 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   (`ChunkPlan.drivable`).
 - Túneis com 7 blocos de altura livre (`Params.CLEARANCE`); só há túnel com 11+ blocos de terreno acima da pista
   (`Params.TUNNEL_COVER`).
-- Ruas cortadas: **desligadas** (`City.MAX_CUTS` = 0, pedido do usuário para o 2 × 2; o código continua). Quando
-  ligadas, cada cidade perde de 0 a `MAX_CUTS` trechos de rua (sorteio uniforme),
-  internos ou da borda; nunca cria beco sem saída e a cidade continua toda conectada. O espaço vira grama, unindo
-  os quarteirões. Entradas não são protegidas (só ficam conectadas).
+- Sem ruas cortadas: todo quarteirão tem as 4 ruas. O corte aleatório de trechos de rua (desligado desde o 2 × 2,
+  `City.MAX_CUTS` = 0) foi removido na revisão do código (13 nov 2026, pedido do usuário); fica no histórico do git
+  (commit `4dd94ae`).
 - Quarteirões: todos recebem um anel de estruturas (ver abaixo) e o resto (o miolo) é tomado pela natureza (ver
   "Natureza"). ~1 em 8 quarteirões (`City.PARK_BLOCK_CHANCE`) tem um parque num canto (13 nov 2026, pedido do
   usuário; antes o parque ocupava o quarteirão inteiro): 110 × 64 (`City.PARK_LONG`/`PARK_SHORT`, o lado comprido
   junto ao lado comprido do quarteirão), canto sorteado; as estruturas ficam nas duas outras ruas, em L, e nunca a
-  menos de 4 blocos do parque (`Ring.lots` com `keepOut`); ~5 estruturas por quarteirão de parque. Rua cortada = quarteirões juntados: cada um avança até o meio da faixa; na borda da cidade o quarteirão
-  cobre a faixa até a beira.
+  menos de 4 blocos do parque (`Ring.lots` com `keepOut`); ~5 estruturas por quarteirão de parque.
 - Natureza (11 nov 2026, `core/Flora` + `core/Wild`, lote `WILD` que cobre o quarteirão inteiro por baixo das
   estruturas, que ganham onde estão): aspecto de abandonado. Chão em manchas (ruído de valor): grama (`grass_block`)
   na maior parte, `moss_block`, `coarse_dirt` e o concreto antigo (`gray_concrete_powder`) aparecendo. Árvores do
@@ -230,7 +228,7 @@ existem as cidades 2 × 2 de quarteirões retangulares.
   - limites por cidade (`Structures.LIMITS`): farmácias 3 (as duas), oficinas 2 (as duas), postos 2 (os dois),
     especial 1 (o prédio da rampa), delegacia 1; e cada prédio (tipos `predios_*` e `especial`, `Def.onePerCity`) no máximo 1
     vez por cidade, em qualquer quarteirão (13 nov 2026, pedido do usuário: havia cidades com 2 ou 3 prédios
-    azulados; casas, farmácias, oficinas e postos podem repetir dentro dos limites); 6,24 prédios por cidade nos
+    azulados; casas, farmácias, oficinas e postos podem repetir dentro dos limites); 6,34 prédios por cidade nos
     testes; os
     anéis da cidade inteira são sorteados de uma vez (`City.rings`, quarteirões de norte a sul, oeste a leste), e um
     grupo no limite é sorteado de novo;

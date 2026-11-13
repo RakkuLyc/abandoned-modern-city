@@ -39,8 +39,8 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
 180 × 120 (células de 736, rodovias de ~277 a ~397 blocos), com vãos entre as estruturas.
 
 - Cada cidade fica numa única altura: água é aterrada, morro é cortado, e um talude 1:1 faz a transição.
-- Ruas cortadas estão desligadas (`City.MAX_CUTS` = 0); o código que corta trechos sem criar beco sem saída
-  continua lá.
+- Todo quarteirão tem as 4 ruas (o corte aleatório de trechos de rua, que estava desligado, foi removido em 13 nov
+  2026).
 - **Quarteirões:** as estruturas formam um anel encostado nas calçadas, com a frente (lado -Z do `.nbt`) virada para
   a rua; o resto (o miolo) é tomado pela natureza. Cerca de 1 em 8 quarteirões tem um parque de 110 × 64 num canto,
   com as estruturas em L nas outras duas ruas.
@@ -184,7 +184,7 @@ cidades foram para o meio de células de 648 e passaram a ter 4 entradas; em 12 
 |---|---|
 | Nada indestrutível | Todos os blocos estão em `gen/Palette`. `Palette.validate()` roda na inicialização e derruba o jogo se algum for indestrutível ou tiver block entity (exceção: o baú da fonte e os block entities das estruturas). Qualquer dureza é permitida. A auditoria no mundo (`hard_block`) confere os blocos gerados. |
 | Sem loot | Containers das estruturas **têm loot tables** vanilla próprias por tema (casa, farmácia, oficina, posto, prédio) e por contêiner (baú, barril, vaso), mais generosas nos de difícil acesso. Baú da fonte do parque continua vazio (50%) ou `mossy_cobblestone` (50%). A auditoria confere: contêiner de estrutura sem loot table é `structure_without_loot`, com a tabela errada `structure_wrong_loot`; fora das estruturas, `loot_in_city` e `container_in_city`. |
-| Ruas planas e conectadas | Cada cidade tem uma única altura (`City.level`). Ruas cortadas nunca criam beco sem saída nem separam a cidade (`PlanAudit`: `dead_end`, `city_split`). |
+| Ruas planas e conectadas | Cada cidade tem uma única altura (`City.level`). A grade de ruas não tem beco sem saída e fica toda conectada (`PlanAudit`: `dead_end`, `city_split`). |
 | Superfície certa | A auditoria no mundo (`surface_block`) confere bloco a bloco a superfície das vias. |
 | Determinismo | Tudo é função pura da semente e do terreno natural: dois chunks vizinhos nunca discordam, em qualquer ordem e thread (`PlanAuditTest.planIsIndependentOfQueryOrderAndThreads`). |
 | Mundo igual numa revisão do código | `FingerprintTest` guarda um SHA-256 por parte do que o planejador produz (cidades, rodovias, planos dos chunks, blocos dos lotes, estruturas, abandono, bancos), e a bateria imprime por alvo `mod blocks:`, o SHA-256 dos blocos que o mod decide no mundo gerado (`command/WorldFingerprint`). Numa mudança só de forma os dois ficam iguais (detalhes em `docs/TESTES.md`). |

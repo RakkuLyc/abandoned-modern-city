@@ -300,7 +300,6 @@ class WorldPlanTest {
         int parks = 0;
         int parkStructures = 0;
         int buildingsPerCity = 0;
-        int[] cutHistogram = new int[City.MAX_CUTS + 1];
         for (TestTerrain.Kind kind : TestTerrain.Kind.values()) {
             WorldPlan p = plan(SEEDS[0], kind);
             City.Hit hit = new City.Hit();
@@ -308,7 +307,6 @@ class WorldPlanTest {
                 cities++;
                 int n = c.gridHalf();
                 assertTrue(c.isCityBlock(0, 0), "center block");
-                cutHistogram[c.streetCuts()]++;
                 // spawn limits per city (pharmacies 3, workshops 2, gas stations 2)
                 Map<String, Integer> groups = new HashMap<>();
                 Map<String, Integer> buildings = new HashMap<>();
@@ -372,13 +370,12 @@ class WorldPlanTest {
                         }
                     }
                 }
-                assertEquals(c.streetCuts(), countRemoved(c), c + " removed segments");
                 for (int j = -n - 1; j <= n + 2; j++) {
                     for (int i = -n - 1; i <= n + 2; i++) {
                         int deg = (c.xSegment(i, j) ? 1 : 0) + (c.xSegment(i, j - 1) ? 1 : 0)
                                 + (c.zSegment(i, j) ? 1 : 0) + (c.zSegment(i - 1, j) ? 1 : 0);
                         assertTrue(deg != 1, c + " dead end at node " + i + "," + j);
-                        if (deg == 2 && c.streetCuts() == 0) {
+                        if (deg == 2) {
                             boolean straight = c.xSegment(i, j) && c.xSegment(i, j - 1)
                                     || c.zSegment(i, j) && c.zSegment(i - 1, j);
                             assertFalse(straight, "degree-2 nodes are corners");
@@ -405,39 +402,8 @@ class WorldPlanTest {
         }
         System.out.println("[WorldPlanTest] parks " + parks + " with " + parkStructures + " structures");
         System.out.printf("[WorldPlanTest] buildings per city %.2f (each model at most once)%n", buildingsPerCity / (double) cities);
-        System.out.println("[WorldPlanTest] cities " + cities + ", lots " + lots + ", removed segments per city "
-                + Arrays.toString(cutHistogram));
-        int withCuts = 0;
-        for (int k = 1; k <= City.MAX_CUTS; k++) {
-            withCuts += cutHistogram[k];
-        }
-        if (City.MAX_CUTS == 0) {
-            assertEquals(0, withCuts, "street cuts are switched off");
-        } else {
-            assertTrue(withCuts > cities / 2, "too few cities with removed streets");
-            assertTrue(cutHistogram[City.MAX_CUTS] > 0, "no city with " + City.MAX_CUTS + " removed streets");
-        }
+        System.out.println("[WorldPlanTest] cities " + cities + ", lots " + lots);
         assertTrue(cities > 40, "too few cities: " + cities);
-    }
-
-    @Test
-    void removedStreetsAreRenderedAndAudited() throws Exception {
-        // a grid city per number of removed segments (when one exists), audited and rendered
-        WorldPlan p = plan(SEEDS[1], TestTerrain.Kind.FLAT);
-        Set<Integer> done = new HashSet<>();
-        for (City c : allCities(p)) {
-            if (!done.add(c.streetCuts())) {
-                continue;
-            }
-            int r = (int) Math.ceil(c.influence / 16) + 1;
-            int ccx = Math.floorDiv(c.cx, 16);
-            int ccz = Math.floorDiv(c.cz, 16);
-            PlanAudit.Report rep = PlanAudit.audit(p, ccx - r, ccz - r, ccx + r, ccz + r);
-            assertTrue(rep.ok(), c + ": " + rep.summary());
-            PlanRender.write(PlanRender.detail(p, ccx - r, ccz - r, ccx + r, ccz + r),
-                    new File(renderDir(), "cuts_" + c.streetCuts() + ".png"));
-        }
-        System.out.println("[WorldPlanTest] rendered cities with removed streets " + done);
     }
 
     @Test
@@ -554,17 +520,6 @@ class WorldPlanTest {
             }
         }
         System.out.println("[WorldPlanTest] network\n" + report);
-    }
-
-    private static int countRemoved(City c) {
-        int n = c.gridHalf();
-        int k = 0;
-        for (int j = -n - 1; j <= n + 2; j++) {
-            for (int i = -n - 1; i <= n + 2; i++) {
-                k += (c.xRemoved(i, j) ? 1 : 0) + (c.zRemoved(i, j) ? 1 : 0);
-            }
-        }
-        return k;
     }
 
     private static long find(Map<Long, Long> p, long x) {

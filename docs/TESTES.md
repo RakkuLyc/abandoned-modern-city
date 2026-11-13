@@ -100,7 +100,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 
 ## 2. O que é verificado
 
-### Unitários (47 testes)
+### Unitários (46 testes)
 
 | Teste | Verifica |
 |---|---|
@@ -111,10 +111,9 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 | `WorldPlanTest.parkBenchesSitOnTheEdgeOfThePathsFacingThem` | nos 30 parques do terreno plano: todo assento com a trilha na frente e sem trilha atrás; todo braço com o painel encostado num assento; nenhum banco sobre a trilha; nada cresce através do banco (só copa alta); bancos a 8+ um do outro; todo parque com banco; 565 bancos, 1 018 assentos, 1 a cada 18,6 blocos de trilha |
 | `WorldPlanTest.streetLightsStandOnTheSidewalksWithTheirArmsOverTheLanes` | em 20 cidades, coluna por coluna: postes só em trechos de rua (nunca em cruzamento nem em faixa de pedestres); coluna inteira de 13 (com tufo de folhas só na variação tomada); vinha de trás sempre virada para a coluna, a 3+ de altura e com coluna ao lado na mesma altura; sobre a pista nada abaixo de 11 além da lâmpada caída; vinha pendurada sempre sob uma laje; braço quebrado só nas 2 primeiras colunas; 129,9 postes por cidade (de 144, 10% faltam), variações 505 / 523 / 533 / 525 / 511; nos planos dos chunks poste e lâmpada caída não trafegáveis |
 | `WorldPlanTest.cutCrownsHangOverSidewalksAndCores` | nas cidades do terreno plano (1 237 chunks com copas completadas): 11 622 folhas no bosque e 892 sobre calçadas; 2 144 baixas demais sobre a rua e 13 onde o bosque já planeja algo ficam de fora; nenhuma em outra estrutura; cada uma no chunk pedido |
-| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (357 cidades 2 × 2 de quarteirões 180 × 120, 11 716 lotes; nenhum prédio repetido na cidade, 6,24 prédios por cidade — estruturas, parques e miolos tomados pela natureza; nenhum quarteirão com duas estruturas iguais; em cada cidade no máximo 3 farmácias, 2 oficinas e 2 postos; 204 quarteirões de parque, cada um com o parque de 110 × 64 num canto e 1 009 estruturas em volta, nenhuma a menos de 4 blocos dele; gera `park_block.png`): nenhum nó de grau 1 (sem becos), número de trechos cortados igual ao sorteado; com as ruas cortadas desligadas (`MAX_CUTS` = 0) nenhuma cidade tem corte, senão todos os valores de 0 a `MAX_CUTS` aparecem; toda coluna de lote é lote do quarteirão certo e não toca rua |
+| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | em todas as cidades dos 7 terrenos (357 cidades 2 × 2 de quarteirões 180 × 120, 11 413 lotes; nenhum prédio repetido na cidade, 6,34 prédios por cidade — estruturas, parques e miolos tomados pela natureza; nenhum quarteirão com duas estruturas iguais; em cada cidade no máximo 3 farmácias, 2 oficinas e 2 postos; 204 quarteirões de parque, cada um com o parque de 110 × 64 num canto e 947 estruturas em volta, nenhuma a menos de 4 blocos dele; gera `park_block.png`): nenhum nó de grau 1 (sem becos), nós de grau 2 só nos cantos (com o arco do canto); toda coluna de lote é lote do quarteirão certo e não toca rua |
 | `WorldPlanTest.streetWidthIsConstantOnStraightStreets` | toda rua reta de cidade tem exatamente 33 colunas; a zebra fica nas linhas 2 a 4 do trecho, com 14 listras, e não existe nas outras linhas |
 | `WorldPlanTest.highwayNetworkIsConsistentAndWellConnected` | 21 combinações terreno × seed: Gabriel simétrico, rodovia começa e termina exatamente na entrada de cada cidade, raio de curva ≥ 60, pontos a ~1 bloco, comprimento máximo, cruzamento de entrada nunca usado duas vezes (um canto tem duas saídas, mas só uma rodovia), no máximo 8 rodovias por cidade, nenhum par de rodovias perto demais (sem cruzamentos); limites: plano/colinas ≥ 85% das ligações e ≤ 5% de cidades sem rodovia, montanhas/rios/cânions ≤ 15%, e pelo menos metade das células com cidade (exceto ilhas); gera `network_*.png` |
-| `WorldPlanTest.removedStreetsAreRenderedAndAudited` | uma cidade para cada quantidade de ruas cortadas (hoje só 0): passa no `PlanAudit` e gera `cuts_N.png` |
 | `FloraTest.overgrownBlocksAreConsistent` | 6 miolos de 140 × 90 (o teste usa esse tamanho fixo): mais de 120 árvores cada, copas dentro do quarteirão, toda vinha presa em folha/tronco ou embaixo de outra vinha, toda folha com distância de 1 a 6 e um vizinho um passo mais perto da madeira (regra do leaf decay do vanilla), plantas só a 1 bloco do chão e só em solo (grama, musgo, terra grossa), metades de cima das plantas altas certas, entulho nunca flutua; nenhuma árvore entra numa estrutura; gera `wild_block.png` |
 | `FloraTest.parksAreOvergrownAndKeepTheirFountain` | 6 parques: as mesmas regras de plantas e vinhas, todo bloco da fonte no lugar (só a troca baú → pedregulho musgoso, as lajes musgosas do anel e o piso de pedra virado musgoso), cachos de vinha na fonte; gera `wild_park.png` |
 | `RoadDecayTest.aboutThreeColumnsInTenAreTakenInPatches` | 1,9 milhão de colunas em 3 seeds: 29,8% tomadas, determinístico, em manchas (73% das tomadas têm a vizinha tomada), os 6 tipos aparecem |
@@ -163,7 +162,7 @@ Cada terreno roda com as seeds `20261104`, `-3297019724594858492` e `42`, numa �
 - **Rede de ruas:**
   - `street_missing` e `dead_end`;
   - `orphan_road` (trecho de via que não chega a nenhuma cidade nem sai da área);
-  - `city_split` e `removed_street` (o meio de um trecho de rua cortado não virou chão de lote).
+  - `city_split`.
 - **Lotes:** `lot_overlap` (dois lotes de um quarteirão se sobrepõem).
 
 ### `WorldAudit` (blocos gerados)
@@ -324,9 +323,8 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
 ## 6. Resultados atuais (12 nov 2026, quarteirões 180 × 120 com anel de estruturas com vãos e miolo tomado pela natureza, ruas e rodovias de 33, cidades no meio de células de 736, 4 entradas)
 
-- **Unitários:** 46 passam e 1 é pulado (o teste sem estruturas), 12 nov 2026, com a impressão digital do planejador; `./gradlew build` em ~2 min (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
-  - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas, mais a cidade sem cortes do teste de ruas
-    cortadas.
+- **Unitários:** 45 passam e 1 é pulado (o teste sem estruturas), 13 nov 2026, depois da retirada das ruas cortadas (e do teste delas); `./gradlew build` em ~2 min (Linux, JDK 21: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (a área dos testes encolheu com a célula).
+  - **Auditorias de plano:** 105 auditorias coluna a coluna, sem falhas.
   - **Rede (7 terrenos × 3 seeds, 81 células), cidades no meio da célula de 736, 4 entradas (uma por lado):** 35 a
     62 cidades por combinação, 76 a 121 ligações candidatas. Rodovias mantidas: 99–119 no plano, nas colinas e nos
     cânions (93–98%); 97–112 nas montanhas (91–93%); 85–96 nos rios (83–86%); 91–110 no terreno misto (85–92%);
@@ -391,6 +389,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 2d: ruas cortadas retiradas (`City.MAX_CUTS`, o sorteio dos cortes, `removed_street` e o teste delas) | PASS: 8 de 8, 0 erros de geração; as 8 linhas `mod blocks:` iguais à referência e as contagens iguais (menos `loot_containers_anywhere`); 142 estados da paleta; 2,73 ms por chunk, 248 s. Impressão digital do planejador igual |
   | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 2c: código morto (estilos de prédio do Simple City, tipos de lote praça e vazio, 26 códigos de bloco, argumento `style` de `Palette.of`, 11 declarações sem uso) | PASS: 8 de 8, 0 erros de geração; as 8 linhas `mod blocks:` iguais à referência e as contagens iguais (menos `loot_containers_anywhere`); 142 estados da paleta validados (eram 218: saíram os dos estilos); 2,71 ms por chunk, 250 s. Impressão digital do planejador igual |
   | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 2b: imports no lugar de nomes completos (213 nomes, 26 arquivos) | PASS: 8 de 8, 0 erros de geração; `mod blocks:` e contagens iguais à referência; bytecode igual instrução por instrução (`javap -c -p`); 2,74 ms por chunk, 253 s |
   | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 2a: fim de linha LF (`.gitattributes`, 18 arquivos) | PASS: 8 de 8, 0 erros de geração; `mod blocks:` e contagens iguais à referência; classes compiladas idênticas byte a byte; 2,76 ms por chunk, 252 s |
