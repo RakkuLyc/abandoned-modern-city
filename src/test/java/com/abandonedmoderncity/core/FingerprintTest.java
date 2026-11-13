@@ -44,14 +44,15 @@ import org.junit.jupiter.api.Test;
  * <p>
  * A change that only reshapes the code (imports, moved methods, comments) keeps every digest. A digest that moves means
  * the generated world changed. The expected values come from commit 4dd94ae, except layout, structures and weathering,
- * which hash the structure names: they changed when the structures got English names (the blocks did not). Change them
+ * which hash the structure names: they changed when the structures got English names (the blocks did not); layout
+ * changed again when the special structures became ~1 city in 10 ({@code City.SPECIAL_CHANCE}). Change them
  * only in a commit that is meant to change the world, and say so in it.
  */
 class FingerprintTest {
     private static final Map<String, String> EXPECTED = new LinkedHashMap<>();
 
     static {
-        EXPECTED.put("layout", "ce0b38b761afc86bfb0c59c662018ab1cba170f806ac9b3d18d5689f892ab4b0");
+        EXPECTED.put("layout", "a43440c8c42a1e8f0c8da5e8d1e018f0fcba02bb65c9767f1b4a93587ee29107");
         EXPECTED.put("highways", "480e692cad232384cc5a0d486154e33b13a8ebc6d381e0dfbffa8cd18434ddf9");
         EXPECTED.put("village", "6d77e372e3111d53b3995b84b46308716b65b8107b051b8f4411eca72a61f71c");
         EXPECTED.put("chunks", "aac1f39821a3e01b096634443468315a31f6c5c4ebcacdaee30e15f4014a5ad9");

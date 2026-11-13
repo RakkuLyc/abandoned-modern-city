@@ -49,7 +49,8 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
 - **Structures (30 models, 52 files, `structures/`):** drawn at random in the ring (every model with the same chance,
   then its color: the 12 houses make ~51% of the structures of the cities), with a per-city limit: pharmacies 3,
   workshops 2, gas stations 2, and each building (apartment, skeleton, bluish, tower, apocalyptic, small, brutalist,
-  wide, green tower, crash, ramp) at most 1 per city. Never two of the same structure (the same model, in any color)
+  wide, green tower, crash, ramp) at most 1 per city; the ramp building (the `special` category) in only ~1 city in
+  10 (`City.SPECIAL_CHANCE`). Never two of the same structure (the same model, in any color)
   in one block.
   Color variants: pharmacy and large pharmacy (5 colors each, the D R U G S T O R E letters copied from the original
   in the variant's color, without the F A R M Á C I A sign in blocks the variants had: the wall stays white as on
@@ -84,7 +85,7 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   | Brutalist U building | building | 75 × 58 × 125 | layer 0 |
   | Wide building (underground parking dug into the terrain, whole ramp and stairwell open) | building | 84 × 31 × 80 | layer 8 (8 buried) |
   | Green tower | building | 31 × 31 × 143 | layer 0 |
-  | Ramp building (folder Especial) | special (at most 1 per city) | 102 × 72 × 134 | layer 0 |
+  | Ramp building (folder Especial) | special (at most 1 per city, in ~1 city in 10) | 102 × 72 × 134 | layer 0 |
   | Crash building (two leaning towers) | building | 91 × 44 × 90 | layer 0 |
   | Police station (half-buried basement dug into the terrain, letters on banners) | police station (at most 1 per city) | 54 × 38 × 33 | layer 3 (3 buried) |
 

@@ -674,7 +674,8 @@ public final class City {
 
     /**
      * Rings of the whole city at once, block by block in a fixed order (north to south, west to east), so that the
-     * spawn limits per city ({@link Structures#LIMITS}) hold whatever block is asked for first.
+     * spawn limits per city ({@link Structures#LIMITS}) hold whatever block is asked for first. A city that does not
+     * draw {@link #SPECIAL_CHANCE} starts with the {@code special} group full: none of it is ever drawn there.
      */
     private Map<Long, List<Lot>> rings() {
         Map<Long, List<Lot>> r = rings;
@@ -685,6 +686,9 @@ public final class City {
             if (rings == null) {
                 Layout L = layout();
                 Map<String, Integer> used = new HashMap<>();
+                if (!allowsSpecial()) {
+                    used.put("special", Structures.LIMITS.get("special"));
+                }
                 Map<Long, List<Lot>> out = new HashMap<>();
                 for (int bj = -L.n; bj <= L.n; bj++) {
                     for (int bi = -L.n; bi <= L.n; bi++) {
@@ -701,6 +705,20 @@ public final class City {
             }
             return rings;
         }
+    }
+
+    /**
+     * Share of the cities that may have a structure of the {@code special} category (the ramp building), for ~1 city
+     * in 10 with it (asked by the user). It only fits the short-side rows: without this draw 22.7% of the cities had it
+     * (256 of the 1,129 cities of the tests); with 0.40, 44% of the cities may have it, ~10% expected, 11.2% (127) in
+     * the tests. Only the cities that had it change: those that do not draw it get other structures there. More
+     * special structures would raise the share: measure again ({@code WorldPlanTest}) and adjust.
+     */
+    public static final double SPECIAL_CHANCE = 0.40;
+
+    /** Whether this city may have a structure of the {@code special} category ({@link #SPECIAL_CHANCE}). */
+    public boolean allowsSpecial() {
+        return Hash.unit(Hash.of(seed, 0x5350434CL, 0)) < SPECIAL_CHANCE;
     }
 
     /** Share of the city blocks with a park in a corner (grass, trees, paths, the fountain). */

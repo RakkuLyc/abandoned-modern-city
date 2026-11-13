@@ -47,6 +47,37 @@ class WorldPlanTest {
     }
 
     @Test
+    void specialStructuresAreInAboutOneCityInTen() {
+        // the special category (the ramp building) only in the cities that draw City.SPECIAL_CHANCE, ~1 city in 10
+        int cities = 0;
+        int allowed = 0;
+        int with = 0;
+        for (long seed : SEEDS) {
+            for (TestTerrain.Kind kind : TestTerrain.Kind.values()) {
+                for (City c : allCities(plan(seed, kind))) {
+                    cities++;
+                    allowed += c.allowsSpecial() ? 1 : 0;
+                    int n = c.gridHalf();
+                    boolean has = false;
+                    for (int bj = -n; bj <= n; bj++) {
+                        for (int bi = -n; bi <= n; bi++) {
+                            for (Lot l : c.lots(bi, bj)) {
+                                has |= l.building != null && "special".equals(l.building.group());
+                            }
+                        }
+                    }
+                    assertFalse(has && !c.allowsSpecial(), c + " has a special structure without the draw");
+                    with += has ? 1 : 0;
+                }
+            }
+        }
+        double share = (double) with / cities;
+        System.out.printf("[WorldPlanTest] special: %d of %d cities (%.1f%%), %d may have it%n", with, cities,
+                100 * share, allowed);
+        assertTrue(share >= 0.07 && share <= 0.13, "special in " + with + " of " + cities + " cities");
+    }
+
+    @Test
     void villageCreaturesAreRemovedInTheCityAndItsMargin() {
         WorldPlan p = plan(SEEDS[0], TestTerrain.Kind.FLAT);
         City.Hit hit = new City.Hit();

@@ -176,7 +176,8 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
 - New structures (asked by the user after 13 Nov 2026, with vanilla loot): modern garage house (42 × 36 × 15), glass
   house (48 × 40 × 15), small building (23 × 31 × 41), brutalist U building (75 × 58 × 125), wide building
   (84 × 31 × 80, with underground parking), green tower (31 × 31 × 143) and ramp building (folder "Especial",
-  102 × 72 × 134; type `special`, at most 1 per city, `Structures.LIMITS`; the user wants to make it rarer later). All
+  102 × 72 × 134; type `special`, at most 1 per city, `Structures.LIMITS`; made rarer at the user's request after 13
+  Nov 2026: ~1 city in 10, see the limits below). All
   with the front on -Z (a hypothesis from the templates: doors, the courtyard of the U, the garage ramp, the glass
   facade; to be checked in game with `/amcs spawn`) and the ground on layer 0, except the wide building: ground on
   layer 8, the 8 below buried; the garage (layers 1 to 7 of `cave_air`) is dug into the terrain, and on the ground
@@ -254,9 +255,13 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     `Palette.applyBanner`): the letters D R U G S T O R E of the pharmacies (9 on the pharmacy, 18 on the large
     pharmacy); against the sidewalk, forming a ring; drawn per file, no pattern;
   - limits per city (`Structures.LIMITS`): pharmacies 3 (both kinds), workshops 2 (both kinds), gas stations 2 (both
-    kinds), special 1 (the ramp building), police station 1; and each building (types `buildings_*` and `special`,
+    kinds), special 1 (the ramp building), police station 1; the `special` category only in the cities that draw
+    `City.SPECIAL_CHANCE` = 0.40 (`City.allowsSpecial`, from the city's seed; asked by the user after 13 Nov 2026:
+    "around 1 in 10 cities"): the others start with the group full. The ramp building only fits some rows, so with
+    the draw 127 of the 1,129 test cities have it (11.2%, ~10% expected); before, 256 (22.7%). Only the cities that
+    had it changed (they get other structures there); and each building (types `buildings_*` and `special`,
     `Def.onePerCity`) at most 1 time per city, in any block (13 Nov 2026, asked by the user: there were cities with 2
-    or 3 bluish buildings; houses, pharmacies, workshops and gas stations may repeat within the limits); 6.34
+    or 3 bluish buildings; houses, pharmacies, workshops and gas stations may repeat within the limits); 6.30
     buildings per city in the tests; the rings of the whole city are drawn at once (`City.rings`, blocks from north to
     south, west to east), and a group at its limit is drawn again;
   - never two of the same structure (the same model, in any color) in one block (13 Nov 2026, asked by the user): a
@@ -294,7 +299,7 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     (`Ring.CORE_MIN`/`CORE_MAX`);
   - the rows of the short sides of the block run corner to corner and those of the long sides fill what is left
     between them (the other way round left the short sides nearly always empty); ~7.8 structures per block with the
-    52 files (the 4 rows with ~25% each; in the cities, with the per-city limits, 7.2 in a block without a park; 8.2
+    52 files (the 4 rows with ~25% each; in the cities, with the per-city limits, 7.3 in a block without a park; 8.2
     with the 21 structures of 12–13 Nov, 8.4 before the no-repeat rule), 52.5% of the free ground covered (51% with
     the 21). Block size: 180 × 120, recommended after simulating the gaps (140 × 90 fell to ~5 structures and the
     tower, the bluish building and the apocalyptic building became rare).
