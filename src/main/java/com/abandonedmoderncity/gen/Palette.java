@@ -1,6 +1,6 @@
 package com.abandonedmoderncity.gen;
 
-import com.abandonedmoderncity.AMCSimple;
+import com.abandonedmoderncity.AbandonedModernCity;
 import com.abandonedmoderncity.core.Access;
 import com.abandonedmoderncity.core.BlockCode;
 import com.abandonedmoderncity.core.ChunkPlan;
@@ -512,7 +512,7 @@ public final class Palette {
         if (!bad.isEmpty()) {
             throw new IllegalStateException("[AMCS] Palette contains forbidden blocks: " + bad);
         }
-        AMCSimple.LOGGER.info("[AMCS] Palette validated: {} block states and {} structure states, all breakable, no block entities but empty containers",
+        AbandonedModernCity.LOGGER.info("[AMCS] Palette validated: {} block states and {} structure states, all breakable, no block entities but empty containers",
                 all().size(), nStructure);
     }
 

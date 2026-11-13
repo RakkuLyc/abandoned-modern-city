@@ -1,7 +1,7 @@
 package com.abandonedmoderncity;
 
+import com.abandonedmoderncity.command.AmcsCommands;
 import com.abandonedmoderncity.command.SelfTest;
-import com.abandonedmoderncity.command.SimpleCommands;
 import com.abandonedmoderncity.core.Structures;
 import com.abandonedmoderncity.core.Weathering;
 import com.abandonedmoderncity.gen.CityFeature;
@@ -30,8 +30,8 @@ import org.slf4j.Logger;
  *   <li>{@code command}: {@code /amcs} diagnostics, in-world audits and the automated self-test.</li>
  * </ul>
  */
-@Mod(AMCSimple.MODID)
-public final class AMCSimple {
+@Mod(AbandonedModernCity.MODID)
+public final class AbandonedModernCity {
     public static final String MODID = "abandonedmoderncity";
     public static final Logger LOGGER = LogUtils.getLogger();
 
@@ -39,21 +39,21 @@ public final class AMCSimple {
     /** Placed once per chunk (top_layer_modification step) by the biome modifier in data/. */
     public static final DeferredHolder<Feature<?>, CityFeature> CITY = FEATURES.register("city", CityFeature::new);
 
-    public AMCSimple(IEventBus modBus, ModContainer container) {
+    public AbandonedModernCity(IEventBus modBus, ModContainer container) {
         FEATURES.register(modBus);
-        container.registerConfig(ModConfig.Type.COMMON, SimpleConfig.SPEC);
+        container.registerConfig(ModConfig.Type.COMMON, AmcsConfig.SPEC);
         modBus.addListener((ModConfigEvent.Loading e) -> Plans.clear());
         modBus.addListener((ModConfigEvent.Reloading e) -> Plans.clear());
         // fail fast: every block the generator can place must be breakable
         modBus.addListener((FMLCommonSetupEvent e) -> e.enqueueWork(() -> {
             // read before the structures load (Palette.validate loads them): the overgrowth is applied while loading
-            Weathering.enabled = SimpleConfig.STRUCTURE_OVERGROWTH.get();
+            Weathering.enabled = AmcsConfig.STRUCTURE_OVERGROWTH.get();
             Palette.validate();
             LOGGER.info("[AMCS] Structure overgrowth {}", Weathering.enabled
                     ? "on (" + Structures.WEATHERING.values().stream()
                     .mapToInt(Weathering.Report::total).sum() + " blocks changed)" : "off");
         }));
-        NeoForge.EVENT_BUS.addListener(SimpleCommands::register);
+        NeoForge.EVENT_BUS.addListener(AmcsCommands::register);
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> Plans.clear());
         SelfTest.init();
     }

@@ -1,6 +1,6 @@
 package com.abandonedmoderncity.command;
 
-import com.abandonedmoderncity.AMCSimple;
+import com.abandonedmoderncity.AbandonedModernCity;
 import com.abandonedmoderncity.core.City;
 import com.abandonedmoderncity.core.Highway;
 import com.abandonedmoderncity.core.NetworkStats;
@@ -285,7 +285,7 @@ public final class SelfTest {
         }
         requested = new ArrayList<>();
         targetStarted = System.currentTimeMillis();
-        AMCSimple.LOGGER.info("[AMCS self-test] target {}/{}: {} ({} chunks)", index + 1, targets.size(), t.name, pending.size());
+        AbandonedModernCity.LOGGER.info("[AMCS self-test] target {}/{}: {} ({} chunks)", index + 1, targets.size(), t.name, pending.size());
     }
 
     private static void tick(MinecraftServer server) {
@@ -342,7 +342,7 @@ public final class SelfTest {
                 .append((t.cx + t.r) * 16 + 15).append(',').append((t.cz + t.r) * 16 + 15).append("), generated in ")
                 .append(genMs).append(" ms\n   ").append(pr.summary().replace("\n", "\n   ")).append(wr.summary().replace("\n", "\n   "))
                 .append("mod blocks: ").append(fp).append('\n');
-        AMCSimple.LOGGER.info("[AMCS self-test] {}: plan {}, world {}", t.name, pr.ok() ? "OK" : pr.failures() + " failures",
+        AbandonedModernCity.LOGGER.info("[AMCS self-test] {}: plan {}, world {}", t.name, pr.ok() ? "OK" : pr.failures() + " failures",
                 wr.ok() ? "OK" : wr.failures() + " failures");
         for (ChunkPos p : requested) {
             source.removeRegionTicket(TICKET, p, 0, p);
@@ -370,9 +370,9 @@ public final class SelfTest {
             f.getParentFile().mkdirs();
             Files.writeString(f.toPath(), report.toString(), StandardCharsets.UTF_8);
         } catch (Exception e) {
-            AMCSimple.LOGGER.error("[AMCS self-test] cannot write the report", e);
+            AbandonedModernCity.LOGGER.error("[AMCS self-test] cannot write the report", e);
         }
-        AMCSimple.LOGGER.info("[AMCS self-test] finished: {}\n{}", failures == 0 ? "PASS" : "FAIL", report);
+        AbandonedModernCity.LOGGER.info("[AMCS self-test] finished: {}\n{}", failures == 0 ? "PASS" : "FAIL", report);
         targets = null;
         report = null;
         server.halt(false);

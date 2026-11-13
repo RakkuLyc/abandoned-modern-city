@@ -1,6 +1,6 @@
 package com.abandonedmoderncity.gen;
 
-import com.abandonedmoderncity.AMCSimple;
+import com.abandonedmoderncity.AbandonedModernCity;
 import com.abandonedmoderncity.core.WorldPlan;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -41,7 +41,7 @@ public final class CityFeature extends Feature<NoneFeatureConfiguration> {
             return ChunkBuilder.build(plan, region, chunk);
         } catch (RuntimeException e) {
             ERRORS.incrementAndGet();
-            AMCSimple.LOGGER.error("[AMCS] Failed to generate chunk {}", center, e);
+            AbandonedModernCity.LOGGER.error("[AMCS] Failed to generate chunk {}", center, e);
             return false;
         } finally {
             CHUNKS.incrementAndGet();

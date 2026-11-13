@@ -1,7 +1,7 @@
 package com.abandonedmoderncity.gen;
 
-import com.abandonedmoderncity.AMCSimple;
-import com.abandonedmoderncity.SimpleConfig;
+import com.abandonedmoderncity.AbandonedModernCity;
+import com.abandonedmoderncity.AmcsConfig;
 import com.abandonedmoderncity.core.Params;
 import com.abandonedmoderncity.core.WorldPlan;
 import java.util.Optional;
@@ -22,13 +22,13 @@ public final class Plans {
     }
 
     private static Optional<WorldPlan> create(ServerLevel level) {
-        if (!SimpleConfig.ENABLED.get() || level.dimension() != Level.OVERWORLD) {
+        if (!AmcsConfig.ENABLED.get() || level.dimension() != Level.OVERWORLD) {
             return Optional.empty();
         }
-        Params params = SimpleConfig.params();
+        Params params = AmcsConfig.params();
         var source = level.getChunkSource();
         McTerrain terrain = new McTerrain(source.getGenerator(), source.randomState(), level);
-        AMCSimple.LOGGER.info("[AMCS] Planning cities in {} (seed {}, {})", level.dimension().location(), level.getSeed(), params);
+        AbandonedModernCity.LOGGER.info("[AMCS] Planning cities in {} (seed {}, {})", level.dimension().location(), level.getSeed(), params);
         return Optional.of(new WorldPlan(level.getSeed(), params, terrain));
     }
 

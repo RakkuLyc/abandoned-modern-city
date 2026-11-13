@@ -37,13 +37,13 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  * </ul>
  * Files go to {@code amcs_renders/} in the server folder.
  */
-public final class SimpleCommands {
-    private SimpleCommands() {
+public final class AmcsCommands {
+    private AmcsCommands() {
     }
 
     public static void register(RegisterCommandsEvent e) {
         e.getDispatcher().register(Commands.literal("amcs").requires(s -> s.hasPermission(2))
-                .then(Commands.literal("info").executes(SimpleCommands::info))
+                .then(Commands.literal("info").executes(AmcsCommands::info))
                 .then(StructureCommands.spawnNode())
                 .then(Commands.literal("locate").then(StructureCommands.locateNode()).then(Commands.argument("what", StringArgumentType.word())
                         .suggests((c, b) -> {

@@ -7,7 +7,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
  * COMMON config ({@code config/abandonedmoderncity-common.toml}). Only the big knobs; the geometry lives in
  * {@link Params}. Changes apply to chunks generated afterwards (and change the plan: use a new world).
  */
-public final class SimpleConfig {
+public final class AmcsConfig {
     public static final ModConfigSpec SPEC;
     public static final ModConfigSpec.BooleanValue ENABLED;
     public static final ModConfigSpec.IntValue CELL_SIZE;
@@ -37,7 +37,7 @@ public final class SimpleConfig {
         SPEC = b.build();
     }
 
-    private SimpleConfig() {
+    private AmcsConfig() {
     }
 
     /** Current values; falls back to the defaults if the values are inconsistent. */
@@ -46,7 +46,7 @@ public final class SimpleConfig {
             return new Params(CELL_SIZE.get(), CITY_CHANCE.get(), MIN_RADIUS.get(), MAX_RADIUS.get(), MAX_CITY_LEVEL.get(),
                     HIGHWAY_MAX_LENGTH.get(), HIGHWAYS.get());
         } catch (IllegalArgumentException e) {
-            AMCSimple.LOGGER.error("[AMCS] Invalid config ({}), using the defaults", e.getMessage());
+            AbandonedModernCity.LOGGER.error("[AMCS] Invalid config ({}), using the defaults", e.getMessage());
             return Params.DEFAULT;
         }
     }
