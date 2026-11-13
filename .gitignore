@@ -8,3 +8,4 @@ bin/
 
 # Jars de mods de terceiros (dependências locais; não versionar)
 libs/
+__pycache__/
