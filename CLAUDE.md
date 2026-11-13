@@ -13,14 +13,14 @@
    architecture or tests, update in the **same commit**:
    - `CLAUDE.md` (the specification below);
    - `README.md` (overview, tables of cities/buildings/roads, architecture, commands);
-   - `docs/TESTES.md` (the tests and what they check, the audits, the problems found and fixed, performance and the
+   - `docs/TESTING.md` (the tests and what they check, the audits, the problems found and fixed, performance and the
      results of the latest runs).
    Before each commit, check whether any of these files went out of date. The values come from the code and the
    tests, never from memory. In the summary of the stage, say which documents were updated.
 7. **World fingerprint** (since 12 Nov 2026): `FingerprintTest` keeps what the planner produces (the values of commit
    `4dd94ae`; `layout`, `structures` and `weathering`, which hold the names, since the English names) and the battery
    prints per target `mod blocks:` (the blocks the mod decides in the generated world; the reference is in
-   `docs/TESTES.md`, section 6, with another one for `structureOvergrowth = false`). In a change that must not alter
+   `docs/TESTING.md`, section 6, with another one for `structureOvergrowth = false`). In a change that must not alter
    the world (cleanup, splitting files, comments), the test passes and the `mod blocks:` and `stats:` lines stay the
    same (except `loot_containers_anywhere`, which counts vanilla chests). What the battery does not cover (bridge
    vines, fill, slopes, liquid sealing) is checked, in a change that only moves code, by an identical bytecode listing
@@ -324,7 +324,7 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   It never touches leaves, logs, glass, block entities (containers, banners, beds...), doors, water or partial blocks;
   plants only on soil, carpets only on a full block, vines only held by a full block or by the vine above. In the 52
   files: 38,501 vines, 10,192 floors turned into soil, 5,088 carpets, 4,947 plants, 3,907 mossy, 2,451 cracked (65,086
-  blocks). The measures before and after of each structure are in `docs/TESTES.md`.
+  blocks). The measures before and after of each structure are in `docs/TESTING.md`.
 - Villages inside the cities (13 Nov 2026, asked by the user: villagers and an iron golem in a city generated where
   there was a village): the houses of the village are generated before the city, each with its creatures, which stayed
   when the city was built over them (in the test, a villager stuck inside the fill of the street). When it builds each

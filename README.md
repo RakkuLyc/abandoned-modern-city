@@ -14,9 +14,9 @@ ring around each city block, with per-city limits for pharmacies, workshops and 
   only: `./gradlew build -x test`
 - Unit tests: `./gradlew test` (renders in `build/test-renders/`)
 - In-world test battery: `tools/selftest.sh [full|quick] [seed...]` (reports in `run/selftest/<seed>/`); details in
-  `docs/TESTES.md`
+  `docs/TESTING.md`
 - Checking that a change did not alter the world: `tools/verify/` (the battery fingerprint against the reference,
-  bytecode listings method by method, the blocks of two saved worlds); details in `docs/TESTES.md`
+  bytecode listings method by method, the blocks of two saved worlds); details in `docs/TESTING.md`
 - No optional dependency: no Immersive Vehicles, Zombie Extreme, Big Lost City or mixins.
 - `libs/` is **not versioned** (it is in `.gitignore`) and **not needed to build**: `./gradlew build` works without
   it. The folder holds jars of third-party mods used only as reference material (the loot tables of Apocalypse Loot,
@@ -190,7 +190,7 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
 | Flat, connected streets | Each city has a single height (`City.level`). The street grid has no dead end and stays connected (`PlanAudit`: `dead_end`, `city_split`). |
 | Right surface | The in-world audit (`surface_block`) checks the road surface block by block. |
 | Determinism | Everything is a pure function of the seed and the natural terrain: two neighbouring chunks never disagree, in any order and thread (`PlanAuditTest.planIsIndependentOfQueryOrderAndThreads`). |
-| Same world through a code review | `FingerprintTest` keeps a SHA-256 per part of what the planner produces (cities, highways, chunk plans, lot blocks, structures, overgrowth, benches), and the battery prints per target `mod blocks:`, the SHA-256 of the blocks the mod decides in the generated world (`command/WorldFingerprint`). A change of form only keeps both the same (details in `docs/TESTES.md`). |
+| Same world through a code review | `FingerprintTest` keeps a SHA-256 per part of what the planner produces (cities, highways, chunk plans, lot blocks, structures, overgrowth, benches), and the battery prints per target `mod blocks:`, the SHA-256 of the blocks the mod decides in the generated world (`command/WorldFingerprint`). A change of form only keeps both the same (details in `docs/TESTING.md`). |
 | No Immersive Vehicles | No reference to IV in the code or the build. |
 
 ## Architecture
