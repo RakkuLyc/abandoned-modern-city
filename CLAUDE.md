@@ -203,21 +203,27 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   old name (`String.hashCode` of the Portuguese name). The originals in `structures/` (at the root) keep their
   Portuguese names. Unopened chests of worlds generated before this change point to the old tables and come out
   empty.
-- Structures (12 Nov 2026, `core/Structures` loads, measures and turns; `core/Ring` builds the ring): the 21 `.nbt` of
-  `structures/` (copies in `src/main/resources/amcs/buildings/`, listed in `index.txt`, whose header describes the
-  columns): 10 houses (abandoned house, abandoned modern house, abandoned mansion, post-apocalyptic mansion and, since
-  13 Nov 2026, garage house, large house, pool house, suburban house, tower house and Victorian house, all abandoned),
-  pharmacy, large pharmacy, medium workshop, small workshop, gas station, small gas station, apartment building,
-  skeleton building (13 Nov 2026; the file `prédio_esqueleto_31x29.nbt` became `skeleton_building_31x29`, without the
-  accent, because the argument of `/amcs spawn` only takes ASCII), bluish building, tower, apocalyptic building. The
-  post-apocalyptic mansion was updated on 13 Nov with the new version of the folder (only the state of 12 doors
-  changed). The houses are 12 of the 30 models (these 10, the modern garage house and the glass house) and ~51% of
-  the structures of the cities (39% of a ring without the per-city limits). Color variants (13 Nov 2026, asked by the
-  user; the `model` field of the index): pharmacy (yellow, blue, purple, green besides the red one), large pharmacy
-  (blue, purple, green, red besides the yellow one), medium workshop (yellow and blue, yellow and red besides the blue
-  and black one), small workshop (yellow, blue, purple, red besides the green one), gas station (yellow, blue, purple,
-  green besides the red one), small gas station (yellow, blue, purple, green besides the red one): 43 files, 21
-  models, each variant of the size, front and ground of the original (99.6 to 100% of the blocks in the same place).
+- Structures (`core/Structures` loads, measures and turns; `core/Ring` builds the ring): 52 `.nbt` files of 30
+  models, copies in `src/main/resources/amcs/buildings/` of the originals in `structures/`, listed in `index.txt`
+  (its header describes the columns): 12 houses (type `houses`: abandoned house, abandoned modern house, abandoned
+  mansion, post-apocalyptic mansion, garage house, large house, pool house, suburban house, tower house, Victorian
+  house, modern garage house and glass house, all abandoned); 6 shops with color variants, 28 files (pharmacy and
+  large pharmacy, 5 colors each; medium workshop, 3; small workshop, 5; gas station and small gas station, 5 each);
+  10 buildings, each at most 1 per city (apartment building, skeleton building, bluish building, tower, apocalyptic
+  building, small building, brutalist U building, wide building, green tower and crash building); the ramp building
+  (type `special`) and the police station (type `police_station`), at most 1 per city each. History: 14 structures
+  on 12 Nov 2026 (the first 4 houses, the 6 shops, the apartment building, the bluish building, the tower and the
+  apocalyptic building); 7 more on 13 Nov (the next 6 houses and the skeleton building: 21 models; the file
+  `prédio_esqueleto_31x29.nbt` became `skeleton_building_31x29`, without the accent, because the argument of
+  `/amcs spawn` only takes ASCII); then the 22 color variants (43 files), the 7 new structures (50 files) and the
+  police station and the crash building (52 files, 30 models). The post-apocalyptic mansion was updated on 13 Nov
+  with the new version of the folder (only the state of 12 doors changed). The houses are ~51% of the structures of
+  the cities (39% of a ring without the per-city limits). Color variants (13 Nov 2026, asked by the user; the `model`
+  field of the index): pharmacy (yellow, blue, purple, green besides the red one), large pharmacy (blue, purple,
+  green, red besides the yellow one), medium workshop (yellow and blue, yellow and red besides the blue and black
+  one), small workshop (yellow, blue, purple, red besides the green one), gas station (yellow, blue, purple, green
+  besides the red one), small gas station (yellow, blue, purple, green besides the red one): 22 files, each variant
+  of the size, front and ground of the original (99.6 to 100% of the blocks in the same place).
   The ring draws the model (all equally likely, `Structures.pick`) and then the color: the variants do not change the
   frequencies. The pharmacy variants came without the banners; the index copies them from the original at load time
   (`Template.withBannersFrom`, field `banners` = `source@dx,dz:color=color`): on the small pharmacy the letters are in
