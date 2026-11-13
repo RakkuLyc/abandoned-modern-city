@@ -145,7 +145,7 @@ Each terrain runs with the seeds `20261104`, `-3297019724594858492` and `42`, on
 | `AccessTest.closedRoomsDoorsAndLadders` | rooms built in the test: a chest in a sealed room is hard to get to; with a wooden door it is not; with an iron door or a fence in the doorway it is; a chest on a pillar of 4 is only reached with a ladder; steps of 1 block are climbed by jumping |
 | `AccessTest.highContainersAreHard` | a barrel `Access.HIGH` (15) blocks above the ground, reachable by a ladder, counts as hard; a chest on the ground does not |
 | `AccessTest.structuresHardContainers` | in the 52 files, with the overgrowth: 1,382 of 3,106 containers hard to get to (between 10% and 50%: the new tall buildings have nearly all of theirs above 15); the same in the 4 rotations; large and medium buildings have high containers; in the houses at most 5% (4 of 407) |
-| `AccessTest.everyStructureHasItsLootTables` | the 6 tables of the theme of each structure exist; barrel and pot with a 40% chance, `barrel_hard` 75%, `pot_hard` 80%, chests with no chance of coming empty; nothing from Lost Cities or OAmP |
+| `AccessTest.everyStructureHasItsLootTables` | the 6 tables of the theme of each structure exist; exactly the 6 buildings with 100+ containers (tower, green tower, crash, wide, ramp, brutalist U) have the theme `building_large`, the apocalyptic building `building`; barrel and pot with a 40% chance, `barrel_hard` 75%, `pot_hard` 80%, chests with no chance of coming empty; nothing from Lost Cities or OAmP |
 | `WeatheringTest.onlyAllowedChangesAndEverythingHolds` | in the 52 files, with the seed of the `seed` column of the index, cell by cell against the saved template: the same report as the overgrowth the game applied when the structures loaded (`Structures.WEATHERING`); only allowed changes (cracked and mossy of the same stone, with the same properties; a stone or concrete floor with air above turned into soil; a carpet on a full block or soil; grass, fern and dead bush only on soil; a vine with one face, held by a full block or by the vine above with the same face, or under eaves); banners equal; the box of the structure equal; the same result in two loads; the report equal to the changes. Total: 38,501 vines, 10,192 soils, 5,088 carpets, 4,947 plants, 3,907 mossy, 2,451 cracked (65,086 blocks, the number of the game log) |
 | `WeatheringTest.everyStructureReachesTheMeasuresOfTheApocalypticBuilding` | no measure drops (cracked and vines may drop up to 3 points when a floor turns into moss: the block leaves the family or the counted wall); cracked at 31% (−3) or more; the side least covered with vines at 19% or more (target 25%); on the apocalyptic building only the vines change |
 | `WeatheringTest.wholeNamesAreNotTakenForParts` | `light_gray_concrete`, `smooth_sandstone` and `mud_bricks` are whole stone; planks are whole but not stone; glass, leaves, slab, chest, banner and the light block are not whole |
@@ -439,6 +439,7 @@ road on the ground, without a bridge wall).
   | Seed | Scope | Date | Version | Result |
   |---|---|---|---|---|
   | `20261027` | default (8 targets) | 13 Nov | review, step 4: code comments without dates, the docs in English (`docs/TESTES.md` → `docs/TESTING.md`), the numbers audit, `WeatheringTest` with the seed of the index (finding 67) and new prints in `RingTest` and `WorldPlanTest`; the code of the mod unchanged since the comments commit (`5eb5b74`), whose bytecode was equal to the commit before in all 1,322 members of the mod and 176 of the tests | PASS: 8 of 8, 0 generation errors; `tools/verify/compare_battery.py` equal to the reference (the 8 `mod blocks:` lines and the counts); 142 palette states, 16 village creatures removed; 2.62 ms per chunk, 240 s |
+  | `20261027` | default (8 targets) | 13 Nov | loot theme `building_large` (buildings with 100+ containers) | PASS: 8 of 8, 0 generation errors; counts equal to the reference; t01–t05 and t08 changed only in the loot table names of the big buildings' containers (checked on the saved worlds); 2.72 ms per chunk |
   | `20261027` | default (8 targets) | 13 Nov | special structures in ~1 city in 10 (`City.SPECIAL_CHANCE` = 0.40) | PASS: 8 of 8, 0 generation errors, 16 village creatures removed; t01, t02 and t04–t07 equal to the reference; t03 and t08 changed only in their structures (lots 30 → 33 and 66 → 68, roads and streets equal): the new reference (section 6); 2.81 ms per chunk (8,346 chunks). Not run: the quick reference with `structureOvergrowth = false`, whose 3 targets (t01, the longest tunnel and bridge) are equal in this run |
   | — | RCON | 13 Nov | `/amcs locate structure <category> [name]` (development server, a new world `cmdtest_world`, from 0 70 0) | `pharmacy` → `pharmacy_large_yellow` at 360 blocks; `house` → `abandoned_modern_garage_house` at 315; `special` → `abandoned_ramp_building` at 990; `building abandoned_wide_building` → at 1,241; `police_station abandoned_police_station` → at 465; `building pharmacy_red` refused with the 10 names of `building`; `shop` and `tower` (the old one-word form) refused with the 7 categories; `locate city` and `highway` unchanged; `spawn pharmacy pharmacy_red` placed it (22 containers with loot), `spawn building pharmacy_red` and `spawn shop x` refused; the server log only with the known warning of the old dev config |
   | — | RCON | 13 Nov | commands with the English names (development server, world `cmdtest_world`) | `/amcs locate structure abandoned_wide_building` (name), `pharmacy` (group) and `buildings_large` (type) found the nearest ones; `execute positioned 1000 200 1000 rotated 180 0 run amcs spawn house abandoned_house` placed the house (57 containers with loot, 1 hard to get to) and `... spawn building abandoned_wide_building` the wide building (249, 191 hard to get to); in the saved world the chests have the new tables (`chests/house/barrel` 46, `house/chest` 10, `house/chest_hard` 1; `building/barrel` 29, `barrel_hard` 87, `chest` 29, `chest_hard` 104); `spawn house abandoned_wide_building` refused with the list of the houses and the old category `casa` with the list of the new categories |
@@ -497,16 +498,21 @@ road on the ground, without a bridge wall).
 
   | Target | SHA-256 | Positions | Block entities |
   |---|---|---|---|
-  | t01 city nearest to the spawn | `de3d7d961fb699a013d4d10f2a55f19e922231d5f0641de74d980e2f14fbde2e` | 1,877,158 | 2,055 |
-  | t02 highest city (level 103) | `acbf0208f5ec21b30c6a57e0d6c98c1e47b166d1f1d61c69675a061c327aafc7` | 3,290,072 | 3,387 |
-  | t03 roughest city | `57175ed68961aa2fb5b7c6dce91c49b141d1e1f2964dae92f296d082b78e5415` | 2,225,236 | 2,222 |
-  | t04 longest tunnel (352) | `4bee0f84a14f858c30f6e960db34c37fcb072164186431b0a3b904132a547ef4` | 543,064 | 164 |
-  | t05 longest bridge over water (349) | `46d3982b52e1be46b834c08a07daeb838b01ed237cc1c7e01d890413e6524d73` | 452,586 | 605 |
+  | t01 city nearest to the spawn | `44e467cbbd439e7c31384e57c1d4579d55c5536960fdda92f1eba3d2ff142fc9` | 1,877,158 | 2,055 |
+  | t02 highest city (level 103) | `02c750e5d9f94ec4645fac75c176a8e3809b5c213951bb4d6837221ff8eeb84e` | 3,290,072 | 3,387 |
+  | t03 roughest city | `bcdaeb872520e16d0183e05c8344add6ed400e239127baf0bc227b3bcc6cc358` | 2,225,236 | 2,222 |
+  | t04 longest tunnel (352) | `e6982ae8e149f3cc897980e3d71155077081b4400c093cacf07d9b7891af4490` | 543,064 | 164 |
+  | t05 longest bridge over water (349) | `fc93f17beb8a8b4114ffcb8ea9476bd66e6f79cd64228d7b1684f46f9b0db28f` | 452,586 | 605 |
   | t06 longest dry viaduct (239) | `ccbe9ee85773c4e7f8040f8f3da6feaa0036c2f6c6405590c367501880e546a8` | 581,916 | 381 |
   | t07 longest ramp (360) | `f960ad531d4199d12ecf42bb72b87d9a199bc1fccb85235572528b07c3dcc118` | 191,450 | 0 |
-  | t08 whole highway | `e292f76845a178e2f6e57f16319e81380d6e59d041bdda869d598af5b8b6d0d2` | 822,838 | 573 |
+  | t08 whole highway | `7a81509147bebbd9e4b9083147bd316f1b602048bbb7a1de54f5a315777566a3` | 822,838 | 573 |
 
-  Since the special structures became ~1 city in 10 (`City.SPECIAL_CHANCE`, after 13 Nov 2026) t03 and t08 are
+  Since the loot theme `building_large` (buildings with 100+ containers) t01–t05 and t08 changed only in the loot
+  table names of those buildings' containers (`building/...` → `building_large/...`): the positions, block entities
+  and counts are the same, and a comparison of the two saved worlds found no other difference in the containers of
+  the mod (1,146 hard barrels, 886 hard chests, 436 barrels, 179 chests, 92 pots renamed; the block entities at
+  other positions are vanilla ones: sculk, beehives, spawners, vanilla chests). The world of this run is in
+  `run/selftest_world_ref_large/`. Since the special structures became ~1 city in 10 (`City.SPECIAL_CHANCE`, after 13 Nov 2026) t03 and t08 are
   new: their cities lost the ramp building (t03: 30 → 33 lots, 790 → 469 hard-to-get-to containers; t08: 66 → 68
   lots), the roads and streets the same (equal `road_columns`, `street_columns`); before, t03 was
   `2e2476a9…` (2,506,369 positions) and t08 `a4def9aa…` (1,280,207). The world of this run is (outside git) in

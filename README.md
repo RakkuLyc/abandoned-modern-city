@@ -110,7 +110,7 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
 
   The containers (chests, barrels, dispensers, droppers, decorated pots) get their loot table when they are placed;
   the banners get the design of the template; the other block entities (furnaces, beds, skulls, chiseled bookshelves,
-  etc.) come out empty. Loot with vanilla items only, in 30 tables of its own (`tools/gen_loot.py`): 5 themes × 6
+  etc.) come out empty. Loot with vanilla items only, in 36 tables of its own (`tools/gen_loot.py`): 6 themes × 6
   tiers.
 
   | Theme | Structures | Typical items | Rare |
@@ -120,6 +120,7 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   | `workshop` | the workshops | iron, copper, coal, chains, worn iron tools, rails, pistons | diamond, iron block, enchanted tools, hopper, anvil |
   | `gas_station` | the gas stations | snacks, coal, lava bucket, map, compass, emeralds | emeralds, gold, golden apple, spyglass |
   | `building` | the buildings | paper, books, arrows, pencils, redstone, worn bow and sword | diamond, enchanted iron armor, ender pearls, music discs |
+  | `building_large` | the buildings with 100+ containers (tower, green tower, crash, wide, ramp, brutalist U) | the same as `building` (its own theme so that an add-on such as AMC TACZ Loot can make them less generous) | the same |
 
   | Container | Normal | Hard to get to (`_hard`) |
   |---|---|---|

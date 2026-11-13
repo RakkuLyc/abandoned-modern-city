@@ -193,14 +193,18 @@ public final class Structures {
             return type;
         }
 
-        /** Kind of loot (folder of its loot tables): house, pharmacy, workshop, gas_station or building. */
+        /**
+         * Kind of loot (folder of its loot tables): house, pharmacy, workshop, gas_station, building, or
+         * building_large for a building with {@link #LARGE_CONTAINERS} or more containers (an add-on such as AMC TACZ
+         * Loot can make those less generous; the vanilla tables of both are the same).
+         */
         public String lootTheme() {
             for (String k : LOOT_THEMES) {
                 if (type.startsWith(k)) {
                     return k;
                 }
             }
-            return "building";
+            return access.containers() >= LARGE_CONTAINERS ? "building_large" : "building";
         }
 
         /** Whether the container at (rx, ry, rz) of the rotated box is hard to get to ({@link Access}). */
@@ -291,6 +295,8 @@ public final class Structures {
      */
     public static final Map<String, Integer> LIMITS = Map.of("pharmacy", 3, "workshop", 2, "gas_station", 2, "special", 1,
             "police_station", 1);
+    /** Buildings with this many containers or more get the loot theme {@code building_large}. */
+    public static final int LARGE_CONTAINERS = 100;
     /** Kinds of loot by the start of the structure type; every other type (the buildings) gets {@code building}. */
     static final String[] LOOT_THEMES = {"house", "pharmacy", "workshop", "gas_station"};
     /** Categories of {@code /amcs spawn}, by the start of the structure type. */

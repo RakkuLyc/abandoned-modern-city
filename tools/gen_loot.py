@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Writes the loot tables of the structures' containers: vanilla items only, one set per kind of structure (house,
-pharmacy, workshop, gas_station, building) and six tables per kind:
+pharmacy, workshop, gas_station, building, building_large) and six tables per kind (building_large, the buildings with
+100 or more containers, has the same items as building: an add-on can make it less generous):
 
   barrel       barrels, dispensers, droppers: 40% have anything, 1 to 3 stacks of common items
   barrel_hard  the same, hard to get to (Access): 75%, 2 to 4 stacks of common and normal items
@@ -110,6 +111,9 @@ THEMES = {
                  it("experience_bottle", 3, 3, 8)],
     },
 }
+
+
+THEMES["building_large"] = THEMES["building"]
 
 
 def pool(entries, lo, hi, chance=None):

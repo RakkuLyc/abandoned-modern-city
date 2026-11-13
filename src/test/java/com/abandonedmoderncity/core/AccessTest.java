@@ -12,6 +12,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 /** Containers hard to get to ({@link Access}) and the loot tables of the structures. */
@@ -199,7 +201,12 @@ class AccessTest {
         }
         assertEquals("workshop", Structures.ALL.stream().filter(d -> d.type().startsWith("workshop")).findFirst()
                 .orElseThrow().lootTheme());
-        assertEquals("building", Structures.ALL.stream().filter(d -> d.name().equals("tower")).findFirst()
-                .orElseThrow().lootTheme());
+        assertEquals("building", Structures.ALL.stream().filter(d -> d.name().equals("apocalyptic_building_57x45"))
+                .findFirst().orElseThrow().lootTheme());
+        // the buildings with 100+ containers: their own theme (same vanilla tables), for add-ons
+        assertEquals(Set.of("tower", "abandoned_green_tower", "abandoned_crash_building",
+                        "abandoned_wide_building", "abandoned_ramp_building", "brutalist_u_building_75x58"),
+                Structures.ALL.stream().filter(d -> d.lootTheme().equals("building_large")).map(Structures.Def::name)
+                        .collect(Collectors.toSet()));
     }
 }

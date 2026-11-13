@@ -19,7 +19,8 @@
    tests, never from memory. In the summary of the stage, say which documents were updated.
 7. **World fingerprint** (since 12 Nov 2026): `FingerprintTest` keeps what the planner produces (the values of commit
    `4dd94ae`; `layout`, `structures` and `weathering`, which hold the names, since the English names; `layout` again
-   since the special structures in ~1 city in 10, commit `21cd4f6`) and the battery
+   since the special structures in ~1 city in 10, commit `21cd4f6`; `structures` again since the loot theme
+   `building_large`) and the battery
    prints per target `mod blocks:` (the blocks the mod decides in the generated world; the reference is in
    `docs/TESTING.md`, section 6, with another one for `structureOvergrowth = false`). In a change that must not alter
    the world (cleanup, splitting files, comments), the test passes and the `mod blocks:` and `stats:` lines stay the
@@ -200,7 +201,7 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   (`houses`, `pharmacy_large`, `workshop_medium`, `gas_station_small`, `buildings_large`, `special`, `police_station`),
   the `/amcs spawn` categories and the limit groups (`house`, `pharmacy`, `workshop`, `gas_station`, `building`,
   `police_station`, `special`) and the loot tables (`chests/<theme>/<tier>`, themes `house`, `pharmacy`, `workshop`,
-  `gas_station`, `building`; tiers `chest`, `barrel`, `pot` and `_hard`). The overgrowth of each structure stays the
+  `gas_station`, `building`, `building_large`; tiers `chest`, `barrel`, `pot` and `_hard`). The overgrowth of each structure stays the
   same: its seed came from the file name and now comes from the `seed` column of `index.txt`, holding the value of the
   old name (`String.hashCode` of the Portuguese name). The originals in `structures/` (at the root) keep their
   Portuguese names. Unopened chests of worlds generated before this change point to the old tables and come out
@@ -364,7 +365,10 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   regeneration, night vision, fire resistance, potion ingredients), `workshop` (iron, copper, coal, worn iron tools,
   rails, pistons; rare: enchanted tools, anvil, hopper), `gas_station` (snacks, coal, lava buckets, maps, emeralds) and
   `building` (the buildings: paper, books, arrows, pencils, worn weapons; rare: enchanted iron armor, ender pearls,
-  music discs). Tier by the container: chest `chest` (3 to 6 stacks of common and normal items and a 10% chance of a
+  music discs); `building_large` (asked by the user after 13 Nov 2026, for the AMC TACZ Loot add-on: the buildings
+  with `Structures.LARGE_CONTAINERS` = 100 or more containers, `Access.Result.containers`: tower 215, green tower 135,
+  crash building 201, wide building 249, ramp building 399, brutalist U building 436; the vanilla tables are those of
+  `building`, so without an add-on nothing changes in game; the police station, 63, stays `building`). Tier by the container: chest `chest` (3 to 6 stacks of common and normal items and a 10% chance of a
   rare one), barrel, dispenser and dropper `barrel` (40% have anything, 1 to 3 stacks of common items only), decorated
   pot `pot` (40%, one common stack). A container hard to get to (`core/Access`) uses the `_hard` version, more
   generous: `chest_hard` 5 to 8 stacks and 1 to 2 rare items, `barrel_hard` 75% with 2 to 4 stacks of common and
