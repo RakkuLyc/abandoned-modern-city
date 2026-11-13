@@ -7,9 +7,11 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -316,7 +318,7 @@ public final class Structures {
     }
 
     private static Def define(String type, String name, int ground, int turn, String model, String bannerSpec,
-                              String neutralFrom, int seed, Map<String, Integer> ids) {
+                              String neutralFrom, int seed, String hardCells, Map<String, Integer> ids) {
         if (bannerSpec != null) {
             BANNER_SPECS.put(name, bannerSpec);
         }
@@ -330,11 +332,17 @@ public final class Structures {
             t = w.template();
             WEATHERING.put(name, w.report());
         }
-        return of(type, name, t, ground, turn, model, ids);
+        return of(type, name, t, ground, turn, model, hardCells, ids);
     }
 
     /** A structure from a template already loaded (and weathered); the tests build small templates with it. */
     static Def of(String type, String name, Template t, int ground, int turn, String model, Map<String, Integer> ids) {
+        return of(type, name, t, ground, turn, model, null, ids);
+    }
+
+    /** The same, with containers made hard by hand ({@code hardCells}: the {@code hard} column of index.txt). */
+    static Def of(String type, String name, Template t, int ground, int turn, String model, String hardCells,
+                  Map<String, Integer> ids) {
         int[] state = new int[t.palette.size()];
         boolean[] solid = new boolean[state.length];
         String[] placed = new String[state.length];
@@ -392,6 +400,23 @@ public final class Structures {
             }
         }
         Access.Result access = Access.of(t, placed, x0, y0, z0, w, y1 - y0 + 1, d, ground);
+        if (hardCells != null) {
+            // containers made hard by hand: x,y,z of the .nbt (as the structure block shows them), separated by ;
+            Set<Integer> listed = new HashSet<>();
+            for (String c : hardCells.split(";")) {
+                String[] xyz = c.trim().split(",");
+                int hx = Integer.parseInt(xyz[0].trim());
+                int hy = Integer.parseInt(xyz[1].trim());
+                int hz = Integer.parseInt(xyz[2].trim());
+                int p = hx < 0 || hy < 0 || hz < 0 || hx >= t.sx || hy >= t.sy || hz >= t.sz ? -1 : t.at(hx, hy, hz);
+                if (p < 0 || !Access.container(Access.bare(placed[p]))) {
+                    throw new IllegalStateException("structure " + name + ": the hard cell " + c.trim()
+                            + " of index.txt is not a container");
+                }
+                listed.add(hx + t.sx * (hz + t.sz * hy));
+            }
+            access = access.withHard(listed);
+        }
         boolean[] openings = StructureLoader.openings(t, state, x0, z0, w, d, y0 + ground);
         return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, turn, state, fill, cells, access,
                 overhang, model, openings);
@@ -475,8 +500,9 @@ public final class Structures {
                 String neutral = f.length > 6 && !f[6].isBlank() ? f[6].trim() : null;
                 // the overgrowth seed: the index's, else the hash of the file name
                 int seed = f.length > 7 && !f[7].isBlank() ? Integer.parseInt(f[7].trim()) : f[1].hashCode();
+                String hard = f.length > 8 && !f[8].isBlank() ? f[8].trim() : null;
                 defs.add(define(f[0], f[1], f.length > 2 ? Integer.parseInt(f[2].trim()) : 0, turn, model, banners,
-                        neutral, seed, ids));
+                        neutral, seed, hard, ids));
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);

@@ -1,4 +1,4 @@
-# type|file (without .nbt)|ground|front|model|banners|neutral|seed
+# type|file (without .nbt)|ground|front|model|banners|neutral|seed|hard
 # ground: the template layer (from its lowest solid one) that lies at the city ground (1 = the lowest layer is buried)
 # front (optional, default 0): degrees clockwise that turn the template's front to its -Z side (180: front on +Z)
 # model (optional, default the file): color variants of one structure share a model; the ring draws a model, then a
@@ -9,10 +9,13 @@
 #   diorite) of <source> where this file painted them (the F A R M Á C I A letters of the pharmacy variants)
 # seed (optional, default the hash of the file name): seed of the overgrowth (structureOvergrowth); the structures keep
 #   the seed of the Portuguese names they had before, so their overgrowth did not change with the names
+# hard (optional): containers made hard to get to by hand (more generous loot), x,y,z of the .nbt as the structure
+#   block shows them, separated by ; (the others are hard only when no one reaches them from the street without
+#   breaking blocks); the chest in the tree of the abandoned modern house (reached by jumping up the leaves) is one
 # The originals are in structures/ at the repo root, under their Portuguese names (prédio_esqueleto ->
 #   skeleton_building_31x29, casa_abandonada -> abandoned_house, ...).
 houses|abandoned_house|0|||||-1087930116
-houses|abandoned_modern_house|0|180||||-68841159
+houses|abandoned_modern_house|0|180||||-68841159|5,12,17
 houses|abandoned_mansion|1|||||-196711167
 houses|post_apocalyptic_mansion|0|180||||1978835819
 houses|abandoned_garage_house|0|||||720205237

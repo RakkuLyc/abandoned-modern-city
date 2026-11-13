@@ -174,7 +174,7 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   not persistent without a trunk become persistent; front on -Z (banners and the entrance stairs); 63 containers, 13
   hard to get to (closed rooms of the basement); loot of the `building` theme. Crash building (91 × 44 × 90, two
   towers leaning against each other, `buildings_large`, 1 per city like the other buildings): ground on layer 0, front
-  on -Z (stairs and door under the gap between the towers), 201 containers, 169 above 15.
+  on -Z (stairs and door under the gap between the towers), 201 containers, all reached by its stairs.
 - New structures (asked by the user after 13 Nov 2026, with vanilla loot): modern garage house (42 × 36 × 15), glass
   house (48 × 40 × 15), small building (23 × 31 × 41), brutalist U building (75 × 58 × 125), wide building
   (84 × 31 × 80, with underground parking), green tower (31 × 31 × 143) and ramp building (folder "Especial",
@@ -372,16 +372,18 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   rare one), barrel, dispenser and dropper `barrel` (40% have anything, 1 to 3 stacks of common items only), decorated
   pot `pot` (40%, one common stack). A container hard to get to (`core/Access`) uses the `_hard` version, more
   generous: `chest_hard` 5 to 8 stacks and 1 to 2 rare items, `barrel_hard` 75% with 2 to 4 stacks of common and
-  normal items, `pot_hard` 80% with one normal or rare stack. Hard to get to = 15+ blocks above the city ground
-  (`Access.HIGH`) or out of reach of someone walking in from the street: the path jumps 1 block (never over a fence,
+  normal items, `pot_hard` 80% with one normal or rare stack. Hard to get to = out of reach of someone walking in
+  from the street, or listed by hand in the `hard` column of `index.txt` (x,y,z of the `.nbt`, `Access.Result.withHard`;
+  today the chest in the tree of the abandoned modern house, `5,12,17`, reached by jumping up the leaves); the height
+  rule (15+ blocks above the city ground, `Access.HIGH`) was removed at the user's request after 13 Nov 2026. The
+  walk: the path jumps 1 block (never over a fence,
   wall or pane), falls any height, climbs ladders, vines, scaffolding and water, opens doors, trapdoors and gates (not
   the iron ones); plants, cobwebs, carpets and torches do not block; leaves do; the container must be 1 block to the
-  side (diagonal counts) of where the player stands, from 1 below the feet to 1 above the head. Today 1,382 of 3,106
-  containers of the 52 files with the overgrowth on (the new tall buildings have nearly all theirs above 15; the
-  parking of the wide building is reached by its ramp: 0 out of reach in it); before the 7 new ones, 172 of 1,530 (173
-  of 882 in the 21 models without the overgrowth): 166 by height (tower 82, apocalyptic building 54, bluish 17,
-  skeleton 9, apartment 4) and 17 closed in (roofs of the abandoned house and of the large pharmacy, a room of the
-  abandoned mansion 2 blocks above the courtyard, rooms of the apocalyptic and the bluish building). The vehicle parts
+  side (diagonal counts) of where the player stands, from 1 below the feet to 1 above the head. Today 29 of 3,106
+  containers of the 52 files with the overgrowth on: 28 out of reach (police station 13, the closed rooms of its
+  basement; apocalyptic building 10; abandoned mansion 3, a room 2 blocks above the courtyard; abandoned house 1, the
+  roof; bluish building 1) and the chest in the tree (listed); the tall buildings reach all theirs by their stairs (0
+  hard); with the height rule there were 1,382. The vehicle parts
   of OAmP and the Lost Cities table were taken out (the Lost Cities one was rejected by Minecraft). The chest of the
   park fountain stays empty (50%) or `mossy_cobblestone` (50%).
 - Palette (`gen/Palette`): every block the generator places, checked at startup (`Palette.validate`). The 8 material

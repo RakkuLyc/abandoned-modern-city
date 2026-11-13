@@ -128,10 +128,11 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   | Barrel, dispenser, dropper (`barrel`) | 40% have anything: 1 to 3 stacks of common items | 75%: 2 to 4 stacks of common and normal items |
   | Decorated pot (`pot`) | 40%: 1 common stack | 80%: 1 normal or rare stack |
 
-  Hard to get to (`core/Access`): 15 or more blocks above the street, or out of reach of someone walking in (without
-  breaking blocks: jumping 1 block, falling, climbing ladders, vines and water, opening doors). That is 1,382 of the
-  3,106 containers, nearly all on the high floors of the tall buildings, which have almost all of theirs above 15
-  (the most in the brutalist U building, 359, and the ramp building, 338).
+  Hard to get to (`core/Access`): out of reach of someone walking in from the street (without breaking blocks: jumping
+  1 block, falling, climbing ladders, vines and water, opening doors), or listed by hand in the `hard` column of
+  `index.txt` (the chest in the tree of the abandoned modern house). The height no longer counts. That is 29 of the
+  3,106 containers: closed rooms of the police station (13), the apocalyptic building (10), the abandoned mansion (3),
+  the abandoned house and the bluish building (1 each), and the chest in the tree.
 - **Nature taking the city back** (`core/Flora`, `core/Wild`):
   - the ground in patches: grass, moss, coarse dirt and remains of the concrete (`gray_concrete_powder`);
   - the mod's own trees, ~1 per 55 columns: oak, birch, dark oak and spruce, small and large, with vines hanging from

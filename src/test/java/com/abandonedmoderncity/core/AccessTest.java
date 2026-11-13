@@ -116,18 +116,29 @@ class AccessTest {
     }
 
     @Test
-    void highContainersAreHard() {
-        Box tower = new Box(3, Access.HIGH + 3, 3);
-        tower.set(1, Access.HIGH, 1, "minecraft:barrel").set(1, Access.HIGH - 1, 1, "minecraft:stone");
-        for (int y = 1; y <= Access.HIGH; y++) {
+    void heightAloneDoesNotMakeAContainerHard() {
+        // a barrel 20 blocks up, reached by a ladder: not hard (the height rule was removed)
+        Box tower = new Box(3, 23, 3);
+        tower.set(1, 20, 1, "minecraft:barrel").set(1, 19, 1, "minecraft:stone");
+        for (int y = 1; y <= 20; y++) {
             tower.set(1, y, 0, "minecraft:ladder[facing=north]");
         }
         tower.set(2, 1, 2, "minecraft:chest");
         Access.Result r = tower.access();
         assertEquals(2, r.containers());
-        assertEquals(1, r.high());
         assertEquals(0, r.closed());
-        assertEquals(1, r.hard().size());
+        assertTrue(r.hard().isEmpty());
+    }
+
+    @Test
+    void theChestInTheTreeOfTheModernHouseIsHard() {
+        // reached by jumping up the leaves, but listed as hard by hand (index.txt, column hard)
+        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        Structures.Def d = Structures.ALL.stream().filter(s -> s.name().equals("abandoned_modern_house")).findFirst()
+                .orElseThrow();
+        assertEquals(1, d.access().listed());
+        assertEquals(1, d.access().hard().size());
+        assertTrue(d.hard(24, 12, 11, 0), "the chest in the tree");
     }
 
     @Test
@@ -142,7 +153,7 @@ class AccessTest {
             containers += a.containers();
             hard += a.hard().size();
             assertTrue(a.hard().size() <= a.containers(), d.name());
-            assertTrue(a.hard().size() >= Math.max(a.high(), a.closed()), d.name());
+            assertEquals(a.hard().size(), a.closed() + a.listed(), d.name());
             // the same containers are hard to get to in every rotation of the box
             for (int rot = 0; rot < 4; rot++) {
                 int n = 0;
@@ -155,11 +166,8 @@ class AccessTest {
                 }
                 assertEquals(a.hard().size(), n, d.name() + " rot " + rot);
             }
-            System.out.printf("[AccessTest] %-28s containers %3d, high %3d, closed %3d, hard %3d%n", d.name(),
-                    a.containers(), a.high(), a.closed(), a.hard().size());
-            if (d.type().startsWith("buildings_large") || d.type().startsWith("buildings_medium")) {
-                assertTrue(a.high() > 0, d.name() + " has no container up high");
-            }
+            System.out.printf("[AccessTest] %-28s containers %3d, out of reach %3d, listed %d, hard %3d%n", d.name(),
+                    a.containers(), a.closed(), a.listed(), a.hard().size());
             if (d.type().startsWith("house")) {
                 houses += a.containers();
                 housesHard += a.hard().size();
@@ -170,8 +178,12 @@ class AccessTest {
         // houses are low and open: nearly all their containers are reached on foot (the mansion's room 2 blocks over
         // its yard, with no step, is one of the few that are not)
         assertTrue(housesHard * 20 <= houses, housesHard + " of " + houses + " in houses");
-        // the tall buildings (tower, tower verde, building da rampa, brutalista...) have most of theirs 15+ blocks up
-        assertTrue(hard * 10 >= containers && hard * 2 <= containers, hard + " of " + containers);
+        // only what no one reaches on foot (closed rooms) and what index.txt lists: a few, not the tall buildings' floors
+        assertTrue(hard > 0 && hard * 50 <= containers, hard + " of " + containers);
+        for (String tall : List.of("tower", "abandoned_green_tower", "brutalist_u_building_75x58")) {
+            assertEquals(0, Structures.ALL.stream().filter(d -> d.name().equals(tall)).findFirst().orElseThrow()
+                    .access().hard().size(), tall + ": its floors are reached by its stairs");
+        }
     }
 
     @Test

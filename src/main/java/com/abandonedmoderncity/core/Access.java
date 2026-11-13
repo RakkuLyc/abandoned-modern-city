@@ -5,9 +5,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Containers of a structure that are hard to get to: their loot is more generous, a reward for the climb.
- * A container is hard to get to when it stands {@link #HIGH} or more blocks above the city ground, or when no one
- * walking in from the street reaches it without breaking blocks. Pure function of the template.
+ * Containers of a structure that are hard to get to: their loot is more generous, a reward for the effort.
+ * A container is hard to get to when no one walking in from the street reaches it without breaking blocks (pure
+ * function of the template), or when the structure's line of {@code index.txt} lists it (column {@code hard}, see
+ * {@link Result#withHard}). Its height does not count (the rule "15+ blocks above the city ground" was removed at the
+ * user's request after 13 Nov 2026).
  * <p>
  * The walk: a player stands in two passable cells over something solid (or in a ladder, vine, scaffolding or water);
  * walks to a side neighbour at the same height, jumps up one block (with room overhead, never onto a fence, a wall or
@@ -20,9 +22,6 @@ import java.util.Set;
 public final class Access {
     private Access() {
     }
-
-    /** Containers this high above the city ground (in blocks, the ground layer being 0) are hard to get to. */
-    public static final int HIGH = 15;
 
     private static final String[] PASS_EXACT = {"air", "cave_air", "void_air", "structure_void", "short_grass",
             "tall_grass", "fern", "large_fern", "dead_bush", "vine", "glow_lichen", "sculk_vein", "cobweb", "torch",
@@ -79,8 +78,17 @@ public final class Access {
                 || b.equals("dropper") || b.equals("decorated_pot");
     }
 
-    /** Result for one template: hard-to-get-to container cells (template cell index) and counts. */
-    public record Result(Set<Integer> hard, int containers, int high, int closed) {
+    /**
+     * Result for one template: hard-to-get-to container cells (template cell index), the containers, those out of
+     * reach and those listed by hand.
+     */
+    public record Result(Set<Integer> hard, int containers, int closed, int listed) {
+        /** The same with these container cells hard too (the {@code hard} column of {@code index.txt}). */
+        public Result withHard(Set<Integer> cells) {
+            Set<Integer> all = new HashSet<>(hard);
+            all.addAll(cells);
+            return new Result(Set.copyOf(all), containers, closed, cells.size());
+        }
     }
 
     /**
@@ -167,7 +175,6 @@ public final class Access {
         }
         Set<Integer> hard = new HashSet<>();
         int containers = 0;
-        int high = 0;
         int closed = 0;
         for (int ty = oy; ty < oy + h; ty++) {
             for (int tz = oz; tz < oz + d; tz++) {
@@ -177,7 +184,6 @@ public final class Access {
                         continue;
                     }
                     containers++;
-                    boolean isHigh = ty - gy >= HIGH;
                     boolean reached = false;
                     int x = tx - fx0;
                     int y = ty - fy0;
@@ -191,19 +197,14 @@ public final class Access {
                             }
                         }
                     }
-                    if (isHigh) {
-                        high++;
-                    }
                     if (!reached) {
                         closed++;
-                    }
-                    if (isHigh || !reached) {
                         hard.add(tx + t.sx * (tz + t.sz * ty));
                     }
                 }
             }
         }
-        return new Result(Set.copyOf(hard), containers, high, closed);
+        return new Result(Set.copyOf(hard), containers, closed, 0);
     }
 
     private record Frame(byte[] kind, int fw, int fd, int fh) {

@@ -112,7 +112,7 @@ Each terrain runs with the seeds `20261104`, `-3297019724594858492` and `42`, on
 
 ## 2. What is checked
 
-### Unit (47 tests)
+### Unit (48 tests)
 
 | Test | Checks |
 |---|---|
@@ -143,8 +143,9 @@ Each terrain runs with the seeds `20261104`, `-3297019724594858492` and `42`, on
 | `RingTest.pharmacyVariantsMatchTheirOriginalButTheColor` | in the 8 pharmacy variants, position by position against the original: the same blocks in the same places, no neutral block (white concrete, smooth quartz, calcite, polished diorite) painted and the banners in the same positions; 76 blocks of the F A R M Á C I A sign put back on each small one, 152 on each large one |
 | `RingTest.pharmacyBannersKeepTheirLetters` | in the 4 rotations, each of the 10 pharmacies (originals and variants) has 9 banners (small) or 18 (large) with a design (stripes and border), all on banner blocks; on the small ones, a white banner with letters in the variant's color; on the large ones, a banner in the variant's color with black letters |
 | `AccessTest.closedRoomsDoorsAndLadders` | rooms built in the test: a chest in a sealed room is hard to get to; with a wooden door it is not; with an iron door or a fence in the doorway it is; a chest on a pillar of 4 is only reached with a ladder; steps of 1 block are climbed by jumping |
-| `AccessTest.highContainersAreHard` | a barrel `Access.HIGH` (15) blocks above the ground, reachable by a ladder, counts as hard; a chest on the ground does not |
-| `AccessTest.structuresHardContainers` | in the 52 files, with the overgrowth: 1,382 of 3,106 containers hard to get to (between 10% and 50%: the new tall buildings have nearly all of theirs above 15); the same in the 4 rotations; large and medium buildings have high containers; in the houses at most 5% (4 of 407) |
+| `AccessTest.heightAloneDoesNotMakeAContainerHard` | a barrel 20 blocks above the ground, reachable by a ladder, is not hard (the height rule was removed); a chest on the ground neither |
+| `AccessTest.theChestInTheTreeOfTheModernHouseIsHard` | the chest in the tree of the abandoned modern house (reached by jumping up the leaves) is hard, listed in the `hard` column of `index.txt` (`5,12,17`); the house has no other hard container |
+| `AccessTest.structuresHardContainers` | in the 52 files, with the overgrowth: 29 of 3,106 containers hard to get to (out of reach 28, listed 1; at most 2%); hard = out of reach + listed in every structure; the same in the 4 rotations; the tower, the green tower and the brutalist U building have none (their floors are reached by their stairs); in the houses at most 5% (5 of 407) |
 | `AccessTest.everyStructureHasItsLootTables` | the 6 tables of the theme of each structure exist; exactly the 6 buildings with 100+ containers (tower, green tower, crash, wide, ramp, brutalist U) have the theme `building_large`, the apocalyptic building `building`; barrel and pot with a 40% chance, `barrel_hard` 75%, `pot_hard` 80%, chests with no chance of coming empty; nothing from Lost Cities or OAmP |
 | `WeatheringTest.onlyAllowedChangesAndEverythingHolds` | in the 52 files, with the seed of the `seed` column of the index, cell by cell against the saved template: the same report as the overgrowth the game applied when the structures loaded (`Structures.WEATHERING`); only allowed changes (cracked and mossy of the same stone, with the same properties; a stone or concrete floor with air above turned into soil; a carpet on a full block or soil; grass, fern and dead bush only on soil; a vine with one face, held by a full block or by the vine above with the same face, or under eaves); banners equal; the box of the structure equal; the same result in two loads; the report equal to the changes. Total: 38,501 vines, 10,192 soils, 5,088 carpets, 4,947 plants, 3,907 mossy, 2,451 cracked (65,086 blocks, the number of the game log) |
 | `WeatheringTest.everyStructureReachesTheMeasuresOfTheApocalypticBuilding` | no measure drops (cracked and vines may drop up to 3 points when a floor turns into moss: the block leaves the family or the counted wall); cracked at 31% (−3) or more; the side least covered with vines at 19% or more (target 25%); on the apocalyptic building only the vines change |
@@ -350,7 +351,8 @@ road on the ground, without a bridge wall).
 
 ## 6. Current results (12 Nov 2026, blocks of 180 × 120 with a ring of structures with gaps and a core taken over by nature, streets and highways of 33, cities in the middle of cells of 736, 4 entrances)
 
-- **Unit:** 46 pass and 1 is skipped (the test without structures), 13 Nov 2026, with the test of the special
+- **Unit:** 47 pass and 1 is skipped (the test without structures), 13 Nov 2026, with the tests of the hard containers
+  without the height rule; 46 + 1 with the test of the special
   structures (`WorldPlanTest.specialStructuresAreInAboutOneCityInTen`); 45 + 1 after the cut streets (and their
   test) were taken out; `./gradlew build` in ~2 min (Linux, JDK 21:
   `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew build -Dorg.gradle.java.installations.paths=$JAVA_HOME`) (the
@@ -439,6 +441,7 @@ road on the ground, without a bridge wall).
   | Seed | Scope | Date | Version | Result |
   |---|---|---|---|---|
   | `20261027` | default (8 targets) | 13 Nov | review, step 4: code comments without dates, the docs in English (`docs/TESTES.md` → `docs/TESTING.md`), the numbers audit, `WeatheringTest` with the seed of the index (finding 67) and new prints in `RingTest` and `WorldPlanTest`; the code of the mod unchanged since the comments commit (`5eb5b74`), whose bytecode was equal to the commit before in all 1,322 members of the mod and 176 of the tests | PASS: 8 of 8, 0 generation errors; `tools/verify/compare_battery.py` equal to the reference (the 8 `mod blocks:` lines and the counts); 142 palette states, 16 village creatures removed; 2.62 ms per chunk, 240 s |
+  | `20261027` | default (8 targets) and quick with `structureOvergrowth = false` | 13 Nov | height rule of the hard containers removed; the chest in the tree of the abandoned modern house listed as hard (`index.txt`, column `hard`) | PASS on both, 0 generation errors; loot containers and block entities equal, `structure_loot_hard` down (t01 291 → 16, t02 1,199 → 15, t03 469 → 18); compared on the saved worlds: only `_hard` → normal loot table names and the tree chests (5 and 2) normal → `chest_hard`, no container of the mod moved: the new references; 2.87 ms per chunk |
   | `20261027` | default (8 targets) | 13 Nov | loot theme `building_large` (buildings with 100+ containers) | PASS: 8 of 8, 0 generation errors; counts equal to the reference; t01–t05 and t08 changed only in the loot table names of the big buildings' containers (checked on the saved worlds); 2.72 ms per chunk |
   | `20261027` | quick with `structureOvergrowth = false` | 13 Nov | loot theme `building_large` | PASS: 3 of 3, 0 generation errors, log "Structure overgrowth off"; counts equal to the reference; the 3 `mod blocks:` lines changed only in loot table names (checked on the saved worlds): the new reference; 4.48 ms per chunk |
   | `20261027` | default (8 targets) | 13 Nov | special structures in ~1 city in 10 (`City.SPECIAL_CHANCE` = 0.40) | PASS: 8 of 8, 0 generation errors, 16 village creatures removed; t01, t02 and t04–t07 equal to the reference; t03 and t08 changed only in their structures (lots 30 → 33 and 66 → 68, roads and streets equal): the new reference (section 6); 2.81 ms per chunk (8,346 chunks). Not run: the quick reference with `structureOvergrowth = false`, whose 3 targets (t01, the longest tunnel and bridge) are equal in this run |
@@ -499,16 +502,22 @@ road on the ground, without a bridge wall).
 
   | Target | SHA-256 | Positions | Block entities |
   |---|---|---|---|
-  | t01 city nearest to the spawn | `44e467cbbd439e7c31384e57c1d4579d55c5536960fdda92f1eba3d2ff142fc9` | 1,877,158 | 2,055 |
-  | t02 highest city (level 103) | `02c750e5d9f94ec4645fac75c176a8e3809b5c213951bb4d6837221ff8eeb84e` | 3,290,072 | 3,387 |
-  | t03 roughest city | `bcdaeb872520e16d0183e05c8344add6ed400e239127baf0bc227b3bcc6cc358` | 2,225,236 | 2,222 |
-  | t04 longest tunnel (352) | `e6982ae8e149f3cc897980e3d71155077081b4400c093cacf07d9b7891af4490` | 543,064 | 164 |
-  | t05 longest bridge over water (349) | `fc93f17beb8a8b4114ffcb8ea9476bd66e6f79cd64228d7b1684f46f9b0db28f` | 452,586 | 605 |
-  | t06 longest dry viaduct (239) | `ccbe9ee85773c4e7f8040f8f3da6feaa0036c2f6c6405590c367501880e546a8` | 581,916 | 381 |
+  | t01 city nearest to the spawn | `07cef741ef9f40f923e492179e5818bdb742faf3189a358714d586c27266a1f3` | 1,877,158 | 2,055 |
+  | t02 highest city (level 103) | `235154d52c431ed7c4afce03da8dccf25a824331bf7994d63e156bc0cad21e6a` | 3,290,072 | 3,387 |
+  | t03 roughest city | `c7f48d37757f8b7a5dcfe3b16f4c49df0f1c4b76fdc0e7251a230dd29f45e950` | 2,225,236 | 2,222 |
+  | t04 longest tunnel (352) | `f2013eaafa6ec2dee77f7a5d61531a029e3988da0bd98ba5d396d5a65cb2e8b3` | 543,064 | 164 |
+  | t05 longest bridge over water (349) | `5aeadb35bfeb7ea72f90e93233288e538f16557d6812c0035d3064ffbb9ae2ce` | 452,586 | 605 |
+  | t06 longest dry viaduct (239) | `ac03c8bc28642a5a8955fb9d96bb2644b95a2fa09c345617912380869baa76d0` | 581,916 | 381 |
   | t07 longest ramp (360) | `f960ad531d4199d12ecf42bb72b87d9a199bc1fccb85235572528b07c3dcc118` | 191,450 | 0 |
-  | t08 whole highway | `7a81509147bebbd9e4b9083147bd316f1b602048bbb7a1de54f5a315777566a3` | 822,838 | 573 |
+  | t08 whole highway | `0b18185d26811a916c9313c1d1f98a62fdcd9beca1a4d28cbd2ad73611030b15` | 822,838 | 573 |
 
-  Since the loot theme `building_large` (buildings with 100+ containers) t01–t05 and t08 changed only in the loot
+  Since the height rule of the hard containers was removed (after 13 Nov 2026) every line but t07 (no container)
+  changed only in the loot
+  table names: the containers no longer out of reach use the normal tables (2,494 in the containers of the mod of
+  this run, `_hard` → normal) and 5 chests in the trees of abandoned modern houses became `chest_hard`; positions,
+  block entities and the other counts the same, `structure_loot_hard` down (t01 291 → 16, t02 1,199 → 15); the world
+  of this run is in `run/selftest_world_ref_nohigh/` (with the overgrowth off: `run/selftest_world_ref_off_nohigh/`,
+  623 renamed, 2 tree chests). Before, since the loot theme `building_large` (buildings with 100+ containers) t01–t05 and t08 changed only in the loot
   table names of those buildings' containers (`building/...` → `building_large/...`): the positions, block entities
   and counts are the same, and a comparison of the two saved worlds found no other difference in the containers of
   the mod (1,146 hard barrels, 886 hard chests, 436 barrels, 179 chests, 92 pots renamed; the block entities at
@@ -530,9 +539,9 @@ road on the ground, without a bridge wall).
 
   | Target | SHA-256 | Positions | Block entities |
   |---|---|---|---|
-  | t01 city nearest to the spawn | `4268b62afd924076693665a43fb4c6910fbcbe9170ec7c9a2669194c953fcc78` | 1,874,811 | 2,055 |
-  | t02 longest tunnel (352) | `68f2d4d7fbcbcb77f9bf2bb3e4d212e43dff707711964f4b0027c5a00352fd7c` | 541,806 | 164 |
-  | t03 longest bridge over water (349) | `0af82fb59545bff4cd053d0e8b4bc797a39719ec80386ccb3732d493519fb905` | 452,586 | 605 |
+  | t01 city nearest to the spawn | `164615052d5adddbfc06e016d0c7294778f6775bc1bb40d7c8f5c02a53f96de9` | 1,874,811 | 2,055 |
+  | t02 longest tunnel (352) | `f738ae2c24cce8c753baa2f9d6eccd0418ef67c3d8366182a756c8cec2bc5cdf` | 541,806 | 164 |
+  | t03 longest bridge over water (349) | `a5ba6209d70d054c8a22d504ba6a1fc40b077d4425d3741784961c3eb09df3f8` | 452,586 | 605 |
 
   Report in git in `tools/verify/reference/battery-20261027-quick-overgrowth-off.txt`; world (with the Portuguese
   names, same blocks) in `run/selftest_world_ref_off/` (outside git).
