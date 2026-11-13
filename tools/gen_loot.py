@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Writes the loot tables of the structures' containers (asked by the user, 13 nov 2026): vanilla items only, one set
-per kind of structure (house, pharmacy, workshop, gas_station, building) and six tables per kind:
+"""Writes the loot tables of the structures' containers: vanilla items only, one set per kind of structure (house,
+pharmacy, workshop, gas_station, building) and six tables per kind:
 
   barrel       barrels, dispensers, droppers: 40% have anything, 1 to 3 stacks of common items
   barrel_hard  the same, hard to get to (Access): 75%, 2 to 4 stacks of common and normal items

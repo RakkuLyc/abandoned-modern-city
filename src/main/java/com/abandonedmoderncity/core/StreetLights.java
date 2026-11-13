@@ -3,12 +3,12 @@ package com.abandonedmoderncity.core;
 import java.util.Arrays;
 
 /**
- * Street lights (asked by the user, 13 nov 2026, after his example poste_exemplo): on every segment of street,
+ * Street lights (modeled on the example structure poste_exemplo): on every segment of street,
  * one every {@link #LAMP_EVERY} blocks on both sides, facing each other, centered on the segment (7 a side on the
  * segments of 180, 5 on those of 120, away from the crosswalks and the crossings). The post ({@link #LAMP_POST}
  * high) stands on the sidewalk row next to the lanes; its arm (slabs) reaches {@link #LAMP_ARM} blocks over the
- * lanes at the height {@link #LAMP_ARM_Y}, and the lamp (glass, unlit) hangs under its end. Abandoned (asked by
- * the user the same day: vines, dark tones, mossy blocks): {@link #LAMP_GONE} of them are gone, the others are one
+ * lanes at the height {@link #LAMP_ARM_Y}, and the lamp (glass, unlit) hangs under its end. Abandoned (vines, dark
+ * tones, mossy blocks): {@link #LAMP_GONE} of them are gone, the others are one
  * of {@link #LAMP_VARIANTS} variants ({@link #lampParts}): mossy, dark, broken arm, fallen lamp, overgrown.
  */
 public final class StreetLights {

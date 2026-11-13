@@ -8,7 +8,7 @@
 # neutral (optional): <source> puts back the neutral blocks (white concrete, smooth quartz, calcite, polished
 #   diorite) of <source> where this file painted them (the F A R M Á C I A letters of the pharmacy variants)
 # seed (optional, default the hash of the file name): seed of the overgrowth (structureOvergrowth); the structures keep
-#   the seed of the Portuguese names they had until 13 nov 2026, so their overgrowth did not change with the names
+#   the seed of the Portuguese names they had before, so their overgrowth did not change with the names
 # The originals are in structures/ at the repo root, under their Portuguese names (prédio_esqueleto ->
 #   skeleton_building_31x29, casa_abandonada -> abandoned_house, ...).
 houses|abandoned_house|0|||||-1087930116

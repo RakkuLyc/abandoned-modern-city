@@ -8,13 +8,13 @@ import java.util.Map;
 /**
  * A ring of structures along the four sidewalks of a block (the structures are drawn at random, no pattern). The rows
  * along the short sides of the block run corner to corner; those along the long sides fill what is left between
- * them. Every structure touches its sidewalk with its front turned to the street. Structures never touch (asked by
- * the user, 12 nov 2026): a gap of {@link #GAP_MIN}..{@link #GAP_MAX} blocks is drawn between two structures of a
- * row, and between the deepest structure of a short row and the long rows. The forest of the core always keeps
+ * them. Every structure touches its sidewalk with its front turned to the street. Structures never touch: a gap of
+ * {@link #GAP_MIN}..{@link #GAP_MAX} blocks is drawn between two structures of a row, and between the deepest
+ * structure of a short row and the long rows. The forest of the core always keeps
  * {@link #CORE_MIN}..{@link #CORE_MAX} blocks (drawn per pair of opposite rows) between the backs of opposite
  * structures. A structure that does not fit what is left of its row, or whose depth would not leave that room, is
- * redrawn; so is a structure already in the block (asked by the user, 13 nov 2026: never two of the same structure,
- * in any of its colors, in one block).
+ * redrawn; so is a structure already in the block (never two of the same structure, in any of its colors, in one
+ * block).
  */
 public final class Ring {
     private Ring() {

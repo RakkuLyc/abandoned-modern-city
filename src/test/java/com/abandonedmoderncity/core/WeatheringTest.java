@@ -252,7 +252,8 @@ class WeatheringTest {
         // the apocalyptic building itself
         Structures.Def ref = Structures.ALL.stream().filter(d -> d.name().equals("apocalyptic_building_57x45")).findFirst().orElseThrow();
         Weathering.Report r = Weathering.apply(Structures.source(ref.name()), ref.ground(), ref.name().hashCode()).report();
-        // it is the model of the stone and the floors (nothing there changes); the vines are the user's stronger ones
+        // it is the model of the stone and the floors (nothing there changes); only vines are added (the target share
+        // is higher than the model's)
         assertEquals(0, r.cracked() + r.floors() + r.carpets() + r.plants() + r.mossy(), "predio_apocaliptico changed " + r);
         assertTrue(r.vines() > 0, "predio_apocaliptico without the stronger vines");
     }

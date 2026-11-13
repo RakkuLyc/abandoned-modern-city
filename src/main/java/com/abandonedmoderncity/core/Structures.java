@@ -15,12 +15,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * The building structures supplied by the user ({@code .nbt} files in {@code resources/amcs/buildings/}, listed in its
- * {@code index.txt} as {@code type|file|ground}): their trimmed boxes, their rotation and the block code of each cell.
+ * The building structures ({@code .nbt} files in {@code resources/amcs/buildings/}, listed in its {@code index.txt},
+ * whose header describes the columns): their trimmed boxes, their rotation and the block code of each cell.
  * The front of every structure is its -Z side (north); {@link #rotationFor} turns it to face the street.
  * <ul>
  *   <li>{@code ground}: the template layer (counted from its lowest solid layer) that lies at the city ground; the
- *   layers under it are buried (asked by the user for structures that stood one block above the ground).</li>
+ *   layers under it are buried (for structures saved with a layer of ground or foundation under their floor).</li>
  *   <li>The ground layer is filled out to the box on every side: rows at the edge with no real floor (only vines,
  *   banners, a stray slab) get the floor block of the first row that has one, so the structure meets the sidewalk
  *   without a gap.</li>
@@ -46,7 +46,7 @@ public final class Structures {
      * @param d      size along z before rotation (the depth, from the front to the back)
      * @param ground layers of the box under the city ground
      * @param turn   quarter turns clockwise that bring the template's front to its -Z side (0 for most; 2 for a
-     *               template whose front is its +Z side, as the user found for abandoned_modern_house)
+     *               template whose front is its +Z side, such as abandoned_modern_house)
      */
     public record Def(String type, String name, String group, Template t, int ox, int oy, int oz, int w, int h, int d,
                       int ground, int turn, int[] state, int[] fill, Map<Integer, Integer> cells, Access.Result access,
@@ -173,17 +173,16 @@ public final class Structures {
         }
 
         /**
-         * Whether at most one of this structure (any color of it) may stand in a city (asked by the user, 13 nov
-         * 2026: two or three bluish_building in one city): the buildings, not the houses, pharmacies, workshops or gas
-         * stations.
+         * Whether at most one of this structure (any color of it) may stand in a city: the buildings, which are big
+         * and recognizable, not the houses, pharmacies, workshops or gas stations.
          */
         public boolean onePerCity() {
             return type.startsWith("buildings") || type.equals("special");
         }
 
         /**
-         * Category of the structure for {@code /amcs spawn <category> <name>} (asked by the user, 13 nov 2026): house,
-         * pharmacy, workshop, gas_station, building, police_station or special.
+         * Category of the structure for {@code /amcs spawn <category> <name>}: house, pharmacy, workshop, gas_station,
+         * building, police_station or special.
          */
         public String category() {
             for (String k : CATEGORIES) {
@@ -245,15 +244,15 @@ public final class Structures {
 
     static final int AIR_STATE = -2;
     /**
-     * State of {@code minecraft:cave_air} in a template: air even under the city ground, dug out of the terrain (asked
-     * by the user, 12 nov 2026, for an underground garage). Plain air under the ground stays ground, as before.
+     * State of {@code minecraft:cave_air} in a template: air even under the city ground, dug out of the terrain (an
+     * underground garage, a basement). Plain air under the ground stays ground.
      */
     static final int CARVE_STATE = -3;
     /** Distinct block state strings of all structures; a structure block code points into this list. */
     public static final List<String> STATES = new ArrayList<>();
     public static final List<Def> ALL;
     /**
-     * The structures grouped by model (asked by the user, 13 nov 2026): the color variants of a structure are one model.
+     * The structures grouped by model: the color variants of a structure are one model.
      * The ring draws a model, then one of its variants, so variants do not make a structure more frequent.
      */
     public static final List<List<Def>> MODELS;
@@ -287,8 +286,8 @@ public final class Structures {
     public static final int MIN_DEPTH;
     public static final int MIN_WIDTH;
     /**
-     * Most structures of a group per city (asked by the user): pharmacies 3 (both kinds), car workshops 2 (both
-     * kinds), gas stations 2 (both kinds). The group is the start of the structure's type.
+     * Most structures of a group per city: pharmacies 3 (both kinds), car workshops 2 (both kinds), gas stations 2
+     * (both kinds), the special building 1, the police station 1. The group is the start of the structure's type.
      */
     public static final Map<String, Integer> LIMITS = Map.of("pharmacy", 3, "workshop", 2, "gas_station", 2, "special", 1,
             "police_station", 1);
@@ -398,7 +397,7 @@ public final class Structures {
     static final int CROWN_RADIUS = 4;
 
     /**
-     * Blocks of the templates placed as another block (asked by the user, 13 nov 2026): lightning rods become lit
+     * Blocks of the templates placed as another block: lightning rods become lit
      * redstone torches, standing when the rod points up or down, on the wall when it points sideways (the torch
      * faces the same way, away from the block it hangs on).
      */

@@ -103,7 +103,7 @@ public final class Park {
     private static final int[][] DIRS = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}}; // north, east, south, west
 
     /**
-     * Benches along the paths (asked by the user, 13 nov 2026): two spruce stairs side by side on the edge of a path,
+     * Benches along the paths: two spruce stairs side by side on the edge of a path,
      * their backs away from it (who sits looks at the path), an open spruce trapdoor at each end as armrests; about one
      * per {@link #BENCH_EVERY} blocks of path, {@link #BENCH_APART}+ apart, never on a path, the fountain's ring, a
      * trunk or under a crown; {@link #BENCH_BROKEN} of them broken.
@@ -452,8 +452,9 @@ public final class Park {
     static final int MOSSY_BRICKS = indexOf("minecraft:mossy_stone_bricks");
 
     /**
-     * Palette index that replaces each entry on the fountain's floor layer (11 nov 2026, asked by the user): stone and
-     * cobblestone become mossy cobblestone, stone bricks and cracked stone bricks mossy stone bricks; the rest stays.
+     * Palette index that replaces each entry on the fountain's floor layer (it looks as overgrown as the park): stone
+     * and cobblestone become mossy cobblestone, stone bricks and cracked stone bricks mossy stone bricks; the rest
+     * stays.
      * These four only lie on the floor outside the basin.
      */
     static final int[] FLOOR_SWAP = floorSwap();

@@ -109,15 +109,15 @@ public final class City {
 
     /**
      * Rolls whether the cell has a city, which then stands in the middle of the cell if that place is dry enough and not
-     * too high (the cities form a regular grid; 10 nov 2026: the user wanted highways of ~270 to ~370 blocks).
+     * too high (the cities form a regular grid, so the highways between neighbours are ~270 to ~400 blocks long).
      */
     private static Object site(long worldSeed, Params p, Terrain t, int ci, int cj) {
         long h = Hash.of(worldSeed, SALT, ci, cj);
         if (Hash.unit(h) >= p.cityChance()) {
             return "no city rolled";
         }
-        // the city stands in the middle of its cell (asked by the user: highways of ~270 to ~370 blocks between
-        // neighbours); a cell whose middle is mostly water or too high has no city
+        // the city stands in the middle of its cell (highways of a regular length between neighbours); a cell whose
+        // middle is mostly water or too high has no city
         int cx = ci * p.cellSize() + p.cellSize() / 2;
         int cz = cj * p.cellSize() + p.cellSize() / 2;
         int radius = Params.GRID_RADIUS;
@@ -550,8 +550,8 @@ public final class City {
     }
 
     /**
-     * Margin around a city where the creatures of a village built over by it are removed (asked by the user, 13 nov
-     * 2026: villagers and an iron golem were left in a city generated where a village was).
+     * Margin around a city where the creatures of a village built over by it are removed (the villagers and iron
+     * golems of the houses the city replaced would be left standing in its streets or buried in its fill).
      */
     public static final double VILLAGE_MARGIN = 32;
 
@@ -648,7 +648,7 @@ public final class City {
         return new int[]{x0, z0, x1, z1};
     }
 
-    /** Size of the park of a park block (13 nov 2026, asked by the user): along the block's long and short sides. */
+    /** Size of the park of a park block, along the block's long and short sides. */
     public static final int PARK_LONG = 110;
     public static final int PARK_SHORT = 64;
 
@@ -664,7 +664,7 @@ public final class City {
         return new int[]{x0, z0, x0 + pw - 1, z0 + ph - 1};
     }
 
-    /** Whether block (bi, bj) has a park (in a corner, since 13 nov 2026). */
+    /** Whether block (bi, bj) has a park (in one of its corners). */
     private boolean parkBlock(int bi, int bj) {
         return Hash.unit(Hash.of(seed, 0x52494E47L, bi, bj)) < PARK_BLOCK_CHANCE;
     }
@@ -716,7 +716,7 @@ public final class City {
         List<Lot> ring = rings().getOrDefault(Cache.key(bi, bj), List.of());
         List<Lot> out = new ArrayList<>(ring);
         if (parkBlock(bi, bj)) {
-            // the park in a corner of the block, the structures along the two other streets (asked by the user)
+            // the park in a corner of the block, the structures along the two other streets
             int[] p = parkRect(new int[]{x0, z0, x1, z1}, rs);
             out.add(Lot.park(p[0], p[1], p[2], p[3], Hash.next(rs, 1)));
         }

@@ -166,9 +166,9 @@ final class StructureLoader {
                 }
             }
         }
-        // leaves saved as not persistent but out of reach of any trunk (13 nov 2026: abandoned_modern_garage_house,
-        // abandoned_glass_house, brutalist_u_building_75x58, abandoned_ramp_building) would fall in the world: they stay
-        // persistent, like the hedges
+        // leaves saved as not persistent but out of reach of any trunk (abandoned_modern_garage_house,
+        // abandoned_glass_house, brutalist_u_building_75x58, abandoned_ramp_building have some) would fall in the
+        // world: they stay persistent, like the hedges
         for (int y = y0; y < y0 + h; y++) {
             for (int z = z0; z < z0 + d; z++) {
                 for (int x = x0; x < x0 + w; x++) {
@@ -184,8 +184,8 @@ final class StructureLoader {
     }
 
     /**
-     * Leaves that complete the tree crowns the edge of the template cut (asked by the user, 13 nov 2026, for the tree
-     * in front of abandoned_pool_house): every real leaf of a crown is mirrored across its trunk, in x, in z and in
+     * Leaves that complete the tree crowns the edge of the template cut (the tree in front of abandoned_pool_house,
+     * for one, was saved with half a crown): every real leaf of a crown is mirrored across its trunk, in x, in z and in
      * both; a mirror that falls outside the box (where the template had no room for the crown) becomes a leaf hanging
      * out of the structure, over its sidewalk or the core of the block. Its distance to the trunk is counted through
      * the leaves like the others ({@link #realLeaves}); one farther than {@link Flora#LEAF_REACH} is left out. Each
@@ -309,8 +309,8 @@ final class StructureLoader {
             "minecraft:large_fern", "minecraft:glow_lichen"};
 
     /**
-     * Cobwebs that touch nothing to hang on (only air, other cobwebs, vines, plants or carpets) become air (asked by
-     * the user, 12 nov 2026): cell index -> Structures.AIR_STATE in {@code cells}.
+     * Cobwebs that touch nothing to hang on (only air, other cobwebs, vines, plants or carpets) become air: cell index
+     * -> Structures.AIR_STATE in {@code cells}.
      */
     static void removeFloatingWebs(Template t, Map<Integer, Integer> cells) {
         int[][] six = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
@@ -340,8 +340,8 @@ final class StructureLoader {
     /**
      * The openings of the ground layer {@code gy} (template box x0.., z0.., w x d): air or cave_air there with cave_air
      * under it (the mouth of a ramp or a stairwell over an underground garage), and the air of the ground layer joined
-     * to those (the top of the ramp, whose own blocks lie under it: asked by the user, 13 nov 2026, after two rows of
-     * terrain closed the ramp of abandoned_wide_building). Everywhere else air of the ground layer becomes city ground.
+     * to those (the top of the ramp, whose own blocks lie under it; without it two rows of terrain closed the ramp of
+     * abandoned_wide_building). Everywhere else air of the ground layer becomes city ground.
      */
     static boolean[] openings(Template t, int[] state, int x0, int z0, int w, int d, int gy) {
         boolean[] out = new boolean[w * d];

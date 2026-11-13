@@ -130,7 +130,7 @@ final class ChunkBuilder {
     static final AtomicInteger VILLAGE_MOBS_REMOVED = new AtomicInteger();
 
     /**
-     * A village generated where a city is (asked by the user, 13 nov 2026): its houses are placed before the city, each
+     * A village generated where a city is: its houses are placed before the city, each
      * with its villagers, iron golem and cats, which stay when the city is built over them. They are taken out of the
      * chunk being generated (the village is placed in this chunk before this feature runs) when they stand in the
      * city or {@link City#VILLAGE_MARGIN} or less from it. Other creatures stay.
@@ -202,7 +202,7 @@ final class ChunkBuilder {
     }
 
     /**
-     * Vines hanging from the bridges down to the ground (asked by the user, 12 nov 2026): in {@link
+     * Vines hanging from the bridges down to the ground: in {@link
      * RoadDecay#BRIDGE_VINES} of the columns just outside a bridge edge (the one with the wall), a strand hangs on the
      * side of the deck from its surface down to the first block that is not air (ground or water). Done for every
      * chunk, also those with nothing planned in them, since the column outside the bridge may be the only part of a

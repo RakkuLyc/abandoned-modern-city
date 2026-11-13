@@ -180,7 +180,8 @@ class RingTest {
             assertEquals(0, below, d.name() + " blocks below its box or air underground");
             assertEquals(d.h(), d.above() + d.ground(), d.name());
         }
-        // the four the user named (and the big house, whose lowest layer is all dirt) are one layer lower than their template's lowest layer
+        // these four (and the big house, whose lowest layer is all dirt) stand one layer lower than their template's
+        // lowest layer
         for (String n : List.of("abandoned_mansion", "abandoned_large_house", "tower", "bluish_building", "apartment_building")) {
             assertEquals(1, Structures.ALL.stream().filter(d -> d.name().equals(n)).findFirst().orElseThrow().ground(), n);
         }
@@ -284,7 +285,7 @@ class RingTest {
     @Test
     void housesWithTheirFrontOnPlusZFaceTheStreet() {
         assumeFalse(Structures.ALL.isEmpty(), "no structures");
-        // the user found the front of these two on the template's +Z side
+        // the front of these two is on the template's +Z side
         List<String> turned = List.of("abandoned_modern_house", "post_apocalyptic_mansion");
         for (Structures.Def c : Structures.ALL) {
             assertEquals(turned.contains(c.name()) ? 2 : 0, c.turn(), c.name());
@@ -497,8 +498,9 @@ class RingTest {
             }
         }
         // one from a rod on top of each: abandoned_tower_house, post_apocalyptic_mansion, apartment_building,
-        // predio_apocaliptico, tower; 12 more were saved as torches in the 13 nov structures (brutalista 4, rampa 4,
-        // tower verde 2, largo 1, pequeno 1), 3 in the police station
+        // apocalyptic_building_57x45, tower; 12 more were saved as torches (brutalist_u_building_75x58 4,
+        // abandoned_ramp_building 4, abandoned_green_tower 2, abandoned_wide_building 1, abandoned_small_building 1),
+        // and 3 in the police station
         assertEquals(5 + 12 + 3, torches, "redstone torches");
         assertEquals("minecraft:redstone_wall_torch[facing=east,lit=true]",
                 Structures.swap("minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]"));
@@ -562,7 +564,7 @@ class RingTest {
             }
         }
         System.out.println("[RingTest] crowns completed outside the box: " + total + " leaves in " + with);
-        // the tree in front of the house with the pool (asked by the user): its crown hangs over the sidewalk, high
+        // the tree in front of the house with the pool: its crown hangs over the sidewalk, high
         Structures.Def pool = Structures.ALL.stream().filter(d -> d.name().equals("abandoned_pool_house")).findFirst()
                 .orElseThrow();
         assertFalse(pool.overhangs(0).isEmpty(), "casa_piscina crown not completed");

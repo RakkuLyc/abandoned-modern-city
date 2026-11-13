@@ -445,7 +445,7 @@ public final class WorldAudit {
             if (cp.kind[i] == ChunkPlan.LOT && cp.lot[i] != null && cp.lot[i].park != null
                     && Palette.exempt(c.getBlockState(bp))
                     && cp.lot[i].code(bp.getX(), bp.getY(), bp.getZ(), cp.h2[i] / 2 - 1) >= BlockCode.TEMPLATE) {
-                // the empty chest of a park fountain (asked for by the user)
+                // the empty chest of a park fountain
                 r.stat("fountain_chests", 1);
                 if (loot) {
                     r.fail("loot_in_city", bp.toShortString() + " fountain chest with a loot table");

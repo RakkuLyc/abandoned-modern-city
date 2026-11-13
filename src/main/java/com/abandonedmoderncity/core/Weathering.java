@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Nature taking over the structures (asked by the user, 13 nov 2026), modeled on apocalyptic_building_57x45: applied to
+ * Nature taking over the structures, modeled on apocalyptic_building_57x45: applied to
  * every template when it is loaded, before anything else reads it, and switched off by the config option
  * {@code structureOvergrowth} ({@link #enabled}). It only adds what a structure lacks to reach the measures of that
  * building; one that already has as much keeps what it has. Above the ground layer only (the yard stays as built):
@@ -18,7 +18,7 @@ import java.util.Map;
  *   those under a roof and {@link #GREEN_OPEN} of those under the open sky. A stone or concrete floor turns into
  *   moss, grass or dirt (in the shares of that building), often with a moss carpet, grass, a fern or a dead bush on
  *   it; any other full block (wood) only gets a moss carpet;</li>
- *   <li>vines on the facades (asked by the user, 13 nov 2026: longer, aggressive, on all sides): strands of 3 to 12
+ *   <li>vines on the facades, long and on all sides: strands of 3 to 12
  *   blocks hanging down the outer walls, in patches, up to {@link #VINES} of the outer facade of each side, and a few
  *   under the eaves;</li>
  *   <li>cobblestone and stone bricks next to the new green (2 blocks or less) turn mossy, half of them.</li>
@@ -395,11 +395,11 @@ public final class Weathering {
     }
 
     /**
-     * Strands of vines on every side, up to {@link #VINES} of the outer facade of that side (asked by the user, 13 nov
-     * 2026: longer, aggressive, on all sides). Strands of {@link #STRAND_MIN} to {@link #STRAND_MAX} blocks hang down
-     * from where they start to a floor or the ground; they start where a value noise over the facade is highest, so
-     * they gather in patches that cover stretches of wall and leave others bare. A side already that covered keeps
-     * what it has. Under the eaves (a full block above, outside), one vine in {@link #EAVES} holds by its top.
+     * Strands of vines on every side, up to {@link #VINES} of the outer facade of that side. Strands of
+     * {@link #STRAND_MIN} to {@link #STRAND_MAX} blocks hang down from where they start to a floor or the ground; they
+     * start where a value noise over the facade is highest, so they gather in patches that cover stretches of wall and
+     * leave others bare. A side already that covered keeps what it has. Under the eaves (a full block above, outside),
+     * one vine in {@link #EAVES} holds by its top.
      */
     private static int vines(Editor e, int gy, int x0, int z0, int x1, int z1, long seed) {
         int[] b = e.box;
@@ -477,7 +477,7 @@ public final class Weathering {
         return added;
     }
 
-    /** Share of the outer facade of each side with vines (asked by the user: strong, ~25%). */
+    /** Share of the outer facade of each side with vines (more than the model building has: a strong overgrowth). */
     static final double VINES = 0.25;
     static final int STRAND_MIN = 3;
     static final int STRAND_MAX = 12;

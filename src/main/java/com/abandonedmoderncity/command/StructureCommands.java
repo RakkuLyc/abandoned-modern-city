@@ -83,8 +83,8 @@ public final class StructureCommands {
     }
 
     /**
-     * {@code spawn <category> <name>} under {@code /amcs} (asked by the user, 13 nov 2026: the structures by category,
-     * e.g. {@code /amcs spawn building abandoned_wide_building}); the names suggested are those of the category.
+     * {@code spawn <category> <name>} under {@code /amcs}: the structures by category (e.g.
+     * {@code /amcs spawn building abandoned_wide_building}); the names suggested are those of the category.
      */
     static ArgumentBuilder<CommandSourceStack, ?> spawnNode() {
         return Commands.literal("spawn").then(Commands.argument("category", StringArgumentType.word())

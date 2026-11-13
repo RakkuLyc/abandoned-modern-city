@@ -331,7 +331,7 @@ class WorldPlanTest {
                 for (var e : groups.entrySet()) {
                     assertTrue(e.getValue() <= Structures.LIMITS.get(e.getKey()), c + " " + e);
                 }
-                // never the same building twice in a city (asked by the user)
+                // never the same building twice in a city
                 for (var e : buildings.entrySet()) {
                     assertEquals(1, e.getValue(), c + " has " + e.getValue() + " " + e.getKey());
                 }

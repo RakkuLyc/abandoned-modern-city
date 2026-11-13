@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Where the leaves completing the tree crowns cut by the edge of a structure's template go (asked by the user,
- * 13 nov 2026; {@link Structures.Def#overhangs}): they hang out of the structure's lot. Over a street or sidewalk
+ * Where the leaves completing the tree crowns cut by the edge of a structure's template go
+ * ({@link Structures.Def#overhangs}): they hang out of the structure's lot. Over a street or sidewalk
  * only from {@link Params#CLEARANCE} + 1 blocks over its surface up (above the room kept free for vehicles), never
  * over a highway wall; over the core of the block (or a park) where that lot plans nothing; never into another
  * structure. The world places them only where there is air.

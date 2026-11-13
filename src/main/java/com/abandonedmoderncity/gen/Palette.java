@@ -55,9 +55,9 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.storage.loot.LootTable;
 
 /**
- * Every block the generator places. Any hardness is allowed (the user lifted the old limit), but nothing may be
- * unbreakable: {@link #validate} checks the whole list at startup and refuses to run otherwise. The only container is
- * the empty chest of some park fountains, so there is no loot.
+ * Every block the generator places. Any hardness is allowed, but nothing may be unbreakable: {@link #validate} checks
+ * the whole list at startup and refuses to run otherwise. The containers are the empty chest of some park fountains and
+ * those of the structures, which get a loot table when they are placed ({@link #lootTable}).
  */
 public final class Palette {
     private Palette() {
@@ -66,8 +66,7 @@ public final class Palette {
     public static final BlockState AIR = Blocks.AIR.defaultBlockState();
 
     // ------------------------------------------------------------------ roads
-    /** Lanes: polished blackstone (a slab on highway ramps). */
-    /** The asphalt: polished deepslate (asked by the user, 12 nov 2026; was polished blackstone). */
+    /** The asphalt: polished deepslate (a slab on highway ramps). */
     public static final BlockState LANE = Blocks.POLISHED_DEEPSLATE.defaultBlockState();
     public static final BlockState LANE_SLAB = Blocks.POLISHED_DEEPSLATE_SLAB.defaultBlockState();
     /** Worn road textures, by variant (core/RoadDecay.texture). */
@@ -386,7 +385,7 @@ public final class Palette {
     }
 
     /**
-     * The block entities allowed (asked for by the user): the empty chest of the park fountain and what the building
+     * The block entities allowed: the empty chest of the park fountain and what the building
      * structures bring, always empty and without loot: chests, barrels, brewing stands, decorated pots, lecterns,
      * furnaces (blast furnace, smoker), beds, campfires, daylight detectors, jukeboxes, banners, skulls, dispensers,
      * droppers and chiseled bookshelves (empty). The structures' containers get a loot table when placed (ChunkBuilder.loot).
@@ -409,7 +408,7 @@ public final class Palette {
     }
 
     /**
-     * Loot table of a container {@code s} of a structure (asked by the user, 13 nov 2026; tables written by
+     * Loot table of a container {@code s} of a structure (tables written by
      * {@code tools/gen_loot.py}, vanilla items only): one set per kind of structure (house, pharmacy, workshop, gas_station,
      * building) and, in each, the tier of the container: chests normal ({@code chest}), barrels, dispensers and droppers
      * poorer and often empty ({@code barrel}), decorated pots one stack ({@code pot}); a container hard to get to

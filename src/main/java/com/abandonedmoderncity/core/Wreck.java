@@ -4,10 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Damage along a highway (asked by the user, 12 nov 2026), a pure function of the highway and its profile: holes
- * through the deck of the bridges, about one per {@link #HOLE_EVERY} blocks of bridge, irregular, 5 to 7 blocks across
- * and 4 to 5 along, in the middle of the lanes. (Cave-ins in the tunnels were tried and dropped the same day: the
- * user wants the tunnels clear.)
+ * Damage along a highway, a pure function of the highway and its profile: holes through the deck of the bridges,
+ * about one per {@link #HOLE_EVERY} blocks of bridge, irregular, 5 to 7 blocks across and 4 to 5 along, in the middle
+ * of the lanes. The tunnels stay clear (cave-ins were tried and dropped).
  * A site is located by its index {@code k} along the highway and its signed distance {@code across} from the
  * centerline (positive to the left of the direction of travel, as {@code Highway.project} gives it).
  */

@@ -1,7 +1,7 @@
 package com.abandonedmoderncity.core;
 
 /**
- * Abandoned roads (asked by the user, 12 nov 2026): about 30% of the road columns are taken over, in patches and
+ * Abandoned roads: about 30% of the road columns are taken over, in patches and
  * cracks that are a pure function of the position (and the world seed), on city streets, sidewalks, highways and
  * bridges (not in tunnels, on the half-slab steps of ramps or under the highway walls); the other columns get a worn
  * texture ({@link #texture}). A taken column
@@ -23,7 +23,7 @@ public final class RoadDecay {
     static final double CRACK = 0.06;
     private static final long SALT = 0x524F4144L;
 
-    /** Whether a road column with this zone and structure can be taken over (bridges too, since 12 nov 2026). */
+    /** Whether a road column with this zone and structure can be taken over (bridges included). */
     public static boolean eligible(byte zone, byte struct, boolean slab) {
         return !slab && struct != Profile.TUNNEL && zone != ChunkPlan.PARAPET;
     }
@@ -147,7 +147,7 @@ public final class RoadDecay {
         return Math.min(BRIDGE_STONES - 1, (int) (k * BRIDGE_STONES));
     }
 
-    /** Share of the bridge edge columns from which a vine hangs down to the ground (asked by the user). */
+    /** Share of the bridge edge columns from which a vine hangs down to the ground. */
     public static final double BRIDGE_VINES = 0.35;
 
     /** Whether a vine strand hangs at (x, z), just outside a bridge edge. */

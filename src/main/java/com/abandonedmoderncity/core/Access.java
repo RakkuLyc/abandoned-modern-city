@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Containers of a structure that are hard to get to (asked by the user, 13 nov 2026): their loot is more generous.
+ * Containers of a structure that are hard to get to: their loot is more generous, a reward for the climb.
  * A container is hard to get to when it stands {@link #HIGH} or more blocks above the city ground, or when no one
  * walking in from the street reaches it without breaking blocks. Pure function of the template.
  * <p>

@@ -48,8 +48,8 @@ public final class Template {
     }
 
     /**
-     * This template with the banners of {@code src} copied in (asked by the user, 13 nov 2026: the color variants of the
-     * pharmacies were saved without the D R U G S T O R E letters): each banner of {@code src} at (x, y, z) goes to
+     * This template with the banners of {@code src} copied in (the color variants of the pharmacies were saved without
+     * the D R U G S T O R E letters): each banner of {@code src} at (x, y, z) goes to
      * (x + dx, y, z + dz), with the color {@code from} replaced by {@code to} in its block and in its layers. The
      * template grows when a banner falls just outside it. Every banner must land on air (or outside) and hang on a
      * block of this template, or loading fails.
@@ -128,8 +128,8 @@ public final class Template {
 
     /**
      * This template with the neutral blocks of {@code src} (same size and place) put back where this one painted them
-     * another color (asked by the user, 13 nov 2026: the color variants of the pharmacies spell F A R M Á C I A in
-     * colored blocks on a white wall, which the originals do not have). Returns the cells changed in {@code count[0]}.
+     * another color (the color variants of the pharmacies spell F A R M Á C I A in colored blocks on a white wall,
+     * which the originals do not have). Returns the cells changed in {@code count[0]}.
      */
     Template withNeutralFrom(Template src, int[] count) {
         // the same place; the original may be a little larger (the big pharmacy has a column of banners more)
@@ -185,7 +185,7 @@ public final class Template {
         return palette.indexOf(state);
     }
 
-    /** The park fountain (waterfall.nbt, supplied by the user). */
+    /** The park fountain (waterfall.nbt). */
     public static final Template WATERFALL = load("waterfall");
 
     static Template load(String name) {
