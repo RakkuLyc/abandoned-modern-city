@@ -18,7 +18,8 @@
    Before each commit, check whether any of these files went out of date. The values come from the code and the
    tests, never from memory. In the summary of the stage, say which documents were updated.
 7. **World fingerprint** (since 12 Nov 2026): `FingerprintTest` keeps what the planner produces (the values of commit
-   `4dd94ae`; `layout`, `structures` and `weathering`, which hold the names, since the English names) and the battery
+   `4dd94ae`; `layout`, `structures` and `weathering`, which hold the names, since the English names; `layout` again
+   since the special structures in ~1 city in 10, commit `21cd4f6`) and the battery
    prints per target `mod blocks:` (the blocks the mod decides in the generated world; the reference is in
    `docs/TESTING.md`, section 6, with another one for `structureOvergrowth = false`). In a change that must not alter
    the world (cleanup, splitting files, comments), the test passes and the `mod blocks:` and `stats:` lines stay the
@@ -257,8 +258,9 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   - limits per city (`Structures.LIMITS`): pharmacies 3 (both kinds), workshops 2 (both kinds), gas stations 2 (both
     kinds), special 1 (the ramp building), police station 1; the `special` category only in the cities that draw
     `City.SPECIAL_CHANCE` = 0.40 (`City.allowsSpecial`, from the city's seed; asked by the user after 13 Nov 2026:
-    "around 1 in 10 cities"): the others start with the group full. The ramp building only fits some rows, so with
-    the draw 127 of the 1,129 test cities have it (11.2%, ~10% expected); before, 256 (22.7%). Only the cities that
+    "around 1 in 10 cities"): the others start with the group full. The ramp building only fits some rows (a city that may
+    have it gets it ~27% of the time): over 2,838 distinct cities of 50 world seeds, 10.5% have it (39.0% may);
+    in the test cities (1,129, but only 170 distinct: the 7 terrains repeat the cities) 11.2%, before 22.7%. Only the cities that
     had it changed (they get other structures there); and each building (types `buildings_*` and `special`,
     `Def.onePerCity`) at most 1 time per city, in any block (13 Nov 2026, asked by the user: there were cities with 2
     or 3 bluish buildings; houses, pharmacies, workshops and gas stations may repeat within the limits); 6.30

@@ -709,10 +709,10 @@ public final class City {
 
     /**
      * Share of the cities that may have a structure of the {@code special} category (the ramp building), for ~1 city
-     * in 10 with it (asked by the user). It only fits the short-side rows: without this draw 22.7% of the cities had it
-     * (256 of the 1,129 cities of the tests); with 0.40, 44% of the cities may have it, ~10% expected, 11.2% (127) in
-     * the tests. Only the cities that had it change: those that do not draw it get other structures there. More
-     * special structures would raise the share: measure again ({@code WorldPlanTest}) and adjust.
+     * in 10 with it (asked by the user). It only fits some rows, so a city that may have it gets it ~27% of the time:
+     * over 2,838 distinct cities of 50 world seeds, 39.0% may have it and 10.5% have it (the cities of the tests, 170
+     * distinct ones, 11.2%; 22.7% there before this draw). Only the cities that had it change: those that do not draw
+     * it get other structures there. More special structures would raise the share: measure again and adjust.
      */
     public static final double SPECIAL_CHANCE = 0.40;
 
