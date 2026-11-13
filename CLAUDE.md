@@ -23,8 +23,10 @@
    deve alterar o mundo (limpeza, divisão de arquivos, comentários), o teste passa e as linhas `mod blocks:` e
    `stats:` ficam iguais (menos `loot_containers_anywhere`, que conta baús do vanilla). O que a bateria não cobre
    (vinhas das pontes, aterro, taludes, vedação de líquidos) se confere, numa mudança que só move código, pela
-   listagem de instruções (`javap -c -p`) igual das funções movidas. Num commit que muda o mundo de propósito,
-   atualizar os valores esperados do teste e a referência da bateria, e dizer isso na mensagem do commit.
+   listagem de instruções (`javap -c -p`) igual das funções movidas. As ferramentas ficam em `tools/verify/`
+   (`compare_battery.py`, `javap_dump.sh`, `compare_methods.py`, `compare_block_detail.py`, `chunk_diff.py`) e os
+   relatórios de referência em `tools/verify/reference/`. Num commit que muda o mundo de propósito, atualizar os
+   valores esperados do teste e a referência da bateria, e dizer isso na mensagem do commit.
 
 ## Projeto
 

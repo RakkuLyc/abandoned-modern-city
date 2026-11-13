@@ -15,6 +15,8 @@ limites por cidade para farmácias, oficinas e postos.
 - Testes unitários: `./gradlew test` (renders em `build/test-renders/`)
 - Bateria no mundo: `tools/selftest.sh [full|quick] [seed...]` (relatórios em `run/selftest/<seed>/`); detalhes em
   `docs/TESTES.md`
+- Conferir que uma mudança não alterou o mundo: `tools/verify/` (impressão digital da bateria contra a referência,
+  listagem de instruções função por função, blocos de dois mundos salvos); detalhes em `docs/TESTES.md`
 - Nenhuma dependência opcional: sem Immersive Vehicles, Zombie Extreme, Big Lost City ou mixins.
 - `libs/` **não é versionada** (está no `.gitignore`) e **não é necessária para compilar**: `./gradlew build` funciona
   sem ela. A pasta guarda jars de mods de terceiros usados só como fonte de consulta (loot tables do Apocalypse Loot,

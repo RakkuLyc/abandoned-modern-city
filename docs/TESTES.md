@@ -294,9 +294,15 @@ tools/selftest.sh quick 20261027                 # bateria rápida (3 alvos), ~4
 tools/selftest.sh full 20261027 -3297019724594858492 3478477863671517581 1
 cat run/selftest/<seed>/report.txt               # termina com RESULT: PASS ou FAIL
 ./gradlew test --tests '*FingerprintTest'        # impressão digital do planejador, ~30 s
-# comparar duas baterias (mudança que não deve alterar o mundo):
-diff <(grep -E 'mod blocks:|stats:' A/report.txt | sed 's/loot_containers_anywhere=[0-9]*, //') \
-     <(grep -E 'mod blocks:|stats:' B/report.txt | sed 's/loot_containers_anywhere=[0-9]*, //')
+# conferências de uma mudança que não deve alterar o mundo (tools/verify/):
+python3 tools/verify/compare_battery.py run/selftest/<seed>/report.txt      # contra a referência (seção 6)
+python3 tools/verify/compare_battery.py R.txt tools/verify/reference/battery-20261027-quick-overgrowth-off.txt
+tools/verify/javap_dump.sh build/verify/antes                # listagem de instruções, antes da mudança
+tools/verify/javap_dump.sh build/verify/depois               # e depois (./gradlew compileJava entre os dois)
+python3 tools/verify/compare_methods.py build/verify/antes build/verify/depois [--owners A,B] [--ignore-slots]
+# se uma linha mod blocks: mudar: onde (por chunk e coluna) e quais blocos
+python3 tools/verify/compare_block_detail.py A/renders/t01_blocks.txt B/renders/t01_blocks.txt
+python3 tools/verify/chunk_diff.py run/selftest_world_ref_4dd94ae <outro mundo> CX,CZ --ymin 60
 ```
 
 O `run/config/abandonedmoderncity-common.toml` do servidor de desenvolvimento tem valores antigos (`cellSize = 512`,
@@ -461,7 +467,8 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
   | t07 rampa mais longa (360) | `f960ad531d4199d12ecf42bb72b87d9a199bc1fccb85235572528b07c3dcc118` | 191 450 | 0 |
   | t08 rodovia inteira | `fe0310e800f1b7b6492e15424037fe9a3fda24c90ad61d3c50e0b35a6c1cfe10` | 1 280 207 | 850 |
 
-  O relatório completo e o mundo dessa rodada ficam (fora do git) em `run/selftest/ref_4dd94ae/` e
+  O relatório completo fica no git em `tools/verify/reference/battery-20261027-full.txt` (o que
+  `tools/verify/compare_battery.py` compara); o mundo dessa rodada fica (fora do git) em
   `run/selftest_world_ref_4dd94ae/`, para comparar bloco a bloco se alguma linha mudar.
 - **Referência com o abandono desligado** (`structureOvergrowth = false`, escopo rápido, 13 nov 2026, tirada no commit
   `254ca56`; que a geração seja a do `4dd94ae` é dedução: as conferências dos passos 1 e 2 mostraram o mesmo mundo com
@@ -474,5 +481,6 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
   | t02 túnel mais longo (352) | `cda3911413a903abc703d9e623e12e08ea508adaf2441cd7c4e8fcd1743a3722` | 541 806 | 164 |
   | t03 ponte mais longa sobre água (349) | `6d7016e75a48abb1314cae4d0762c13913f02d1929cd679b4e581609238c4fa4` | 452 586 | 605 |
 
-  Relatório e mundo em `run/selftest/off_fresh/` e `run/selftest_world_ref_off/` (fora do git).
+  Relatório no git em `tools/verify/reference/battery-20261027-quick-overgrowth-off.txt`; mundo em
+  `run/selftest_world_ref_off/` (fora do git).
 - Em nenhuma rodada houve degrau, buraco, obstáculo, pilar flutuante, rodovia sem conexão, bloco indestrutível nas vias, pontes e túneis depois das correções 4 e 5. Containers das estruturas têm loot tables vanilla próprias (13 nov 2026: tema da estrutura × tipo de contêiner × acesso), auditados por `structure_without_loot`, `structure_wrong_loot`, `loot_in_city` e `container_in_city`.
