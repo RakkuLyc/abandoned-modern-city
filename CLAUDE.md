@@ -19,10 +19,12 @@
    testes, nunca da memória. No resumo da etapa, dizer quais documentos foram atualizados.
 7. **Impressão digital do mundo** (desde 12 nov 2026): `FingerprintTest` guarda o que o planejador produz (valores
    do commit `4dd94ae`) e a bateria imprime por alvo `mod blocks:` (os blocos que o mod decide no mundo gerado; a
-   referência fica em `docs/TESTES.md`, seção 6). Numa mudança que não deve alterar o mundo (limpeza, divisão de
-   arquivos, comentários), o teste passa e as linhas `mod blocks:` e `stats:` ficam iguais (menos
-   `loot_containers_anywhere`, que conta baús do vanilla). Num commit que muda o mundo de propósito, atualizar os
-   valores esperados do teste e a referência da bateria, e dizer isso na mensagem do commit.
+   referência fica em `docs/TESTES.md`, seção 6, com outra para `structureOvergrowth = false`). Numa mudança que não
+   deve alterar o mundo (limpeza, divisão de arquivos, comentários), o teste passa e as linhas `mod blocks:` e
+   `stats:` ficam iguais (menos `loot_containers_anywhere`, que conta baús do vanilla). O que a bateria não cobre
+   (vinhas das pontes, aterro, taludes, vedação de líquidos) se confere, numa mudança que só move código, pela
+   listagem de instruções (`javap -c -p`) igual das funções movidas. Num commit que muda o mundo de propósito,
+   atualizar os valores esperados do teste e a referência da bateria, e dizer isso na mensagem do commit.
 
 ## Projeto
 

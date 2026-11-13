@@ -64,6 +64,15 @@ bateria ficam iguais às da referência (seção 6). A exceção é `loot_contai
 vanilla, que variam. Um commit que mude o mundo de propósito atualiza os valores esperados do teste e a referência
 da bateria, e diz isso.
 
+Com o abandono das estruturas desligado (`structureOvergrowth = false`) as estruturas mudam, então a referência é
+outra: a da bateria rápida com essa opção (seção 6). Para tirá-la, troque a linha em
+`run/config/abandonedmoderncity-common.toml`, rode `-PselfTestScope=quick` e volte a linha depois.
+
+O que a impressão da bateria não cobre: as vinhas penduradas nas pontes (achado 65: o lugar delas depende de uma
+árvore do vanilla chegar antes), o aterro sob as vias, os taludes e a vedação de líquidos. Numa mudança que só move
+código de lugar (passo 3 da revisão), a prova para essas partes é comparar a listagem de instruções (`javap -c -p`)
+de cada função movida, antes e depois: o corpo tem de ser o mesmo.
+
 A **bateria automática** (`tools/selftest.sh`) faz, para cada seed:
 1. cria um mundo novo num servidor dedicado de desenvolvimento (porta 25591);
 2. escolhe os alvos a partir da própria rede planejada;
@@ -273,6 +282,7 @@ e a regra de escada e apoio no mesmo chunk.
 | 62 | Teste no jogo pelo usuário, 13 nov | aldeões e golem de ferro numa cidade gerada onde havia uma vila | as criaturas da vila nascem com as casas, antes da cidade, e ficavam no chunk quando a cidade era construída por cima | o mod as tira do chunk em geração na cidade e a até 32 blocos dela (aldeões, aldeões zumbis, golens, gatos) |
 | 63 | Bateria, 13 nov (postes abandonados) | `street_light` (até 962 por alvo): vinhas dos postes faltando | o reparo de vizinhos recolocava as peças do poste e logo depois a limpeza de plantas penduradas sobre a via apagava as vinhas | a limpeza poupa as peças planejadas dos postes |
 | 64 | Revisão do código, 12 nov (impressão digital) | os blocos de cada alvo mudaram entre duas rodadas iguais da bateria (mesmo código, mesma seed), também o número de block entities (1 142 e 1 017 na ponte) | o próprio Minecraft não gera igual quando o servidor gera os chunks em paralelo: features de chunks vizinhos postas em outra ordem mudam minérios, sculk, árvores, colmeias e baús (1 073 de 1 369 chunks diferentes na cidade do spawn, de y −64 para cima); nas posições do mod só mudaram propriedades que o Minecraft recalcula pelos vizinhos ao terminar um chunk: a distância das folhas e as ligações de barras e vidraças (na borda do chunk), a forma de uma escada, a neve sobre a grama, `cave_air` no lugar de ar, um lado de muro baixo ou alto, uma face de vinha presa num bloco do chunk vizinho; e o baú vazio de uma fonte só existia como block entity depois de recarregar o mundo | a impressão da bateria (`mod blocks:`) cobre só as posições que o mod decide, com essas propriedades em valor fixo e só os block entities das estruturas; conferida em mundos gerados à parte, recém-gerados e recarregados do disco (seção 6), e sensível a um bloco trocado na paleta (`smooth_basalt` → `basalt` no asfalto gasto: auditoria passa, impressão muda nos 3 alvos) |
+| 65 | Revisão do código, 13 nov (impressão digital) | com as vinhas das pontes na impressão da bateria, 3 dos 8 alvos diferiram entre o mundo de referência e um mundo novo do mesmo código | o lugar da vinha (ao lado do tabuleiro, descendo pelo ar) às vezes já tem folhas de uma árvore do vanilla (bétula, abeto), conforme a ordem em que os chunks vizinhos são decorados; numa coluna havia ar num mundo e vinha no outro | as vinhas das pontes ficaram fora da impressão; num passo que só move código, a prova é a listagem de instruções igual da função movida |
 | — | Bateria (infraestrutura) | servidores falhando com "Address already in use" | um servidor de uma bateria interrompida ainda terminava | o script usa a porta 25591 e se recusa a começar com um servidor de desenvolvimento vivo |
 
 ## 4. Como reproduzir
@@ -288,6 +298,10 @@ cat run/selftest/<seed>/report.txt               # termina com RESULT: PASS ou F
 diff <(grep -E 'mod blocks:|stats:' A/report.txt | sed 's/loot_containers_anywhere=[0-9]*, //') \
      <(grep -E 'mod blocks:|stats:' B/report.txt | sed 's/loot_containers_anywhere=[0-9]*, //')
 ```
+
+O `run/config/abandonedmoderncity-common.toml` do servidor de desenvolvimento tem valores antigos (`cellSize = 512`,
+`maxRadius = 131`) que o mod recusa como inconsistentes: o log diz "Invalid config ... using the defaults" e a
+bateria usa os padrões (736 e 230), como mostra a primeira linha do relatório.
 
 No jogo (op):
 - `/amcs locate city` (ou `highway`, `tunnel`, `bridge`);
@@ -389,6 +403,7 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
   | Seed | Escopo | Data | Versão | Resultado |
   |---|---|---|---|---|
+  | `20261027` | rápido (3 alvos) | 13 nov | referência com `structureOvergrowth = false` (log "Structure overgrowth off") | PASS: 3 de 3, 0 erros de geração; mundo novo e recarregado com as mesmas 3 linhas `mod blocks:` (a referência acima); 4,59 ms por chunk, 149 s |
   | `20261027` | padrão (8 alvos) | 13 nov | revisão: 3 constantes que ficaram sem uso (`Params.ARC_RADIUS`, `AVENUE_EVERY`, `LOT_SETBACK`) | PASS: 8 de 8, 0 erros de geração; `mod blocks:` e contagens iguais à referência; 142 estados da paleta; 2,79 ms por chunk, 253 s. Impressão digital do planejador igual |
   | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 2d: ruas cortadas retiradas (`City.MAX_CUTS`, o sorteio dos cortes, `removed_street` e o teste delas) | PASS: 8 de 8, 0 erros de geração; as 8 linhas `mod blocks:` iguais à referência e as contagens iguais (menos `loot_containers_anywhere`); 142 estados da paleta; 2,73 ms por chunk, 248 s. Impressão digital do planejador igual |
   | `20261027` | padrão (8 alvos) | 13 nov | revisão, passo 2c: código morto (estilos de prédio do Simple City, tipos de lote praça e vazio, 26 códigos de bloco, argumento `style` de `Palette.of`, 11 declarações sem uso) | PASS: 8 de 8, 0 erros de geração; as 8 linhas `mod blocks:` iguais à referência e as contagens iguais (menos `loot_containers_anywhere`); 142 estados da paleta validados (eram 218: saíram os dos estilos); 2,71 ms por chunk, 250 s. Impressão digital do planejador igual |
@@ -445,4 +460,14 @@ há ~700 blocos de vinha descendo das bordas; uma "ponte" de 12 blocos sobre um 
 
   O relatório completo e o mundo dessa rodada ficam (fora do git) em `run/selftest/ref_4dd94ae/` e
   `run/selftest_world_ref_4dd94ae/`, para comparar bloco a bloco se alguma linha mudar.
+- **Referência com o abandono desligado** (`structureOvergrowth = false`, escopo rápido, 13 nov 2026, geração igual
+  à do commit `4dd94ae`). O mundo novo e o mesmo mundo recarregado deram estes 3 valores:
+
+  | Alvo | SHA-256 | Posições | Block entities |
+  |---|---|---|---|
+  | t01 cidade mais próxima do spawn | `c7eaaa5b7a0a3f1c866d536c2420716dba9dc13efdc50c7f3fb55730842c73f0` | 1 874 811 | 2 055 |
+  | t02 túnel mais longo (352) | `cda3911413a903abc703d9e623e12e08ea508adaf2441cd7c4e8fcd1743a3722` | 541 806 | 164 |
+  | t03 ponte mais longa sobre água (349) | `6d7016e75a48abb1314cae4d0762c13913f02d1929cd679b4e581609238c4fa4` | 452 586 | 605 |
+
+  Relatório e mundo em `run/selftest/off_fresh/` e `run/selftest_world_ref_off/` (fora do git).
 - Em nenhuma rodada houve degrau, buraco, obstáculo, pilar flutuante, rodovia sem conexão, bloco indestrutível nas vias, pontes e túneis depois das correções 4 e 5. Containers das estruturas têm loot tables vanilla próprias (13 nov 2026: tema da estrutura × tipo de contêiner × acesso), auditados por `structure_without_loot`, `structure_wrong_loot`, `loot_in_city` e `container_in_city`.
