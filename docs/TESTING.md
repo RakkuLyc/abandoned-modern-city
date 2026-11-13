@@ -417,6 +417,15 @@ road on the ground, without a bridge wall).
   | `bluish_building` | 22% / 0% / 7% / 7% / 6% | 31% / 8% / 35% / 26% / 26% |
   | `tower` | 39% / 2% / 4% / 4% / 3% | 49% / 8% / 35% / 26% / 26% |
   | `apocalyptic_building_57x45` | 31% / 9% / 43% / 11% / 9% | 31% / 9% / 43% / 27% / 27% |
+  | `abandoned_modern_garage_house` | 13% / 35% / 43% / 32% / 25% | 31% / 35% / 43% / 32% / 25% |
+  | `abandoned_glass_house` | 7% / 40% / 44% / 33% / 15% | 31% / 40% / 44% / 37% / 25% |
+  | `abandoned_small_building` | 100% / 31% / 14% / 27% / 14% | 100% / 31% / 35% / 29% / 25% |
+  | `brutalist_u_building_75x58` | 70% / 6% / 13% / 4% / 3% | 71% / 8% / 35% / 25% / 25% |
+  | `abandoned_wide_building` | 27% / 15% / 10% / 24% / 13% | 31% / 15% / 34% / 28% / 25% |
+  | `abandoned_green_tower` | 24% / 23% / 21% / 24% / 11% | 33% / 23% / 35% / 28% / 25% |
+  | `abandoned_ramp_building` | 32% / 4% / 2% / 2% / 0% | 40% / 8% / 35% / 26% / 25% |
+  | `abandoned_crash_building` | 69% / 15% / 23% / 9% / 8% | 69% / 15% / 35% / 26% / 25% |
+  | `abandoned_police_station` | 58% / 30% / 38% / 30% / 23% | 58% / 30% / 38% / 31% / 26% |
 
 - **In-world battery** (each row keeps the names in use on its date: before the English names the
   structures, categories and loot tiers had Portuguese names, such as `predio_largo_abandonado` for
