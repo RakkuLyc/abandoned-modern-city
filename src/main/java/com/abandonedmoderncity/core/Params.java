@@ -36,12 +36,8 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
     /** Dash / gap of the street center marking. */
     public static final int DASH = 11;
     public static final int DASH_GAP = 6;
-    /** Radius of the curved corners on the outside of the city (convex corners of the street ring). */
-    public static final double ARC_RADIUS = 24;
     /** Largest amplitude of the gentle street waves (blocks). */
     public static final double MAX_WARP = 10;
-    /** Every third grid line is an avenue. */
-    public static final int AVENUE_EVERY = 3;
 
     // ------------------------------------------------------------------ cross sections (half widths from the centerline)
 
@@ -68,8 +64,6 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
     public static final int CITY_SKIRT = 32;
     /** Slopes (1:1) beside a highway on the ground reach this far beyond its edge. */
     public static final int HIGHWAY_SKIRT = 20;
-    /** Gap between the outer street edge and lots. */
-    public static final double LOT_SETBACK = 1.0;
 
     // ------------------------------------------------------------------ highways
 

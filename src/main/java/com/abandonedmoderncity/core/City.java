@@ -14,9 +14,8 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
  * <h2>Streets</h2>
  * Every block side that touches at least one city block is a street segment. So every street node has degree 2, 3
  * or 4: there are no dead ends anywhere, and the outer streets form closed rings around the city. Where only one of the
- * four blocks around a node is a city block (a convex corner of the city outline) the corner is rounded with an arc of
- * {@link Params#ARC_RADIUS}. Segments inside the city follow the class of their grid line (every third line is an
- * avenue); segments on the outline are always streets.
+ * four blocks around a node is a city block (a convex corner of the city outline) the two outer streets meet at a right
+ * angle. Every segment is a street of the same width.
  *
  * <h2>Stages</h2>
  * {@link #create} only samples a handful of terrain points (does the cell have a city, where, how big, at what height);

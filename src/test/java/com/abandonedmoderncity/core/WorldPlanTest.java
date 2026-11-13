@@ -422,8 +422,6 @@ class WorldPlanTest {
                     if (!c.xSegment(i, j) || c.cornerAt(i, j) != 0 || c.cornerAt(i, j + 1) != 0) {
                         continue;
                     }
-                    boolean boundary = c.isCityBlock(i - 1, j) != c.isCityBlock(i, j);
-                    boolean avenue = !boundary && Math.floorMod(i, Params.AVENUE_EVERY) == 0;
                     int z = (int) Math.floor(c.V(j) + c.SZ / 2.0);
                     int xc = (int) Math.floor(c.U(i));
                     int width = 0;
