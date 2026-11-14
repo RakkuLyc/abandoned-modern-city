@@ -123,9 +123,8 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   | `pharmacy` | the pharmacies | bottles, sugar, potions of healing, regeneration, night vision, fire resistance | healing II, long regeneration, bottles o' enchanting |
   | `workshop` | the workshops | iron, copper, coal, chains, worn iron tools, rails, pistons | diamond, iron block, enchanted tools, hopper, anvil |
   | `gas_station` | the gas stations | snacks, coal, lava bucket, map, compass, emeralds | emeralds, gold, golden apple, spyglass |
-  | `building` | the buildings | paper, books, arrows, pencils, redstone, worn bow and sword | diamond, enchanted iron armor, ender pearls, music discs |
+  | `building` | the buildings and the ramp building (whatever their number of containers) | paper, books, arrows, pencils, redstone, worn bow and sword | diamond, enchanted iron armor, ender pearls, music discs |
   | `police_station` | the police station (63 containers) | the same as `building` (its own theme so that an add-on such as AMC TACZ Loot can give it more weapons) | the same |
-  | `building_large` | the buildings with 100+ containers (tower, green tower, crash, wide, ramp, brutalist U) | the same as `building` (its own theme so that an add-on such as AMC TACZ Loot can make them less generous) | the same |
 
   | Container | Normal | Hard to get to (`_hard`) |
   |---|---|---|

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Writes the loot tables of the structures' containers: vanilla items only, one set per kind of structure (house,
-pharmacy, workshop, gas_station, building, building_large, police_station) and six tables per kind (building_large, the
-buildings with 100 or more containers, and police_station have the same items as building: an add-on can change them):
+pharmacy, workshop, gas_station, building, police_station) and six tables per kind (police_station has the same items
+as building: an add-on can change them):
 
   barrel       barrels, dispensers, droppers: 40% have anything, 1 to 3 stacks of common items
   barrel_hard  the same, hard to get to (Access): 75%, 2 to 4 stacks of common and normal items
@@ -113,7 +113,6 @@ THEMES = {
 }
 
 
-THEMES["building_large"] = THEMES["building"]
 # the police station: its own theme with the same vanilla items as building (an add-on can give it more weapons)
 THEMES["police_station"] = THEMES["building"]
 

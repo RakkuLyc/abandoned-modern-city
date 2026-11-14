@@ -146,7 +146,7 @@ Each terrain runs with the seeds `20261104`, `-3297019724594858492` and `42`, on
 | `AccessTest.heightAloneDoesNotMakeAContainerHard` | a barrel 20 blocks above the ground, reachable by a ladder, is not hard (the height rule was removed); a chest on the ground neither |
 | `AccessTest.theChestInTheTreeOfTheModernHouseIsHard` | the chest in the tree of the abandoned modern house (reached by jumping up the leaves) is hard, listed in the `hard` column of `index.txt` (`5,12,17`); the house has no other hard container |
 | `AccessTest.structuresHardContainers` | in the 52 files, with the overgrowth: 29 of 3,106 containers hard to get to (out of reach 28, listed 1; at most 2%); hard = out of reach + listed in every structure; the same in the 4 rotations; the tower, the green tower and the brutalist U building have none (their floors are reached by their stairs); in the houses at most 5% (5 of 407) |
-| `AccessTest.everyStructureHasItsLootTables` | the 6 tables of the theme of each structure exist; exactly the 6 buildings with 100+ containers (tower, green tower, crash, wide, ramp, brutalist U) have the theme `building_large`, only the police station has `police_station`, the apocalyptic building `building`; barrel and pot with a 40% chance, `barrel_hard` 75%, `pot_hard` 80%, chests with no chance of coming empty; nothing from Lost Cities or OAmP |
+| `AccessTest.everyStructureHasItsLootTables` | the 6 tables of the theme of each structure exist; every building and the ramp building have the theme `building` (whatever their number of containers), no structure has `building_large` and its tables are gone, only the police station has `police_station`; barrel and pot with a 40% chance, `barrel_hard` 75%, `pot_hard` 80%, chests with no chance of coming empty; nothing from Lost Cities or OAmP |
 | `BarrelsTest.onlyTheBuildingsAndEveryBarrelOfThem` | the 10 structures of the `building` category have an entry for each of their barrels (794); no other structure has any (the police station and the ramp building keep their barrels) |
 | `BarrelsTest.seventyPercentTakenOutForcedNeverStacksFromTheTop` | over 200 copies (seeds) of each building: the same seed gives the same result; a barrel that holds something (26: tower 25, crash 1) is never taken out; in a stack, never a chest over a barrel taken out; 69.9% taken out in all (within 1 point of 70%), each building with 20+ barrels within 3 points (tower 70.0%, brutalist U 69.8%, crash 69.9%, wide 69.5%, green tower 69.8%, apocalyptic 70.5%, small building 71.1%); ~239 chests per set of the 10 buildings |
 | `BarrelsTest.chestsOpenAndFaceAHorizontalSide` | every chest that replaces a barrel faces north, east, south or west (never up or down) and has no full block or double slab over it (it would not open) |
@@ -447,6 +447,7 @@ road on the ground, without a bridge wall).
 
   | Seed | Scope | Date | Version | Result |
   |---|---|---|---|---|
+  | `20261027` | default (8 targets) and quick with `structureOvergrowth = false` | 14 Nov | loot theme `building_large` taken out (every building uses `building`) | PASS on both (8 of 8 and 3 of 3), 0 generation errors, log "Structure overgrowth off" on the second; every count equal to the reference; t01–t05 and t08 (and the 3 of the quick run) changed only in the loot table names of the big buildings' containers, t06 and t07 equal: the new references (section 6); 2.79 ms per chunk (4.59 ms with the overgrowth off) |
   | `20261027` | default (8 targets) and quick with `structureOvergrowth = false` | 14 Nov | barrels of the buildings: 70% taken out, the others chests, copy by copy (`core/Barrels`) | PASS on both (8 of 8 and 3 of 3), 0 generation errors, log "Structure overgrowth off" on the second; every target with containers changed only in the structures: block entities and containers down (t01 1,375 → 1,175, t02 2,087 → 1,615; with the overgrowth off the same counts), `structure_loot_hard` down where hard barrels were taken out; roads, bridges, lamps, crowns and positions equal: the new references (section 6); 2.74 ms per chunk, 260 s (4.54 ms with the overgrowth off) |
   | `20261027` | default (8 targets) | 13 Nov | review, step 4: code comments without dates, the docs in English (`docs/TESTES.md` → `docs/TESTING.md`), the numbers audit, `WeatheringTest` with the seed of the index (finding 67) and new prints in `RingTest` and `WorldPlanTest`; the code of the mod unchanged since the comments commit (`5eb5b74`), whose bytecode was equal to the commit before in all 1,322 members of the mod and 176 of the tests | PASS: 8 of 8, 0 generation errors; `tools/verify/compare_battery.py` equal to the reference (the 8 `mod blocks:` lines and the counts); 142 palette states, 16 village creatures removed; 2.62 ms per chunk, 240 s |
   | `20261027` | default (8 targets) and quick with `structureOvergrowth = false` | 13 Nov | height rule of the hard containers removed; the chest in the tree of the abandoned modern house listed as hard (`index.txt`, column `hard`) | PASS on both, 0 generation errors; loot containers and block entities equal, `structure_loot_hard` down (t01 291 → 16, t02 1,199 → 15, t03 469 → 18); compared on the saved worlds: only `_hard` → normal loot table names and the tree chests (5 and 2) normal → `chest_hard`, no container of the mod moved: the new references; 2.87 ms per chunk |
@@ -505,21 +506,25 @@ road on the ground, without a bridge wall).
   world (an old test world, generated before the changes, gives false failures on the spawn target: rename
   `run/selftest_world_*`). It is worth running the full battery when there are changes: `tools/selftest.sh full`.
 - **Reference of the battery fingerprint** (`mod blocks:`, seed `20261027`, default scope, 14 Nov 2026, with the
-  structure names in English, the special structures in ~1 city in 10 and the barrels of the buildings; the blocks are those of commit `4dd94ae`, finding 66). In a change that must not alter
+  structure names in English, the special structures in ~1 city in 10, the barrels of the buildings and without the
+  loot theme `building_large`; the blocks are those of commit `4dd94ae`, finding 66). In a change that must not alter
   the world, the 8 lines stay equal to these:
 
   | Target | SHA-256 | Positions | Block entities |
   |---|---|---|---|
-  | t01 city nearest to the spawn | `5169280bdf8ae5cf4b67bfc2d33723e3e45bcf4f265f079181521bc1b813023c` | 1,877,158 | 1,855 |
-  | t02 highest city (level 103) | `464ce566324a77942c1af67f817aa1689e86d60dffa086393e7c386d760ba44c` | 3,290,072 | 2,915 |
-  | t03 roughest city | `6848f7db4495c45ed927cc8bfef1a715421cdebea6b4d9ac7781e0928e3cb747` | 2,225,236 | 1,998 |
-  | t04 longest tunnel (352) | `b7351df1edb113f2e4c005a4bd38c0550e5d270cb7b681fa0a324a18bd344bcc` | 543,064 | 132 |
-  | t05 longest bridge over water (349) | `fb2125da0113548bd0263499de2f73071c70060888cc23b964b54aee9da826cd` | 452,586 | 512 |
+  | t01 city nearest to the spawn | `f0f82a15aec4c20875a03c46ae5fa97c65347d826cebbcaa00cbfae118f4b08b` | 1,877,158 | 1,855 |
+  | t02 highest city (level 103) | `7f4018583fa3a2b9f2906a2f28f8dc49ee5ba457f194819e4b0f7d101c3c64a5` | 3,290,072 | 2,915 |
+  | t03 roughest city | `a5ee3c0ccfddbe6b76e0660e88d4acdee99ee92e9ec8cf1563dad5da7d0f87cf` | 2,225,236 | 1,998 |
+  | t04 longest tunnel (352) | `36116c59174cd0a45ca9fd15f2e99ed064c731b77561a6a825d14bb814a66461` | 543,064 | 132 |
+  | t05 longest bridge over water (349) | `45125b3abcf3c4d3f109650544e7cb31ff50cc1f25c83a7fd5c49da56d69aea4` | 452,586 | 512 |
   | t06 longest dry viaduct (239) | `3f0d0eb10108fd93b83762b06517db3ffd86ada834a63a8232b3d5b351bd1617` | 581,916 | 356 |
   | t07 longest ramp (360) | `f960ad531d4199d12ecf42bb72b87d9a199bc1fccb85235572528b07c3dcc118` | 191,450 | 0 |
-  | t08 whole highway | `948051327cda2bb312dfbc81e4ca1f772dbc41183aba05d55d13bac550c91807` | 822,838 | 527 |
+  | t08 whole highway | `11480fcdff81109bb9cb3f08598cfef3ac4221c6fc69368b9ba38e557ad7b6e7` | 822,838 | 527 |
 
-  Since the barrels of the buildings are taken out (70%) or turned into chests, copy by copy (14 Nov 2026,
+  Since the loot theme `building_large` was taken out (14 Nov 2026) t01–t05 and t08 changed only in the loot table
+  names of the big buildings' containers (`building_large/...` → `building/...`): the same positions, block entities
+  and counts (t06 and t07, without those buildings, the same; the planner's `lots` digest the same). Before, since
+  the barrels of the buildings are taken out (70%) or turned into chests, copy by copy (14 Nov 2026,
   `core/Barrels`), every line but t07 (no container) changed: the same positions and the same roads, streets,
   bridges, lamps and crowns (all the other counts equal), fewer block entities and containers in the structures
   (`structure_loot_containers` t01 1,375 → 1,175, t02 2,087 → 1,615, t03 1,377 → 1,153, t04 127 → 95, t05 300 → 207,
@@ -545,18 +550,19 @@ road on the ground, without a bridge wall).
   `tools/verify/reference/battery-20261027-full.txt` (what `tools/verify/compare_battery.py` compares); the world of
   that run is (outside git) in `run/selftest_world_ref_english/`, and the one from before the names in
   `run/selftest_world_ref_4dd94ae/` (same blocks), to compare block by block if a line changes.
-- **Reference with the overgrowth off** (`structureOvergrowth = false`, quick scope, 14 Nov 2026, with the barrels of
-  the buildings taken out or turned into chests: block entities and containers down as in the default scope, roads
-  and positions equal; before, 13 Nov 2026, with the English names and the loot theme `building_large`, the 3 lines
+- **Reference with the overgrowth off** (`structureOvergrowth = false`, quick scope, 14 Nov 2026, without the loot
+  theme `building_large`: the 3 lines changed only in the loot table names, counts equal; before, the same day, with
+  the barrels of the buildings taken out or turned into chests: block entities and containers down as in the default
+  scope, roads and positions equal; before, 13 Nov 2026, with the English names and the loot theme `building_large`, the 3 lines
   changed only in the loot table names of the containers, checked on the saved worlds, 0 containers of the mod at
   other positions; the world of that run is in `run/selftest_world_ref_off_large/`; the previous one, with the
   Portuguese names, was taken at commit `254ca56`, and the two have the same roads and lots in every chunk):
 
   | Target | SHA-256 | Positions | Block entities |
   |---|---|---|---|
-  | t01 city nearest to the spawn | `89769f35795694ae15f93664be41c2516d1135627860d8c7f73b0e9ea0a9d182` | 1,874,811 | 1,855 |
-  | t02 longest tunnel (352) | `b7575fd2ca6c34826b713cdace475948349b0ad15b26c4bff0ccf3f5f8903c1d` | 541,806 | 132 |
-  | t03 longest bridge over water (349) | `bbf18065a6e097903c91765fd204b5851d45afe8b7f536791614705cf0f92cb7` | 452,586 | 512 |
+  | t01 city nearest to the spawn | `b20a2a541e2644137382a277fa3f4dcfd684f8e6577d39ac377e039898ba3e10` | 1,874,811 | 1,855 |
+  | t02 longest tunnel (352) | `4a0cee821e078057871930a7385e81cd1c343864afe4e6e6781d83acdf7cf2e7` | 541,806 | 132 |
+  | t03 longest bridge over water (349) | `e05755eede6a4e0bda2b2d79b46d92c51d99f3eacbedc03ea76e5df4d3121679` | 452,586 | 512 |
 
   Report in git in `tools/verify/reference/battery-20261027-quick-overgrowth-off.txt`; world (with the Portuguese
   names, same blocks) in `run/selftest_world_ref_off/` (outside git).

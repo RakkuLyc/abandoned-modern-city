@@ -218,10 +218,15 @@ class AccessTest {
         // the police station: its own theme (same vanilla tables as building), for add-ons
         assertEquals(Set.of("abandoned_police_station"), Structures.ALL.stream()
                 .filter(d -> d.lootTheme().equals("police_station")).map(Structures.Def::name).collect(Collectors.toSet()));
-        // the buildings with 100+ containers: their own theme (same vanilla tables), for add-ons
-        assertEquals(Set.of("tower", "abandoned_green_tower", "abandoned_crash_building",
-                        "abandoned_wide_building", "abandoned_ramp_building", "brutalist_u_building_75x58"),
-                Structures.ALL.stream().filter(d -> d.lootTheme().equals("building_large")).map(Structures.Def::name)
-                        .collect(Collectors.toSet()));
+        // every building and the special one use building, whatever their number of containers (the theme
+        // building_large of the buildings with 100+ containers was taken out)
+        for (Structures.Def d : Structures.ALL) {
+            if (d.category().equals("building") || d.category().equals("special")) {
+                assertEquals("building", d.lootTheme(), d.name());
+            }
+        }
+        assertTrue(Structures.ALL.stream().noneMatch(d -> d.lootTheme().equals("building_large")));
+        assertFalse(AccessTest.class.getResource("/data/abandonedmoderncity/loot_table/chests/building_large/chest.json")
+                != null, "the building_large tables are gone");
     }
 }
