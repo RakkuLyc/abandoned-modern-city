@@ -20,7 +20,7 @@
 7. **World fingerprint** (since 12 Nov 2026): `FingerprintTest` keeps what the planner produces (the values of commit
    `4dd94ae`; `layout`, `structures` and `weathering`, which hold the names, since the English names; `layout` again
    since the special structures in ~1 city in 10, commit `21cd4f6`; `structures` again since the loot theme
-   `building_large`) and the battery
+   `building_large`; `lots` since the barrels of the buildings, `core/Barrels`) and the battery
    prints per target `mod blocks:` (the blocks the mod decides in the generated world; the reference is in
    `docs/TESTING.md`, section 6, with another one for `structureOvergrowth = false`). In a change that must not alter
    the world (cleanup, splitting files, comments), the test passes and the `mod blocks:` and `stats:` lines stay the
@@ -253,6 +253,24 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     load, for any structure): standing when the rod points up or down, on the wall when it points sideways; today
     there are 5, one on top of each: tower house, post-apocalyptic mansion, apartment building, apocalyptic building
     and tower (the new structures already come with 12 redstone torches saved and have no lightning rods);
+  - barrels of the buildings (asked by the user on 14 Nov 2026; `core/Barrels`, `Structures.Def.code(..., seed)`):
+    in the 10 structures of the `building` category (types `buildings_*`; not the police station nor the ramp
+    building, which have their own categories), 70% of the barrels (`Barrels.GONE`) are taken out (air; no barrel is on
+    or under the ground layer) and the others become chests (`chest[type=single]`, facing where the barrel's opening faced; a barrel
+    facing up or down gives the first side, north, east, south, west, with air in front). The draw is per copy (the
+    seed of the lot, or a random one for `/amcs spawn`, and the cell of the barrel in the template), so two copies of
+    one building differ (in the test cities of the flat terrain, 205 copies, each with its own seed and its own
+    chests); the chunk builder, the neighbour repair, the audit and the fingerprint all read it through
+    `Lot.code`. A barrel that holds something is never taken out (it becomes a chest): a block standing on the top of
+    its stack (the stone slabs of the counters and the decorated pots of the tower), something hanging under it, or a
+    block fixed to one of its faces (a vine or lichen holding on it, a wall torch, sign, ladder, button...); a vine
+    near it held by a wall or by the vine above does not count. 26 of the 794 barrels (tower 25, crash building 1);
+    the others are taken out with a higher chance so that 70% of each building's barrels go (tower 84%). In a stack
+    (only the tower: 14 stacks of 2 or 3) the barrels taken out are the top ones, so nothing floats. Measured over 200
+    copies: 69.9% taken out (tower 70.0%, brutalist U 69.8%, crash 69.9%, wide 69.5%, green tower 69.8%), ~239
+    chests in the 10 buildings. The chests use the `chest` tier of the loot (or `chest_hard` where the barrel was
+    hard to get to: the 7 of the apocalyptic building). The hard flags are still worked out once on the template with
+    its barrels: with every barrel taken out, or every barrel a chest, no other container changes (`BarrelsTest`);
   - banners with the design saved in the template (`Template.banners`, applied when the banner is placed,
     `Palette.applyBanner`): the letters D R U G S T O R E of the pharmacies (9 on the pharmacy, 18 on the large
     pharmacy); against the sidewalk, forming a ring; drawn per file, no pattern;

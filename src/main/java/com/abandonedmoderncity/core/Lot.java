@@ -77,7 +77,7 @@ public final class Lot {
         if (y < base - building.ground()) {
             return BlockCode.KEEP;
         }
-        int c = building.code(x - x0, y - base, z - z0, rot);
+        int c = building.code(x - x0, y - base, z - z0, rot, seed);
         // the floor layer replaces the ground; where the structure has no block at it, the city ground stays,
         // except over dug-out space (the mouth of a garage ramp or stairwell stays open)
         if (y == base && (c == BlockCode.KEEP || c == BlockCode.AIR)) {

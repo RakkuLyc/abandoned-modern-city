@@ -52,7 +52,7 @@ public final class Structures {
      */
     public record Def(String type, String name, String group, Template t, int ox, int oy, int oz, int w, int h, int d,
                       int ground, int turn, int[] state, int[] fill, Map<Integer, Integer> cells, Access.Result access,
-                      List<int[]> overhang, String model, boolean[] openings) {
+                      List<int[]> overhang, String model, boolean[] openings, Map<Integer, int[]> barrels) {
         /** Footprint size along x after {@code rot} quarter turns. */
         public int sizeX(int rot) {
             return ((rot + turn) & 1) == 0 ? w : d;
@@ -117,6 +117,25 @@ public final class Structures {
                 return s == AIR_STATE && ry >= 0 ? BlockCode.AIR : BlockCode.KEEP;
             }
             return BlockCode.STRUCT + 4 * s + r;
+        }
+
+        /**
+         * Block code at (rx, ry, rz) in one copy of the structure, of seed {@code seed} (the lot's): the same as
+         * {@link #code(int, int, int, int)}, but the barrels of a building are taken out or become chests
+         * ({@link Barrels}). A barrel taken out is air, also under the ground (it stood in a dug-out room).
+         */
+        public int code(int rx, int ry, int rz, int rot, long seed) {
+            int c = code(rx, ry, rz, rot);
+            if (barrels.isEmpty() || c < BlockCode.STRUCT) {
+                return c;
+            }
+            int[] tc = template(rx, ry, rz, rot);
+            int[] b = barrels.get(cell(tc[0], tc[1], tc[2]));
+            if (b == null) {
+                return c;
+            }
+            return Barrels.kept(b, seed, t.sx * t.sz) ? BlockCode.STRUCT + 4 * b[Barrels.CHEST] + ((rot + turn) & 3)
+                    : BlockCode.AIR;
         }
 
         /**
@@ -187,12 +206,7 @@ public final class Structures {
          * building, police_station or special.
          */
         public String category() {
-            for (String k : CATEGORIES) {
-                if (type.startsWith(k)) {
-                    return k;
-                }
-            }
-            return type;
+            return categoryOf(type);
         }
 
         /**
@@ -309,6 +323,16 @@ public final class Structures {
     public static final String[] CATEGORIES = {"house", "pharmacy", "workshop", "gas_station", "building", "police_station",
             "special"};
 
+    /** Category of {@code /amcs spawn} of a structure type (by the start of the type). */
+    static String categoryOf(String type) {
+        for (String k : CATEGORIES) {
+            if (type.startsWith(k)) {
+                return k;
+            }
+        }
+        return type;
+    }
+
     static String blockOf(String state) {
         return state.contains("[") ? state.substring(0, state.indexOf('[')) : state;
     }
@@ -422,8 +446,10 @@ public final class Structures {
             access = access.withHard(listed);
         }
         boolean[] openings = StructureLoader.openings(t, state, x0, z0, w, d, y0 + ground);
+        // the barrels of the buildings: taken out or turned into chests, copy by copy
+        Map<Integer, int[]> barrels = categoryOf(type).equals("building") ? Barrels.of(t, ids) : Map.of();
         return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, turn, state, fill, cells, access,
-                overhang, model, openings);
+                overhang, model, openings, barrels);
     }
 
     /** Trunks: columns of at least this many natural (not stripped) logs. */

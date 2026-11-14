@@ -107,6 +107,10 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
     and mossy cobblestone and stone bricks near the green. 65,086 blocks in the 52 files.
   - Lightning rods become lit redstone torches (5: on top of the tower house, the post-apocalyptic mansion, the
     apartment building, the apocalyptic building and the tower).
+  - Barrels of the buildings (`core/Barrels`): in the 10 structures of the `building` category, 70% of the barrels
+    are taken out and the others become chests, drawn again in each copy (two towers are not the same). A barrel
+    that holds something (a slab or a pot on top, a vine fixed to it) always becomes a chest; in a stack the top ones
+    go first. 794 barrels, 26 always chests, ~239 chests per set of the 10 buildings.
 
   The containers (chests, barrels, dispensers, droppers, decorated pots) get their loot table when they are placed;
   the banners get the design of the template; the other block entities (furnaces, beds, skulls, chiseled bookshelves,
@@ -216,8 +220,9 @@ core/   the pure planner (no Minecraft classes), tested with JUnit
                   rotation, per-city limits, digging with `cave_air`
   StructureLoader the preparation of each template: floor out to the edge, real leaves, cut crowns completed, loose
                   cobwebs, openings of the garage
-  Access          the containers of the structures that are hard to get to (high up or out of walking reach): more
-                  generous loot
+  Access          the containers of the structures that are hard to get to (out of walking reach, or listed by hand
+                  in index.txt): more generous loot
+  Barrels         the barrels of the buildings: 70% taken out, the others chests, drawn per copy (lot seed)
   Crowns          where the leaves completing the crowns cut by the edge of the structures go (gen/Overhangs places
                   them)
   Park            parks taken over by nature, with paths and the fountain
