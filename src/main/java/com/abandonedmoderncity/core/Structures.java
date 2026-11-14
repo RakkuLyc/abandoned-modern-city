@@ -196,7 +196,7 @@ public final class Structures {
         }
 
         /**
-         * Kind of loot (folder of its loot tables): house, pharmacy, workshop, gas_station, building, or
+         * Kind of loot (folder of its loot tables): house, pharmacy, workshop, gas_station, police_station, building, or
          * building_large for a building with {@link #LARGE_CONTAINERS} or more containers (an add-on such as AMC TACZ
          * Loot can make those less generous; the vanilla tables of both are the same).
          */
@@ -299,8 +299,12 @@ public final class Structures {
             "police_station", 1);
     /** Buildings with this many containers or more get the loot theme {@code building_large}. */
     public static final int LARGE_CONTAINERS = 100;
-    /** Kinds of loot by the start of the structure type; every other type (the buildings) gets {@code building}. */
-    static final String[] LOOT_THEMES = {"house", "pharmacy", "workshop", "gas_station"};
+    /**
+     * Kinds of loot by the start of the structure type; every other type (the buildings) gets {@code building} or
+     * {@code building_large}. {@code police_station} has its own theme (same vanilla tables as {@code building}) so an
+     * add-on such as AMC TACZ Loot can give the police station more weapons.
+     */
+    static final String[] LOOT_THEMES = {"house", "pharmacy", "workshop", "gas_station", "police_station"};
     /** Categories of {@code /amcs spawn}, by the start of the structure type. */
     public static final String[] CATEGORIES = {"house", "pharmacy", "workshop", "gas_station", "building", "police_station",
             "special"};

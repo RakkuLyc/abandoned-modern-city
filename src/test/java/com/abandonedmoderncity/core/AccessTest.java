@@ -215,6 +215,9 @@ class AccessTest {
                 .orElseThrow().lootTheme());
         assertEquals("building", Structures.ALL.stream().filter(d -> d.name().equals("apocalyptic_building_57x45"))
                 .findFirst().orElseThrow().lootTheme());
+        // the police station: its own theme (same vanilla tables as building), for add-ons
+        assertEquals(Set.of("abandoned_police_station"), Structures.ALL.stream()
+                .filter(d -> d.lootTheme().equals("police_station")).map(Structures.Def::name).collect(Collectors.toSet()));
         // the buildings with 100+ containers: their own theme (same vanilla tables), for add-ons
         assertEquals(Set.of("tower", "abandoned_green_tower", "abandoned_crash_building",
                         "abandoned_wide_building", "abandoned_ramp_building", "brutalist_u_building_75x58"),

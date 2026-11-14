@@ -47,7 +47,8 @@ import org.junit.jupiter.api.Test;
  * which hash the structure names: they changed when the structures got English names (the blocks did not); layout
  * changed again when the special structures became ~1 city in 10 ({@code City.SPECIAL_CHANCE}); structures changed
  * again with the loot theme building_large (buildings with 100+ containers; the blocks did not change); lots and
- * structures changed when the height rule of the hard-to-get-to containers was removed (the loot access). Change them
+ * structures changed when the height rule of the hard-to-get-to containers was removed (the loot access); structures
+ * changed again with the loot theme police_station (the blocks did not change). Change them
  * only in a commit that is meant to change the world, and say so in it.
  */
 class FingerprintTest {
@@ -62,7 +63,7 @@ class FingerprintTest {
         EXPECTED.put("roads", "bcf16888eff09ec35d77b4c97d496a5d006061d045c8e02abd16c5a56418aef6");
         EXPECTED.put("lamps", "85591f5e99c109803aa1dfb294e112106e69005b6f9706d41bb2abb565addb23");
         EXPECTED.put("crowns", "4d9143c986f8bc57f9bc9ec5edbd5b32542c6373b86ca5b8cedee32f0daa6117");
-        EXPECTED.put("structures", "4e4776d8217c395759c38405141c7ded82380d2dc71eaff3869eed148c862ad8");
+        EXPECTED.put("structures", "b10a342595a109253afb98fa0cc785b2ee28134d40f88050a567e34773979fef");
         EXPECTED.put("weathering", "5b8482cc06ec86bebd98c3c30ea697bcd685bfb97c98dabcba1f466f606b591b");
         EXPECTED.put("benches", "e8ee1c72349ec4768b6c4880b5810913a01abed52a0c8790553a5f97fb15e7e8");
     }
