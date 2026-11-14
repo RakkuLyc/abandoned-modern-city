@@ -1,6 +1,6 @@
 AMCS self-test, seed 20261027, Params[cellSize=736, cityChance=0.7, minRadius=128, maxRadius=230, maxCityLevel=150, highwayMaxLength=4000, highways=true]
 palette: 142 block states, all breakable
-planning the targets took 14393 ms, 9641 terrain samples
+planning the targets took 14570 ms, 9641 terrain samples
 targets: 8 (scope full)
   city nearest to spawn City[-1,0 @ -368,368 r=230 level=69] chunk -23,23 r=18
   highest city (level 103) City[-3,-1 @ -1840,-368 r=230 level=103] chunk -115,-23 r=18
@@ -13,72 +13,72 @@ targets: 8 (scope full)
 network around spawn: cells 36, cities 14 (no city: {mostly water=13, no city rolled=9}; 4,0 blocks per city, 0 of 1-2 blocks), candidate links 36, highways 23 (64%, dropped: {curve too tight=8, mostly water=5}), cities without highway 1 (7%), groups of linked cities 3
 
 == t01: city nearest to spawn City[-1,0 @ -368,368 r=230 level=69]
-   chunks -41,5 .. -5,41 (blocks -656,80 .. -65,671), generated in 26358 ms
+   chunks -41,5 .. -5,41 (blocks -656,80 .. -65,671), generated in 24958 ms
    PLAN OK
      stats: {cities=1, cities_fully_checked=1, highway_bridge_columns=612, highway_ends_checked=2, highway_ground_columns=6826, highways=2, lots=33, road_columns=76639, road_components=1, slab_columns=627, street_columns=69201, street_nodes=9}
    WORLD OK
-     stats: {blocks_checked_for_hardness=2436159, bridge_columns=612, crown_leaves=158, fountain_chests=1, ground_road_columns=76027, loot_containers_anywhere=1385, pillar_columns=14, road_columns=76639, road_components=1, road_plants=7116, slab_columns=627, street_light_blocks=3460, structure_banners=58, structure_block_entities=1822, structure_loot_containers=1175, structure_loot_hard=11, taken_road_columns=22510, wall_gap_columns=8}
-   mod blocks: f0f82a15aec4c20875a03c46ae5fa97c65347d826cebbcaa00cbfae118f4b08b (1369 chunks, 1877158 positions, 1855 block entities)
+     stats: {blocks_checked_for_hardness=2436159, bridge_columns=612, crown_leaves=158, fountain_chests=1, ground_road_columns=76027, loot_containers_anywhere=1383, pillar_columns=14, road_columns=76639, road_components=1, road_plants=7116, slab_columns=627, street_light_blocks=3460, structure_banners=58, structure_block_entities=1822, structure_loot_containers=1175, structure_loot_hard=108, taken_road_columns=22510, wall_gap_columns=8}
+   mod blocks: 6b612ecef3809d739c202b35cdbad89e5512dac3df276bade73d1f169c2fe3bd (1369 chunks, 1877158 positions, 1855 block entities)
 
 == t02: highest city (level 103) City[-3,-1 @ -1840,-368 r=230 level=103]
-   chunks -133,-41 .. -97,-5 (blocks -2128,-656 .. -1537,-65), generated in 29837 ms
+   chunks -133,-41 .. -97,-5 (blocks -2128,-656 .. -1537,-65), generated in 28051 ms
    PLAN OK
      stats: {cities=1, cities_fully_checked=1, highway_bridge_columns=5920, highway_ends_checked=2, highway_ground_columns=448, highways=2, lots=30, road_columns=75569, road_components=1, slab_columns=2104, street_columns=69201, street_nodes=9, tunnels=3}
    WORLD OK
-     stats: {blocks_checked_for_hardness=4192176, bridge_columns=5920, bridge_hole_columns=40, crown_leaves=148, ground_road_columns=69649, loot_containers_anywhere=1781, pillar_columns=122, road_columns=75569, road_components=1, road_plants=6923, slab_columns=2104, street_light_blocks=3448, structure_banners=58, structure_block_entities=2882, structure_loot_containers=1615, structure_loot_hard=9, taken_road_columns=22258, wall_gap_columns=26}
-   mod blocks: 7f4018583fa3a2b9f2906a2f28f8dc49ee5ba457f194819e4b0f7d101c3c64a5 (1369 chunks, 3290072 positions, 2915 block entities)
+     stats: {blocks_checked_for_hardness=4192176, bridge_columns=5920, bridge_hole_columns=40, crown_leaves=148, ground_road_columns=69649, loot_containers_anywhere=1781, pillar_columns=122, road_columns=75569, road_components=1, road_plants=6923, slab_columns=2104, street_light_blocks=3448, structure_banners=58, structure_block_entities=2882, structure_loot_containers=1615, structure_loot_hard=65, taken_road_columns=22258, wall_gap_columns=26}
+   mod blocks: 48c35c0af97e548d49b3d11eded7ed86a2efa607a54ef40bd7cf22ac2e9df04d (1369 chunks, 3290072 positions, 2915 block entities)
 
 == t03: most rugged city (77) City[2,-1 @ 1840,-368 r=230 level=82]
-   chunks 97,-41 .. 133,-5 (blocks 1552,-656 .. 2143,-65), generated in 30772 ms
+   chunks 97,-41 .. 133,-5 (blocks 1552,-656 .. 2143,-65), generated in 29944 ms
    PLAN OK
      stats: {cities=1, cities_fully_checked=1, highway_bridge_columns=3232, highway_ends_checked=3, highway_ground_columns=5479, highway_tunnel_columns=2126, highways=3, lots=33, road_columns=80038, road_components=1, slab_columns=2783, street_columns=69201, street_nodes=9, tunnels=2}
    WORLD OK
-     stats: {blocks_checked_for_hardness=2698046, bridge_columns=3232, crown_leaves=182, ground_road_columns=74680, loot_containers_anywhere=1284, pillar_columns=89, road_columns=80038, road_components=1, road_plants=7143, slab_columns=2783, street_light_blocks=3562, structure_banners=36, structure_block_entities=1998, structure_loot_containers=1153, structure_loot_hard=13, taken_road_columns=21935, tunnel_columns=2126, tunnel_lights=6, tunnel_wall_columns=165, wall_gap_columns=12}
-   mod blocks: a5ee3c0ccfddbe6b76e0660e88d4acdee99ee92e9ec8cf1563dad5da7d0f87cf (1369 chunks, 2225236 positions, 1998 block entities)
+     stats: {blocks_checked_for_hardness=2698046, bridge_columns=3232, crown_leaves=182, ground_road_columns=74680, loot_containers_anywhere=1285, pillar_columns=89, road_columns=80038, road_components=1, road_plants=7143, slab_columns=2783, street_light_blocks=3562, structure_banners=36, structure_block_entities=1998, structure_loot_containers=1153, structure_loot_hard=137, taken_road_columns=21935, tunnel_columns=2126, tunnel_lights=6, tunnel_wall_columns=165, wall_gap_columns=12}
+   mod blocks: 75f7f457949a8acb97b2edccb72d7f35203d3f7a1e20c22e6ff35bdbca1fedd1 (1369 chunks, 2225236 positions, 1998 block entities)
 
 == t04: longest tunnel (352 blocks) of Highway[2,2 -> 3,3 len=841]
-   chunks 106,122 .. 136,152 (blocks 1696,1952 .. 2191,2447), generated in 21539 ms
+   chunks 106,122 .. 136,152 (blocks 1696,1952 .. 2191,2447), generated in 20886 ms
    PLAN OK
      stats: {cities=3, highway_bridge_columns=1848, highway_ends_checked=2, highway_ground_columns=7469, highway_tunnel_columns=11926, highways=2, lots=97, road_columns=35235, road_components=1, slab_columns=8099, street_columns=13992, street_nodes=27, tunnels=1}
    WORLD OK
-     stats: {blocks_checked_for_hardness=540930, bridge_columns=1848, bridge_hole_columns=29, crown_leaves=5, ground_road_columns=21461, loot_containers_anywhere=216, pillar_columns=44, road_columns=35235, road_components=1, road_plants=2319, slab_columns=8099, street_light_blocks=632, structure_block_entities=132, structure_loot_containers=95, structure_loot_hard=1, taken_road_columns=6011, tunnel_columns=11926, tunnel_lights=33, tunnel_wall_columns=1010, wall_gap_columns=7}
-   mod blocks: 36116c59174cd0a45ca9fd15f2e99ed064c731b77561a6a825d14bb814a66461 (961 chunks, 543064 positions, 132 block entities)
+     stats: {blocks_checked_for_hardness=540930, bridge_columns=1848, bridge_hole_columns=29, crown_leaves=5, ground_road_columns=21461, loot_containers_anywhere=215, pillar_columns=44, road_columns=35235, road_components=1, road_plants=2319, slab_columns=8099, street_light_blocks=632, structure_block_entities=132, structure_loot_containers=95, structure_loot_hard=2, taken_road_columns=6011, tunnel_columns=11926, tunnel_lights=33, tunnel_wall_columns=1010, wall_gap_columns=7}
+   mod blocks: dfd69607d5f00fc96168111eb0d33ec83c297d38b04c445d3eb46d83f1ff5cd4 (961 chunks, 543064 positions, 132 block entities)
 
 == t05: longest bridge over water (349 blocks) of Highway[2,2 -> 3,3 len=841]
-   chunks 122,140 .. 150,168 (blocks 1952,2240 .. 2415,2703), generated in 30274 ms
+   chunks 122,140 .. 150,168 (blocks 1952,2240 .. 2415,2703), generated in 28669 ms
    PLAN OK
      stats: {cities=3, highway_bridge_columns=11787, highway_ends_checked=1, highway_ground_columns=2079, highway_tunnel_columns=3114, highways=1, lots=97, road_columns=29157, road_components=1, slab_columns=7802, street_columns=12177, street_nodes=27, tunnels=1}
    WORLD OK
-     stats: {blocks_checked_for_hardness=417812, bridge_columns=11787, bridge_hole_columns=87, crown_leaves=5, ground_road_columns=14256, loot_containers_anywhere=336, pillar_columns=265, road_columns=29157, road_components=1, road_plants=2355, slab_columns=7802, street_light_blocks=543, structure_block_entities=512, structure_loot_containers=207, taken_road_columns=5976, tunnel_columns=3114, tunnel_lights=9, tunnel_wall_columns=278, wall_gap_columns=53}
-   mod blocks: 45125b3abcf3c4d3f109650544e7cb31ff50cc1f25c83a7fd5c49da56d69aea4 (841 chunks, 452586 positions, 512 block entities)
+     stats: {blocks_checked_for_hardness=417812, bridge_columns=11787, bridge_hole_columns=87, crown_leaves=5, ground_road_columns=14256, loot_containers_anywhere=336, pillar_columns=265, road_columns=29157, road_components=1, road_plants=2355, slab_columns=7802, street_light_blocks=543, structure_block_entities=512, structure_loot_containers=207, structure_loot_hard=10, taken_road_columns=5976, tunnel_columns=3114, tunnel_lights=9, tunnel_wall_columns=278, wall_gap_columns=53}
+   mod blocks: f2e46f91d2408c196d70cb62b9db085554dc1332bf2c7971d87f4947144fd995 (841 chunks, 452586 positions, 512 block entities)
 
 == t06: longest dry viaduct (239 blocks) of Highway[-3,-3 -> -3,-2 len=543]
-   chunks -132,-95 .. -112,-75 (blocks -2112,-1520 .. -1777,-1185), generated in 10843 ms
+   chunks -132,-95 .. -112,-75 (blocks -2112,-1520 .. -1777,-1185), generated in 10609 ms
    PLAN OK
      stats: {cities=2, highway_bridge_columns=10433, highway_ends_checked=1, highway_ground_columns=1962, highways=1, lots=66, road_columns=25760, road_components=1, slab_columns=5621, street_columns=13365, street_nodes=18, tunnels=1}
    WORLD OK
-     stats: {blocks_checked_for_hardness=588722, bridge_columns=10433, bridge_hole_columns=59, crown_leaves=39, ground_road_columns=15327, loot_containers_anywhere=234, pillar_columns=191, road_columns=25760, road_components=1, road_plants=1712, slab_columns=5621, street_light_blocks=640, structure_banners=13, structure_block_entities=323, structure_loot_containers=192, structure_loot_hard=9, taken_road_columns=5251, wall_gap_columns=82}
-   mod blocks: 3f0d0eb10108fd93b83762b06517db3ffd86ada834a63a8232b3d5b351bd1617 (441 chunks, 581916 positions, 356 block entities)
+     stats: {blocks_checked_for_hardness=588722, bridge_columns=10433, bridge_hole_columns=59, crown_leaves=39, ground_road_columns=15327, loot_containers_anywhere=233, pillar_columns=191, road_columns=25760, road_components=1, road_plants=1712, slab_columns=5621, street_light_blocks=640, structure_banners=13, structure_block_entities=323, structure_loot_containers=192, structure_loot_hard=15, taken_road_columns=5251, wall_gap_columns=82}
+   mod blocks: 2a88d78ff845fc86358bdb675fe9f46cf3fcad763d3035d3908e05b40a0a53d1 (441 chunks, 581916 positions, 356 block entities)
 
 == t07: longest ramp (360 blocks, 45.0 up/down) of Highway[2,2 -> 3,3 len=841]
-   chunks 107,125 .. 135,153 (blocks 1712,2000 .. 2175,2463), generated in 3525 ms
+   chunks 107,125 .. 135,153 (blocks 1712,2000 .. 2175,2463), generated in 3630 ms
    PLAN OK
      stats: {cities=3, highway_bridge_columns=2686, highway_ground_columns=3894, highway_tunnel_columns=11926, highways=1, lots=97, road_columns=22086, road_components=1, slab_columns=7788, street_columns=3580, street_nodes=27, tunnels=1}
    WORLD OK
-     stats: {blocks_checked_for_hardness=149653, bridge_columns=2686, bridge_hole_columns=29, ground_road_columns=7474, loot_containers_anywhere=117, pillar_columns=63, road_columns=22086, road_components=1, road_plants=845, slab_columns=7788, street_light_blocks=230, taken_road_columns=2189, tunnel_columns=11926, tunnel_lights=33, tunnel_wall_columns=1010, wall_gap_columns=11}
+     stats: {blocks_checked_for_hardness=149653, bridge_columns=2686, bridge_hole_columns=29, ground_road_columns=7474, loot_containers_anywhere=116, pillar_columns=63, road_columns=22086, road_components=1, road_plants=845, slab_columns=7788, street_light_blocks=230, taken_road_columns=2189, tunnel_columns=11926, tunnel_lights=33, tunnel_wall_columns=1010, wall_gap_columns=11}
    mod blocks: f960ad531d4199d12ecf42bb72b87d9a199bc1fccb85235572528b07c3dcc118 (841 chunks, 191450 positions, 0 block entities)
 
 == t08: whole highway Highway[-1,0 -> -1,1 len=310]
-   chunks -37,32 .. -9,60 (blocks -592,512 .. -129,975), generated in 9728 ms
+   chunks -37,32 .. -9,60 (blocks -592,512 .. -129,975), generated in 9328 ms
    PLAN OK
      stats: {cities=2, highway_bridge_columns=6204, highway_ends_checked=3, highway_ground_columns=3103, highway_tunnel_columns=2398, highways=2, lots=68, road_columns=46058, road_components=1, slab_columns=3537, street_columns=34353, street_nodes=18, tunnels=2}
    WORLD OK
-     stats: {blocks_checked_for_hardness=953774, bridge_columns=6204, bridge_hole_columns=41, crown_leaves=122, ground_road_columns=37456, loot_containers_anywhere=453, pillar_columns=144, road_columns=46058, road_components=1, road_plants=3925, slab_columns=3537, street_light_blocks=1754, structure_banners=40, structure_block_entities=494, structure_loot_containers=317, taken_road_columns=11440, tunnel_columns=2398, tunnel_lights=6, tunnel_wall_columns=191, wall_gap_columns=21}
-   mod blocks: 11480fcdff81109bb9cb3f08598cfef3ac4221c6fc69368b9ba38e557ad7b6e7 (841 chunks, 822838 positions, 527 block entities)
+     stats: {blocks_checked_for_hardness=953774, bridge_columns=6204, bridge_hole_columns=41, crown_leaves=122, ground_road_columns=37456, loot_containers_anywhere=452, pillar_columns=144, road_columns=46058, road_components=1, road_plants=3925, slab_columns=3537, street_light_blocks=1754, structure_banners=40, structure_block_entities=494, structure_loot_containers=317, structure_loot_hard=23, taken_road_columns=11440, tunnel_columns=2398, tunnel_lights=6, tunnel_wall_columns=191, wall_gap_columns=21}
+   mod blocks: d5b7feddae485e7cd22df8d82b23f1563b49fb09400e611990282099b2d46d6b (841 chunks, 822838 positions, 527 block entities)
 
 generation errors: 0
 village creatures removed from cities: 16
-chunks through the feature: 8346, mean 2,79 ms per chunk
-terrain noise samples for planning: 37727, 103,9 s in total
-total time: 256 s
+chunks through the feature: 8346, mean 2,77 ms per chunk
+terrain noise samples for planning: 37727, 105,0 s in total
+total time: 250 s
 RESULT: PASS

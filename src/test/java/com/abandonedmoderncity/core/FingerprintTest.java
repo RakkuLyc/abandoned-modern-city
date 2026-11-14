@@ -50,7 +50,9 @@ import org.junit.jupiter.api.Test;
  * structures changed when the height rule of the hard-to-get-to containers was removed (the loot access); structures
  * changed again with the loot theme police_station (the blocks did not change); lots changed when 70% of the barrels
  * of the buildings were taken out and the others became chests, copy by copy ({@link Barrels}); structures changed
- * again when the loot theme building_large was taken out (the blocks did not change). Change them
+ * again when the loot theme building_large was taken out (the blocks did not change); lots and structures changed
+ * when the containers underground, on the terrace and in the attics of the houses became hard to get to (the loot
+ * access; the blocks did not change). Change them
  * only in a commit that is meant to change the world, and say so in it.
  */
 class FingerprintTest {
@@ -61,11 +63,11 @@ class FingerprintTest {
         EXPECTED.put("highways", "480e692cad232384cc5a0d486154e33b13a8ebc6d381e0dfbffa8cd18434ddf9");
         EXPECTED.put("village", "6d77e372e3111d53b3995b84b46308716b65b8107b051b8f4411eca72a61f71c");
         EXPECTED.put("chunks", "aac1f39821a3e01b096634443468315a31f6c5c4ebcacdaee30e15f4014a5ad9");
-        EXPECTED.put("lots", "c48f816f93e9c0c133a84c15e3f692019dfc831e2329e15eed7d3d067df5f2af");
+        EXPECTED.put("lots", "5fe9a739536d6ced74390fc9465827e3579c99abf05a591b81b44574b60f4d34");
         EXPECTED.put("roads", "bcf16888eff09ec35d77b4c97d496a5d006061d045c8e02abd16c5a56418aef6");
         EXPECTED.put("lamps", "85591f5e99c109803aa1dfb294e112106e69005b6f9706d41bb2abb565addb23");
         EXPECTED.put("crowns", "4d9143c986f8bc57f9bc9ec5edbd5b32542c6373b86ca5b8cedee32f0daa6117");
-        EXPECTED.put("structures", "f4d1d5bbc8713721ec3ba43dceda28d1214c857004c5a9c7e9768e045123afb9");
+        EXPECTED.put("structures", "ab215ef0ec123969741e5bd69c77c9ed91611597f1807db9ca69e0675d02d33a");
         EXPECTED.put("weathering", "5b8482cc06ec86bebd98c3c30ea697bcd685bfb97c98dabcba1f466f606b591b");
         EXPECTED.put("benches", "e8ee1c72349ec4768b6c4880b5810913a01abed52a0c8790553a5f97fb15e7e8");
     }

@@ -133,10 +133,13 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   | Decorated pot (`pot`) | 40%: 1 common stack | 80%: 1 normal or rare stack |
 
   Hard to get to (`core/Access`): out of reach of someone walking in from the street (without breaking blocks: jumping
-  1 block, falling, climbing ladders, vines and water, opening doors), or listed by hand in the `hard` column of
-  `index.txt` (the chest in the tree of the abandoned modern house). The height no longer counts. That is 29 of the
-  3,106 containers: closed rooms of the police station (13), the apocalyptic building (10), the abandoned mansion (3),
-  the abandoned house and the bluish building (1 each), and the chest in the tree.
+  1 block, falling, climbing ladders, vines and water, opening doors), listed by hand in the `hard` column of
+  `index.txt` (the chest in the tree of the abandoned modern house), or by where it stands: underground (at or under
+  the street floor), on the terrace (open sky, 4+ blocks over the ground and at most 5 under the top of the structure)
+  or, only in the houses, in the attic (only the roof between it and the sky, 4+ blocks over the ground). The height
+  alone does not count. That is 129 of the 3,106 containers: the attics of the houses (87), the police station (18:
+  its basement), the apocalyptic building (10, closed rooms), the abandoned mansion (3, a closed room), the roof of
+  each large pharmacy (1), a pit in each small workshop (1), the bluish building (1) and the chest in the tree.
 - **Nature taking the city back** (`core/Flora`, `core/Wild`):
   - the ground in patches: grass, moss, coarse dirt and remains of the concrete (`gray_concrete_powder`);
   - the mod's own trees, ~1 per 55 columns: oak, birch, dark oak and spruce, small and large, with vines hanging from
@@ -219,8 +222,8 @@ core/   the pure planner (no Minecraft classes), tested with JUnit
                   rotation, per-city limits, digging with `cave_air`
   StructureLoader the preparation of each template: floor out to the edge, real leaves, cut crowns completed, loose
                   cobwebs, openings of the garage
-  Access          the containers of the structures that are hard to get to (out of walking reach, or listed by hand
-                  in index.txt): more generous loot
+  Access          the containers of the structures that are hard to get to (out of walking reach, listed by hand
+                  in index.txt, underground, on the terrace, in the attic of a house): more generous loot
   Barrels         the barrels of the buildings: 70% taken out, the others chests, drawn per copy (lot seed)
   Crowns          where the leaves completing the crowns cut by the edge of the structures go (gen/Overhangs places
                   them)

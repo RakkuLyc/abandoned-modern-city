@@ -20,8 +20,8 @@
 7. **World fingerprint** (since 12 Nov 2026): `FingerprintTest` keeps what the planner produces (the values of commit
    `4dd94ae`; `layout`, `structures` and `weathering`, which hold the names, since the English names; `layout` again
    since the special structures in ~1 city in 10, commit `21cd4f6`; `structures` again since the loot theme
-   `building_large` and again when it was taken out; `lots` since the barrels of the buildings, `core/Barrels`) and the
-   battery
+   `building_large` and again when it was taken out; `lots` since the barrels of the buildings, `core/Barrels`; `lots` and `structures` again since the hard
+   containers underground, on the terrace and in the attics) and the battery
    prints per target `mod blocks:` (the blocks the mod decides in the generated world; the reference is in
    `docs/TESTING.md`, section 6, with another one for `structureOvergrowth = false`). In a change that must not alter
    the world (cleanup, splitting files, comments), the test passes and the `mod blocks:` and `stats:` lines stay the
@@ -393,16 +393,29 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   generous: `chest_hard` 5 to 8 stacks and 1 to 2 rare items, `barrel_hard` 75% with 2 to 4 stacks of common and
   normal items, `pot_hard` 80% with one normal or rare stack. Hard to get to = out of reach of someone walking in
   from the street, or listed by hand in the `hard` column of `index.txt` (x,y,z of the `.nbt`, `Access.Result.withHard`;
-  today the chest in the tree of the abandoned modern house, `5,12,17`, reached by jumping up the leaves); the height
-  rule (15+ blocks above the city ground, `Access.HIGH`) was removed at the user's request after 13 Nov 2026. The
+  today the chest in the tree of the abandoned modern house, `5,12,17`, reached by jumping up the leaves), or by where
+  it stands (asked by the user on 14 Nov 2026, added to the two rules before): underground (at or under the ground
+  layer), on the terrace (open sky over it, `Access.ABOVE` = 4+ blocks over the ground layer and at most
+  `Access.TERRACE_TOP` = 5 under the highest layer of the structure: its roof, not a yard or a lower wing) or, only in
+  the houses, in the attic (one ceiling between it and the sky, 4+ over the ground layer; a ceiling is a run of blocks
+  that close the way up: not air, plants, vines, cobwebs, torches, carpets; doors, trapdoors, gates, ladders and
+  scaffolding close it; `Access.ceilings`). Measured before choosing: the attic in every structure would mark 311
+  containers (the top floor of every wing of the buildings and their low annexes), the terrace at any height 43; the
+  user chose the attic only in the houses and the terrace up to 5 under the top. The height rule (15+ blocks above the
+  city ground, `Access.HIGH`) was removed at the user's request after 13 Nov 2026. The
   walk: the path jumps 1 block (never over a fence,
   wall or pane), falls any height, climbs ladders, vines, scaffolding and water, opens doors, trapdoors and gates (not
   the iron ones); plants, cobwebs, carpets and torches do not block; leaves do; the container must be 1 block to the
-  side (diagonal counts) of where the player stands, from 1 below the feet to 1 above the head. Today 29 of 3,106
-  containers of the 52 files with the overgrowth on: 28 out of reach (police station 13, the closed rooms of its
-  basement; apocalyptic building 10; abandoned mansion 3, a room 2 blocks above the courtyard; abandoned house 1, the
-  roof; bluish building 1) and the chest in the tree (listed); the tall buildings reach all theirs by their stairs (0
-  hard); with the height rule there were 1,382. The vehicle parts
+  side (diagonal counts) of where the player stands, from 1 below the feet to 1 above the head. Today 129 of 3,106
+  containers of the 52 files with the overgrowth on (in the templates, with the barrels; 29 before the rules of where
+  it stands): out of reach 28 (police station 13, the closed rooms of its basement; apocalyptic building 10; abandoned
+  mansion 3, a room 2 blocks above the courtyard; abandoned house 1, the roof; bluish building 1), listed 1 (the
+  chest in the tree, also in the attic), underground 23 (police station 18, its basement, the 13 closed ones among
+  them; 1 in each of the 5 small workshops), terrace 5 (1 on the roof of each large pharmacy), attic 87 (modern house
+  14, modern garage house 14, post-apocalyptic mansion 12, glass house 10, Victorian 9, pool house 6, abandoned
+  mansion 5, suburban 5, large house 4, garage house 3, tower house 3, abandoned house 2); houses 90 of 407; the tall
+  buildings 0 (their floors are reached by their stairs, and their roofs have no container in the open); with the
+  height rule there were 1,382. The vehicle parts
   of OAmP and the Lost Cities table were taken out (the Lost Cities one was rejected by Minecraft). The chest of the
   park fountain stays empty (50%) or `mossy_cobblestone` (50%).
 - Palette (`gen/Palette`): every block the generator places, checked at startup (`Palette.validate`). The 8 material

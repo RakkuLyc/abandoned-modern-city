@@ -70,8 +70,24 @@ class AccessTest {
         }
 
         Access.Result access() {
+            return access(false);
+        }
+
+        /** With the attic rule ({@code attics}: a house) or without it. */
+        Access.Result access(boolean attics) {
             Template t = Template.of("test", sx, sy, sz, palette, cells);
-            return Access.of(t, palette.toArray(new String[0]), 0, 0, 0, sx, sy, sz, 0);
+            return Access.of(t, palette.toArray(new String[0]), 0, 0, 0, sx, sy, sz, 0, attics);
+        }
+
+        /** A stone pillar at (x, z) from y = 1 to {@code top}, with a ladder on its north side up to top + 1. */
+        Box pillar(int x, int z, int top) {
+            for (int y = 1; y <= top; y++) {
+                set(x, y, z, "minecraft:stone");
+            }
+            for (int y = 1; y <= top + 1; y++) {
+                set(x, y, z - 1, "minecraft:ladder[facing=north]");
+            }
+            return this;
         }
     }
 
@@ -117,8 +133,9 @@ class AccessTest {
 
     @Test
     void heightAloneDoesNotMakeAContainerHard() {
-        // a barrel 20 blocks up, reached by a ladder: not hard (the height rule was removed)
-        Box tower = new Box(3, 23, 3);
+        // a barrel 20 blocks up, reached by a ladder: not hard (the height rule was removed); the box goes 9 blocks
+        // over it, so it is not on the terrace either (at most Access.TERRACE_TOP under the top)
+        Box tower = new Box(3, 30, 3);
         tower.set(1, 20, 1, "minecraft:barrel").set(1, 19, 1, "minecraft:stone");
         for (int y = 1; y <= 20; y++) {
             tower.set(1, y, 0, "minecraft:ladder[facing=north]");
@@ -137,8 +154,37 @@ class AccessTest {
         Structures.Def d = Structures.ALL.stream().filter(s -> s.name().equals("abandoned_modern_house")).findFirst()
                 .orElseThrow();
         assertEquals(1, d.access().listed());
-        assertEquals(1, d.access().hard().size());
+        assertEquals(0, d.access().closed());
         assertTrue(d.hard(24, 12, 11, 0), "the chest in the tree");
+    }
+
+    @Test
+    void undergroundTerraceAndAttic() {
+        // underground: a chest in the ground layer, reached from the street, is hard
+        Access.Result under = new Box(5, 6, 5).set(2, 0, 2, "minecraft:chest").access();
+        assertEquals(0, under.closed());
+        assertEquals(1, under.underground());
+        assertEquals(1, under.hard().size());
+        // terrace: a chest 6 up with open sky, 3 under the top of the structure, reached by a ladder: hard
+        Access.Result roof = new Box(5, 10, 5).pillar(2, 2, 5).set(2, 6, 2, "minecraft:chest").access();
+        assertEquals(0, roof.closed());
+        assertEquals(1, roof.terrace());
+        assertEquals(1, roof.hard().size());
+        // the same chest in a structure 19 high (13 under its top): a lower roof, not the terrace
+        assertTrue(new Box(5, 20, 5).pillar(2, 2, 5).set(2, 6, 2, "minecraft:chest").access().hard().isEmpty());
+        // a chest in the yard (1 over the ground, open sky): not the terrace
+        assertTrue(new Box(5, 4, 5).set(2, 1, 2, "minecraft:chest").access().hard().isEmpty());
+        // attic: a chest 5 up under one roof (a block 2 over it), only in a house
+        Box attic = new Box(5, 10, 5).pillar(2, 2, 4).set(2, 5, 2, "minecraft:chest").set(2, 7, 2, "minecraft:stone");
+        assertEquals(1, attic.access(true).attic());
+        assertEquals(1, attic.access(true).hard().size());
+        assertTrue(attic.access(false).hard().isEmpty(), "not a house: no attic rule");
+        // two ceilings over it (a floor, then the roof): not the attic
+        attic.set(2, 9, 2, "minecraft:stone");
+        assertTrue(attic.access(true).hard().isEmpty(), "a floor over it");
+        // under one roof but on the ground floor (2 over the ground): not the attic
+        Box low = new Box(5, 6, 5).pillar(2, 2, 1).set(2, 2, 2, "minecraft:chest").set(2, 4, 2, "minecraft:stone");
+        assertTrue(low.access(true).hard().isEmpty(), "ground floor");
     }
 
     @Test
@@ -153,7 +199,11 @@ class AccessTest {
             containers += a.containers();
             hard += a.hard().size();
             assertTrue(a.hard().size() <= a.containers(), d.name());
-            assertEquals(a.hard().size(), a.closed() + a.listed(), d.name());
+            int parts = a.closed() + a.listed() + a.underground() + a.terrace() + a.attic();
+            assertTrue(a.hard().size() <= parts && a.hard().size() >= Math.max(a.closed(), a.underground()), d.name());
+            if (!d.category().equals("house")) {
+                assertEquals(0, a.attic(), d.name() + ": the attic rule is only for the houses");
+            }
             // the same containers are hard to get to in every rotation of the box
             for (int rot = 0; rot < 4; rot++) {
                 int n = 0;
@@ -166,8 +216,9 @@ class AccessTest {
                 }
                 assertEquals(a.hard().size(), n, d.name() + " rot " + rot);
             }
-            System.out.printf("[AccessTest] %-28s containers %3d, out of reach %3d, listed %d, hard %3d%n", d.name(),
-                    a.containers(), a.closed(), a.listed(), a.hard().size());
+            System.out.printf("[AccessTest] %-32s containers %3d, out of reach %3d, listed %d, underground %2d, terrace %d,"
+                    + " attic %2d, hard %3d%n", d.name(), a.containers(), a.closed(), a.listed(), a.underground(),
+                    a.terrace(), a.attic(), a.hard().size());
             if (d.type().startsWith("house")) {
                 houses += a.containers();
                 housesHard += a.hard().size();
@@ -175,11 +226,10 @@ class AccessTest {
         }
         System.out.println("[AccessTest] containers " + containers + ", hard to get to " + hard + "; houses "
                 + houses + ", hard " + housesHard);
-        // houses are low and open: nearly all their containers are reached on foot (the mansion's room 2 blocks over
-        // its yard, with no step, is one of the few that are not)
-        assertTrue(housesHard * 20 <= houses, housesHard + " of " + houses + " in houses");
-        // only what no one reaches on foot (closed rooms) and what index.txt lists: a few, not the tall buildings' floors
-        assertTrue(hard > 0 && hard * 50 <= containers, hard + " of " + containers);
+        // houses: their attics make about a fifth of their containers hard
+        assertTrue(housesHard * 3 <= houses && housesHard * 10 >= houses, housesHard + " of " + houses + " in houses");
+        // closed rooms, the hand list, underground, terraces and the attics of the houses: 129 of 3,106 (about 4%)
+        assertTrue(hard * 50 >= containers && hard * 20 <= containers, hard + " of " + containers);
         for (String tall : List.of("tower", "abandoned_green_tower", "brutalist_u_building_75x58")) {
             assertEquals(0, Structures.ALL.stream().filter(d -> d.name().equals(tall)).findFirst().orElseThrow()
                     .access().hard().size(), tall + ": its floors are reached by its stairs");

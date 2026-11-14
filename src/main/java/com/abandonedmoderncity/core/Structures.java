@@ -424,7 +424,9 @@ public final class Structures {
                 group = g;
             }
         }
-        Access.Result access = Access.of(t, placed, x0, y0, z0, w, y1 - y0 + 1, d, ground);
+        // the attic rule of the hard containers is only for the houses
+        Access.Result access = Access.of(t, placed, x0, y0, z0, w, y1 - y0 + 1, d, ground,
+                categoryOf(type).equals("house"));
         if (hardCells != null) {
             // containers made hard by hand: x,y,z of the .nbt (as the structure block shows them), separated by ;
             Set<Integer> listed = new HashSet<>();

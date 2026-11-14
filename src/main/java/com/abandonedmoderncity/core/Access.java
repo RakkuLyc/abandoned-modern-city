@@ -7,9 +7,18 @@ import java.util.Set;
 /**
  * Containers of a structure that are hard to get to: their loot is more generous, a reward for the effort.
  * A container is hard to get to when no one walking in from the street reaches it without breaking blocks (pure
- * function of the template), or when the structure's line of {@code index.txt} lists it (column {@code hard}, see
- * {@link Result#withHard}). Its height does not count (the rule "15+ blocks above the city ground" was removed at the
- * user's request after 13 Nov 2026).
+ * function of the template), when the structure's line of {@code index.txt} lists it (column {@code hard}, see
+ * {@link Result#withHard}), or by where it stands (asked by the user on 14 Nov 2026, on top of the other two):
+ * <ul>
+ *   <li>underground: at or under the ground layer (the basement of the police station);</li>
+ *   <li>on the terrace: open sky over it, {@link #ABOVE} or more blocks over the ground layer and at most
+ *       {@link #TERRACE_TOP} blocks under the highest layer of the structure (its roof, not a yard or a lower
+ *       wing);</li>
+ *   <li>in the attic, only in the houses: one ceiling between it and the sky (the roof), {@link #ABOVE} or more blocks
+ *       over the ground layer.</li>
+ * </ul>
+ * Its height alone does not count (the rule "15+ blocks above the city ground" was removed at the user's request
+ * after 13 Nov 2026).
  * <p>
  * The walk: a player stands in two passable cells over something solid (or in a ladder, vine, scaffolding or water);
  * walks to a side neighbour at the same height, jumps up one block (with room overhead, never onto a fence, a wall or
@@ -78,25 +87,38 @@ public final class Access {
                 || b.equals("dropper") || b.equals("decorated_pot");
     }
 
+    /** A container on the terrace or in the attic stands this many blocks or more over the ground layer. */
+    public static final int ABOVE = 4;
+    /** A container on the terrace stands at most this many blocks under the highest layer of the structure. */
+    public static final int TERRACE_TOP = 5;
+
     /**
      * Result for one template: hard-to-get-to container cells (template cell index), the containers, those out of
-     * reach and those listed by hand.
+     * reach, those listed by hand, and those underground, on the terrace and in the attic (a container may be in more
+     * than one of these; {@code hard} has each once).
      */
-    public record Result(Set<Integer> hard, int containers, int closed, int listed) {
+    public record Result(Set<Integer> hard, int containers, int closed, int listed, int underground, int terrace,
+                         int attic) {
         /** The same with these container cells hard too (the {@code hard} column of {@code index.txt}). */
         public Result withHard(Set<Integer> cells) {
             Set<Integer> all = new HashSet<>(hard);
             all.addAll(cells);
-            return new Result(Set.copyOf(all), containers, closed, cells.size());
+            return new Result(Set.copyOf(all), containers, closed, cells.size(), underground, terrace, attic);
         }
+    }
+
+    /** The same, without the attic rule (it is only for the houses). */
+    public static Result of(Template t, String[] states, int ox, int oy, int oz, int w, int h, int d, int ground) {
+        return of(t, states, ox, oy, oz, w, h, d, ground, false);
     }
 
     /**
      * Hard-to-get-to containers of the template {@code t}, whose box of solid blocks starts at (ox, oy, oz), is w x h x d
      * and has its ground layer at oy + ground. {@code states} gives the block state placed for a palette index (with
-     * the swaps of {@link Structures#swap}).
+     * the swaps of {@link Structures#swap}). {@code attics}: whether the attic rule applies (the houses).
      */
-    public static Result of(Template t, String[] states, int ox, int oy, int oz, int w, int h, int d, int ground) {
+    public static Result of(Template t, String[] states, int ox, int oy, int oz, int w, int h, int d, int ground,
+                            boolean attics) {
         int gy = oy + ground;
         // the frame: the box and a ring of one block around it, from the bottom of the box to two over its top
         int fx0 = ox - 1;
@@ -176,6 +198,10 @@ public final class Access {
         Set<Integer> hard = new HashSet<>();
         int containers = 0;
         int closed = 0;
+        int underground = 0;
+        int terrace = 0;
+        int attic = 0;
+        int top = oy + h - 1;
         for (int ty = oy; ty < oy + h; ty++) {
             for (int tz = oz; tz < oz + d; tz++) {
                 for (int tx = ox; tx < ox + w; tx++) {
@@ -201,10 +227,42 @@ public final class Access {
                         closed++;
                         hard.add(tx + t.sx * (tz + t.sz * ty));
                     }
+                    // where it stands: underground, on the terrace, in the attic
+                    int ceilings = ceilings(t, states, tx, ty, tz, top);
+                    boolean under = ty <= gy;
+                    boolean onTerrace = !under && ceilings == 0 && ty - gy >= ABOVE && top - ty <= TERRACE_TOP;
+                    boolean inAttic = attics && !under && ceilings == 1 && ty - gy >= ABOVE;
+                    underground += under ? 1 : 0;
+                    terrace += onTerrace ? 1 : 0;
+                    attic += inAttic ? 1 : 0;
+                    if (under || onTerrace || inAttic) {
+                        hard.add(tx + t.sx * (tz + t.sz * ty));
+                    }
                 }
             }
         }
-        return new Result(Set.copyOf(hard), containers, closed, 0);
+        return new Result(Set.copyOf(hard), containers, closed, 0, underground, terrace, attic);
+    }
+
+    /**
+     * Ceilings over (x, y, z) up to the top of the structure (over it, the sky): runs of blocks that close the way up
+     * (anything but air, plants, vines, cobwebs, torches, carpets and the like; doors, trapdoors, gates, ladders and
+     * scaffolding close it).
+     */
+    static int ceilings(Template t, String[] states, int x, int y, int z, int top) {
+        int n = 0;
+        boolean inRun = false;
+        for (int yy = y + 1; yy <= top; yy++) {
+            int q = t.at(x, yy, z);
+            String b = q < 0 ? "air" : bare(states[q]);
+            boolean closes = !passable(b) || b.endsWith("_door") || b.endsWith("_trapdoor") || b.endsWith("_fence_gate")
+                    || b.equals("ladder") || b.equals("scaffolding");
+            if (closes && !inRun) {
+                n++;
+            }
+            inRun = closes;
+        }
+        return n;
     }
 
     private record Frame(byte[] kind, int fw, int fd, int fh) {
