@@ -10,8 +10,8 @@
 # seed (optional, default the hash of the file name): seed of the overgrowth (structureOvergrowth); the structures keep
 #   the seed of the Portuguese names they had before, so their overgrowth did not change with the names
 # hard (optional): containers made hard to get to by hand (more generous loot), x,y,z of the .nbt as the structure
-#   block shows them, separated by ; (the others are hard only when no one reaches them from the street without
-#   breaking blocks); the chest in the tree of the abandoned modern house (reached by jumping up the leaves) is one
+#   block shows them, separated by ; (the others are hard when no one reaches them from the street without breaking
+#   blocks, or by where they stand: underground, on the terrace, in the attic of a house; see core/Access); the chest in the tree of the abandoned modern house (reached by jumping up the leaves) is one
 # The originals are in structures/ at the repo root, under their Portuguese names (prédio_esqueleto ->
 #   skeleton_building_31x29, casa_abandonada -> abandoned_house, ...).
 houses|abandoned_house|0|||||-1087930116

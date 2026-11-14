@@ -139,7 +139,7 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   or, only in the houses, in the attic (only the roof between it and the sky, 4+ blocks over the ground). The height
   alone does not count. That is 129 of the 3,106 containers: the attics of the houses (87), the police station (18:
   its basement), the apocalyptic building (10, closed rooms), the abandoned mansion (3, a closed room), the roof of
-  each large pharmacy (1), a pit in each small workshop (1), the bluish building (1) and the chest in the tree.
+  each large pharmacy (1), a barrel set in the floor of each small workshop (1), the bluish building (1) and the chest in the tree.
 - **Nature taking the city back** (`core/Flora`, `core/Wild`):
   - the ground in patches: grass, moss, coarse dirt and remains of the concrete (`gray_concrete_powder`);
   - the mod's own trees, ~1 per 55 columns: oak, birch, dark oak and spruce, small and large, with vines hanging from

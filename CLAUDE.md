@@ -172,8 +172,8 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   buried), with a half-buried basement (rooms of `cave_air` on layers 1 to 5, floor on 0, an inner stairway) dug into
   the terrain; the rooms cross the street layer open (the same openings as the garage of the wide building: 405
   cells); 13 blue banners with the letters on the facade (design of the template), 3 redstone torches saved, leaves
-  not persistent without a trunk become persistent; front on -Z (banners and the entrance stairs); 63 containers, 13
-  hard to get to (closed rooms of the basement); loot of the `building` theme. Crash building (91 × 44 × 90, two
+  not persistent without a trunk become persistent; front on -Z (banners and the entrance stairs); 63 containers, 18
+  hard to get to (the basement: 13 of them in its closed rooms); loot of the `police_station` theme. Crash building (91 × 44 × 90, two
   towers leaning against each other, `buildings_large`, 1 per city like the other buildings): ground on layer 0, front
   on -Z (stairs and door under the gap between the towers), 201 containers, all reached by its stairs.
 - New structures (asked by the user after 13 Nov 2026, with vanilla loot): modern garage house (42 × 36 × 15), glass
@@ -414,8 +414,10 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   them; 1 in each of the 5 small workshops), terrace 5 (1 on the roof of each large pharmacy), attic 87 (modern house
   14, modern garage house 14, post-apocalyptic mansion 12, glass house 10, Victorian 9, pool house 6, abandoned
   mansion 5, suburban 5, large house 4, garage house 3, tower house 3, abandoned house 2); houses 90 of 407; the tall
-  buildings 0 (their floors are reached by their stairs, and their roofs have no container in the open); with the
-  height rule there were 1,382. The vehicle parts
+  buildings 0 (their floors are reached by their stairs; the containers in the open on their roofs, 14 in the
+  brutalist U, wide, green tower, ramp, small and crash buildings, lie 9 to 15 blocks under the highest block of the
+  structure, a stair housing or a taller part, so they are not on the terrace); the 5 underground ones of the small
+  workshops are a barrel set in the ground layer at the edge, with vines; with the height rule there were 1,382. The vehicle parts
   of OAmP and the Lost Cities table were taken out (the Lost Cities one was rejected by Minecraft). The chest of the
   park fountain stays empty (50%) or `mossy_cobblestone` (50%).
 - Palette (`gen/Palette`): every block the generator places, checked at startup (`Palette.validate`). The 8 material
