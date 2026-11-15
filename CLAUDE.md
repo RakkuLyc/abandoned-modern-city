@@ -21,7 +21,8 @@
    `4dd94ae`; `layout`, `structures` and `weathering`, which hold the names, since the English names; `layout` again
    since the special structures in ~1 city in 10, commit `21cd4f6`; `structures` again since the loot theme
    `building_large` and again when it was taken out; `lots` since the barrels of the buildings, `core/Barrels`; `lots` and `structures` again since the hard
-   containers underground, on the terrace and in the attics) and the battery
+   containers underground, on the terrace and in the attics; `structures` again since the height classes of the
+   buildings, their type and category: the blocks did not change) and the battery
    prints per target `mod blocks:` (the blocks the mod decides in the generated world; the reference is in
    `docs/TESTING.md`, section 6, with another one for `structureOvergrowth = false`). In a change that must not alter
    the world (cleanup, splitting files, comments), the test passes and the `mod blocks:` and `stats:` lines stay the
@@ -199,9 +200,9 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   theme, the buildings and the special one the `building` theme.
 - Structure names in English (13 Nov 2026, asked by the user): files (`abandoned_house`, `pharmacy_red`,
   `workshop_small_green`, `gas_station_small_blue`, `abandoned_wide_building`, `abandoned_police_station`...), types
-  (`houses`, `pharmacy_large`, `workshop_medium`, `gas_station_small`, `buildings_large`, `special`, `police_station`),
-  the `/amcs spawn` categories and the limit groups (`house`, `pharmacy`, `workshop`, `gas_station`, `building`,
-  `police_station`, `special`) and the loot tables (`chests/<theme>/<tier>`, themes `house`, `pharmacy`, `workshop`,
+  (`houses`, `pharmacy_large`, `workshop_medium`, `gas_station_small`, `buildings_small|medium|large|immense`, `special`, `police_station`),
+  the `/amcs spawn` categories and the limit groups (`house`, `pharmacy`, `workshop`, `gas_station`, `building` (since 15 Nov 2026 split by
+  height into `building_small`, `building_medium`, `building_large` and `building_immense`), `police_station`, `special`) and the loot tables (`chests/<theme>/<tier>`, themes `house`, `pharmacy`, `workshop`,
   `gas_station`, `building`, `police_station`; tiers `chest`, `barrel`, `pot` and `_hard`). The overgrowth of each structure stays the
   same: its seed came from the file name and now comes from the `seed` column of `index.txt`, holding the value of the
   old name (`String.hashCode` of the Portuguese name). The originals in `structures/` (at the root) keep their
@@ -255,7 +256,7 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     there are 5, one on top of each: tower house, post-apocalyptic mansion, apartment building, apocalyptic building
     and tower (the new structures already come with 12 redstone torches saved and have no lightning rods);
   - barrels of the buildings (asked by the user on 14 Nov 2026; `core/Barrels`, `Structures.Def.code(..., seed)`):
-    in the 10 structures of the `building` category (types `buildings_*`; not the police station nor the ramp
+    in the 10 structures of the `building_*` categories (types `buildings_*`; not the police station nor the ramp
     building, which have their own categories), 70% of the barrels (`Barrels.GONE`) are taken out (air; no barrel is on
     or under the ground layer) and the others become chests (`chest[type=single]`, facing where the barrel's opening faced; a barrel
     facing up or down gives the first side, north, east, south, west, with air in front). The draw is per copy (the
@@ -329,11 +330,23 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     after 13 Nov 2026: the categories of `spawn`; the category alone finds the nearest of any structure of it, with a
     name that structure; a name of another category is refused with the right list; the old form by name, type or
     group no longer exists) (the nearest one already planned; coordinates on the sidewalk in front of it) and `/amcs spawn <category> <name>` (13 Nov 2026,
-    asked by the user: categories `house` 12, `pharmacy` 10, `workshop` 8, `gas_station` 10, `building` 10,
-    `police_station` 1, `special` 1, by the start of the type, `Structures.CATEGORIES`/`Def.category`; the game
+    asked by the user: categories `house` 12, `pharmacy` 10, `workshop` 8, `gas_station` 10, `building_small` 1,
+    `building_medium` 2, `building_large` 6, `building_immense` 1, `police_station` 1, `special` 1, by the start of the
+    type; the buildings by height class (next item), `Structures.CATEGORIES`/`Def.category`; the game
     suggests only the names of the chosen category; a name of another category is refused with the right list; the
     old one-argument form no longer exists) (2 blocks in front of the player, centered, its front facing the player,
-    its ground on the block the player stands on; the same rules as in the city, with loot).
+    its ground on the block the player stands on; the same rules as in the city, with loot);
+  - height classes of the buildings (asked by the user on 15 Nov 2026): by the height of the box of the template with
+    the buried layers (`Def.h`, the number of the README table): **small** up to 40 (`Structures.HEIGHT_SMALL`),
+    **medium** up to 75, **large** up to 140, **immense** above 140. The `type` of `index.txt` is `buildings_<class>`
+    (`Structures.heightClass`) and the category of the commands `building_<class>`: apartment building 37 small;
+    skeleton building 43 and small building 41 medium; wide building 80 (8 of them the buried garage; counted whole,
+    the user's choice), crash building 90, bluish building 106, apocalyptic building 110, tower 118 and brutalist U
+    building 125 large; green tower 143 immense. Only the 10 buildings: the ramp building (`special`, 134) and the
+    police station (33) keep their categories. The class changes neither the loot (the theme stays `building`, every
+    building) nor the barrels (`Structures.isBuildingType`) nor the drawing of the ring or the one-per-city rule (the
+    world does not change; only the `structures` part of `FingerprintTest`, which hashes type and category);
+    `RingTest.buildingsAreClassifiedByHeight` fails when a building has the type of another height.
 - Overgrowth of the structures (13 Nov 2026, asked by the user: "nature taking over", modeled on the apocalyptic
   building; `core/Weathering`): applied to each template when it loads, before anything that reads it (real leaves,
   access of the containers, crowns), without touching the `.nbt` files; **switched off with

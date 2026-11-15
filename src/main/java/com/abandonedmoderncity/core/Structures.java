@@ -198,12 +198,13 @@ public final class Structures {
          * and recognizable, not the houses, pharmacies, workshops or gas stations.
          */
         public boolean onePerCity() {
-            return type.startsWith("buildings") || type.equals("special");
+            return isBuildingType(type) || type.equals("special");
         }
 
         /**
          * Category of the structure for {@code /amcs spawn <category> <name>}: house, pharmacy, workshop, gas_station,
-         * building, police_station or special.
+         * building_small, building_medium, building_large, building_immense (the buildings, by height: see
+         * {@link #HEIGHT_SMALL}), police_station or special.
          */
         public String category() {
             return categoryOf(type);
@@ -316,12 +317,36 @@ public final class Structures {
      * add-on such as AMC TACZ Loot can give the police station more weapons.
      */
     static final String[] LOOT_THEMES = {"house", "pharmacy", "workshop", "gas_station", "police_station"};
-    /** Categories of {@code /amcs spawn}, by the start of the structure type. */
-    public static final String[] CATEGORIES = {"house", "pharmacy", "workshop", "gas_station", "building", "police_station",
-            "special"};
+    /**
+     * Categories of {@code /amcs spawn}, by the start of the structure type; the buildings ({@code buildings_<size>}
+     * types) have one category per height class, {@code building_<size>}.
+     */
+    public static final String[] CATEGORIES = {"house", "pharmacy", "workshop", "gas_station", "building_small",
+            "building_medium", "building_large", "building_immense", "police_station", "special"};
+    /**
+     * Height classes of the buildings (the type {@code buildings_<size>} of index.txt), by the height of the box of the
+     * template with the buried layers: small up to 40, medium up to 75, large up to 140, immense above 140 (asked by the
+     * user after 13 Nov 2026). {@code RingTest} checks that each building has the type of its height.
+     */
+    public static final int HEIGHT_SMALL = 40;
+    public static final int HEIGHT_MEDIUM = 75;
+    public static final int HEIGHT_LARGE = 140;
 
-    /** Category of {@code /amcs spawn} of a structure type (by the start of the type). */
+    /** The height class ({@code small}, {@code medium}, {@code large} or {@code immense}) of a box of height {@code h}. */
+    public static String heightClass(int h) {
+        return h <= HEIGHT_SMALL ? "small" : h <= HEIGHT_MEDIUM ? "medium" : h <= HEIGHT_LARGE ? "large" : "immense";
+    }
+
+    /** Whether the type is one of the buildings ({@code buildings_small} ... {@code buildings_immense}). */
+    static boolean isBuildingType(String type) {
+        return type.startsWith("buildings_");
+    }
+
+    /** Category of {@code /amcs spawn} of a structure type (by the start of the type; buildings by height class). */
     static String categoryOf(String type) {
+        if (isBuildingType(type)) {
+            return "building_" + type.substring("buildings_".length());
+        }
         for (String k : CATEGORIES) {
             if (type.startsWith(k)) {
                 return k;
@@ -446,7 +471,7 @@ public final class Structures {
         }
         boolean[] openings = StructureLoader.openings(t, state, x0, z0, w, d, y0 + ground);
         // the barrels of the buildings: taken out or turned into chests, copy by copy
-        Map<Integer, int[]> barrels = categoryOf(type).equals("building") ? Barrels.of(t, ids) : Map.of();
+        Map<Integer, int[]> barrels = isBuildingType(type) ? Barrels.of(t, ids) : Map.of();
         return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, turn, state, fill, cells, access,
                 overhang, model, openings, barrels);
     }

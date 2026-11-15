@@ -52,7 +52,8 @@ import org.junit.jupiter.api.Test;
  * of the buildings were taken out and the others became chests, copy by copy ({@link Barrels}); structures changed
  * again when the loot theme building_large was taken out (the blocks did not change); lots and structures changed
  * when the containers underground, on the terrace and in the attics of the houses became hard to get to (the loot
- * access; the blocks did not change). Change them
+ * access; the blocks did not change); structures changed again when the buildings were classified by height (the
+ * type and the category of 4 of them: the blocks did not change). Change them
  * only in a commit that is meant to change the world, and say so in it.
  */
 class FingerprintTest {
@@ -67,7 +68,7 @@ class FingerprintTest {
         EXPECTED.put("roads", "bcf16888eff09ec35d77b4c97d496a5d006061d045c8e02abd16c5a56418aef6");
         EXPECTED.put("lamps", "85591f5e99c109803aa1dfb294e112106e69005b6f9706d41bb2abb565addb23");
         EXPECTED.put("crowns", "4d9143c986f8bc57f9bc9ec5edbd5b32542c6373b86ca5b8cedee32f0daa6117");
-        EXPECTED.put("structures", "ab215ef0ec123969741e5bd69c77c9ed91611597f1807db9ca69e0675d02d33a");
+        EXPECTED.put("structures", "64827649991565e4ef76d37a5d7de2e5cb075fa852a512f5d407dfa08fb30fcb");
         EXPECTED.put("weathering", "5b8482cc06ec86bebd98c3c30ea697bcd685bfb97c98dabcba1f466f606b591b");
         EXPECTED.put("benches", "e8ee1c72349ec4768b6c4880b5810913a01abed52a0c8790553a5f97fb15e7e8");
     }

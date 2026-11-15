@@ -271,7 +271,7 @@ class AccessTest {
         // every building and the special one use building, whatever their number of containers (the theme
         // building_large of the buildings with 100+ containers was taken out)
         for (Structures.Def d : Structures.ALL) {
-            if (d.category().equals("building") || d.category().equals("special")) {
+            if (d.category().startsWith("building_") || d.category().equals("special")) {
                 assertEquals("building", d.lootTheme(), d.name());
             }
         }

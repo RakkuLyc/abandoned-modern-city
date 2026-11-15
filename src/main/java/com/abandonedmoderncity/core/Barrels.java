@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The barrels of the buildings (the {@code building} category of {@code /amcs spawn}, types {@code buildings_*}): in
+ * The barrels of the buildings (the {@code building_*} categories of {@code /amcs spawn}, types {@code buildings_*}): in
  * each copy, {@link #GONE} of them are taken out (air) and the others become chests (asked by the user after 13 Nov
  * 2026), {@link #GONE} of each building's barrels on average. The draw is per copy: a pure function of the lot's seed and the barrel's cell in the template, so the chunk
  * builder, the neighbour repair, the audit and the fingerprint agree.

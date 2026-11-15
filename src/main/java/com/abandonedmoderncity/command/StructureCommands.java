@@ -33,7 +33,7 @@ import net.minecraft.world.phys.Vec3;
  *   <li>{@code /amcs locate structure <category> [name]} (the categories of spawn): the nearest one the plan put in a
  *   city, of the category (any structure of it) or with that name; the clickable coordinates are on the sidewalk in
  *   front of it.</li>
- *   <li>{@code /amcs spawn <category> <name>} (house, pharmacy, workshop, gas_station, building, police_station, special): places
+ *   <li>{@code /amcs spawn <category> <name>} (house, pharmacy, workshop, gas_station, building_small, building_medium, building_large, building_immense, police_station, special): places
  *   the structure 2 blocks in front of you, centered on where you look, its
  *   front turned to you, its ground layer level with the block you stand on. Same rules as in the cities: buried
  *   layers, floor filled to the edge, real leaves, loot tables.</li>
@@ -51,7 +51,7 @@ public final class StructureCommands {
     /**
      * {@code structure <category> [name]} under {@code /amcs locate}: the nearest structure of the category (e.g.
      * {@code /amcs locate structure pharmacy}, any pharmacy of any color) or the nearest with that name (e.g.
-     * {@code /amcs locate structure building abandoned_wide_building}); the names suggested are those of the category.
+     * {@code /amcs locate structure building_large abandoned_wide_building}); the names suggested are those of the category.
      */
     static ArgumentBuilder<CommandSourceStack, ?> locateNode() {
         return Commands.literal("structure").then(Commands.argument("category", StringArgumentType.word())
@@ -91,7 +91,7 @@ public final class StructureCommands {
 
     /**
      * {@code spawn <category> <name>} under {@code /amcs}: the structures by category (e.g.
-     * {@code /amcs spawn building abandoned_wide_building}); the names suggested are those of the category.
+     * {@code /amcs spawn building_large abandoned_wide_building}); the names suggested are those of the category.
      */
     static ArgumentBuilder<CommandSourceStack, ?> spawnNode() {
         return Commands.literal("spawn").then(Commands.argument("category", StringArgumentType.word())

@@ -488,10 +488,34 @@ class RingTest {
             n.merge(d.category(), 1, Integer::sum);
         }
         System.out.println("[RingTest] spawn categories: " + n);
-        assertEquals("building", Structures.ALL.stream().filter(d -> d.name().equals("abandoned_wide_building")).findFirst().orElseThrow().category());
+        assertEquals("building_large", Structures.ALL.stream().filter(d -> d.name().equals("abandoned_wide_building")).findFirst().orElseThrow().category());
         assertEquals("gas_station", Structures.ALL.stream().filter(d -> d.name().equals("gas_station_small_blue")).findFirst().orElseThrow().category());
         assertEquals(Map.of("house", 12, "police_station", 1, "special", 1, "pharmacy", 10, "workshop", 8, "gas_station", 10,
-                "building", 10), n);
+                "building_small", 1, "building_medium", 2, "building_large", 6, "building_immense", 1), n);
+    }
+
+    /**
+     * The buildings are classified by the height of their box (buried layers included): small up to 40, medium up to 75,
+     * large up to 140, immense above 140; the type of index.txt and the category of the commands follow it.
+     */
+    @Test
+    void buildingsAreClassifiedByHeight() {
+        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertEquals("small", Structures.heightClass(40));
+        assertEquals("medium", Structures.heightClass(41));
+        assertEquals("medium", Structures.heightClass(75));
+        assertEquals("large", Structures.heightClass(76));
+        assertEquals("large", Structures.heightClass(140));
+        assertEquals("immense", Structures.heightClass(141));
+        Map<String, String> byName = new TreeMap<>();
+        for (Structures.Def d : Structures.ALL) {
+            if (Structures.isBuildingType(d.type())) {
+                assertEquals("buildings_" + Structures.heightClass(d.h()), d.type(), d.name() + " height " + d.h());
+                assertEquals("building_" + Structures.heightClass(d.h()), d.category(), d.name());
+                byName.put(d.name(), d.category() + " " + d.h());
+            }
+        }
+        System.out.println("[RingTest] building height classes: " + byName);
     }
 
     @Test

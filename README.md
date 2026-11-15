@@ -52,6 +52,12 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   wide, green tower, crash, ramp) at most 1 per city; the ramp building (the `special` category) in only ~1 city in
   10 (`City.SPECIAL_CHANCE`). Never two of the same structure (the same model, in any color)
   in one block.
+  The buildings are classified by the height of their box (buried layers included; the `type` of `index.txt` and the
+  `/amcs spawn` / `locate` category follow it): **small** up to 40 blocks (apartment building, 37), **medium** up to 75
+  (skeleton building 43, small building 41), **large** up to 140 (wide building 80, crash building 90, bluish
+  building 106, apocalyptic building 110, tower 118, brutalist U building 125) and **immense** above 140 (green
+  tower, 143). The ramp building (`special`, 134) and the police station (own category, 33) stay out of it. The class
+  changes neither the loot (every building uses the `building` theme) nor the barrels, nor the sorting of the ring.
   Color variants: pharmacy and large pharmacy (5 colors each, the D R U G S T O R E letters copied from the original
   in the variant's color, without the F A R M Á C I A sign in blocks the variants had: the wall stays white as on
   the original), medium workshop (3), small workshop (5), gas station and small gas station (5 each).
@@ -74,19 +80,19 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   | Small workshop (green, yellow, blue, purple, red) | workshop | 22 × 33 × 16 | layer 0 |
   | Gas station (red, yellow, blue, purple, green) | gas station (limit 2 with the small one) | 45 × 37 × 18 | layer 0 |
   | Small gas station (red, yellow, blue, purple, green) | gas station | 25 × 20 × 18 | layer 0 |
-  | Apartment building | building | 31 × 29 × 37 | layer 1 (1 down) |
-  | Skeleton building (`skeleton_building_31x29`) | building | 31 × 29 × 43 | layer 0 |
-  | Bluish building | building | 66 × 46 × 106 | layer 1 (1 down) |
-  | Tower | building | 62 × 53 × 118 | layer 1 (1 down) |
-  | Apocalyptic building | building | 57 × 45 × 110 | layer 0 |
+  | Apartment building | building (small) | 31 × 29 × 37 | layer 1 (1 down) |
+  | Skeleton building (`skeleton_building_31x29`) | building (medium) | 31 × 29 × 43 | layer 0 |
+  | Bluish building | building (large) | 66 × 46 × 106 | layer 1 (1 down) |
+  | Tower | building (large) | 62 × 53 × 118 | layer 1 (1 down) |
+  | Apocalyptic building | building (large) | 57 × 45 × 110 | layer 0 |
   | Modern garage house | houses | 42 × 36 × 15 | layer 0 |
   | Glass house | houses | 48 × 40 × 15 | layer 0 |
-  | Small building | building | 23 × 31 × 41 | layer 0 |
-  | Brutalist U building | building | 75 × 58 × 125 | layer 0 |
-  | Wide building (underground parking dug into the terrain, whole ramp and stairwell open) | building | 84 × 31 × 80 | layer 8 (8 buried) |
-  | Green tower | building | 31 × 31 × 143 | layer 0 |
+  | Small building | building (medium) | 23 × 31 × 41 | layer 0 |
+  | Brutalist U building | building (large) | 75 × 58 × 125 | layer 0 |
+  | Wide building (underground parking dug into the terrain, whole ramp and stairwell open) | building (large) | 84 × 31 × 80 | layer 8 (8 buried) |
+  | Green tower | building (immense) | 31 × 31 × 143 | layer 0 |
   | Ramp building (folder Especial) | special (at most 1 per city, in ~1 city in 10) | 102 × 72 × 134 | layer 0 |
-  | Crash building (two leaning towers) | building | 91 × 44 × 90 | layer 0 |
+  | Crash building (two leaning towers) | building (large) | 91 × 44 × 90 | layer 0 |
   | Police station (half-buried basement dug into the terrain, letters on banners) | police station (at most 1 per city) | 54 × 38 × 33 | layer 3 (3 buried) |
 
   - Against the sidewalk without a gap: the edge rows without a floor get the floor of the first row that has one.
@@ -107,7 +113,7 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
     and mossy cobblestone and stone bricks near the green. 65,086 blocks in the 52 files.
   - Lightning rods become lit redstone torches (5: on top of the tower house, the post-apocalyptic mansion, the
     apartment building, the apocalyptic building and the tower).
-  - Barrels of the buildings (`core/Barrels`): in the 10 structures of the `building` category, 70% of the barrels
+  - Barrels of the buildings (`core/Barrels`): in the 10 structures of the `building_*` categories, 70% of the barrels
     are taken out and the others become chests, drawn again in each copy (two towers are not the same). A barrel
     that holds something (a slab or a pot on top, a vine fixed to it) always becomes a chest; in a stack the top ones
     go first. 794 barrels, 26 always chests, ~239 chests per set of the 10 buildings.
@@ -283,13 +289,14 @@ Delete the old file or adjust both values.
 - `/amcs locate city|highway|tunnel|bridge` — the nearest one, with clickable coordinates (they suggest a `/tp`).
 - `/amcs locate structure <category> [name]` — the nearest structure already planned in the cities, with the
   categories of `spawn`: the category alone finds the nearest of any structure of it (`/amcs locate structure
-  pharmacy`: any pharmacy, of any size and color), with a name that structure (`/amcs locate structure building
+  pharmacy`: any pharmacy, of any size and color), with a name that structure (`/amcs locate structure building_large
   tower`); the game suggests the names of the chosen category, and a name of another category is refused with the
   right list. The clickable coordinates are on the sidewalk, 2 blocks in front of the middle of
   the facade.
-- `/amcs spawn <category> <name>` — categories `house`, `pharmacy`, `workshop`, `gas_station`, `building`,
+- `/amcs spawn <category> <name>` — categories `house`, `pharmacy`, `workshop`, `gas_station`, `building_small`,
+  `building_medium`, `building_large`, `building_immense` (the buildings by height: see below),
   `police_station` and `special` (the game suggests the names of the chosen category; e.g.
-  `/amcs spawn building abandoned_wide_building`); places the structure 2 blocks in front of you, centered on the
+  `/amcs spawn building_large abandoned_wide_building`); places the structure 2 blocks in front of you, centered on the
   direction you look in, its front facing you and its ground at the level of the block you stand on. The same rules
   as in the city: buried layers, floor out to the edge, real leaves and loot tables in the containers. The air of the
   template clears the terrain inside the box (above the ground); below the ground only the template's `cave_air`

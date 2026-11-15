@@ -1,4 +1,8 @@
 # type|file (without .nbt)|ground|front|model|banners|neutral|seed|hard
+# type: houses, pharmacy, pharmacy_large, workshop_*, gas_station*, special, police_station, or for the buildings
+#   buildings_<class> by the height of the template's box (buried layers included): small up to 40, medium up to 75,
+#   large up to 140, immense above 140 (RingTest.buildingsAreClassifiedByHeight checks it); /amcs spawn and locate
+#   use the category building_<class>
 # ground: the template layer (from its lowest solid one) that lies at the city ground (1 = the lowest layer is buried)
 # front (optional, default 0): degrees clockwise that turn the template's front to its -Z side (180: front on +Z)
 # model (optional, default the file): color variants of one structure share a model; the ring draws a model, then a
@@ -53,16 +57,16 @@ gas_station_small|gas_station_small_blue|0||gas_station_small|||-1536024430
 gas_station_small|gas_station_small_purple|0||gas_station_small|||-1535528458
 gas_station_small|gas_station_small_green|0||gas_station_small|||-353351774
 buildings_small|apartment_building|1|||||1282637484
-buildings_small|skeleton_building_31x29|0|||||670250417
+buildings_medium|skeleton_building_31x29|0|||||670250417
 buildings_large|bluish_building|1|||||607607012
 buildings_large|tower|1|||||110548426
-buildings_medium|apocalyptic_building_57x45|0|||||-502023098
+buildings_large|apocalyptic_building_57x45|0|||||-502023098
 houses|abandoned_modern_garage_house|0|||||1693055218
 houses|abandoned_glass_house|0|||||1739114893
-buildings_small|abandoned_small_building|0|||||-1959586207
+buildings_medium|abandoned_small_building|0|||||-1959586207
 buildings_large|brutalist_u_building_75x58|0|||||1132278429
 buildings_large|abandoned_wide_building|8|||||-935023223
-buildings_large|abandoned_green_tower|0|||||878824345
+buildings_immense|abandoned_green_tower|0|||||878824345
 special|abandoned_ramp_building|0|||||-1623252993
 buildings_large|abandoned_crash_building|0|||||1303918151
 police_station|abandoned_police_station|3|||||-1614901983
