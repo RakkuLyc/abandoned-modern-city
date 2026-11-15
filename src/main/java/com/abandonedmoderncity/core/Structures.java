@@ -326,15 +326,19 @@ public final class Structures {
     /**
      * Height classes of the buildings (the type {@code buildings_<size>} of index.txt), by the height of the box of the
      * template with the buried layers: small up to 40, medium up to 75, large up to 140, immense above 140 (asked by the
-     * user after 13 Nov 2026). {@code RingTest} checks that each building has the type of its height.
+     * user after 13 Nov 2026), each limit with a margin of {@link #HEIGHT_MARGIN} blocks (asked on 15 Nov 2026: a
+     * building up to 3 blocks over a limit stays in the lower class). {@code RingTest} checks that each building has the
+     * type of its height.
      */
     public static final int HEIGHT_SMALL = 40;
     public static final int HEIGHT_MEDIUM = 75;
     public static final int HEIGHT_LARGE = 140;
+    public static final int HEIGHT_MARGIN = 3;
 
     /** The height class ({@code small}, {@code medium}, {@code large} or {@code immense}) of a box of height {@code h}. */
     public static String heightClass(int h) {
-        return h <= HEIGHT_SMALL ? "small" : h <= HEIGHT_MEDIUM ? "medium" : h <= HEIGHT_LARGE ? "large" : "immense";
+        return h <= HEIGHT_SMALL + HEIGHT_MARGIN ? "small" : h <= HEIGHT_MEDIUM + HEIGHT_MARGIN ? "medium"
+                : h <= HEIGHT_LARGE + HEIGHT_MARGIN ? "large" : "immense";
     }
 
     /** Whether the type is one of the buildings ({@code buildings_small} ... {@code buildings_immense}). */

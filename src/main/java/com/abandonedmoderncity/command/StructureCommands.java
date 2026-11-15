@@ -12,6 +12,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import java.util.Arrays;
 import java.util.TreeSet;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -111,6 +112,10 @@ public final class StructureCommands {
     /** The category is unknown or the name is not one of it: says so with the accepted list and returns false. */
     private static boolean checkCategory(CommandContext<CommandSourceStack> c, String category, String name) {
         TreeSet<String> inCategory = namesOf(category);
+        if (inCategory.isEmpty() && Arrays.asList(Structures.CATEGORIES).contains(category)) {
+            c.getSource().sendFailure(Component.literal("[AMCS] no structure in category '" + category + "' yet"));
+            return false;
+        }
         if (inCategory.isEmpty()) {
             c.getSource().sendFailure(Component.literal("[AMCS] unknown category '" + category + "' ("
                     + String.join(", ", Structures.CATEGORIES) + ")"));

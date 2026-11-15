@@ -491,22 +491,22 @@ class RingTest {
         assertEquals("building_large", Structures.ALL.stream().filter(d -> d.name().equals("abandoned_wide_building")).findFirst().orElseThrow().category());
         assertEquals("gas_station", Structures.ALL.stream().filter(d -> d.name().equals("gas_station_small_blue")).findFirst().orElseThrow().category());
         assertEquals(Map.of("house", 12, "police_station", 1, "special", 1, "pharmacy", 10, "workshop", 8, "gas_station", 10,
-                "building_small", 1, "building_medium", 2, "building_large", 6, "building_immense", 1), n);
+                "building_small", 3, "building_large", 7), n);
     }
 
     /**
      * The buildings are classified by the height of their box (buried layers included): small up to 40, medium up to 75,
-     * large up to 140, immense above 140; the type of index.txt and the category of the commands follow it.
+     * large up to 140, immense above 140, each limit with a margin of 3 blocks; the type of index.txt and the category of the commands follow it.
      */
     @Test
     void buildingsAreClassifiedByHeight() {
         assumeFalse(Structures.ALL.isEmpty(), "no structures");
-        assertEquals("small", Structures.heightClass(40));
-        assertEquals("medium", Structures.heightClass(41));
-        assertEquals("medium", Structures.heightClass(75));
-        assertEquals("large", Structures.heightClass(76));
-        assertEquals("large", Structures.heightClass(140));
-        assertEquals("immense", Structures.heightClass(141));
+        assertEquals("small", Structures.heightClass(43));
+        assertEquals("medium", Structures.heightClass(44));
+        assertEquals("medium", Structures.heightClass(78));
+        assertEquals("large", Structures.heightClass(79));
+        assertEquals("large", Structures.heightClass(143));
+        assertEquals("immense", Structures.heightClass(144));
         Map<String, String> byName = new TreeMap<>();
         for (Structures.Def d : Structures.ALL) {
             if (Structures.isBuildingType(d.type())) {

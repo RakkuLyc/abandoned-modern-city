@@ -53,11 +53,13 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   10 (`City.SPECIAL_CHANCE`). Never two of the same structure (the same model, in any color)
   in one block.
   The buildings are classified by the height of their box (buried layers included; the `type` of `index.txt` and the
-  `/amcs spawn` / `locate` category follow it): **small** up to 40 blocks (apartment building, 37), **medium** up to 75
-  (skeleton building 43, small building 41), **large** up to 140 (wide building 80, crash building 90, bluish
-  building 106, apocalyptic building 110, tower 118, brutalist U building 125) and **immense** above 140 (green
-  tower, 143). The ramp building (`special`, 134) and the police station (own category, 33) stay out of it. The class
-  changes neither the loot (every building uses the `building` theme) nor the barrels, nor the sorting of the ring.
+  `/amcs spawn` / `locate` category follow it): **small** up to 40 blocks, **medium** up to 75, **large** up to 140 and
+  **immense** above 140, each limit with a margin of 3 blocks (a building up to 3 over a limit stays in the lower class:
+  small up to 43, medium up to 78, large up to 143). Today: small 3 (apartment building 37, small building 41, skeleton
+  building 43), medium 0, large 7 (wide building 80, crash building 90, bluish building 106, apocalyptic building 110,
+  tower 118, brutalist U building 125, green tower 143), immense 0 (the categories exist for future buildings). The
+  ramp building (`special`, 134) and the police station (own category, 33) stay out of it. The class changes neither the
+  loot (every building uses the `building` theme) nor the barrels, nor the sorting of the ring.
   Color variants: pharmacy and large pharmacy (5 colors each, the D R U G S T O R E letters copied from the original
   in the variant's color, without the F A R M Á C I A sign in blocks the variants had: the wall stays white as on
   the original), medium workshop (3), small workshop (5), gas station and small gas station (5 each).
@@ -81,16 +83,16 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   | Gas station (red, yellow, blue, purple, green) | gas station (limit 2 with the small one) | 45 × 37 × 18 | layer 0 |
   | Small gas station (red, yellow, blue, purple, green) | gas station | 25 × 20 × 18 | layer 0 |
   | Apartment building | building (small) | 31 × 29 × 37 | layer 1 (1 down) |
-  | Skeleton building (`skeleton_building_31x29`) | building (medium) | 31 × 29 × 43 | layer 0 |
+  | Skeleton building (`skeleton_building_31x29`) | building (small) | 31 × 29 × 43 | layer 0 |
   | Bluish building | building (large) | 66 × 46 × 106 | layer 1 (1 down) |
   | Tower | building (large) | 62 × 53 × 118 | layer 1 (1 down) |
   | Apocalyptic building | building (large) | 57 × 45 × 110 | layer 0 |
   | Modern garage house | houses | 42 × 36 × 15 | layer 0 |
   | Glass house | houses | 48 × 40 × 15 | layer 0 |
-  | Small building | building (medium) | 23 × 31 × 41 | layer 0 |
+  | Small building | building (small) | 23 × 31 × 41 | layer 0 |
   | Brutalist U building | building (large) | 75 × 58 × 125 | layer 0 |
   | Wide building (underground parking dug into the terrain, whole ramp and stairwell open) | building (large) | 84 × 31 × 80 | layer 8 (8 buried) |
-  | Green tower | building (immense) | 31 × 31 × 143 | layer 0 |
+  | Green tower | building (large) | 31 × 31 × 143 | layer 0 |
   | Ramp building (folder Especial) | special (at most 1 per city, in ~1 city in 10) | 102 × 72 × 134 | layer 0 |
   | Crash building (two leaning towers) | building (large) | 91 × 44 × 90 | layer 0 |
   | Police station (half-buried basement dug into the terrain, letters on banners) | police station (at most 1 per city) | 54 × 38 × 33 | layer 3 (3 buried) |

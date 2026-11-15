@@ -22,7 +22,7 @@
    since the special structures in ~1 city in 10, commit `21cd4f6`; `structures` again since the loot theme
    `building_large` and again when it was taken out; `lots` since the barrels of the buildings, `core/Barrels`; `lots` and `structures` again since the hard
    containers underground, on the terrace and in the attics; `structures` again since the height classes of the
-   buildings, their type and category: the blocks did not change) and the battery
+   buildings (and again with the margin of 3 blocks), their type and category: the blocks did not change) and the battery
    prints per target `mod blocks:` (the blocks the mod decides in the generated world; the reference is in
    `docs/TESTING.md`, section 6, with another one for `structureOvergrowth = false`). In a change that must not alter
    the world (cleanup, splitting files, comments), the test passes and the `mod blocks:` and `stats:` lines stay the
@@ -330,23 +330,27 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     after 13 Nov 2026: the categories of `spawn`; the category alone finds the nearest of any structure of it, with a
     name that structure; a name of another category is refused with the right list; the old form by name, type or
     group no longer exists) (the nearest one already planned; coordinates on the sidewalk in front of it) and `/amcs spawn <category> <name>` (13 Nov 2026,
-    asked by the user: categories `house` 12, `pharmacy` 10, `workshop` 8, `gas_station` 10, `building_small` 1,
-    `building_medium` 2, `building_large` 6, `building_immense` 1, `police_station` 1, `special` 1, by the start of the
+    asked by the user: categories `house` 12, `pharmacy` 10, `workshop` 8, `gas_station` 10, `building_small` 3,
+    `building_medium` 0, `building_large` 7, `building_immense` 0, `police_station` 1, `special` 1, by the start of the
     type; the buildings by height class (next item), `Structures.CATEGORIES`/`Def.category`; the game
     suggests only the names of the chosen category; a name of another category is refused with the right list; the
     old one-argument form no longer exists) (2 blocks in front of the player, centered, its front facing the player,
     its ground on the block the player stands on; the same rules as in the city, with loot);
   - height classes of the buildings (asked by the user on 15 Nov 2026): by the height of the box of the template with
     the buried layers (`Def.h`, the number of the README table): **small** up to 40 (`Structures.HEIGHT_SMALL`),
-    **medium** up to 75, **large** up to 140, **immense** above 140. The `type` of `index.txt` is `buildings_<class>`
-    (`Structures.heightClass`) and the category of the commands `building_<class>`: apartment building 37 small;
-    skeleton building 43 and small building 41 medium; wide building 80 (8 of them the buried garage; counted whole,
-    the user's choice), crash building 90, bluish building 106, apocalyptic building 110, tower 118 and brutalist U
-    building 125 large; green tower 143 immense. Only the 10 buildings: the ramp building (`special`, 134) and the
-    police station (33) keep their categories. The class changes neither the loot (the theme stays `building`, every
-    building) nor the barrels (`Structures.isBuildingType`) nor the drawing of the ring or the one-per-city rule (the
-    world does not change; only the `structures` part of `FingerprintTest`, which hashes type and category);
-    `RingTest.buildingsAreClassifiedByHeight` fails when a building has the type of another height.
+    **medium** up to 75, **large** up to 140, **immense** above 140, each limit with a margin of 3 blocks
+    (`Structures.HEIGHT_MARGIN`, asked the same day: a building up to 3 over a limit stays in the lower class; the
+    user chose this direction, not the one that moves up a building 3 under a limit): small up to 43, medium up to 78,
+    large up to 143. The `type` of `index.txt` is `buildings_<class>` (`Structures.heightClass`) and the category of the
+    commands `building_<class>`: small 3 (apartment building 37, small building 41, skeleton building 43), large 7 (wide
+    building 80, 8 of them the buried garage, counted whole, the user's choice; crash building 90, bluish building 106,
+    apocalyptic building 110, tower 118, brutalist U building 125, green tower 143), medium and immense none (their
+    categories exist; the commands say "no structure in category ... yet"). Without the margin the skeleton building
+    and the small building were medium and the green tower immense. Only the 10 buildings: the ramp building (`special`,
+    134) and the police station (33) keep their categories. The class changes neither the loot (the theme stays
+    `building`, every building) nor the barrels (`Structures.isBuildingType`) nor the drawing of the ring or the
+    one-per-city rule (the world does not change; only the `structures` part of `FingerprintTest`, which hashes type and
+    category); `RingTest.buildingsAreClassifiedByHeight` fails when a building has the type of another height.
 - Overgrowth of the structures (13 Nov 2026, asked by the user: "nature taking over", modeled on the apocalyptic
   building; `core/Weathering`): applied to each template when it loads, before anything that reads it (real leaves,
   access of the containers, crowns), without touching the `.nbt` files; **switched off with
