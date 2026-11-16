@@ -345,7 +345,8 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     ones; on the street floor 3 to 20% (apartment 20, small 16, brutalist 11, wide and apocalyptic 9, tower 6, bluish
     and crash 4, green tower 3; skeleton 13), every floor whose share is one chest or more gets some; exploration 25 to
     43% (never under 15% in a copy); more than 1 per zone only in the apartment (2, 67 copies) and the skeleton (3,
-    every copy), which have few rooms with spots. 40 copies of each walked again with their barrels and chests: every
+    every copy, also in whole rooms of 94 to 170 cells; the apartment only in pieces of halls), which have few rooms
+    with spots. Walked again, 200 copies of each (2,000): every chest reached, someone in front, no container cut off. 40 copies of each walked again with their barrels and chests: every
     chest reached with someone standing in front, no container cut off. In the battery the block entities and the
     loot containers of the structures went up by the same number in every target with buildings (t01 1,013 → 1,192),
     `structure_loot_hard` and every other count unchanged;

@@ -129,8 +129,9 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
     corridors), the ones far from where each floor is reached and the ones of a lobby open onto the street; nothing is
     placed yet. Floor plans of each building: `build/test-renders/rooms/` (after `./gradlew test`). Stage 3
     (`core/ChestDraw`) places them: each copy of a building draws 12–28 chests (small), 25–47 (medium), 38–65 (large)
-    or 51–83 (immense), spread over the floors in proportion to the room on each, 4+ blocks apart, at most 1 per small
-    room, at least 15% in exploration places (far on their floor, under the open sky, underground), never blocking a
+    or 51–83 (immense), spread over the floors in proportion to the room on each, 4+ blocks apart, 1 per room or piece
+    of a hall while there is room (the skeleton building, with few rooms with spots, gets up to 3 in rooms of 94 to 170
+    cells), at least 15% in exploration places (far on their floor, under the open sky, underground), never blocking a
     passage; loot of the `building` theme.
 
   The containers (chests, barrels, dispensers, droppers, decorated pots) get their loot table when they are placed;
