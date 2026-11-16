@@ -24,8 +24,8 @@
    containers underground, on the terrace and in the attics; `structures` again since the height classes of the
    buildings (and again with the margin of 3 blocks), their type and category: the blocks did not change; `lots` and `structures` again since the chests saved in the
    templates of the buildings were taken out, 15 Nov 2026; `lots` again since each copy of a building got its drawn
-   chests, `core/ChestDraw`, and again when the drawn chests underground or on the terrace became hard to get to) and
-   the battery
+   chests, `core/ChestDraw`, and again when the drawn chests underground or on the terrace became hard to get to, and
+   again when the barrels that hold something stayed barrels) and the battery
    prints per target `mod blocks:` (the blocks the mod decides in the generated world; the reference is in
    `docs/TESTING.md`, section 6, with another one for `structureOvergrowth = false`). In a change that must not alter
    the world (cleanup, splitting files, comments), the test passes and the `mod blocks:` and `stats:` lines stay the
@@ -269,14 +269,18 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     seed of the lot, or a random one for `/amcs spawn`, and the cell of the barrel in the template), so two copies of
     one building differ (in the test cities of the flat terrain, 205 copies, each with its own seed and its own
     chests); the chunk builder, the neighbour repair, the audit and the fingerprint all read it through
-    `Lot.code`. A barrel that holds something is never taken out (it becomes a chest): a block standing on the top of
+    `Lot.code`. A barrel that holds something is never taken out and stays the barrel of the template (asked by the
+    user on 16 Nov 2026: until then it became a chest, and the counters of the tower's ground floor, 16 with a stone
+    slab on top, 7 with a decorated pot, 1 with an iron trapdoor, gave ~24 chests in every copy, ~33 chests from
+    barrels on that floor against ~9 now): a block standing on the top of
     its stack (the stone slabs of the counters and the decorated pots of the tower), something hanging under it, or a
     block fixed to one of its faces (a vine or lichen holding on it, a wall torch, sign, ladder, button...); a vine
     near it held by a wall or by the vine above does not count. 26 of the 794 barrels (tower 25, crash building 1);
     the others are taken out with a higher chance so that 70% of each building's barrels go (tower 84%). In a stack
     (only the tower: 14 stacks of 2 or 3) the barrels taken out are the top ones, so nothing floats. Measured over 200
-    copies: 69.9% taken out (tower 70.0%, brutalist U 69.8%, crash 69.9%, wide 69.5%, green tower 69.8%), ~239
-    chests in the 10 buildings. The chests use the `chest` tier of the loot (or `chest_hard` where the barrel was
+    copies: 69.9% taken out (tower 70.0%, brutalist U 69.8%, crash 69.9%, wide 69.5%, green tower 69.8%), ~212
+    chests and the 26 barrels that hold something in the 10 buildings (~239 chests while those 26 became chests; the
+    tower 19.7 chests from barrels a copy, 44.7 before). The chests use the `chest` tier of the loot (or `chest_hard` where the barrel was
     hard to get to: the 7 of the apocalyptic building). The hard flags are still worked out once on the template with
     its barrels: with every barrel taken out, or every barrel a chest, no other container changes (`BarrelsTest`);
   - chests of the buildings (asked by the user on 15 Nov 2026, the first step of the procedural chests;

@@ -141,7 +141,9 @@ public final class Structures {
             }
             int[] tc = template(rx, ry, rz, rot);
             int[] b = barrels.get(cell(tc[0], tc[1], tc[2]));
-            if (b == null) {
+            if (b == null || b[Barrels.FORCED] == 1) {
+                // a barrel that holds something stays the barrel of the template (asked by the user on 16 Nov 2026: the
+                // counters of the tower's ground floor gave ~24 chests in every copy)
                 return c;
             }
             return Barrels.kept(b, seed, t.sx * t.sz) ? BlockCode.STRUCT + 4 * b[Barrels.CHEST] + ((rot + turn) & 3)

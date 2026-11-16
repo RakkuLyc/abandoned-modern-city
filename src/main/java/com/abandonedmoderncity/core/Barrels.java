@@ -11,7 +11,9 @@ import java.util.Map;
  * <ul>
  *   <li>A barrel that holds something (a block standing on the top of its stack, such as a slab or a pot; something
  *       hanging under it; or a block fixed to one of its faces: torch, sign, banner, ladder, button, lever, a vine or a
- *       lichen holding on it) is never taken out: it always becomes a chest. A vine near a barrel but held by a wall
+ *       lichen holding on it) is never taken out: it stays the barrel of the template (asked by the user on 16 Nov
+ *       2026; before it always became a chest, ~24 chests on the counters of the tower's ground floor in every copy).
+ *       A vine near a barrel but held by a wall
  *       or by the vine over it does not count.</li>
  *   <li>In a stack of barrels (one over the other), the barrels taken out are always the top ones: the number kept
  *       is drawn barrel by barrel, and they are the bottom ones, so nothing floats.</li>

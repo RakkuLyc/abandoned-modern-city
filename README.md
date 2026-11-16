@@ -117,8 +117,9 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
     apartment building, the apocalyptic building and the tower).
   - Barrels of the buildings (`core/Barrels`): in the 10 structures of the `building_*` categories, 70% of the barrels
     are taken out and the others become chests, drawn again in each copy (two towers are not the same). A barrel
-    that holds something (a slab or a pot on top, a vine fixed to it) always becomes a chest; in a stack the top ones
-    go first. 794 barrels, 26 always chests, ~239 chests per set of the 10 buildings.
+    that holds something (a slab or a pot on top, a vine fixed to it) is never taken out and stays a barrel (16 Nov
+    2026: the counters of the tower's ground floor were ~24 chests in every copy); in a stack the top ones go first.
+    794 barrels, 26 that always stay, ~212 chests per set of the 10 buildings.
   - Chests of the buildings (15 Nov 2026, first step of the procedural chests): the 556 chests saved in the templates
     of the 10 buildings are taken out when they load, after the overgrowth (the `.nbt` files do not change, nor the
     overgrowth, the barrels or any other structure; the ramp building, the police station, the houses, the shops and

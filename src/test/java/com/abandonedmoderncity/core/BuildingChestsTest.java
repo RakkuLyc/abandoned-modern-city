@@ -147,7 +147,9 @@ class BuildingChestsTest {
                 }
                 assertEquals(d.chests(seed).size(), drawn, d.name() + " rot " + rot);
                 int layer = d.t().sx * d.t().sz;
-                long kept = d.barrels().values().stream().filter(b -> Barrels.kept(b, seed, layer)).count();
+                // the barrels that hold something stay barrels; the others kept become chests
+                long kept = d.barrels().values().stream()
+                        .filter(b -> b[Barrels.FORCED] == 0 && Barrels.kept(b, seed, layer)).count();
                 assertEquals(kept, barrelChests, d.name() + " rot " + rot);
             }
         }

@@ -132,6 +132,7 @@ class BarrelsTest {
                 int chests = 0;
                 int gone = 0;
                 int drawn = 0;
+                int kept = 0;
                 for (int ry = -d.ground(); ry < d.above(); ry++) {
                     for (int rz = 0; rz < d.sizeZ(rot); rz++) {
                         for (int rx = 0; rx < d.sizeX(rot); rx++) {
@@ -143,7 +144,10 @@ class BarrelsTest {
                                 String s = Structures.STATES.get((copy - BlockCode.STRUCT) / 4);
                                 barrels += Structures.blockOf(s).equals("minecraft:barrel") ? 1 : 0;
                             }
-                            if (wasBarrel) {
+                            if (wasBarrel && copy == plain) {
+                                // a barrel that holds something stays the barrel of the template
+                                kept++;
+                            } else if (wasBarrel) {
                                 if (copy == BlockCode.AIR) {
                                     gone++;
                                 } else {
@@ -160,8 +164,10 @@ class BarrelsTest {
                         }
                     }
                 }
-                assertEquals(0, barrels, d.name() + ": a barrel left");
-                assertEquals(d.barrels().size(), gone + chests, d.name());
+                long forced = d.barrels().values().stream().filter(b -> b[Barrels.FORCED] == 1).count();
+                assertEquals(forced, barrels, d.name() + ": only the barrels that hold something stay barrels");
+                assertEquals(forced, kept, d.name());
+                assertEquals(d.barrels().size(), gone + chests + kept, d.name());
                 assertEquals(d.chests(seed).size(), drawn, d.name() + ": the drawn chests");
             }
         }
