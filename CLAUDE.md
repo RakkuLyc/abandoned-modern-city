@@ -291,7 +291,7 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     barrels' chests do not count;
   - floors, rooms and places for a chest of the buildings (asked by the user on 15 Nov 2026, stage 2 of the procedural
     chests; `core/Rooms`, `Def.rooms`): worked out once per building when its template loads (after the overgrowth and
-    the chests taken out), nothing placed yet (the world does not change). On the walk of `core/Access` (exposed as
+    the chests taken out); stage 2 placed nothing (the world did not change), stage 3 draws the chests on these spots. On the walk of `core/Access` (exposed as
     `Access.walk`, with the steps from the street; the reach rule `Walk.reaches` and the where-it-stands rule
     `Access.place` are the same code the hard containers use): floors = heights with 60+ cells where the feet stand on
     something solid (`FLOOR_MIN_CELLS`), no busier one within 3 (`FLOOR_GAP`), the other heights (stair treads,

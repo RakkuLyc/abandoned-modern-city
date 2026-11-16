@@ -9,8 +9,8 @@ import java.util.TreeMap;
 
 /**
  * Floors, rooms and the places where a chest can stand in a building (types {@code buildings_*}), read from its
- * template once when it loads (asked by the user on 15 Nov 2026, stage 2 of the procedural chests: the analysis only,
- * nothing is placed yet). Built on the walk of {@link Access}: only where a player walking in from the street stands.
+ * template once when it loads (asked by the user on 15 Nov 2026, stage 2 of the procedural chests; {@link ChestDraw}
+ * draws the chests of each copy on these spots). Built on the walk of {@link Access}: only where a player walking in from the street stands.
  * <ol>
  *   <li><b>Floors.</b> The cells where the feet stand on something solid, counted by height. A height with
  *   {@link #FLOOR_MIN_CELLS} or more of them, and no busier height within {@link #FLOOR_GAP}, is the base of a floor;

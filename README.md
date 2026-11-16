@@ -126,8 +126,7 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
     medium, 38–65 large, 51–83 immense), come in the next stages. Stage 2 (`core/Rooms`) already finds, in each
     building, its floors, rooms, corridors and the places where a chest can stand (indoors, or on a terrace or a roof
     against a wall or a railing; on a full block, beside where a player stands, away from doors, stairs, barrels and
-    corridors), the ones far from where each floor is reached and the ones of a lobby open onto the street; nothing is
-    placed yet. Floor plans of each building: `build/test-renders/rooms/` (after `./gradlew test`). Stage 3
+    corridors), the ones far from where each floor is reached and the ones of a lobby open onto the street; stage 3 places the chests on them. Floor plans of each building: `build/test-renders/rooms/` (after `./gradlew test`). Stage 3
     (`core/ChestDraw`) places them: each copy of a building draws 12–28 chests (small), 25–47 (medium), 38–65 (large)
     or 51–83 (immense), spread over the floors in proportion to the room on each, 4+ blocks apart, 1 per room or piece
     of a hall while there is room (the skeleton building, with few rooms with spots, gets up to 3 in rooms of 94 to 170
