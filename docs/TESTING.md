@@ -113,7 +113,7 @@ Each terrain runs with the seeds `20261104`, `-3297019724594858492` and `42`, on
 
 ## 2. What is checked
 
-### Unit (80 tests)
+### Unit (81 tests)
 
 | Test | Checks |
 |---|---|
@@ -169,6 +169,7 @@ Each terrain runs with the seeds `20261104`, `-3297019724594858492` and `42`, on
 | `ChestDrawTest.countsCoverEveryRange` | over 4,000 seeds the count of each class covers its whole range (small 12–28, medium 25–47, large 38–65, immense 51–83), every value |
 | `ChestDrawTest.everyCopyGetsItsCountSpacedOnEveryFloor` | 200 copies of each building: exactly its count, all on spots, no two closer than 4 (within 2 heights), at least 15% in exploration places, every floor whose share is one chest or more gets some, copies all different; at most 3 in a zone, more than 1 in a room of one zone only in the skeleton building and more than 1 in a zone only there and in the apartment building (the user's choice A, 16 Nov 2026); prints the shares (section 6); the other structures get none |
 | `ChestDrawTest.drawnChestsHardToGetToAreHardAndTheBarrelsKeepTheirFlags` | `Def.hardSpots` is the cells of the spots flagged hard; none is a container of the template nor a barrel (their flags stay those of `Access`); over 10 seeds and the 4 rotations, the drawn chests with `Def.hard` are exactly the hard spots drawn; the other structures have no hard spots |
+| `ChestDrawTest.mediumAndImmenseReachTheirCountsOnALargeBuilding` | no building is medium or immense yet: their ranges drawn on the rooms of the brutalist U building (400 seeds) always give the count, from the bottom to the top of the range (25 and 47, 51 and 83), with 15% or more of exploration |
 | `ChestDrawTest.theSameSeedGivesTheSameChests` | the same seed gives the same chests, also through `Def.chests` |
 | `ChestDrawTest.copiesWalkedAgainLoseNothing` | 40 copies of each building, with their barrels kept or taken out and their chests in place, walked again: every chest reached, someone standing in front of each, every container reached before still reached |
 | `ChestDrawTest.chestsFaceAnOpenCellInEveryRotation` | in the 4 rotations the drawn chests are where `Def.chests` says and each faces a cell a player stands in |
@@ -197,6 +198,23 @@ Each terrain runs with the seeds `20261104`, `-3297019724594858492` and `42`, on
 | `PlanAuditTest.citiesAndHighwaysPassThePlanAudit` | `PlanAudit` column by column in 3 whole cities and 2 whole highways per terrain × seed (105 audits); writes `city_*.png` |
 | `PlanAuditTest.planIsIndependentOfQueryOrderAndThreads` | 3,721 chunks planned again in shuffled order by 8 threads: an identical result, field by field |
 | `FingerprintTest.plannerOutputIsUnchanged` | the 11 parts of the planner fingerprint (section 1) equal to the expected ones (those of commit `4dd94ae`, with `layout`, `structures` and `weathering` of the English names); coverage: 1,129 cities, 2,013 highways, 31,214 chunks, 1.47 million road columns (44,129 of bridge, 26,783 of tunnel), 1.22 million lot columns (6.6 million structure blocks in the lots), 10,198 street light columns, 1,741 crown leaves, 16.8 million structure cells, 2,036 bench parts; 14 s on the latest run |
+
+### Procedural chests of the buildings: the 12 checks asked (stages 1 to 5, 15–16 Nov 2026)
+
+| # | Check asked by the user | What proves it |
+|---|---|---|
+| 1 | only the `buildings_*` structures get the system | `BuildingChestsTest.onlyTheBuildingsLoseTheirSavedChests`, `RoomsTest.onlyTheBuildingsHaveRooms`, `ChestDrawTest.everyCopyGetsItsCountSpacedOnEveryFloor` (the others draw none), `ChestDrawTest.drawnChestsHardToGetTo...` (no hard spots elsewhere); `compare_structure_cells.py` at every stage: only the 10 buildings changed |
+| 2 | no chest of the templates is left in the buildings | `BuildingChestsTest.onlyTheBuildingsLoseTheirSavedChests` (556 taken out, none left), `theOnlyChestsOfABuildingAreItsBarrelsTurnedIntoChests`, `inACopyTheChestsAreItsBarrelsAndItsDrawnChests` |
+| 3 | the ranges (small 12–28, medium 25–47, large 38–65, immense 51–83) | `ChestDrawTest.countsCoverEveryRange` (every value), `everyCopyGetsItsCountSpacedOnEveryFloor` (exactly the count in 2,000 copies), `mediumAndImmenseReachTheirCountsOnALargeBuilding` |
+| 4 | spread between rooms | `ChestDrawTest.everyCopyGetsItsCountSpacedOnEveryFloor` (4+ apart, 1 per zone; more only in the skeleton, the user's choice A, and in pieces of halls of the apartment), the floor plans of `RoomsTest.reportAndFloorPlans` |
+| 5 | vertical spread | `ChestDrawTest.everyCopyGetsItsCountSpacedOnEveryFloor` (every floor whose share is one chest or more gets some; shares by the room on each floor) |
+| 6 | no chest blocking corridors, doors or stairs | `RoomsTest.twoRoomsJoinedByADoor`, `noChestInACorridorNorBesideIt`, `neverOnOrBesideABarrelOrStairsOrOnASlab`, `onARoofARailingIsAWall`; `ChestDrawTest.copiesWalkedAgainLoseNothing` (40 copies) and `tools/verify/chest_walk.sh` (2,000 copies, 83,920 chests: none out of reach, someone in front of each, no container cut off) |
+| 7 | the hard chests identified | `ChestDrawTest.drawnChestsHardToGetToAreHardAndTheBarrelsKeepTheirFlags`, `RoomsTest.buildingSpotsAreReachable...` (hard exactly where `Access.place` says); the battery `structure_loot_hard`, since stage 5 with the buried containers |
+| 8 | determinism | `ChestDrawTest.theSameSeedGivesTheSameChests`, `RoomsTest.theSameTemplateGivesTheSameRooms`, `FingerprintTest`; the battery run twice on new worlds: identical (16 Nov 2026) |
+| 9 | the barrels' chests work as before | every `BarrelsTest` test (one assertion relaxed only where a copy has a drawn chest), `BuildingChestsTest.theOtherContainersKeepTheirAccessAndTheBuildingItsShape` (the barrel entries, facing included), `compare_structure_cells.py` (barrel cells identical) |
+| 10 | the other categories unchanged | `compare_structure_cells.py` (only the 10 buildings), `BuildingChestsTest` (the others keep the chests of their `.nbt`), `FingerprintTest` `structures` unchanged since stage 1 |
+| 11 | the park fountain and its chest intact | `BuildingChestsTest.theFountainKeepsItsChest`; the battery `fountain_chests` |
+| 12 | the loot set right | the battery: no `structure_without_loot` nor `structure_wrong_loot` in any target of the 4 seeds (since stage 5 also in the buried layers); `AccessTest.everyStructureHasItsLootTables`; the 5 garage chests of t05 read in the saved world (`chest_hard`) |
 
 ### `PlanAudit` (the plan, column by column, across chunks)
 
@@ -243,7 +261,9 @@ Each terrain runs with the seeds `20261104`, `-3297019724594858492` and `42`, on
   - `structure_without_loot` (a structure container — chest, barrel, dispenser, dropper, decorated pot — without a
     loot table) and `structure_wrong_loot` (with a table other than the one of the structure's theme, the container
     kind and the access; the block entities of the structures are counted in `structure_block_entities`, the
-    containers in `structure_loot_containers` and the hard to get to ones in `structure_loot_hard`), `loot_in_city`
+    containers in `structure_loot_containers` and the hard to get to ones in `structure_loot_hard`; since 16 Nov 2026
+    also those in the buried layers of a structure, the garage of the wide building and the basement of the police
+    station, which were never checked before, finding 74), `loot_in_city`
     and `container_in_city` (outside the structures; the fountain chest empty, counted in `fountain_chests`);
   - `orphan_road` (connectivity measured on the blocks).
 
@@ -330,6 +350,8 @@ hold where the idea applies: the neighbour repair and the rule of ladder and sup
 | 72 | Simulation of the draw, 15 Nov (stage 3) | in the crash and apocalyptic buildings, a chest of 2 spots left nobody able to stand in front of it (2 of 40, then 5 of 2,000 copies) | on a slanted floor the cell in front was only reached through the chest's own cell, one step up or down; the check of the cells around looked only at its height (a first fix that also counted the steps up and down made the check weaker, 244 → 263 spots in the apartment, and was undone) | each spot checks, with the walk's own moves in a window around it, that the cell in front and the steps beside it are still reached with the chest there: 0 of 2,000 |
 | 73 | `ChestDrawTest`, 15 Nov (stage 3) | a drawn chest missing in the world (apartment: 19 of 20) | its cell had nothing saved in the template, so the block code keeps what the world has instead of air | a spot needs air saved in the template |
 | 74 | Battery, 16 Nov (stage 4) | in t05 (the longest bridge) the `mod blocks:` line changed but no count did | the drawn chests of the garage of a wide building at the edge of the target became `chest_hard` (5 chests at y 70, 7 under the ground floor, read in the saved world); the world audit only checks the containers from the floor up (`bp.getY() < floor - 1` is skipped) while the fingerprint takes the buried layers of the lots too | explained, not changed: the audit has never checked the loot of buried containers (the garage of the wide building, the basement of the police station); proposed to the user for stage 5 |
+| 75 | Battery, seed −3297019724594858492, 16 Nov (stage 5, the audit of the buried layers) | `loot_in_city`: a vanilla chest (`minecraft:chests/village/village_plains_house`) at −1905, 77, −315, one block under the floor of a structure (`moss_block` at 78) with the planks of a village house under it | hypothesis (strongly supported, not proven): the fill under a lot only goes down from where the column scan finds the first solid block, and the walls and roof of a village house count as solid, so what the house had under the city's floor stays; the buried layers of a structure keep what the world has there; the audit never looked under the floor before | not fixed: a decision of the user (remove the vanilla containers left there, or audit only the structure's own blocks in the buried layers) |
+| 76 | Battery, seed 1, 16 Nov (stage 5) | `hole_filled`: oak leaves in a hole of a bridge at 215, 70, 622 | the leaves are of a vanilla tree (not persistent, distance 3 to 5, 18 oak logs under them): its crown grew into the hole; hypothesis: the same order-of-generation effect as finding 65; nothing of the procedural chests touches the bridges (not run on an older jar to prove it) | not fixed: to look at apart |
 | — | Battery (infrastructure) | servers failing with "Address already in use" | a server of an interrupted battery was still shutting down | the script uses port 25591 and refuses to start while a development server is alive |
 
 ## 4. How to reproduce
@@ -350,6 +372,12 @@ python3 tools/verify/compare_methods.py build/verify/before build/verify/after [
 # if a mod blocks: line changes: where (per chunk and column) and which blocks
 python3 tools/verify/compare_block_detail.py A/renders/t01_blocks.txt B/renders/t01_blocks.txt
 python3 tools/verify/chunk_diff.py run/selftest_world_ref_english <other world> CX,CZ --ymin 60
+# the structures cell by cell (plain code, 3 copies with barrels and drawn chests, hard flag, opening, leaves):
+tools/verify/structure_cells.sh <jar before> before.txt       # copy the jar first: the next build replaces it
+tools/verify/structure_cells.sh build/libs/abandonedmoderncity-0.1.0.jar after.txt
+python3 tools/verify/compare_structure_cells.py before.txt after.txt
+# copies of every building walked again with their barrels and drawn chests in place (ChestDrawTest does 40):
+tools/verify/chest_walk.sh build/libs/abandonedmoderncity-0.1.0.jar 200   # ~1.5 min, RESULT: PASS or FAIL
 ```
 
 The `run/config/abandonedmoderncity-common.toml` of the development server has old values (`cellSize = 512`,
@@ -394,7 +422,8 @@ road on the ground, without a bridge wall).
 
 ## 6. Current results (12 Nov 2026, blocks of 180 × 120 with a ring of structures with gaps and a core taken over by nature, streets and highways of 33, cities in the middle of cells of 736, 4 entrances)
 
-- **Unit:** 79 pass and 1 is skipped (16 Nov 2026, with the test of the hard drawn chests); 78 + 1 with the 5 tests of
+- **Unit:** 80 pass and 1 is skipped (16 Nov 2026, with the test of medium and immense on a large building); 79 + 1 with
+  the test of the hard drawn chests; 78 + 1 with the 5 tests of
   the drawn chests (`ChestDrawTest`) and 1 more of `BuildingChestsTest`; 72 + 1 with the 10 tests of the floors, rooms and spots of the buildings (`RoomsTest`); 62 + 1 with the 6 tests of the chests of the buildings taken out (`BuildingChestsTest`); before, 55 pass and 1 is skipped (the test without structures), 14 Nov 2026, with the test of the hard containers
   underground, on the terrace and in the attic (`AccessTest.undergroundTerraceAndAttic`); 54 + 1 with the 7 tests of
   the barrels of the buildings (`BarrelsTest`); 47 + 1 with the tests of the hard containers without the height rule; 46 + 1 with the test of the special
@@ -485,6 +514,7 @@ road on the ground, without a bridge wall).
 
   | Seed | Scope | Date | Version | Result |
   |---|---|---|---|---|
+  | all 4 | default (8 targets each) | 16 Nov | stage 5 of the procedural chests: the world audit also checks the containers of the buried layers of a structure | `20261027` PASS (8 of 8), the `mod blocks:` lines equal to the reference, only the structure counts up where buried containers stand (t01, t06, t08: the 18 of the basement of the police station; t02 25; t05 the 5 garage chests of a wide building), all hard, no wrong loot: the new reference; run again on a new world: identical (determinism in the game); quick with `structureOvergrowth = false` PASS (3 of 3), the same; `3478477863671517581` PASS (8 of 8); `-3297019724594858492` FAIL (1): `loot_in_city`, a vanilla village chest under the floor of a structure (finding 75); `1` FAIL (1): `hole_filled`, the leaves of a vanilla tree in a bridge hole (finding 76); no `structure_without_loot` nor `structure_wrong_loot` in any seed; 2.79 ms per chunk (3.19, 2.83 and 2.32 on the other seeds). `tools/verify/chest_walk.sh` 200 copies: PASS (83,920 chests) |
   | `20261027` | default (8 targets) and quick with `structureOvergrowth = false` | 16 Nov | the drawn chests underground or on the terrace hard to get to (`Def.hard` with `Structures.hardSpots`, stage 4) | PASS on both (8 of 8 and 3 of 3), 0 generation errors, no `structure_wrong_loot`; only `structure_loot_hard` up (t01 105 → 107, t02 61 → 63, t03 133 → 136, t08 23 → 26; off: t01 105 → 107), every other count equal; t05 (and t03 off) changed only in the loot tables of 5 garage chests the audit does not see (finding 74); t04, t06 and t07 equal: the new references; 2.83 ms per chunk (4.57 ms with the overgrowth off). Before: the cells of the 52 structures against stage 3: the codes identical, only the hard flag added on the hard spots (wide 275, crash 117, skeleton 14, green tower 9 in each rotation); `FingerprintTest`: only `lots` changed |
   | `20261027` | default (8 targets) and quick with `structureOvergrowth = false` | 15 Nov | the chests drawn in each copy of a building (`core/ChestDraw`, stage 3) | PASS on both (8 of 8 and 3 of 3), 0 generation errors, no `building_mismatch`, `structure_without_loot` or `structure_wrong_loot`; in every target with buildings only `structure_block_entities` and `structure_loot_containers` up, by the same number (t01 1,013 → 1,192, t02 1,127 → 1,509, t03 889 → 1,113, t04 48 → 121, t05 59 → 113, t06 144 → 213, t08 235 → 332; with the overgrowth off t01 1,013 → 1,192, t02 48 → 125, t03 59 → 114), `structure_loot_hard` and every other count equal, t07 equal: the new references (section 6); 2.86 ms per chunk (4.61 ms with the overgrowth off). Before: the cells of the 52 structures in the 4 rotations against stage 1: the plain codes, the hard flags and the openings identical; with each of 3 seeds only air turned into a chest, only in the 10 buildings, as many as drawn (the same in the 4 rotations); `FingerprintTest`: only `lots` changed |
   | `20261027` | default (8 targets) | 15 Nov | the user's choices on the spots: a railing or a low parapet is a wall under the open sky 4+ up (1B), the spots of a lobby open onto the street flagged (2B), far measured floor by floor (4B); nothing placed | PASS: 8 of 8, identical to the reference, 0 generation errors; 2.68 ms per chunk. Before: the cells of the 52 structures identical to the jar of stage 1 |
@@ -570,7 +600,9 @@ road on the ground, without a bridge wall).
   | t07 longest ramp (360) | `f960ad531d4199d12ecf42bb72b87d9a199bc1fccb85235572528b07c3dcc118` | 191,450 | 0 |
   | t08 whole highway | `d2093ef440c4116bb9f46cee8417ac3fae724f3eafc7e7c78abfb204431d78ba` | 822,838 | 542 |
 
-  Since the drawn chests underground or on the terrace are hard to get to (16 Nov 2026, stage 4) t01, t02, t03, t05
+  Since the audit also checks the buried layers of the structures (16 Nov 2026, stage 5) the 8 lines are the same and
+  only the `stats:` counts of the structures went up where buried containers stand. Before, since the drawn chests
+  underground or on the terrace are hard to get to (16 Nov 2026, stage 4) t01, t02, t03, t05
   and t08 changed only in the loot table names of those chests (`chest` → `chest_hard`; `structure_loot_hard` up, the
   garage ones of t05 out of the audit, finding 74), the rest equal. Before, since each copy of a building has its
   drawn chests (15 Nov 2026, stage 3) every line but t07 (no building) changed
@@ -612,8 +644,9 @@ road on the ground, without a bridge wall).
   `tools/verify/reference/battery-20261027-full.txt` (what `tools/verify/compare_battery.py` compares); the world of
   that run is (outside git) in `run/selftest_world_ref_english/`, and the one from before the names in
   `run/selftest_world_ref_4dd94ae/` (same blocks), to compare block by block if a line changes.
-- **Reference with the overgrowth off** (`structureOvergrowth = false`, quick scope, 16 Nov 2026, with the hard drawn
-  chests: t01 and t03 changed only in loot table names, `structure_loot_hard` t01 105 → 107; before, 15 Nov 2026,
+- **Reference with the overgrowth off** (`structureOvergrowth = false`, quick scope, 16 Nov 2026, with the audit of the
+  buried layers: the 3 lines the same, t01 and t03 counts up by the buried containers; before, the same day, with the
+  hard drawn chests: t01 and t03 changed only in loot table names, `structure_loot_hard` t01 105 → 107; before, 15 Nov 2026,
   with the chests drawn in each copy: block entities and containers up as in the default scope, positions and the other counts equal;
   before, the same day, without the chests saved in the templates of the buildings: block entities and containers down as in the default scope, positions and
   the other counts equal; before, 14 Nov 2026, with the hard

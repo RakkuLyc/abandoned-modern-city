@@ -192,6 +192,25 @@ class ChestDrawTest {
     }
 
     @Test
+    void mediumAndImmenseReachTheirCountsOnALargeBuilding() {
+        // no building is medium or immense yet: their ranges, drawn on the rooms of a large one, always reach the count
+        Structures.Def d = Structures.ALL.stream().filter(x -> x.name().equals("brutalist_u_building_75x58")).findFirst()
+                .orElseThrow();
+        for (String c : List.of("medium", "immense")) {
+            int[] r = ChestDraw.range(c);
+            Set<Integer> sizes = new HashSet<>();
+            for (int i = 0; i < 400; i++) {
+                long seed = seed(i);
+                List<Rooms.Spot> l = ChestDraw.draw(d.rooms(), c, d.t().sx, d.t().sz, seed);
+                assertEquals(ChestDraw.count(c, seed), l.size(), c);
+                assertTrue(l.stream().filter(ChestDraw::exploration).count() >= Math.ceil(ChestDraw.EXPLORATION_MIN * l.size()), c);
+                sizes.add(l.size());
+            }
+            assertTrue(sizes.contains(r[0]) && sizes.contains(r[1]), c + ": " + sizes);
+        }
+    }
+
+    @Test
     void theSameSeedGivesTheSameChests() {
         for (Structures.Def d : Structures.ALL) {
             if (!building(d)) {

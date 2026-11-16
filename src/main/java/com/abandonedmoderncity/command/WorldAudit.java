@@ -409,7 +409,13 @@ public final class WorldAudit {
             int ceiling = cp.kind[i] == ChunkPlan.LOT
                     ? floor + (cp.lot[i] == null ? 2 : cp.lot[i].heightAboveBase())
                     : floor + Params6.CEILING;
-            if (bp.getY() < floor - 1 || bp.getY() > ceiling) {
+            // a structure's buried layers too (the garage of the wide building, the basement of the police station;
+            // asked by the user on 16 Nov 2026: before, their containers were never checked)
+            int lowest = floor - 1;
+            if (cp.kind[i] == ChunkPlan.LOT && cp.lot[i] != null && cp.lot[i].building != null) {
+                lowest = Math.min(lowest, cp.h2[i] / 2 - 1 - cp.lot[i].depthBelowBase());
+            }
+            if (bp.getY() < lowest || bp.getY() > ceiling) {
                 continue;
             }
             if (cp.kind[i] == ChunkPlan.LOT && cp.lot[i] != null && cp.lot[i].building != null

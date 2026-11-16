@@ -32,7 +32,9 @@
    same (except `loot_containers_anywhere`, which counts vanilla chests). What the battery does not cover (bridge
    vines, fill, slopes, liquid sealing) is checked, in a change that only moves code, by an identical bytecode listing
    (`javap -c -p`) of the moved methods. The tools are in `tools/verify/` (`compare_battery.py`, `javap_dump.sh`,
-   `compare_methods.py`, `compare_block_detail.py`, `chunk_diff.py`) and the reference reports in
+   `compare_methods.py`, `compare_block_detail.py`, `chunk_diff.py`; since 16 Nov 2026 `structure_cells.sh` with
+   `compare_structure_cells.py`, the 52 structures cell by cell between two jars, and `chest_walk.sh`, copies of the
+   buildings walked again with their barrels and drawn chests) and the reference reports in
    `tools/verify/reference/`. In a commit that changes the world on purpose, update the expected values of the test and
    the battery reference, and say so in the commit message.
 
@@ -346,7 +348,12 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     stands; by `Access.place`, underground or on the terrace, so only the wide building, 275 spots in its garage, the
     crash building 117, the skeleton 14 and the green tower 9 on their terraces; 5.6, 1.8, 2.1 and 0.2 hard chests a
     copy; no spot is a container of the template nor a barrel, so their flags do not change; the range of chests comes
-    from the type, `buildings_<class>`).
+    from the type, `buildings_<class>`). Since stage 5 (16 Nov 2026, the user's choice A) the world audit also checks
+    the loot of the containers in the buried layers of a structure (the garage of the wide building, the basement of
+    the police station), which it skipped before: all hard, none with a wrong table; it showed, in the seed
+    -3297019724594858492, a vanilla village chest left under the floor of a structure (finding 75, a decision of the
+    user). The 12 checks the user asked for
+    and what proves each are listed in `docs/TESTING.md`, section 2.
     Measured (`ChestDrawTest`, 200 copies each): 20.0 chests on average in the small buildings, 51.5 in the large
     ones; on the street floor 3 to 20% (apartment 20, small 16, brutalist 11, wide and apocalyptic 9, tower 6, bluish
     and crash 4, green tower 3; skeleton 13), every floor whose share is one chest or more gets some; exploration 25 to
