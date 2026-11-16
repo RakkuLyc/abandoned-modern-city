@@ -289,6 +289,31 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     floors, rooms and exploration areas, never blocking a passage; 12–28 per small building, 25–47 medium, 38–65
     large and 51–83 immense (approved on 15 Nov 2026); hard ones only where `core/Access` already says so
     (underground, terrace); the barrels' chests do not count;
+  - floors, rooms and places for a chest of the buildings (asked by the user on 15 Nov 2026, stage 2 of the procedural
+    chests; `core/Rooms`, `Def.rooms`): worked out once per building when its template loads (after the overgrowth and
+    the chests taken out), nothing placed yet (the world does not change). On the walk of `core/Access` (exposed as
+    `Access.walk`, with the steps from the street; the reach rule `Walk.reaches` and the where-it-stands rule
+    `Access.place` are the same code the hard containers use): floors = heights with 60+ cells where the feet stand on
+    something solid (`FLOOR_MIN_CELLS`), no busier one within 3 (`FLOOR_GAP`), the other heights (stair treads,
+    furniture tops, slanted floors) joining the floor up to 4 under them (`FRAGMENT_BELOW`); rooms = the plan of a
+    floor cut at the doors and the passages 2 wide or less (`NARROW`); a room whose median width (pillars and tall
+    furniture of 9 cells or less, `PILLAR_MAX`, do not count as walls) is 4 or less and that is 4+ times as long as
+    wide is a corridor (`CORRIDOR_WIDTH`, `CORRIDOR_LONG`); rooms over 180 cells split in zones (`ZONE_MAX`). A spot:
+    air in the game (cave_air under the ground) with air over it, on a full block (`Rooms.floorBlock`, a reviewed list
+    that fails closed; `Palette.validate` refuses to start if one of them is not a full block in the game), against a
+    wall (blocked to the head; a barrel never counts), a player standing beside it at its height in the walk with all
+    the barrels and in the one without any, the cells around it left joined, no barrel within 1, no container beside
+    it, no door, trapdoor, gate, ladder or scaffolding within 2 (`DOOR_CLEAR`), no stairs within 1 (`STAIRS_CLEAR`),
+    not beside a passage or a door, not in a corridor, and indoors (a yard or a plaza inside the box gets none) unless
+    4+ blocks up under the open sky (terraces and roofs); with its facing (toward where the player stands, the wall
+    behind), weight (2 at a wall, 3 in a corner, +1 beside furniture) and flags (hard by `Access.place`: underground or
+    terrace; open sky; far = the 20% farthest by steps, `FAR_SHARE`). Results (`RoomsTest`): apartment 6 floors, 242
+    spots, room for 81 chests 4 apart (`SPACING`); skeleton 8, 165, 56; small building 7, 377, 110; bluish 11, 2,061,
+    558; tower 14, 1,547, 482; apocalyptic 14, 3,222, 683; brutalist U 13, 2,122, 619; wide 14 (the garage, 275 spots
+    all hard), 2,238, 570; green tower 27, 1,373, 424; crash 18, 2,257 (32 on the terrace, hard), 686. Hard spots only
+    in the wide building (underground), the crash building and the skeleton (terrace, 7). Three roofs without a wall to
+    the head get no spot (wide +61, brutalist +116, apocalyptic +79). Floor plans: `build/test-renders/rooms/`. It adds
+    ~1.2 s to the loading of the structures (11.5 → 12.7 s);
   - banners with the design saved in the template (`Template.banners`, applied when the banner is placed,
     `Palette.applyBanner`): the letters D R U G S T O R E of the pharmacies (9 on the pharmacy, 18 on the large
     pharmacy); against the sidewalk, forming a ring; drawn per file, no pattern;

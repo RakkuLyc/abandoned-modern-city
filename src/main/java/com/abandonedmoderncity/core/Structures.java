@@ -52,7 +52,8 @@ public final class Structures {
      */
     public record Def(String type, String name, String group, Template t, int ox, int oy, int oz, int w, int h, int d,
                       int ground, int turn, int[] state, int[] fill, Map<Integer, Integer> cells, Access.Result access,
-                      List<int[]> overhang, String model, boolean[] openings, Map<Integer, int[]> barrels) {
+                      List<int[]> overhang, String model, boolean[] openings, Map<Integer, int[]> barrels,
+                      Rooms.Layout rooms) {
         /** Footprint size along x after {@code rot} quarter turns. */
         public int sizeX(int rot) {
             return ((rot + turn) & 1) == 0 ? w : d;
@@ -488,8 +489,11 @@ public final class Structures {
         boolean[] openings = StructureLoader.openings(t, state, x0, z0, w, d, y0 + ground);
         // the barrels of the buildings: taken out or turned into chests, copy by copy
         Map<Integer, int[]> barrels = isBuildingType(type) ? Barrels.of(withChests, ids) : Map.of();
+        // the floors, rooms and places for a chest of a building (procedural chests, stage 2: not placed yet)
+        Rooms.Layout rooms = isBuildingType(type)
+                ? Rooms.of(t, placed, x0, y0, z0, w, y1 - y0 + 1, d, ground, openings) : Rooms.Layout.EMPTY;
         return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, turn, state, fill, cells, access,
-                overhang, model, openings, barrels);
+                overhang, model, openings, barrels, rooms);
     }
 
     static boolean isChestName(String block) {

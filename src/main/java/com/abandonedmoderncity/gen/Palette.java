@@ -5,6 +5,7 @@ import com.abandonedmoderncity.core.Access;
 import com.abandonedmoderncity.core.BlockCode;
 import com.abandonedmoderncity.core.ChunkPlan;
 import com.abandonedmoderncity.core.RoadDecay;
+import com.abandonedmoderncity.core.Rooms;
 import com.abandonedmoderncity.core.StreetLights;
 import com.abandonedmoderncity.core.Structures;
 import com.abandonedmoderncity.core.Template;
@@ -506,6 +507,10 @@ public final class Palette {
             if (!allowed(s)) {
                 bad.add(BuiltInRegistries.BLOCK.getKey(s.getBlock()) + " (structure, hardness "
                         + s.getDestroySpeed(EmptyBlockGetter.INSTANCE, BlockPos.ZERO) + ")");
+            }
+            // a block the chests of the buildings may stand on (Rooms.floorBlock) must be a full block in the game
+            if (Rooms.floorBlock(Structures.STATES.get(i)) && !s.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO)) {
+                bad.add(BuiltInRegistries.BLOCK.getKey(s.getBlock()) + " (a floor for the chests, but not a full block)");
             }
         }
         if (!bad.isEmpty()) {

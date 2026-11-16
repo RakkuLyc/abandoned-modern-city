@@ -119,6 +119,67 @@ public final class Access {
      */
     public static Result of(Template t, String[] states, int ox, int oy, int oz, int w, int h, int d, int ground,
                             boolean attics) {
+        Walk f = walk(t, states, ox, oy, oz, w, h, d, ground);
+        int gy = oy + ground;
+        Set<Integer> hard = new HashSet<>();
+        int containers = 0;
+        int closed = 0;
+        int underground = 0;
+        int terrace = 0;
+        int attic = 0;
+        int top = oy + h - 1;
+        for (int ty = oy; ty < oy + h; ty++) {
+            for (int tz = oz; tz < oz + d; tz++) {
+                for (int tx = ox; tx < ox + w; tx++) {
+                    int p = t.at(tx, ty, tz);
+                    if (p < 0 || !container(bare(states[p]))) {
+                        continue;
+                    }
+                    containers++;
+                    if (!f.reaches(tx, ty, tz)) {
+                        closed++;
+                        hard.add(tx + t.sx * (tz + t.sz * ty));
+                    }
+                    // where it stands: underground, on the terrace, in the attic
+                    int where = place(t, states, tx, ty, tz, gy, top, attics);
+                    underground += (where & UNDERGROUND) != 0 ? 1 : 0;
+                    terrace += (where & TERRACE) != 0 ? 1 : 0;
+                    attic += (where & ATTIC) != 0 ? 1 : 0;
+                    if (where != 0) {
+                        hard.add(tx + t.sx * (tz + t.sz * ty));
+                    }
+                }
+            }
+        }
+        return new Result(Set.copyOf(hard), containers, closed, 0, underground, terrace, attic);
+    }
+
+    /** Bits of {@link #place}: underground, on the terrace, in the attic. */
+    public static final int UNDERGROUND = 1;
+    public static final int TERRACE = 2;
+    public static final int ATTIC = 4;
+
+    /**
+     * Where the cell (tx, ty, tz) of the template stands, as bits: {@link #UNDERGROUND} (at or under the ground layer
+     * {@code gy}), {@link #TERRACE} (open sky, {@link #ABOVE}+ over the ground layer, at most {@link #TERRACE_TOP} under
+     * the highest layer {@code top}) and, with {@code attics} (the houses), {@link #ATTIC} (one ceiling, {@link #ABOVE}+
+     * over the ground layer). A container standing in any of them is hard to get to.
+     */
+    static int place(Template t, String[] states, int tx, int ty, int tz, int gy, int top, boolean attics) {
+        int ceilings = ceilings(t, states, tx, ty, tz, top);
+        boolean under = ty <= gy;
+        boolean onTerrace = !under && ceilings == 0 && ty - gy >= ABOVE && top - ty <= TERRACE_TOP;
+        boolean inAttic = attics && !under && ceilings == 1 && ty - gy >= ABOVE;
+        return (under ? UNDERGROUND : 0) | (onTerrace ? TERRACE : 0) | (inAttic ? ATTIC : 0);
+    }
+
+    /**
+     * The walk of a player through the template {@code t} (box of solid blocks at (ox, oy, oz), w x h x d, ground layer
+     * at oy + ground), from the ring of city ground around the box: the cells where the feet stand, reached by the rules
+     * of the class, each with its number of steps from the street (breadth first). {@link Rooms} reads it to put chests
+     * where a player walks.
+     */
+    static Walk walk(Template t, String[] states, int ox, int oy, int oz, int w, int h, int d, int ground) {
         int gy = oy + ground;
         // the frame: the box and a ring of one block around it, from the bottom of the box to two over its top
         int fx0 = ox - 1;
@@ -151,15 +212,16 @@ public final class Access {
                 }
             }
         }
-        boolean[] seen = new boolean[kind.length];
+        int[] dist = new int[kind.length];
+        java.util.Arrays.fill(dist, -1);
         ArrayDeque<int[]> queue = new ArrayDeque<>();
-        Frame f = new Frame(kind, fw, fd, fh);
+        Walk f = new Walk(fx0, fy0, fz0, kind, fw, fd, fh, dist);
         // start: the ring around the box, standing on the city ground
         int sy = gy + 1 - fy0;
         for (int z = 0; z < fd; z++) {
             for (int x = 0; x < fw; x++) {
-                if ((x == 0 || z == 0 || x == fw - 1 || z == fd - 1) && f.stand(x, sy, z) && !seen[f.i(x, sy, z)]) {
-                    seen[f.i(x, sy, z)] = true;
+                if ((x == 0 || z == 0 || x == fw - 1 || z == fd - 1) && f.stand(x, sy, z) && dist[f.i(x, sy, z)] < 0) {
+                    dist[f.i(x, sy, z)] = 0;
                     queue.add(new int[]{x, sy, z});
                 }
             }
@@ -182,66 +244,20 @@ public final class Access {
                     while (!f.stand(nx, ny, nz) && ny - 1 >= 0 && f.pass(nx, ny - 1, nz)) {
                         ny--;
                     }
-                    f.visit(nx, ny, nz, seen, queue);
+                    f.visit(nx, ny, nz, c, queue);
                 } else if (f.pass(x, y + 2, z) && f.kind(nx, y, nz) != 3) {
                     // jump up one block
-                    f.visit(nx, y + 1, nz, seen, queue);
+                    f.visit(nx, y + 1, nz, c, queue);
                 }
             }
             if (f.climb(x, y, z) || f.climb(x, y + 1, z)) {
-                f.visit(x, y + 1, z, seen, queue);
+                f.visit(x, y + 1, z, c, queue);
             }
             if (y > 0 && f.climb(x, y - 1, z)) {
-                f.visit(x, y - 1, z, seen, queue);
+                f.visit(x, y - 1, z, c, queue);
             }
         }
-        Set<Integer> hard = new HashSet<>();
-        int containers = 0;
-        int closed = 0;
-        int underground = 0;
-        int terrace = 0;
-        int attic = 0;
-        int top = oy + h - 1;
-        for (int ty = oy; ty < oy + h; ty++) {
-            for (int tz = oz; tz < oz + d; tz++) {
-                for (int tx = ox; tx < ox + w; tx++) {
-                    int p = t.at(tx, ty, tz);
-                    if (p < 0 || !container(bare(states[p]))) {
-                        continue;
-                    }
-                    containers++;
-                    boolean reached = false;
-                    int x = tx - fx0;
-                    int y = ty - fy0;
-                    int z = tz - fz0;
-                    for (int dy = -2; dy <= 1 && !reached; dy++) {
-                        for (int dz = -1; dz <= 1 && !reached; dz++) {
-                            for (int dx = -1; dx <= 1 && !reached; dx++) {
-                                // the feet from 2 under the container (reached over the head) to 1 over it
-                                int fyy = y + dy;
-                                reached = f.in(x + dx, fyy, z + dz) && seen[f.i(x + dx, fyy, z + dz)];
-                            }
-                        }
-                    }
-                    if (!reached) {
-                        closed++;
-                        hard.add(tx + t.sx * (tz + t.sz * ty));
-                    }
-                    // where it stands: underground, on the terrace, in the attic
-                    int ceilings = ceilings(t, states, tx, ty, tz, top);
-                    boolean under = ty <= gy;
-                    boolean onTerrace = !under && ceilings == 0 && ty - gy >= ABOVE && top - ty <= TERRACE_TOP;
-                    boolean inAttic = attics && !under && ceilings == 1 && ty - gy >= ABOVE;
-                    underground += under ? 1 : 0;
-                    terrace += onTerrace ? 1 : 0;
-                    attic += inAttic ? 1 : 0;
-                    if (under || onTerrace || inAttic) {
-                        hard.add(tx + t.sx * (tz + t.sz * ty));
-                    }
-                }
-            }
-        }
-        return new Result(Set.copyOf(hard), containers, closed, 0, underground, terrace, attic);
+        return f;
     }
 
     /**
@@ -265,7 +281,33 @@ public final class Access {
         return n;
     }
 
-    private record Frame(byte[] kind, int fw, int fd, int fh) {
+    /**
+     * The frame of a walk (the box and a ring of one block around it, from the bottom of the box to two over its top):
+     * the kind of each cell (0 solid, 1 passable, 2 climbable and passable, 3 tall) and, for the cells where the feet
+     * stand, the steps from the street ({@code -1}: not reached). Frame coordinates are template coordinates minus
+     * (fx0, fy0, fz0).
+     */
+    static final class Walk {
+        final int fx0;
+        final int fy0;
+        final int fz0;
+        final byte[] kind;
+        final int fw;
+        final int fd;
+        final int fh;
+        final int[] dist;
+
+        Walk(int fx0, int fy0, int fz0, byte[] kind, int fw, int fd, int fh, int[] dist) {
+            this.fx0 = fx0;
+            this.fy0 = fy0;
+            this.fz0 = fz0;
+            this.kind = kind;
+            this.fw = fw;
+            this.fd = fd;
+            this.fh = fh;
+            this.dist = dist;
+        }
+
         boolean in(int x, int y, int z) {
             return x >= 0 && z >= 0 && y >= 0 && x < fw && z < fd && y < fh;
         }
@@ -299,11 +341,44 @@ public final class Access {
             return pass(x, y, z) && pass(x, y + 1, z) && (!pass(x, y - 1, z) || climb(x, y, z));
         }
 
-        void visit(int x, int y, int z, boolean[] seen, ArrayDeque<int[]> queue) {
-            if (in(x, y, z) && stand(x, y, z) && !seen[i(x, y, z)]) {
-                seen[i(x, y, z)] = true;
+        void visit(int x, int y, int z, int[] from, ArrayDeque<int[]> queue) {
+            if (in(x, y, z) && stand(x, y, z) && dist[i(x, y, z)] < 0) {
+                dist[i(x, y, z)] = dist[i(from[0], from[1], from[2])] + 1;
                 queue.add(new int[]{x, y, z});
             }
+        }
+
+        /** Whether the feet were reached at template cell (tx, ty, tz). */
+        boolean reachedAt(int tx, int ty, int tz) {
+            return steps(tx, ty, tz) >= 0;
+        }
+
+        /** Steps from the street to the feet at template cell (tx, ty, tz), or -1. */
+        int steps(int tx, int ty, int tz) {
+            int x = tx - fx0;
+            int y = ty - fy0;
+            int z = tz - fz0;
+            return in(x, y, z) ? dist[i(x, y, z)] : -1;
+        }
+
+        /**
+         * Whether a container at template cell (tx, ty, tz) is reached: the feet stand within one block sideways
+         * (diagonals too), from two under it (reached over the head) to one over it.
+         */
+        boolean reaches(int tx, int ty, int tz) {
+            int x = tx - fx0;
+            int y = ty - fy0;
+            int z = tz - fz0;
+            for (int dy = -2; dy <= 1; dy++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    for (int dx = -1; dx <= 1; dx++) {
+                        if (in(x + dx, y + dy, z + dz) && dist[i(x + dx, y + dy, z + dz)] >= 0) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
     }
 }
