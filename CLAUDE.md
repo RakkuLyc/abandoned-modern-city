@@ -24,7 +24,8 @@
    containers underground, on the terrace and in the attics; `structures` again since the height classes of the
    buildings (and again with the margin of 3 blocks), their type and category: the blocks did not change; `lots` and `structures` again since the chests saved in the
    templates of the buildings were taken out, 15 Nov 2026; `lots` again since each copy of a building got its drawn
-   chests, `core/ChestDraw`) and the battery
+   chests, `core/ChestDraw`, and again when the drawn chests underground or on the terrace became hard to get to) and
+   the battery
    prints per target `mod blocks:` (the blocks the mod decides in the generated world; the reference is in
    `docs/TESTING.md`, section 6, with another one for `structureOvergrowth = false`). In a change that must not alter
    the world (cleanup, splitting files, comments), the test passes and the `mod blocks:` and `stats:` lines stay the
@@ -286,8 +287,8 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     side with air in front: 5 of them would have turned another way). The `.nbt` files, every other structure (the
     ramp building, 157 chests, and the police station, 29, included) and the park fountain keep their chests. The log
     says "Chests saved in the buildings' templates removed: 556 in 10 buildings"; `BuildingChestsTest` checks it. The
-    new chests are drawn per copy (stage 3, below); their hard loot comes in stage 4, only where `core/Access` already
-    says so (underground, terrace); the barrels' chests do not count;
+    new chests are drawn per copy (stage 3, below), with the hard loot where `core/Access` says so (stage 4); the
+    barrels' chests do not count;
   - floors, rooms and places for a chest of the buildings (asked by the user on 15 Nov 2026, stage 2 of the procedural
     chests; `core/Rooms`, `Def.rooms`): worked out once per building when its template loads (after the overgrowth and
     the chests taken out), nothing placed yet (the world does not change). On the walk of `core/Access` (exposed as
@@ -340,7 +341,12 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     sky or hard): at least 15% of each copy (`ChestDraw.EXPLORATION_MIN`, the user's choice: a minimum, nothing
     reserved; a copy under it is drawn again with those spots first); the plain draw gives 25 to 43%. Chests
     `chest[type=single]` facing where the player stands (`Rooms.FACINGS`, turned with the structure); loot of the
-    `chest` tier of the `building` theme (the hard flag of the garage and terrace chests comes in stage 4).
+    `building` theme, `chest` or, on a spot hard to get to, `chest_hard` (stage 4, 16 Nov 2026: `Def.hard` marks the
+    cells of every hard spot, `Structures.hardSpots`, drawn or not, since the flag is only read where a container
+    stands; by `Access.place`, underground or on the terrace, so only the wide building, 275 spots in its garage, the
+    crash building 117, the skeleton 14 and the green tower 9 on their terraces; 5.6, 1.8, 2.1 and 0.2 hard chests a
+    copy; no spot is a container of the template nor a barrel, so their flags do not change; the range of chests comes
+    from the type, `buildings_<class>`).
     Measured (`ChestDrawTest`, 200 copies each): 20.0 chests on average in the small buildings, 51.5 in the large
     ones; on the street floor 3 to 20% (apartment 20, small 16, brutalist 11, wide and apocalyptic 9, tower 6, bluish
     and crash 4, green tower 3; skeleton 13), every floor whose share is one chest or more gets some; exploration 25 to
@@ -502,7 +508,7 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   the iron ones); plants, cobwebs, carpets and torches do not block; leaves do; the container must be 1 block to the
   side (diagonal counts) of where the player stands, from 1 below the feet to 1 above the head. Today 125 of 2,550
   containers of the 52 files with the overgrowth on (in the templates, with the barrels and without the chests of the
-  buildings; 129 of 3,106 with those chests, 29 before the rules of where it stands): out of reach 24 (police station
+  buildings; the chests drawn in the buildings come on top, hard on the 415 hard spots, see above; 129 of 3,106 with those chests, 29 before the rules of where it stands): out of reach 24 (police station
   13, the closed rooms of its basement; apocalyptic building 7, its barrels; abandoned mansion 3, a room 2 blocks
   above the courtyard; abandoned house 1, the roof; the 3 chests of the apocalyptic building and the 1 of the bluish
   building that were out of reach went with the chests of the buildings), listed 1 (the

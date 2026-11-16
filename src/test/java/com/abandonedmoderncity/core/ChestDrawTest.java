@@ -81,6 +81,11 @@ class ChestDrawTest {
             long hard = 0;
             int maxZone = 0;
             int copiesOverCap = 0;
+            int roomsOverCap = 0;
+            Map<Integer, Set<Integer>> zonesOfRoom = new HashMap<>();
+            for (Rooms.Spot s : l.spots()) {
+                zonesOfRoom.computeIfAbsent(s.room(), k -> new HashSet<>()).add(s.zone());
+            }
             int minExplore = Integer.MAX_VALUE;
             for (int i = 0; i < COPIES; i++) {
                 long seed = seed(i);
@@ -110,6 +115,10 @@ class ChestDrawTest {
                 for (int f = 0; f < nf; f++) {
                     assertTrue(n * l.floorWeight()[f] / weights < 1 || perFloor[f] > 0, d.name() + ": no chest on floor " + f);
                 }
+                for (Map.Entry<Integer, Integer> z : perZone.entrySet()) {
+                    roomsOverCap += z.getValue() > ChestDraw.ZONE_CAP
+                            && zonesOfRoom.get(l.zoneRoom()[z.getKey()]).size() == 1 ? 1 : 0;
+                }
                 int mz = perZone.values().stream().mapToInt(Integer::intValue).max().orElse(0);
                 maxZone = Math.max(maxZone, mz);
                 copiesOverCap += mz > ChestDraw.ZONE_CAP ? 1 : 0;
@@ -121,11 +130,64 @@ class ChestDrawTest {
                 explore += e;
             }
             assertTrue(distinct.size() >= COPIES - 2, d.name() + ": copies with the same chests");
+            // 1 chest per zone; the cap is raised only in the skeleton building (up to 3, also in whole rooms: accepted
+            // by the user on 15 Nov 2026) and in the apartment building (pieces of halls)
+            assertTrue(maxZone <= 3, d.name() + ": " + maxZone + " chests in a zone");
+            if (!d.name().equals("skeleton_building_31x29")) {
+                assertEquals(0, roomsOverCap, d.name() + ": a room of one zone with more than one chest");
+                if (!d.name().equals("apartment_building")) {
+                    assertEquals(0, copiesOverCap, d.name() + ": copies over the zone cap");
+                }
+            }
             System.out.printf("[ChestDrawTest] %-28s %d copies: %.1f chests on average, on the street floor %.0f%%, on"
                             + " the top floor %.0f%%, exploration %.0f%% (least %d%%), street spots %.0f%%, hard %.1f a"
                             + " copy; most in a zone %d (copies over %d: %d)%n", d.name(), COPIES, (double) total / COPIES,
                     100.0 * onStreetFloor / total, 100.0 * onTop / total, 100.0 * explore / total, minExplore,
                     100.0 * streetSpots / total, (double) hard / COPIES, maxZone, ChestDraw.ZONE_CAP, copiesOverCap);
+        }
+    }
+
+    @Test
+    void drawnChestsHardToGetToAreHardAndTheBarrelsKeepTheirFlags() {
+        for (Structures.Def d : Structures.ALL) {
+            if (!building(d)) {
+                assertTrue(d.hardSpots().isEmpty(), d.name());
+                continue;
+            }
+            Template t = d.t();
+            Set<Integer> hard = new HashSet<>();
+            for (Rooms.Spot s : d.rooms().spots()) {
+                if (s.is(Rooms.HARD)) {
+                    hard.add(s.x() + t.sx * (s.z() + t.sz * s.y()));
+                }
+            }
+            assertEquals(hard, d.hardSpots(), d.name());
+            // no spot is a container of the template nor a barrel: their flags stay those of Access
+            for (int c : d.hardSpots()) {
+                assertFalse(d.access().hard().contains(c), d.name());
+                assertFalse(d.barrels().containsKey(c), d.name());
+            }
+            for (int i = 0; i < 10; i++) {
+                long seed = seed(i);
+                long expected = draw(d, seed).stream().filter(s -> s.is(Rooms.HARD)).count();
+                for (int rot = 0; rot < 4; rot++) {
+                    int hardChests = 0;
+                    int drawnChests = 0;
+                    for (int y = -d.ground(); y < d.above(); y++) {
+                        for (int z = 0; z < d.sizeZ(rot); z++) {
+                            for (int x = 0; x < d.sizeX(rot); x++) {
+                                int c = d.code(x, y, z, rot, seed);
+                                if (c >= BlockCode.STRUCT && d.code(x, y, z, rot) == BlockCode.AIR) {
+                                    drawnChests++;
+                                    hardChests += d.hard(x, y, z, rot) ? 1 : 0;
+                                }
+                            }
+                        }
+                    }
+                    assertEquals(d.chests(seed).size(), drawnChests, d.name());
+                    assertEquals(expected, hardChests, d.name() + " rot " + rot + ": hard drawn chests");
+                }
+            }
         }
     }
 

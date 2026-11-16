@@ -132,7 +132,8 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
     or 51–83 (immense), spread over the floors in proportion to the room on each, 4+ blocks apart, 1 per room or piece
     of a hall while there is room (the skeleton building, with few rooms with spots, gets up to 3 in rooms of 94 to 170
     cells), at least 15% in exploration places (far on their floor, under the open sky, underground), never blocking a
-    passage; loot of the `building` theme.
+    passage; loot of the `building` theme, the more generous `chest_hard` on the spots underground (the garage of the
+    wide building) or on a terrace (crash, skeleton, green tower).
 
   The containers (chests, barrels, dispensers, droppers, decorated pots) get their loot table when they are placed;
   the banners get the design of the template; the other block entities (furnaces, beds, skulls, chiseled bookshelves,
@@ -162,6 +163,8 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   alone does not count. That is 125 of the 2,550 containers: the attics of the houses (87), the police station (18:
   its basement), the apocalyptic building (7 barrels in closed rooms), the abandoned mansion (3, a closed room), the
   roof of each large pharmacy (1), a barrel set in the floor of each small workshop (1) and the chest in the tree.
+  The chests drawn in the buildings follow the same rule by where they stand: hard in the garage of the wide building
+  and on the terraces of the crash, skeleton and green tower buildings.
 - **Nature taking the city back** (`core/Flora`, `core/Wild`):
   - the ground in patches: grass, moss, coarse dirt and remains of the concrete (`gray_concrete_powder`);
   - the mod's own trees, ~1 per 55 columns: oak, birch, dark oak and spruce, small and large, with vines hanging from

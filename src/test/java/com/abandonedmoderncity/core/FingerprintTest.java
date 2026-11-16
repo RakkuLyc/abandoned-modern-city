@@ -57,7 +57,8 @@ import org.junit.jupiter.api.Test;
  * limits (the type of 3 of them); lots and structures changed when the 556 chests saved in the templates of the 10
  * buildings were taken out (they become air; nothing else changes, the barrels included: BuildingChestsTest); lots
  * changed again when each copy of a building got its drawn chests (ChestDraw: air turned into chests on its spots,
- * nothing else; structures, which hashes the plain code, did not change). Change them
+ * nothing else; structures, which hashes the plain code, did not change), and again when the drawn chests
+ * underground or on the terrace became hard to get to (the loot access; the blocks did not change). Change them
  * only in a commit that is meant to change the world, and say so in it.
  */
 class FingerprintTest {
@@ -68,7 +69,7 @@ class FingerprintTest {
         EXPECTED.put("highways", "480e692cad232384cc5a0d486154e33b13a8ebc6d381e0dfbffa8cd18434ddf9");
         EXPECTED.put("village", "6d77e372e3111d53b3995b84b46308716b65b8107b051b8f4411eca72a61f71c");
         EXPECTED.put("chunks", "aac1f39821a3e01b096634443468315a31f6c5c4ebcacdaee30e15f4014a5ad9");
-        EXPECTED.put("lots", "a29a98aa0f51d9f72ec10a460a8410f669b47ec2da13e4847e0b491119083737");
+        EXPECTED.put("lots", "c014ea1e82bc0308b792078308604a93e95f6f21ce5a1dfcf9a211bb202d7bb7");
         EXPECTED.put("roads", "bcf16888eff09ec35d77b4c97d496a5d006061d045c8e02abd16c5a56418aef6");
         EXPECTED.put("lamps", "85591f5e99c109803aa1dfb294e112106e69005b6f9706d41bb2abb565addb23");
         EXPECTED.put("crowns", "4d9143c986f8bc57f9bc9ec5edbd5b32542c6373b86ca5b8cedee32f0daa6117");

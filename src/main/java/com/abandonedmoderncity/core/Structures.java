@@ -53,7 +53,8 @@ public final class Structures {
     public record Def(String type, String name, String group, Template t, int ox, int oy, int oz, int w, int h, int d,
                       int ground, int turn, int[] state, int[] fill, Map<Integer, Integer> cells, Access.Result access,
                       List<int[]> overhang, String model, boolean[] openings, Map<Integer, int[]> barrels,
-                      Rooms.Layout rooms, int[] chestStates, Map<Long, Map<Integer, Integer>> drawn) {
+                      Rooms.Layout rooms, int[] chestStates, Map<Long, Map<Integer, Integer>> drawn,
+                      Set<Integer> hardSpots) {
         /** Footprint size along x after {@code rot} quarter turns. */
         public int sizeX(int rot) {
             return ((rot + turn) & 1) == 0 ? w : d;
@@ -159,7 +160,8 @@ public final class Structures {
             Map<Integer, Integer> m = drawn.get(seed);
             if (m == null) {
                 Map<Integer, Integer> out = new HashMap<>();
-                for (Rooms.Spot s : ChestDraw.draw(rooms, heightClass(h), t.sx, t.sz, seed)) {
+                // the range of chests by the height class of the type (buildings_small ... buildings_immense)
+                for (Rooms.Spot s : ChestDraw.draw(rooms, type.substring("buildings_".length()), t.sx, t.sz, seed)) {
                     out.put(cell(s.x(), s.y(), s.z()), s.facing());
                 }
                 m = Map.copyOf(out);
@@ -256,10 +258,19 @@ public final class Structures {
             return "building";
         }
 
-        /** Whether the container at (rx, ry, rz) of the rotated box is hard to get to ({@link Access}). */
+        /**
+         * Whether the container at (rx, ry, rz) of the rotated box is hard to get to ({@link Access}): a container of the
+         * template, or a chest drawn on a spot that {@link Access#place} marks (underground or on the terrace; asked by
+         * the user on 15 Nov 2026, stage 4 of the procedural chests). The spots are marked whether a copy draws them or
+         * not: the flag is only read where a container stands.
+         */
         public boolean hard(int rx, int ry, int rz, int rot) {
             int[] tc = template(rx, ry, rz, rot);
-            return tc != null && access.hard().contains(cell(tc[0], tc[1], tc[2]));
+            if (tc == null) {
+                return false;
+            }
+            int c = cell(tc[0], tc[1], tc[2]);
+            return access.hard().contains(c) || hardSpots.contains(c);
         }
 
         /** Template coordinates of (rx, ry, rz) of the box turned {@code rot}, or null outside the box. */
@@ -534,7 +545,8 @@ public final class Structures {
             }
         }
         return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, turn, state, fill, cells, access,
-                overhang, model, openings, barrels, rooms, chestStates, new java.util.concurrent.ConcurrentHashMap<>());
+                overhang, model, openings, barrels, rooms, chestStates, new java.util.concurrent.ConcurrentHashMap<>(),
+                hardSpots(t, rooms));
     }
 
     static boolean isChestName(String block) {
@@ -590,6 +602,17 @@ public final class Structures {
             }
         }
         return changed.isEmpty() ? t : t.withStates(changed);
+    }
+
+    /** The template cells of the spots hard to get to ({@link Rooms#HARD}: underground or on the terrace). */
+    static Set<Integer> hardSpots(Template t, Rooms.Layout rooms) {
+        Set<Integer> out = new HashSet<>();
+        for (Rooms.Spot s : rooms.spots()) {
+            if (s.is(Rooms.HARD)) {
+                out.add(s.x() + t.sx * (s.z() + t.sz * s.y()));
+            }
+        }
+        return Set.copyOf(out);
     }
 
     /** Trunks: columns of at least this many natural (not stripped) logs. */

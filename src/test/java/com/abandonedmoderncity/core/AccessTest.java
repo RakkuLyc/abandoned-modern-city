@@ -214,7 +214,8 @@ class AccessTest {
                         }
                     }
                 }
-                assertEquals(a.hard().size(), n, d.name() + " rot " + rot);
+                // the containers of the template, and the spots of the drawn chests hard to get to (Def.hard)
+                assertEquals(a.hard().size() + d.hardSpots().size(), n, d.name() + " rot " + rot);
             }
             System.out.printf("[AccessTest] %-32s containers %3d, out of reach %3d, listed %d, underground %2d, terrace %d,"
                     + " attic %2d, hard %3d%n", d.name(), a.containers(), a.closed(), a.listed(), a.underground(),
