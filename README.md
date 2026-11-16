@@ -124,8 +124,9 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
     overgrowth, the barrels or any other structure; the ramp building, the police station, the houses, the shops and
     the park fountain keep their chests). The new chests, spread by floors and rooms (12–28 per small building, 25–47
     medium, 38–65 large, 51–83 immense), come in the next stages. Stage 2 (`core/Rooms`) already finds, in each
-    building, its floors, rooms, corridors and the places where a chest can stand (indoors or on a terrace, against a
-    wall, on a full block, beside where a player stands, away from doors, stairs, barrels and corridors); nothing is
+    building, its floors, rooms, corridors and the places where a chest can stand (indoors, or on a terrace or a roof
+    against a wall or a railing; on a full block, beside where a player stands, away from doors, stairs, barrels and
+    corridors), the ones far from where each floor is reached and the ones of a lobby open onto the street; nothing is
     placed yet. Floor plans of each building: `build/test-renders/rooms/` (after `./gradlew test`).
 
   The containers (chests, barrels, dispensers, droppers, decorated pots) get their loot table when they are placed;

@@ -149,6 +149,33 @@ class RoomsTest {
         }
     }
 
+    /** A closed block of 10 x 10 with a flat roof at y = 5, climbed by a ladder; {@code railing}: iron bars around it. */
+    private static Box roof(boolean railing) {
+        Box b = new Box(12, 8, 12).fill(1, 1, 1, 10, 4, 10, "minecraft:stone_bricks").fill(1, 5, 1, 10, 5, 10, "minecraft:stone");
+        if (railing) {
+            b.fill(1, 6, 1, 10, 6, 1, "minecraft:iron_bars").fill(1, 6, 10, 10, 6, 10, "minecraft:iron_bars")
+                    .fill(1, 6, 1, 1, 6, 10, "minecraft:iron_bars").fill(10, 6, 1, 10, 6, 10, "minecraft:iron_bars")
+                    .set(1, 6, 5, "minecraft:air");
+        }
+        for (int y = 1; y <= 6; y++) {
+            b.set(0, y, 5, "minecraft:ladder[facing=west,waterlogged=false]");
+        }
+        // something on top so that the box keeps its height without the railing
+        return b.set(11, 7, 11, "minecraft:stone");
+    }
+
+    @Test
+    void onARoofARailingIsAWall() {
+        Rooms.Layout l = roof(true).def().rooms();
+        assertFalse(l.spots().isEmpty(), "chests along the railing of the roof");
+        for (Rooms.Spot s : l.spots()) {
+            assertEquals(6, s.y(), s.toString());
+            assertTrue(s.x() == 2 || s.x() == 9 || s.z() == 2 || s.z() == 9, "against the railing " + s);
+            assertTrue(s.is(Rooms.OPEN), s.toString());
+        }
+        assertTrue(roof(false).def().rooms().spots().isEmpty(), "no railing: the edge is a drop, no chest");
+    }
+
     @Test
     void fullFloorBlocks() {
         for (String s : List.of("minecraft:oak_planks", "minecraft:polished_andesite", "minecraft:white_concrete",
@@ -209,6 +236,20 @@ class RoomsTest {
                     }
                 }
             }
+            // the far spots are measured floor by floor: every floor with spots has some
+            int[] spotsOn = new int[d.rooms().floors().size()];
+            int[] farOn = new int[spotsOn.length];
+            for (Rooms.Spot s : d.rooms().spots()) {
+                spotsOn[s.floor()]++;
+                farOn[s.floor()] += s.is(Rooms.FAR) ? 1 : 0;
+                assertTrue(s.steps() >= 0, d.name() + " " + s);
+                Rooms.Floor sf = d.rooms().floors().get(s.floor());
+                assertTrue(!s.is(Rooms.STREET) || sf.from() <= gy + 1 && sf.to() >= gy + 1,
+                        d.name() + ": a street spot off the street floor " + s);
+            }
+            for (int f = 0; f < spotsOn.length; f++) {
+                assertTrue(spotsOn[f] == 0 || farOn[f] > 0, d.name() + ": no far spot on floor " + f);
+            }
             int[] cap = Rooms.capacity(d.rooms(), Rooms.SPACING);
             int most = MOST.get(d.category().substring("building_".length()));
             assertTrue(cap[0] >= most, d.name() + ": room for " + cap[0] + " chests " + Rooms.SPACING
@@ -241,8 +282,9 @@ class RoomsTest {
             Rooms.Layout l = d.rooms();
             int[] cap = Rooms.capacity(l, Rooms.SPACING);
             int[] per = new int[l.floors().size()];
-            int[] n = new int[7];
-            int[] flags = {Rooms.CORNER, Rooms.FURNITURE, Rooms.HARD, Rooms.UNDER, Rooms.TERRACE, Rooms.OPEN, Rooms.FAR};
+            int[] n = new int[8];
+            int[] flags = {Rooms.CORNER, Rooms.FURNITURE, Rooms.HARD, Rooms.UNDER, Rooms.TERRACE, Rooms.OPEN, Rooms.FAR,
+                    Rooms.STREET};
             for (Rooms.Spot s : l.spots()) {
                 per[s.floor()]++;
                 for (int i = 0; i < flags.length; i++) {
@@ -260,10 +302,11 @@ class RoomsTest {
                         .append(per[i]).append('/').append(cap[1 + i]);
             }
             System.out.printf("[RoomsTest] %-28s %-16s floors %2d, rooms %3d, corridors %2d, zones %3d, passage cells %4d, spots %4d"
-                            + " (corner %3d, furniture %3d, hard %3d: underground %3d, terrace %2d; open sky %3d, far %3d),"
+                            + " (corner %3d, furniture %3d, hard %3d: underground %3d, terrace %2d; open sky %3d, far %3d,"
+                            + " street %3d),"
                             + " room for %3d chests %d apart%n[RoomsTest]    floors (height: cells/spots/room):%s%n",
                     d.name(), d.type(), l.floors().size(), l.rooms(), l.corridors(), l.zones(), passages, l.spots().size(), n[0], n[1],
-                    n[2], n[3], n[4], n[5], n[6], cap[0], Rooms.SPACING, fl);
+                    n[2], n[3], n[4], n[5], n[6], n[7], cap[0], Rooms.SPACING, fl);
             ImageIO.write(render(d), "png", new File(dir, d.name() + ".png"));
         }
     }
@@ -326,14 +369,14 @@ class RoomsTest {
             int px = (s.floor() % cols) * pw + 4;
             int py = (s.floor() / cols) * ph + 4;
             Color c = s.is(Rooms.HARD) ? new Color(0xd62728) : s.is(Rooms.OPEN) ? new Color(0xff8c1a)
-                    : s.is(Rooms.FAR) ? new Color(0x1f5fd6) : s.is(Rooms.CORNER) ? new Color(0x075e26) : new Color(0x22b04b);
+                    : s.is(Rooms.STREET) ? new Color(0xe040fb) : s.is(Rooms.FAR) ? new Color(0x1f5fd6) : s.is(Rooms.CORNER) ? new Color(0x075e26) : new Color(0x22b04b);
             g.setColor(c);
             g.fillRect(px + (s.x() - d.ox()) * SCALE + 1, py + HEADER + (s.z() - d.oz()) * SCALE + 1, SCALE - 2, SCALE - 2);
         }
         int ly = rows * ph + 13;
-        String[] names = {"spot", "corner", "far", "open sky", "hard", "passage", "door", "corridor"};
-        Color[] colors = {new Color(0x22b04b), new Color(0x075e26), new Color(0x1f5fd6), new Color(0xff8c1a),
-                new Color(0xd62728), new Color(0xe8d27a), new Color(0x8b5a2b), new Color(0xb8b8b8)};
+        String[] names = {"spot", "corner", "far", "street", "open sky", "hard", "passage", "door", "corridor"};
+        Color[] colors = {new Color(0x22b04b), new Color(0x075e26), new Color(0x1f5fd6), new Color(0xe040fb),
+                new Color(0xff8c1a), new Color(0xd62728), new Color(0xe8d27a), new Color(0x8b5a2b), new Color(0xb8b8b8)};
         int lx = 4;
         for (int i = 0; i < names.length; i++) {
             g.setColor(colors[i]);

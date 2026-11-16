@@ -113,7 +113,7 @@ Each terrain runs with the seeds `20261104`, `-3297019724594858492` and `42`, on
 
 ## 2. What is checked
 
-### Unit (72 tests)
+### Unit (73 tests)
 
 | Test | Checks |
 |---|---|
@@ -158,9 +158,10 @@ Each terrain runs with the seeds `20261104`, `-3297019724594858492` and `42`, on
 | `RoomsTest.twoRoomsJoinedByADoor` | a template of two rooms of 9 × 9 with a door between them and one to the street: 1 floor, 2 rooms, the door in the plan; every spot against a wall, none within 2 of a door, the corners weight 3 with the flag, the others 2, none hard |
 | `RoomsTest.noChestInACorridorNorBesideIt` | two rooms joined by a corridor 2 wide: its cells are a passage, no spot in it or beside it |
 | `RoomsTest.neverOnOrBesideABarrelOrStairsOrOnASlab` | no spot within 1 of a barrel or of stairs, none on a slab |
+| `RoomsTest.onARoofARailingIsAWall` | a closed block with a flat roof 5 up, reached by a ladder: with iron bars around the roof, spots along them, all under the open sky; without them (the edge a drop) none |
 | `RoomsTest.fullFloorBlocks` | `Rooms.floorBlock`: planks, stones, concrete, tiles, moss, double slabs, wood, cut copper are floors; barrel, stairs, bottom slab, bed, leaves, glass, mud, bookshelf, crafting table, chest, bars, grate, carpet, trapdoor are not |
 | `RoomsTest.onlyTheBuildingsHaveRooms` | the 10 buildings have spots; every other structure has none |
-| `RoomsTest.buildingSpotsAreReachableOnAFullFloorAndRoomEnough` | in the 10 buildings every spot is air (or cave_air underground), on a full block, with a passable block over it, reached by the reach rule of `Access` (never out of reach), hard exactly where `Access.place` says, someone standing in front of it, no barrel within 1; and each building has room for at least the most chests of its class (28 small, 65 large) 4 apart |
+| `RoomsTest.buildingSpotsAreReachableOnAFullFloorAndRoomEnough` | in the 10 buildings every spot is air (or cave_air underground), on a full block, with a passable block over it, reached by the reach rule of `Access` (never out of reach), hard exactly where `Access.place` says, someone standing in front of it, no barrel within 1; every floor with spots has far ones (measured floor by floor); the street ones on the floor of the street level; and each building has room for at least the most chests of its class (28 small, 65 large) 4 apart |
 | `RoomsTest.theSameTemplateGivesTheSameRooms` | working out the apartment building again gives the same spots and rooms |
 | `RoomsTest.reportAndFloorPlans` | prints the floors, rooms, corridors, zones, spots and room of each building (section 6) and writes its floor plans to `build/test-renders/rooms/<name>.png` |
 | `RoomsTest.renderWorks` | the floor plan image of a small template |
@@ -382,7 +383,7 @@ road on the ground, without a bridge wall).
 
 ## 6. Current results (12 Nov 2026, blocks of 180 × 120 with a ring of structures with gaps and a core taken over by nature, streets and highways of 33, cities in the middle of cells of 736, 4 entrances)
 
-- **Unit:** 71 pass and 1 is skipped (15 Nov 2026, with the 9 tests of the floors, rooms and spots of the buildings,
+- **Unit:** 72 pass and 1 is skipped (15 Nov 2026, with the 10 tests of the floors, rooms and spots of the buildings,
   `RoomsTest`); 62 + 1 with the 6 tests of the chests of the buildings taken out (`BuildingChestsTest`); before, 55 pass and 1 is skipped (the test without structures), 14 Nov 2026, with the test of the hard containers
   underground, on the terrace and in the attic (`AccessTest.undergroundTerraceAndAttic`); 54 + 1 with the 7 tests of
   the barrels of the buildings (`BarrelsTest`); 47 + 1 with the tests of the hard containers without the height rule; 46 + 1 with the test of the special
@@ -473,6 +474,7 @@ road on the ground, without a bridge wall).
 
   | Seed | Scope | Date | Version | Result |
   |---|---|---|---|---|
+  | `20261027` | default (8 targets) | 15 Nov | the user's choices on the spots: a railing or a low parapet is a wall under the open sky 4+ up (1B), the spots of a lobby open onto the street flagged (2B), far measured floor by floor (4B); nothing placed | PASS: 8 of 8, identical to the reference, 0 generation errors; 2.68 ms per chunk. Before: the cells of the 52 structures identical to the jar of stage 1 |
   | `20261027` | default (8 targets) and quick with `structureOvergrowth = false` | 15 Nov | floors, rooms and places for a chest of the buildings (`core/Rooms`, stage 2 of the procedural chests; `Access` split into `walk`, `reaches` and `place`), nothing placed: the world must not change | PASS on both (8 of 8 and 3 of 3), identical to both references (`mod blocks:` and counts), 0 generation errors; `Palette.validate` with the check of the chests' floor blocks passed ("1408 structure states"); 2.71 ms per chunk (4.49 ms with the overgrowth off). Before the battery: the planner's cells of the 52 structures in the 4 rotations, plain and for 3 copy seeds, with access and openings, identical to the jar of stage 1 (16,833,836 lines); `FingerprintTest` unchanged. Spots per building in `CLAUDE.md` and the floor plans in `build/test-renders/rooms/` |
   | `20261027` | default (8 targets) and quick with `structureOvergrowth = false` | 15 Nov | the 556 chests saved in the templates of the 10 buildings taken out (air), first step of the procedural chests | PASS on both (8 of 8 and 3 of 3), 0 generation errors, log "Chests saved in the buildings' templates removed: 556 in 10 buildings" (and "Structure overgrowth off" on the second); every target with buildings changed only in their containers: `structure_block_entities` and `structure_loot_containers` down by the same number (t01 1,175 → 1,013, t02 1,615 → 1,127, t03 1,153 → 889, t04 95 → 48, t05 207 → 59, t06 192 → 144, t08 317 → 235; with the overgrowth off t01 1,175 → 1,013, t02 95 → 48, t03 207 → 59), `structure_loot_hard` down where a hard chest went (t01 108 → 105, t02 65 → 61, t03 137 → 133, t04 2 → 1, t06 15 → 12; off: t01 108 → 105, t02 3 → 1); positions and every other count equal (`loot_containers_anywhere` aside, which counts the vanilla chests: t07 116 → 117); t07 equal: the new references (section 6); 2.79 ms per chunk, 296 s (4.51 ms with the overgrowth off). Before the battery: the planner's cells of the 52 structures in the 4 rotations, plain and for 3 copy seeds, with the access and openings, compared with the jar of the previous commit: 2,224 cells differ, exactly the 556 chests × 4 rotations, chest → air, and 16 hard flags gone (the 4 hard chests); nothing else |
   | `20261027` | default (8 targets) | 15 Nov | margin of 3 blocks on the height limits (small up to 43, medium up to 78, large up to 143): the skeleton building and the small building become small, the green tower large; the commands say "no structure in category ... yet" for the empty ones | PASS: 8 of 8, 0 generation errors; `tools/verify/compare_battery.py` equal to the reference (the 8 `mod blocks:` lines and the counts); 142 palette states, 16 village creatures removed; 2.73 ms per chunk, 248 s. Planner fingerprint: only `structures` moved (new value `37ccef32…`), the other 10 parts equal. The run with `structureOvergrowth = false` was not repeated. 57 unit tests pass |

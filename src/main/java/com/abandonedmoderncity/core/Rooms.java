@@ -30,10 +30,12 @@ import java.util.TreeMap;
  *   passage around it (the cells around stay joined), no barrel within one block, no container beside it, no door,
  *   trapdoor, gate, ladder or scaffolding within {@link #DOOR_CLEAR}, no stairs within {@link #STAIRS_CLEAR}, not
  *   next to a passage or a door, and indoors (something over it) unless it is up on a terrace or a roof
- *   ({@link Access#ABOVE}+ over the ground layer): a yard or a plaza inside the box gets none.</li>
+ *   ({@link Access#ABOVE}+ over the ground layer): a yard or a plaza inside the box gets none. Under the open sky a
+ *   low parapet or a railing is a wall too (not leaves).</li>
  * </ol>
  * The facing of the chest (away from the wall, toward where the player stands) and whether it is hard to get to (by
- * where it stands, {@link Access#place}: underground or on the terrace; it is never out of reach) are worked out here
+ * where it stands, {@link Access#place}: underground or on the terrace; it is never out of reach), whether it is far
+ * on its floor and whether its room opens onto the street ({@link #STREET}) are worked out here
  * too, so that the drawing of each copy (next stage) only picks among the spots.
  */
 public final class Rooms {
@@ -66,7 +68,17 @@ public final class Rooms {
     public static final int DOOR_CLEAR = 2;
     /** No stairs this close (sideways) to a chest. */
     public static final int STAIRS_CLEAR = 1;
-    /** The spots farthest from the street (by steps), this share of them, are far. */
+    /**
+     * A room at the street level with this many cells or more on the edge of the box opens onto the street (a lobby
+     * without a door joined to an arcade or a covered sidewalk): its spots are {@link #STREET} (asked by the user on 15
+     * Nov 2026: half the weight when the chests are drawn). A doorway without a door is narrower.
+     */
+    public static final int STREET_EDGE = 24;
+    /**
+     * The spots of each floor farthest from where the walk arrives on it (by steps), this share of that floor's spots,
+     * are far (asked by the user on 15 Nov 2026: measured floor by floor, not from the street, so that the far ones are
+     * on every floor).
+     */
     public static final double FAR_SHARE = 0.20;
     /** Smallest distance (sideways, on one floor) between two chests used to measure the capacity. */
     public static final int SPACING = 4;
@@ -85,6 +97,7 @@ public final class Rooms {
     public static final int FAR = 16;
     public static final int CORNER = 32;
     public static final int FURNITURE = 64;
+    public static final int STREET = 128;
 
     /** Facings of a chest, in the template's orientation: the side its front faces. */
     static final String[] FACINGS = {"north", "east", "south", "west"};
@@ -92,8 +105,8 @@ public final class Rooms {
 
     /**
      * A place for a chest: template cell (x, y, z); its floor, zone and room; its weight (2 against a wall, 3 in a
-     * corner, one more beside furniture); its facing ({@link #FACINGS}); its flags; the steps from the street to where
-     * the player stands to open it.
+     * corner, one more beside furniture); its facing ({@link #FACINGS}); its flags; the steps from where the walk
+     * arrives on its floor to where the player stands to open it.
      */
     public record Spot(int x, int y, int z, int floor, int zone, int room, int weight, int facing, int flags,
                        int steps) {
@@ -337,6 +350,8 @@ public final class Rooms {
             // 3. passages, doors, rooms and zones
             List<Floor> floors = new ArrayList<>();
             List<Integer> zoneRoom = new ArrayList<>();
+            List<Boolean> street = new ArrayList<>();
+            int[] arrive = new int[nf];
             int rooms = 0;
             int corridors = 0;
             for (int f = 0; f < nf; f++) {
@@ -404,7 +419,20 @@ public final class Rooms {
                         }
                         zoneRoom.add(rooms);
                     }
+                    int edge = 0;
+                    for (int c : members) {
+                        int x = c % w;
+                        int z = c / w;
+                        edge += (x == 0 || z == 0 || x == w - 1 || z == d - 1) && fy[c] == gy + 1 ? 1 : 0;
+                    }
+                    street.add(edge >= STREET_EDGE);
                     rooms++;
+                }
+                arrive[f] = Integer.MAX_VALUE;
+                for (int c = 0; c < w * d; c++) {
+                    if (fy[c] != Integer.MIN_VALUE) {
+                        arrive[f] = Math.min(arrive[f], a.steps(ox + c % w, fy[c], oz + c / w));
+                    }
                 }
                 floors.add(new Floor(bases.get(f), from[f], to[f], cells[f], plan));
             }
@@ -426,14 +454,20 @@ public final class Rooms {
                     }
                 }
             }
-            // the farthest ones from the street
-            int[] steps = raw.stream().mapToInt(s -> s[9]).sorted().toArray();
-            int far = steps.length == 0 ? Integer.MAX_VALUE
-                    : Math.max(1, steps[Math.min(steps.length - 1, (int) Math.floor((1 - FAR_SHARE) * steps.length))]);
+            // the steps from where the walk arrives on the floor; the farthest ones of each floor
+            int[] far = new int[nf];
+            for (int f = 0; f < nf; f++) {
+                int ff = f;
+                int[] steps = raw.stream().filter(s -> s[3] == ff).mapToInt(s -> Math.max(0, s[9] - arrive[ff])).sorted().toArray();
+                far[f] = steps.length == 0 ? Integer.MAX_VALUE
+                        : Math.max(1, steps[Math.min(steps.length - 1, (int) Math.floor((1 - FAR_SHARE) * steps.length))]);
+            }
             List<Spot> spots = new ArrayList<>(raw.size());
             for (int[] s : raw) {
-                int flags = s[8] | (s[9] >= far ? FAR : 0);
-                spots.add(new Spot(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], flags, s[9]));
+                // a player standing outside the box, on the sidewalk, is where the walk arrives
+                int steps = Math.max(0, s[9] - arrive[s[3]]);
+                int flags = s[8] | (steps >= far[s[3]] ? FAR : 0) | (street.get(s[5]) ? STREET : 0);
+                spots.add(new Spot(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], flags, steps));
             }
             return new Layout(w, d, List.copyOf(floors), zoneRoom.stream().mapToInt(Integer::intValue).toArray(), rooms,
                     corridors, List.copyOf(spots));
@@ -601,6 +635,14 @@ public final class Rooms {
                     }
                 }
             }
+            int ceilings = Access.ceilings(t, states, x, y, z, top);
+            if (ceilings == 0 && y - gy < Access.ABOVE) {
+                // outdoors at the street level (a yard, a plaza inside the box): only indoors, or up on a terrace
+                return null;
+            }
+            // on a roof or a terrace under the open sky a low parapet or a railing is a wall too (asked by the user on
+            // 15 Nov 2026), leaves are not
+            boolean roof = ceilings == 0;
             // walls, furniture, storage and where the player stands
             boolean[] wall = new boolean[4];
             boolean furniture = false;
@@ -613,7 +655,7 @@ public final class Rooms {
                     return null;
                 }
                 boolean low = solid(nx, y, nz);
-                wall[i] = low && solid(nx, y + 1, nz);
+                wall[i] = low && (solid(nx, y + 1, nz) || roof && !n.endsWith("_leaves"));
                 furniture |= low && !wall[i];
                 standing[i] = a.reachedAt(nx, y, nz) && b.reachedAt(nx, y, nz) && open(nx, y, nz) && open(nx, y + 1, nz)
                         && !pass(a, nx, y - 1, nz);
@@ -648,11 +690,6 @@ public final class Rooms {
                 }
             }
             int where = Access.place(t, states, x, y, z, gy, top, false);
-            int ceilings = Access.ceilings(t, states, x, y, z, top);
-            if (ceilings == 0 && y - gy < Access.ABOVE) {
-                // outdoors at the street level (a yard, a plaza inside the box): only indoors, or up on a terrace
-                return null;
-            }
             int flags = (where != 0 ? HARD : 0) | ((where & Access.UNDERGROUND) != 0 ? UNDER : 0)
                     | ((where & Access.TERRACE) != 0 ? TERRACE : 0)
                     | (ceilings == 0 && y - gy >= Access.ABOVE ? OPEN : 0) | (corner ? CORNER : 0)

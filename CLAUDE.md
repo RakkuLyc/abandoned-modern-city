@@ -305,15 +305,21 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     the barrels and in the one without any, the cells around it left joined, no barrel within 1, no container beside
     it, no door, trapdoor, gate, ladder or scaffolding within 2 (`DOOR_CLEAR`), no stairs within 1 (`STAIRS_CLEAR`),
     not beside a passage or a door, not in a corridor, and indoors (a yard or a plaza inside the box gets none) unless
-    4+ blocks up under the open sky (terraces and roofs); with its facing (toward where the player stands, the wall
-    behind), weight (2 at a wall, 3 in a corner, +1 beside furniture) and flags (hard by `Access.place`: underground or
-    terrace; open sky; far = the 20% farthest by steps, `FAR_SHARE`). Results (`RoomsTest`): apartment 6 floors, 242
-    spots, room for 81 chests 4 apart (`SPACING`); skeleton 8, 165, 56; small building 7, 377, 110; bluish 11, 2,061,
-    558; tower 14, 1,547, 482; apocalyptic 14, 3,222, 683; brutalist U 13, 2,122, 619; wide 14 (the garage, 275 spots
-    all hard), 2,238, 570; green tower 27, 1,373, 424; crash 18, 2,257 (32 on the terrace, hard), 686. Hard spots only
-    in the wide building (underground), the crash building and the skeleton (terrace, 7). Three roofs without a wall to
-    the head get no spot (wide +61, brutalist +116, apocalyptic +79). Floor plans: `build/test-renders/rooms/`. It adds
-    ~1.2 s to the loading of the structures (11.5 → 12.7 s);
+    4+ blocks up under the open sky (terraces and roofs), where a low parapet or a railing is a wall too (not leaves;
+    the user's choice 1B, 15 Nov 2026); with its facing (toward where the player stands, the wall behind), weight (2 at
+    a wall, 3 in a corner, +1 beside furniture) and flags: hard by `Access.place` (underground or terrace); open sky;
+    far = the 20% of each floor's spots farthest from where the walk arrives on that floor (`FAR_SHARE`; the user's
+    choice 4B: before it was from the street, so only the top floors); street = in a room at the street level with 24+
+    cells on the edge of the box (`STREET_EDGE`: a lobby without a door joined to an arcade or a covered sidewalk; a
+    doorway does not count), to get half the weight when the chests are drawn (the user's choice 2B). The skeleton's
+    floor +17, a broken slab where only walkways 3 wide between holes and pillars are left, keeps 1 spot (the user's
+    choice 3A). Results (`RoomsTest`; floors, spots, room for chests 4 apart, `SPACING`): apartment 6, 244, 82;
+    skeleton 8, 174, 59; small building 7, 389, 113; bluish 11, 2,159, 581; tower 14, 1,783, 540; apocalyptic 14,
+    3,301, 705; brutalist U 13, 2,375, 666; wide 14, 2,395, 606; green tower 27, 1,447, 437; crash 18, 2,439, 726. Hard:
+    wide 275 (the garage), crash 117, skeleton 14 and green tower 9 (terrace); street: brutalist 251, bluish 217, tower
+    188, green tower 105, crash 78, skeleton 49. The roofs: wide +61 8 spots, brutalist +116 21, apocalyptic +79 none
+    (only a tree beside it). Floor plans: `build/test-renders/rooms/`. It adds ~1.2 s to the loading of the structures
+    (11.5 → 12.7 s);
   - banners with the design saved in the template (`Template.banners`, applied when the banner is placed,
     `Palette.applyBanner`): the letters D R U G S T O R E of the pharmacies (9 on the pharmacy, 18 on the large
     pharmacy); against the sidewalk, forming a ring; drawn per file, no pattern;
