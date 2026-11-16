@@ -181,7 +181,8 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   not persistent without a trunk become persistent; front on -Z (banners and the entrance stairs); 63 containers, 18
   hard to get to (the basement: 13 of them in its closed rooms); loot of the `police_station` theme. Crash building (91 × 44 × 90, two
   towers leaning against each other, `buildings_large`, 1 per city like the other buildings): ground on layer 0, front
-  on -Z (stairs and door under the gap between the towers), 201 containers, all reached by its stairs.
+  on -Z (stairs and door under the gap between the towers), 201 containers saved (68 chests and 133 barrels), all reached
+  by its stairs; since 15 Nov 2026 its chests are those drawn in each copy (38–65) and those of its barrels.
 - New structures (asked by the user after 13 Nov 2026, with vanilla loot): modern garage house (42 × 36 × 15), glass
   house (48 × 40 × 15), small building (23 × 31 × 41), brutalist U building (75 × 58 × 125), wide building
   (84 × 31 × 80, with underground parking), green tower (31 × 31 × 143) and ramp building (folder "Especial",
@@ -350,9 +351,9 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     copy; no spot is a container of the template nor a barrel, so their flags do not change; the range of chests comes
     from the type, `buildings_<class>`). Since stage 5 (16 Nov 2026, the user's choice A) the world audit also checks
     the loot of the containers in the buried layers of a structure (the garage of the wide building, the basement of
-    the police station), which it skipped before: all hard, none with a wrong table; it showed, in the seed
-    -3297019724594858492, a vanilla village chest left under the floor of a structure (finding 75, a decision of the
-    user). The 12 checks the user asked for
+    the police station), which it skipped before: all hard, none with a wrong table. The battery of the 4 seeds: 20261027 and
+    3478477863671517581 pass; -3297019724594858492 (a vanilla village chest under the floor of a structure, finding
+    75) and 1 (the leaves of a vanilla tree in a bridge hole, finding 76) fail the same on the code before stage 1. The 12 checks the user asked for
     and what proves each are listed in `docs/TESTING.md`, section 2.
     Measured (`ChestDrawTest`, 200 copies each): 20.0 chests on average in the small buildings, 51.5 in the large
     ones; on the street floor 3 to 20% (apartment 20, small 16, brutalist 11, wide and apocalyptic 9, tower 6, bluish
