@@ -131,6 +131,7 @@ class BarrelsTest {
                 int barrels = 0;
                 int chests = 0;
                 int gone = 0;
+                int drawn = 0;
                 for (int ry = -d.ground(); ry < d.above(); ry++) {
                     for (int rz = 0; rz < d.sizeZ(rot); rz++) {
                         for (int rx = 0; rx < d.sizeX(rot); rx++) {
@@ -149,14 +150,19 @@ class BarrelsTest {
                                     chests++;
                                     assertEquals(plain & 3, copy & 3, "same rotation");
                                 }
+                            } else if (plain == BlockCode.AIR && copy >= BlockCode.STRUCT && Structures.blockOf(
+                                    Structures.STATES.get((copy - BlockCode.STRUCT) / 4)).equals("minecraft:chest")) {
+                                // a chest drawn for this copy on a spot of its rooms (ChestDraw), not a barrel
+                                drawn++;
                             } else {
-                                assertEquals(plain, copy, d.name() + ": only the barrels change");
+                                assertEquals(plain, copy, d.name() + ": only the barrels and the drawn chests change");
                             }
                         }
                     }
                 }
                 assertEquals(0, barrels, d.name() + ": a barrel left");
                 assertEquals(d.barrels().size(), gone + chests, d.name());
+                assertEquals(d.chests(seed).size(), drawn, d.name() + ": the drawn chests");
             }
         }
     }

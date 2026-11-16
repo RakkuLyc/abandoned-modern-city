@@ -23,7 +23,8 @@
    `building_large` and again when it was taken out; `lots` since the barrels of the buildings, `core/Barrels`; `lots` and `structures` again since the hard
    containers underground, on the terrace and in the attics; `structures` again since the height classes of the
    buildings (and again with the margin of 3 blocks), their type and category: the blocks did not change; `lots` and `structures` again since the chests saved in the
-   templates of the buildings were taken out, 15 Nov 2026) and the battery
+   templates of the buildings were taken out, 15 Nov 2026; `lots` again since each copy of a building got its drawn
+   chests, `core/ChestDraw`) and the battery
    prints per target `mod blocks:` (the blocks the mod decides in the generated world; the reference is in
    `docs/TESTING.md`, section 6, with another one for `structureOvergrowth = false`). In a change that must not alter
    the world (cleanup, splitting files, comments), the test passes and the `mod blocks:` and `stats:` lines stay the
@@ -285,10 +286,8 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     side with air in front: 5 of them would have turned another way). The `.nbt` files, every other structure (the
     ramp building, 157 chests, and the police station, 29, included) and the park fountain keep their chests. The log
     says "Chests saved in the buildings' templates removed: 556 in 10 buildings"; `BuildingChestsTest` checks it. The
-    new chests come in the next stages, each approved by the user: per copy (the lot's seed, like the barrels), by
-    floors, rooms and exploration areas, never blocking a passage; 12–28 per small building, 25–47 medium, 38–65
-    large and 51–83 immense (approved on 15 Nov 2026); hard ones only where `core/Access` already says so
-    (underground, terrace); the barrels' chests do not count;
+    new chests are drawn per copy (stage 3, below); their hard loot comes in stage 4, only where `core/Access` already
+    says so (underground, terrace); the barrels' chests do not count;
   - floors, rooms and places for a chest of the buildings (asked by the user on 15 Nov 2026, stage 2 of the procedural
     chests; `core/Rooms`, `Def.rooms`): worked out once per building when its template loads (after the overgrowth and
     the chests taken out), nothing placed yet (the world does not change). On the walk of `core/Access` (exposed as
@@ -313,13 +312,43 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     cells on the edge of the box (`STREET_EDGE`: a lobby without a door joined to an arcade or a covered sidewalk; a
     doorway does not count), to get half the weight when the chests are drawn (the user's choice 2B). The skeleton's
     floor +17, a broken slab where only walkways 3 wide between holes and pillars are left, keeps 1 spot (the user's
-    choice 3A). Results (`RoomsTest`; floors, spots, room for chests 4 apart, `SPACING`): apartment 6, 244, 82;
-    skeleton 8, 174, 59; small building 7, 389, 113; bluish 11, 2,159, 581; tower 14, 1,783, 540; apocalyptic 14,
-    3,301, 705; brutalist U 13, 2,375, 666; wide 14, 2,395, 606; green tower 27, 1,447, 437; crash 18, 2,439, 726. Hard:
-    wide 275 (the garage), crash 117, skeleton 14 and green tower 9 (terrace); street: brutalist 251, bluish 217, tower
-    188, green tower 105, crash 78, skeleton 49. The roofs: wide +61 8 spots, brutalist +116 21, apocalyptic +79 none
-    (only a tree beside it). Floor plans: `build/test-renders/rooms/`. It adds ~1.2 s to the loading of the structures
-    (11.5 → 12.7 s);
+    choice 3A). Since stage 3 a spot also needs air saved in the template (a cell with nothing saved keeps what the
+    world has, so no chest could go there), and the cell in front of it and the feet one step up or down beside it must
+    still be reached with the chest there (`Access.Walk.reachedAvoiding`, the same moves of the walk in a window of 8
+    sideways and 4 up and down, `Rooms.CHECK_R`/`CHECK_RY`; in the walk with all the barrels and in the one without
+    any): on slanted floors a chest could be the only way to the cell in front of it. Results (`RoomsTest`; floors,
+    spots, room for chests 4 apart, `SPACING`): apartment 6, 234, 81; skeleton 8, 172, 59; small building 7, 389, 113;
+    bluish 11, 2,150, 578; tower 14, 1,778, 538; apocalyptic 14, 3,301, 705; brutalist U 13, 2,373, 666; wide 14,
+    2,395, 606; green tower 27, 1,447, 437; crash 18, 2,437, 725. Hard: wide 275 (the garage), crash 117, skeleton 14
+    and green tower 9 (terrace); street: brutalist 251, bluish 217, tower 185, green tower 105, crash 78, skeleton 49.
+    The roofs: wide +61 8 spots, brutalist +116 21, apocalyptic +79 none (only a tree beside it). Floor plans:
+    `build/test-renders/rooms/`. With the drawing below it brings the loading of the structures from 11.5 to ~14.0 s;
+  - chests drawn in each copy of a building (asked by the user on 15 Nov 2026, stage 3 of the procedural chests;
+    `core/ChestDraw`, `Def.chests(seed)`, placed by `Def.code(..., seed)` where the template has air, through
+    `Lot.code` for the chunk builder, the neighbour repair, the audit, the fingerprint and `/amcs spawn`): a pure
+    function of the copy's seed (the lot's) and of the template, not of the rotation, the position or the order of the
+    chunks; each structure keeps the last 512 copies worked out (`Structures.DRAWN_KEPT`). How many: drawn evenly in
+    the range of the height class, small 12–28, medium 25–47, large 38–65, immense 51–83 (`ChestDraw.range`; the chests
+    of the barrels do not count). Per floor: in proportion to its weight, how many chests fit on it 4 apart with a
+    street spot counting half (`Rooms.Layout.floorWeight`), largest remainders first (the user's choice "by capacity";
+    not by raw spots, which favours the walls of the ground floor, nor equal, which gives a roof of 132 cells as much
+    as a floor of 2,300). Which spots: a weighted draw without replacement (key `-ln(u) / weight`, u from the seed and
+    the cell), the weight of a street spot halved (2B); never closer than 4 sideways within 2 heights to another
+    chest (`Rooms.SPACING`), at most 1 per zone (`ChestDraw.ZONE_CAP`; a small room is one zone, a hall is cut in zones
+    of 180 cells) until the floor has its share; when it does not fit, the zone cap is raised up to 4, then the floor
+    shares are dropped (cap up to 8), then the cap goes (the spacing always holds). Exploration (far on its floor, open
+    sky or hard): at least 15% of each copy (`ChestDraw.EXPLORATION_MIN`, the user's choice: a minimum, nothing
+    reserved; a copy under it is drawn again with those spots first); the plain draw gives 25 to 43%. Chests
+    `chest[type=single]` facing where the player stands (`Rooms.FACINGS`, turned with the structure); loot of the
+    `chest` tier of the `building` theme (the hard flag of the garage and terrace chests comes in stage 4).
+    Measured (`ChestDrawTest`, 200 copies each): 20.0 chests on average in the small buildings, 51.5 in the large
+    ones; on the street floor 3 to 20% (apartment 20, small 16, brutalist 11, wide and apocalyptic 9, tower 6, bluish
+    and crash 4, green tower 3; skeleton 13), every floor whose share is one chest or more gets some; exploration 25 to
+    43% (never under 15% in a copy); more than 1 per zone only in the apartment (2, 67 copies) and the skeleton (3,
+    every copy), which have few rooms with spots. 40 copies of each walked again with their barrels and chests: every
+    chest reached with someone standing in front, no container cut off. In the battery the block entities and the
+    loot containers of the structures went up by the same number in every target with buildings (t01 1,013 → 1,192),
+    `structure_loot_hard` and every other count unchanged;
   - banners with the design saved in the template (`Template.banners`, applied when the banner is placed,
     `Palette.applyBanner`): the letters D R U G S T O R E of the pharmacies (9 on the pharmacy, 18 on the large
     pharmacy); against the sidewalk, forming a ring; drawn per file, no pattern;

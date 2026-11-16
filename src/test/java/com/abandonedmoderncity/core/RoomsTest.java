@@ -218,6 +218,7 @@ class RoomsTest {
             int top = d.oy() + d.h() - 1;
             for (Rooms.Spot s : d.rooms().spots()) {
                 String here = Access.bare(state(t, placed, s.x(), s.y(), s.z()));
+                assertTrue(t.at(s.x(), s.y(), s.z()) >= 0, d.name() + ": nothing saved in the template at " + s);
                 assertTrue(here.equals("air") || here.equals("cave_air"), d.name() + " " + s);
                 assertTrue(Rooms.floorBlock(state(t, placed, s.x(), s.y() - 1, s.z())), d.name() + " floor " + s);
                 assertTrue(Access.passable(Access.bare(state(t, placed, s.x(), s.y() + 1, s.z()))), d.name() + " lid " + s);

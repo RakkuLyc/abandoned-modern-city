@@ -27,7 +27,8 @@ import java.util.TreeMap;
  *   building block ({@link #floorBlock}, never a barrel, slab, stair, bed, leaves or container), against a wall
  *   (blocked from the floor to the head; a barrel never counts), with a player standing beside it, at the same height,
  *   in the walk with every barrel and in the walk without any (each copy keeps a different 30%), not cutting the
- *   passage around it (the cells around stay joined), no barrel within one block, no container beside it, no door,
+ *   passage around it (the cells around stay joined, and the cell in front and the steps beside it are still reached
+ *   with the chest there), no barrel within one block, no container beside it, no door,
  *   trapdoor, gate, ladder or scaffolding within {@link #DOOR_CLEAR}, no stairs within {@link #STAIRS_CLEAR}, not
  *   next to a passage or a door, and indoors (something over it) unless it is up on a terrace or a roof
  *   ({@link Access#ABOVE}+ over the ground layer): a yard or a plaza inside the box gets none. Under the open sky a
@@ -83,6 +84,10 @@ public final class Rooms {
     /** Smallest distance (sideways, on one floor) between two chests used to measure the capacity. */
     public static final int SPACING = 4;
 
+    /** The window of the check that a chest cuts no way ({@code kept}): sideways and up or down. */
+    static final int CHECK_R = 8;
+    static final int CHECK_RY = 4;
+
     /** Codes of a cell in a floor plan (besides a zone number, 0 or more). */
     public static final int NONE = -1;
     public static final int PASSAGE = -2;
@@ -124,11 +129,13 @@ public final class Rooms {
     }
 
     /**
-     * What {@link #of} found: the box size, the floors, the room of each zone, the number of rooms and of corridors, and
-     * the spots.
+     * What {@link #of} found: the box size, the floors, the room of each zone, the number of rooms and of corridors, the
+     * spots, and the weight of each floor in the drawing of the chests ({@link ChestDraw}): how many chests fit on it
+     * {@link #SPACING} apart, a {@link #STREET} spot counting half.
      */
-    public record Layout(int w, int d, List<Floor> floors, int[] zoneRoom, int rooms, int corridors, List<Spot> spots) {
-        public static final Layout EMPTY = new Layout(0, 0, List.of(), new int[0], 0, 0, List.of());
+    public record Layout(int w, int d, List<Floor> floors, int[] zoneRoom, int rooms, int corridors, List<Spot> spots,
+                         double[] floorWeight) {
+        public static final Layout EMPTY = new Layout(0, 0, List.of(), new int[0], 0, 0, List.of(), new double[0]);
 
         public int zones() {
             return zoneRoom.length;
@@ -469,8 +476,9 @@ public final class Rooms {
                 int flags = s[8] | (steps >= far[s[3]] ? FAR : 0) | (street.get(s[5]) ? STREET : 0);
                 spots.add(new Spot(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], flags, steps));
             }
+            List<Spot> all = List.copyOf(spots);
             return new Layout(w, d, List.copyOf(floors), zoneRoom.stream().mapToInt(Integer::intValue).toArray(), rooms,
-                    corridors, List.copyOf(spots));
+                    corridors, all, floorWeights(all, nf));
         }
 
         /** Floor cells in a row through (x, z) along (dx, dz), the cell itself included. */
@@ -604,7 +612,9 @@ public final class Rooms {
             int z = oz + lz;
             int y = fy[lx + w * lz];
             String here = bare(x, y, z);
-            if (!(here.equals("air") || here.equals("cave_air")) || y <= gy && !here.equals("cave_air") || y == gy) {
+            // air saved in the template (a cell with nothing saved keeps what the world has: no chest goes there)
+            if (t.at(x, y, z) < 0 || !(here.equals("air") || here.equals("cave_air")) || y <= gy && !here.equals("cave_air")
+                    || y == gy) {
                 return null;
             }
             if (!open(x, y, z) || !open(x, y + 1, z) || !floorBlock(state(x, y - 1, z))) {
@@ -680,7 +690,8 @@ public final class Rooms {
                     facing = i;
                 }
             }
-            if (facing < 0 || !simple(a, x, y, z) || !simple(b, x, y, z)) {
+            if (facing < 0 || !simple(a, x, y, z) || !simple(b, x, y, z) || !kept(a, x, y, z, facing)
+                    || !kept(b, x, y, z, facing)) {
                 return null;
             }
             int steps = Integer.MAX_VALUE;
@@ -696,6 +707,28 @@ public final class Rooms {
                     | (furniture ? FURNITURE : 0);
             int weight = (corner ? 3 : 2) + (furniture ? 1 : 0);
             return new int[]{x, y, z, weight, facing, flags, steps};
+        }
+
+        /**
+         * Whether, with a chest at (x, y, z), the walk still reaches the cell in front of it and the feet one step up or
+         * down among its 8 neighbours (stairs, slanted floors, a table top), which it might only have reached through the
+         * chest's cell ({@link Access.Walk#reachedAvoiding}, a window of {@link #CHECK_R} around each).
+         */
+        boolean kept(Access.Walk k, int x, int y, int z, int facing) {
+            if (!k.reachedAvoiding(x + SIDE[facing][0], y, z + SIDE[facing][1], x, y, z, CHECK_R, CHECK_RY)) {
+                return false;
+            }
+            for (int dy = -1; dy <= 1; dy += 2) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    for (int dx = -1; dx <= 1; dx++) {
+                        if (k.reachedAt(x + dx, y + dy, z + dz)
+                                && !k.reachedAvoiding(x + dx, y + dy, z + dz, x, y, z, CHECK_R, CHECK_RY)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
         }
 
         /**
@@ -745,16 +778,21 @@ public final class Rooms {
         return y - bases.get(below) <= bases.get(above) - y ? below : above;
     }
 
-    /**
-     * How many chests fit at most {@link #SPACING} apart (sideways, within 2 heights), taking the heaviest spots first:
-     * {total, then one per floor}. A measure of room for the next stage, not the drawing itself.
-     */
-    public static int[] capacity(Layout l, int spacing) {
-        List<Spot> order = new ArrayList<>(l.spots());
+    /** Weight of each floor: the chests that fit {@link #SPACING} apart, the heaviest spots first, a street one half. */
+    static double[] floorWeights(List<Spot> spots, int floors) {
+        double[] w = new double[floors];
+        for (Spot s : packed(spots, SPACING)) {
+            w[s.floor()] += s.is(STREET) ? 0.5 : 1;
+        }
+        return w;
+    }
+
+    /** The spots taken, the heaviest first, each at least {@code spacing} from the ones before (within 2 heights). */
+    static List<Spot> packed(List<Spot> spots, int spacing) {
+        List<Spot> order = new ArrayList<>(spots);
         order.sort(Comparator.comparingInt((Spot s) -> -s.weight()).thenComparingInt(Spot::y)
                 .thenComparingInt(Spot::z).thenComparingInt(Spot::x));
         List<Spot> taken = new ArrayList<>();
-        int[] out = new int[1 + l.floors().size()];
         for (Spot s : order) {
             boolean ok = true;
             for (Spot o : taken) {
@@ -766,9 +804,20 @@ public final class Rooms {
             }
             if (ok) {
                 taken.add(s);
-                out[0]++;
-                out[1 + s.floor()]++;
             }
+        }
+        return taken;
+    }
+
+    /**
+     * How many chests fit at most {@link #SPACING} apart (sideways, within 2 heights), taking the heaviest spots first:
+     * {total, then one per floor}. A measure of room for the next stage, not the drawing itself.
+     */
+    public static int[] capacity(Layout l, int spacing) {
+        int[] out = new int[1 + l.floors().size()];
+        for (Spot s : packed(l.spots(), spacing)) {
+            out[0]++;
+            out[1 + s.floor()]++;
         }
         return out;
     }

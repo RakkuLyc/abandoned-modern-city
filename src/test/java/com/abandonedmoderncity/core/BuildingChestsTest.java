@@ -116,6 +116,44 @@ class BuildingChestsTest {
     }
 
     @Test
+    void inACopyTheChestsAreItsBarrelsAndItsDrawnChests() {
+        // with a seed: every chest of a building is a barrel turned into a chest or one drawn on a spot (ChestDraw)
+        for (Structures.Def d : Structures.ALL) {
+            if (!building(d)) {
+                continue;
+            }
+            for (int rot = 0; rot < 4; rot++) {
+                long seed = 77 + 1000L * rot;
+                int barrelChests = 0;
+                int drawn = 0;
+                for (int y = -d.ground(); y < d.above(); y++) {
+                    for (int z = 0; z < d.sizeZ(rot); z++) {
+                        for (int x = 0; x < d.sizeX(rot); x++) {
+                            int c = d.code(x, y, z, rot, seed);
+                            if (c < BlockCode.STRUCT || !Structures.isChestName(Structures.blockOf(
+                                    Structures.STATES.get((c - BlockCode.STRUCT) / 4)))) {
+                                continue;
+                            }
+                            int plain = d.code(x, y, z, rot);
+                            if (plain == BlockCode.AIR) {
+                                drawn++;
+                            } else {
+                                assertTrue(Structures.blockOf(Structures.STATES.get((plain - BlockCode.STRUCT) / 4))
+                                        .equals("minecraft:barrel"), d.name() + ": a chest that was not a barrel");
+                                barrelChests++;
+                            }
+                        }
+                    }
+                }
+                assertEquals(d.chests(seed).size(), drawn, d.name() + " rot " + rot);
+                int layer = d.t().sx * d.t().sz;
+                long kept = d.barrels().values().stream().filter(b -> Barrels.kept(b, seed, layer)).count();
+                assertEquals(kept, barrelChests, d.name() + " rot " + rot);
+            }
+        }
+    }
+
+    @Test
     void theOtherContainersKeepTheirAccessAndTheBuildingItsShape() throws IOException {
         // Access, box and barrels as they were with the chests of the .nbt (overgrowth applied as when loading)
         Map<String, Integer> seeds = seeds();

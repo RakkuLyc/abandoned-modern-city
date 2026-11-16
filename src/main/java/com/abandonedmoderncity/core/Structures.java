@@ -53,7 +53,7 @@ public final class Structures {
     public record Def(String type, String name, String group, Template t, int ox, int oy, int oz, int w, int h, int d,
                       int ground, int turn, int[] state, int[] fill, Map<Integer, Integer> cells, Access.Result access,
                       List<int[]> overhang, String model, boolean[] openings, Map<Integer, int[]> barrels,
-                      Rooms.Layout rooms) {
+                      Rooms.Layout rooms, int[] chestStates, Map<Long, Map<Integer, Integer>> drawn) {
         /** Footprint size along x after {@code rot} quarter turns. */
         public int sizeX(int rot) {
             return ((rot + turn) & 1) == 0 ? w : d;
@@ -127,6 +127,14 @@ public final class Structures {
          */
         public int code(int rx, int ry, int rz, int rot, long seed) {
             int c = code(rx, ry, rz, rot);
+            if (c == BlockCode.AIR && !rooms.spots().isEmpty()) {
+                // a chest of this copy (ChestDraw), on a spot of its rooms
+                int[] tc = template(rx, ry, rz, rot);
+                Integer facing = chests(seed).get(cell(tc[0], tc[1], tc[2]));
+                if (facing != null) {
+                    return BlockCode.STRUCT + 4 * chestStates[facing] + ((rot + turn) & 3);
+                }
+            }
             if (barrels.isEmpty() || c < BlockCode.STRUCT) {
                 return c;
             }
@@ -137,6 +145,30 @@ public final class Structures {
             }
             return Barrels.kept(b, seed, t.sx * t.sz) ? BlockCode.STRUCT + 4 * b[Barrels.CHEST] + ((rot + turn) & 3)
                     : BlockCode.AIR;
+        }
+
+        /**
+         * The chests of the copy of seed {@code seed} ({@link ChestDraw}): template cell -> facing ({@link Rooms#FACINGS},
+         * in the template's orientation). Empty for a structure that is not a building. Kept for the last copies asked
+         * (a pure function of the seed: worked out again when forgotten).
+         */
+        public Map<Integer, Integer> chests(long seed) {
+            if (rooms.spots().isEmpty()) {
+                return Map.of();
+            }
+            Map<Integer, Integer> m = drawn.get(seed);
+            if (m == null) {
+                Map<Integer, Integer> out = new HashMap<>();
+                for (Rooms.Spot s : ChestDraw.draw(rooms, heightClass(h), t.sx, t.sz, seed)) {
+                    out.put(cell(s.x(), s.y(), s.z()), s.facing());
+                }
+                m = Map.copyOf(out);
+                if (drawn.size() >= DRAWN_KEPT) {
+                    drawn.clear();
+                }
+                drawn.put(seed, m);
+            }
+            return m;
         }
 
         /**
@@ -263,6 +295,8 @@ public final class Structures {
         }
     }
 
+    /** Copies of a building whose chests a structure keeps worked out ({@link Def#chests}). */
+    static final int DRAWN_KEPT = 512;
     static final int AIR_STATE = -2;
     /**
      * State of {@code minecraft:cave_air} in a template: air even under the city ground, dug out of the terrain (an
@@ -489,11 +523,18 @@ public final class Structures {
         boolean[] openings = StructureLoader.openings(t, state, x0, z0, w, d, y0 + ground);
         // the barrels of the buildings: taken out or turned into chests, copy by copy
         Map<Integer, int[]> barrels = isBuildingType(type) ? Barrels.of(withChests, ids) : Map.of();
-        // the floors, rooms and places for a chest of a building (procedural chests, stage 2: not placed yet)
+        // the floors, rooms and places for a chest of a building, and the states of its chests (ChestDraw)
         Rooms.Layout rooms = isBuildingType(type)
                 ? Rooms.of(t, placed, x0, y0, z0, w, y1 - y0 + 1, d, ground, openings) : Rooms.Layout.EMPTY;
+        int[] chestStates = new int[4];
+        if (!rooms.spots().isEmpty()) {
+            for (int f = 0; f < 4; f++) {
+                chestStates[f] = StructureLoader.id(ids, "minecraft:chest[facing=" + Rooms.FACINGS[f]
+                        + ",type=single,waterlogged=false]");
+            }
+        }
         return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, turn, state, fill, cells, access,
-                overhang, model, openings, barrels, rooms);
+                overhang, model, openings, barrels, rooms, chestStates, new java.util.concurrent.ConcurrentHashMap<>());
     }
 
     static boolean isChestName(String block) {

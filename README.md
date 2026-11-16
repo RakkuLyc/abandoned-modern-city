@@ -127,7 +127,11 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
     building, its floors, rooms, corridors and the places where a chest can stand (indoors, or on a terrace or a roof
     against a wall or a railing; on a full block, beside where a player stands, away from doors, stairs, barrels and
     corridors), the ones far from where each floor is reached and the ones of a lobby open onto the street; nothing is
-    placed yet. Floor plans of each building: `build/test-renders/rooms/` (after `./gradlew test`).
+    placed yet. Floor plans of each building: `build/test-renders/rooms/` (after `./gradlew test`). Stage 3
+    (`core/ChestDraw`) places them: each copy of a building draws 12–28 chests (small), 25–47 (medium), 38–65 (large)
+    or 51–83 (immense), spread over the floors in proportion to the room on each, 4+ blocks apart, at most 1 per small
+    room, at least 15% in exploration places (far on their floor, under the open sky, underground), never blocking a
+    passage; loot of the `building` theme.
 
   The containers (chests, barrels, dispensers, droppers, decorated pots) get their loot table when they are placed;
   the banners get the design of the template; the other block entities (furnaces, beds, skulls, chiseled bookshelves,
@@ -243,6 +247,7 @@ core/   the pure planner (no Minecraft classes), tested with JUnit
                   in index.txt, underground, on the terrace, in the attic of a house): more generous loot
   Barrels         the barrels of the buildings: 70% taken out, the others chests, drawn per copy (lot seed)
   Rooms           floors, rooms, corridors and places for a chest of each building, on the walk of Access
+  ChestDraw       the chests of each copy of a building: how many, per floor, which spots (pure function of the seed)
   Crowns          where the leaves completing the crowns cut by the edge of the structures go (gen/Overhangs places
                   them)
   Park            parks taken over by nature, with paths and the fountain

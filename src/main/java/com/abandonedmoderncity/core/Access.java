@@ -226,36 +226,9 @@ public final class Access {
                 }
             }
         }
-        int[][] four = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
         while (!queue.isEmpty()) {
             int[] c = queue.poll();
-            int x = c[0];
-            int y = c[1];
-            int z = c[2];
-            for (int[] q : four) {
-                int nx = x + q[0];
-                int nz = z + q[1];
-                if (!f.in(nx, y, nz)) {
-                    continue;
-                }
-                if (f.pass(nx, y, nz) && f.pass(nx, y + 1, nz)) {
-                    // walk on, or fall down to the first thing that holds
-                    int ny = y;
-                    while (!f.stand(nx, ny, nz) && ny - 1 >= 0 && f.pass(nx, ny - 1, nz)) {
-                        ny--;
-                    }
-                    f.visit(nx, ny, nz, c, queue);
-                } else if (f.pass(x, y + 2, z) && f.kind(nx, y, nz) != 3) {
-                    // jump up one block
-                    f.visit(nx, y + 1, nz, c, queue);
-                }
-            }
-            if (f.climb(x, y, z) || f.climb(x, y + 1, z)) {
-                f.visit(x, y + 1, z, c, queue);
-            }
-            if (y > 0 && f.climb(x, y - 1, z)) {
-                f.visit(x, y - 1, z, c, queue);
-            }
+            f.moves(c[0], c[1], c[2], -1, (nx, ny, nz) -> f.visit(nx, ny, nz, c, queue));
         }
         return f;
     }
@@ -318,27 +291,136 @@ public final class Access {
 
         /** Kind of a cell; above the frame is air, under it solid. */
         int kind(int x, int y, int z) {
+            return kind(x, y, z, -1);
+        }
+
+        /** Kind of a cell with the cell of frame index {@code blocked} solid (a chest put there), or none (-1). */
+        int kind(int x, int y, int z, int blocked) {
             if (y >= fh) {
                 return 1;
             }
             if (!in(x, y, z)) {
                 return 0;
             }
-            return kind[i(x, y, z)];
+            int i = i(x, y, z);
+            return i == blocked ? 0 : kind[i];
         }
 
         boolean pass(int x, int y, int z) {
-            int k = kind(x, y, z);
+            return pass(x, y, z, -1);
+        }
+
+        boolean pass(int x, int y, int z, int blocked) {
+            int k = kind(x, y, z, blocked);
             return k == 1 || k == 2;
         }
 
         boolean climb(int x, int y, int z) {
-            return kind(x, y, z) == 2;
+            return climb(x, y, z, -1);
+        }
+
+        boolean climb(int x, int y, int z, int blocked) {
+            return kind(x, y, z, blocked) == 2;
         }
 
         /** A player can stand with the feet here: two passable cells over something solid, or in a climbable. */
         boolean stand(int x, int y, int z) {
-            return pass(x, y, z) && pass(x, y + 1, z) && (!pass(x, y - 1, z) || climb(x, y, z));
+            return stand(x, y, z, -1);
+        }
+
+        boolean stand(int x, int y, int z, int blocked) {
+            return pass(x, y, z, blocked) && pass(x, y + 1, z, blocked)
+                    && (!pass(x, y - 1, z, blocked) || climb(x, y, z, blocked));
+        }
+
+        /** Where the feet go from (x, y, z) (frame coordinates). */
+        interface Move {
+            void to(int x, int y, int z);
+        }
+
+        /**
+         * The moves of the walk from the feet at (x, y, z), frame coordinates, with the cell {@code blocked} solid (or
+         * -1): to a side neighbour at the same height or falling down to the first thing that holds, jumping up one
+         * block (never onto a fence, a wall or a pane), climbing up or down.
+         */
+        void moves(int x, int y, int z, int blocked, Move m) {
+            for (int[] q : FOUR) {
+                int nx = x + q[0];
+                int nz = z + q[1];
+                if (!in(nx, y, nz)) {
+                    continue;
+                }
+                if (pass(nx, y, nz, blocked) && pass(nx, y + 1, nz, blocked)) {
+                    // walk on, or fall down to the first thing that holds
+                    int ny = y;
+                    while (!stand(nx, ny, nz, blocked) && ny - 1 >= 0 && pass(nx, ny - 1, nz, blocked)) {
+                        ny--;
+                    }
+                    m.to(nx, ny, nz);
+                } else if (pass(x, y + 2, z, blocked) && kind(nx, y, nz, blocked) != 3) {
+                    // jump up one block
+                    m.to(nx, y + 1, nz);
+                }
+            }
+            if (climb(x, y, z, blocked) || climb(x, y + 1, z, blocked)) {
+                m.to(x, y + 1, z);
+            }
+            if (y > 0 && climb(x, y - 1, z, blocked)) {
+                m.to(x, y - 1, z);
+            }
+        }
+
+        private static final int[][] FOUR = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+        /**
+         * Whether the feet at template cell (tx, ty, tz) are still reached with a chest at template cell (bx, by, bz):
+         * the walk spreads, by the same moves, from the cells reached in fewer steps than the chest's cell (their way
+         * from the street does not pass it), inside a window of {@code r} sideways and {@code ry} up and down around
+         * the target. Not found inside the window counts as not reached.
+         */
+        boolean reachedAvoiding(int tx, int ty, int tz, int bx, int by, int bz, int r, int ry) {
+            int x0 = tx - fx0;
+            int y0 = ty - fy0;
+            int z0 = tz - fz0;
+            if (!in(bx - fx0, by - fy0, bz - fz0) || !in(x0, y0, z0) || dist[i(x0, y0, z0)] < 0) {
+                return false;
+            }
+            int blocked = i(bx - fx0, by - fy0, bz - fz0);
+            int limit = dist[blocked] < 0 ? Integer.MAX_VALUE : dist[blocked];
+            int sw = 2 * r + 1;
+            int sh = 2 * ry + 1;
+            boolean[] seen = new boolean[sw * sw * sh];
+            ArrayDeque<int[]> queue = new ArrayDeque<>();
+            for (int y = y0 - ry; y <= y0 + ry; y++) {
+                for (int z = z0 - r; z <= z0 + r; z++) {
+                    for (int x = x0 - r; x <= x0 + r; x++) {
+                        if (in(x, y, z) && dist[i(x, y, z)] >= 0 && dist[i(x, y, z)] < limit && stand(x, y, z, blocked)) {
+                            seen[(x - x0 + r) + sw * ((z - z0 + r) + sw * (y - y0 + ry))] = true;
+                            queue.add(new int[]{x, y, z});
+                        }
+                    }
+                }
+            }
+            boolean[] found = new boolean[1];
+            while (!queue.isEmpty() && !found[0]) {
+                int[] c = queue.poll();
+                if (c[0] == x0 && c[1] == y0 && c[2] == z0) {
+                    return true;
+                }
+                moves(c[0], c[1], c[2], blocked, (nx, ny, nz) -> {
+                    if (Math.abs(nx - x0) > r || Math.abs(nz - z0) > r || Math.abs(ny - y0) > ry || !in(nx, ny, nz)
+                            || !stand(nx, ny, nz, blocked)) {
+                        return;
+                    }
+                    int k = (nx - x0 + r) + sw * ((nz - z0 + r) + sw * (ny - y0 + ry));
+                    if (!seen[k]) {
+                        seen[k] = true;
+                        found[0] |= nx == x0 && ny == y0 && nz == z0;
+                        queue.add(new int[]{nx, ny, nz});
+                    }
+                });
+            }
+            return found[0];
         }
 
         void visit(int x, int y, int z, int[] from, ArrayDeque<int[]> queue) {
