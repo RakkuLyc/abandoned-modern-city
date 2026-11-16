@@ -22,7 +22,8 @@
    since the special structures in ~1 city in 10, commit `21cd4f6`; `structures` again since the loot theme
    `building_large` and again when it was taken out; `lots` since the barrels of the buildings, `core/Barrels`; `lots` and `structures` again since the hard
    containers underground, on the terrace and in the attics; `structures` again since the height classes of the
-   buildings (and again with the margin of 3 blocks), their type and category: the blocks did not change) and the battery
+   buildings (and again with the margin of 3 blocks), their type and category: the blocks did not change; `lots` and `structures` again since the chests saved in the
+   templates of the buildings were taken out, 15 Nov 2026) and the battery
    prints per target `mod blocks:` (the blocks the mod decides in the generated world; the reference is in
    `docs/TESTING.md`, section 6, with another one for `structureOvergrowth = false`). In a change that must not alter
    the world (cleanup, splitting files, comments), the test passes and the `mod blocks:` and `stats:` lines stay the
@@ -273,6 +274,21 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     chests in the 10 buildings. The chests use the `chest` tier of the loot (or `chest_hard` where the barrel was
     hard to get to: the 7 of the apocalyptic building). The hard flags are still worked out once on the template with
     its barrels: with every barrel taken out, or every barrel a chest, no other container changes (`BarrelsTest`);
+  - chests of the buildings (asked by the user on 15 Nov 2026, the first step of the procedural chests;
+    `Structures.withoutChests`): the 556 chests saved in the templates of the 10 structures of the `building_*`
+    categories (apartment 10, skeleton 16, bluish 15, tower 29, apocalyptic 36, small 19, brutalist U 168, wide 133,
+    green tower 62, crash 68; all single, none trapped, none at or under the ground layer) are taken out when the
+    template loads, after the overgrowth, and become air (cave_air under the ground layer). The overgrowth does not
+    change (taking them out of the `.nbt`, before it, would have moved 47 of its blocks in the 10 buildings, so the
+    user chose the load time); the box, the floor, the openings, the leaves and the access of every other container
+    stay; the barrels still read the template with its chests (a barrel facing up turns into a chest facing its first
+    side with air in front: 5 of them would have turned another way). The `.nbt` files, every other structure (the
+    ramp building, 157 chests, and the police station, 29, included) and the park fountain keep their chests. The log
+    says "Chests saved in the buildings' templates removed: 556 in 10 buildings"; `BuildingChestsTest` checks it. The
+    new chests come in the next stages, each approved by the user: per copy (the lot's seed, like the barrels), by
+    floors, rooms and exploration areas, never blocking a passage; 12–28 per small building, 25–47 medium, 38–65
+    large and 51–83 immense (approved on 15 Nov 2026); hard ones only where `core/Access` already says so
+    (underground, terrace); the barrels' chests do not count;
   - banners with the design saved in the template (`Template.banners`, applied when the banner is placed,
     `Palette.applyBanner`): the letters D R U G S T O R E of the pharmacies (9 on the pharmacy, 18 on the large
     pharmacy); against the sidewalk, forming a ring; drawn per file, no pattern;
@@ -423,17 +439,20 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   walk: the path jumps 1 block (never over a fence,
   wall or pane), falls any height, climbs ladders, vines, scaffolding and water, opens doors, trapdoors and gates (not
   the iron ones); plants, cobwebs, carpets and torches do not block; leaves do; the container must be 1 block to the
-  side (diagonal counts) of where the player stands, from 1 below the feet to 1 above the head. Today 129 of 3,106
-  containers of the 52 files with the overgrowth on (in the templates, with the barrels; 29 before the rules of where
-  it stands): out of reach 28 (police station 13, the closed rooms of its basement; apocalyptic building 10; abandoned
-  mansion 3, a room 2 blocks above the courtyard; abandoned house 1, the roof; bluish building 1), listed 1 (the
+  side (diagonal counts) of where the player stands, from 1 below the feet to 1 above the head. Today 125 of 2,550
+  containers of the 52 files with the overgrowth on (in the templates, with the barrels and without the chests of the
+  buildings; 129 of 3,106 with those chests, 29 before the rules of where it stands): out of reach 24 (police station
+  13, the closed rooms of its basement; apocalyptic building 7, its barrels; abandoned mansion 3, a room 2 blocks
+  above the courtyard; abandoned house 1, the roof; the 3 chests of the apocalyptic building and the 1 of the bluish
+  building that were out of reach went with the chests of the buildings), listed 1 (the
   chest in the tree, also in the attic), underground 23 (police station 18, its basement, the 13 closed ones among
   them; 1 in each of the 5 small workshops), terrace 5 (1 on the roof of each large pharmacy), attic 87 (modern house
   14, modern garage house 14, post-apocalyptic mansion 12, glass house 10, Victorian 9, pool house 6, abandoned
   mansion 5, suburban 5, large house 4, garage house 3, tower house 3, abandoned house 2); houses 90 of 407; the tall
   buildings 0 (their floors are reached by their stairs; the containers in the open on their roofs, 14 in the
   brutalist U, wide, green tower, ramp, small and crash buildings, lie 9 to 15 blocks under the highest block of the
-  structure, a stair housing or a taller part, so they are not on the terrace); the 5 underground ones of the small
+  structure, a stair housing or a taller part, so they are not on the terrace; 5 chests in the open of the small,
+  brutalist U, wide and crash buildings went with the chests of the buildings); the 5 underground ones of the small
   workshops are a barrel set in the ground layer at the edge, with vines; with the height rule there were 1,382. The vehicle parts
   of OAmP and the Lost Cities table were taken out (the Lost Cities one was rejected by Minecraft). The chest of the
   park fountain stays empty (50%) or `mossy_cobblestone` (50%).

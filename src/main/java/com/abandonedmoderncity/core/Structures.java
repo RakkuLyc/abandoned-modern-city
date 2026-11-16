@@ -300,6 +300,8 @@ public final class Structures {
         return t;
     }
 
+    /** Chests saved in the template of each building, taken out when it loads ({@link #withoutChests}). */
+    public static final Map<String, Integer> CHESTS_REMOVED = new LinkedHashMap<>();
     /** What {@link Weathering} added to each structure (empty when it is off). */
     public static final Map<String, Weathering.Report> WEATHERING = new LinkedHashMap<>();
     /** Smallest depth and front width among the structures (what still fits in a row). */
@@ -386,6 +388,9 @@ public final class Structures {
             t = w.template();
             WEATHERING.put(name, w.report());
         }
+        if (isBuildingType(type)) {
+            CHESTS_REMOVED.put(name, chestsIn(t));
+        }
         return of(type, name, t, ground, turn, model, hardCells, ids);
     }
 
@@ -397,6 +402,13 @@ public final class Structures {
     /** The same, with containers made hard by hand ({@code hardCells}: the {@code hard} column of index.txt). */
     static Def of(String type, String name, Template t, int ground, int turn, String model, String hardCells,
                   Map<String, Integer> ids) {
+        // the barrels read the template with its chests: a barrel facing up turns into a chest facing its first side
+        // with air in front, and that must not change where a saved chest stood beside it
+        Template withChests = t;
+        if (isBuildingType(type)) {
+            // the chests saved in a building's template go (asked by the user on 15 Nov 2026), after the overgrowth
+            t = withoutChests(t, ground);
+        }
         int[] state = new int[t.palette.size()];
         boolean[] solid = new boolean[state.length];
         String[] placed = new String[state.length];
@@ -475,9 +487,64 @@ public final class Structures {
         }
         boolean[] openings = StructureLoader.openings(t, state, x0, z0, w, d, y0 + ground);
         // the barrels of the buildings: taken out or turned into chests, copy by copy
-        Map<Integer, int[]> barrels = isBuildingType(type) ? Barrels.of(t, ids) : Map.of();
+        Map<Integer, int[]> barrels = isBuildingType(type) ? Barrels.of(withChests, ids) : Map.of();
         return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, turn, state, fill, cells, access,
                 overhang, model, openings, barrels);
+    }
+
+    static boolean isChestName(String block) {
+        return block.equals("minecraft:chest") || block.equals("minecraft:trapped_chest");
+    }
+
+    /** Chests (and trapped chests) saved in a template. */
+    static int chestsIn(Template t) {
+        int n = 0;
+        for (int y = 0; y < t.sy; y++) {
+            for (int z = 0; z < t.sz; z++) {
+                for (int x = 0; x < t.sx; x++) {
+                    int p = t.at(x, y, z);
+                    n += p >= 0 && isChestName(blockOf(t.palette.get(p))) ? 1 : 0;
+                }
+            }
+        }
+        return n;
+    }
+
+    /**
+     * The template without its chests (the buildings: their chests are no longer the ones saved in the {@code .nbt}):
+     * each chest becomes air, or cave_air under the ground layer (it stood in a dug-out room, which stays dug out); in
+     * the ground layer itself it is air like any other air there (today no building has a chest at or under its
+     * ground layer: {@code BuildingChestsTest}). The barrels, the
+     * other containers and every other block stay. Applied after the overgrowth ({@link Weathering}), which therefore
+     * does not change: removing the chests before it would move 47 of its blocks in the 10 buildings.
+     */
+    static Template withoutChests(Template t, int ground) {
+        int y0 = -1;
+        for (int y = 0; y < t.sy && y0 < 0; y++) {
+            for (int z = 0; z < t.sz && y0 < 0; z++) {
+                for (int x = 0; x < t.sx && y0 < 0; x++) {
+                    int p = t.at(x, y, z);
+                    String b = p < 0 ? "minecraft:air" : blockOf(t.palette.get(p));
+                    if (!b.equals("minecraft:air") && !b.equals("minecraft:cave_air") && !b.equals("minecraft:void_air")
+                            && !b.equals("minecraft:structure_void")) {
+                        y0 = y;
+                    }
+                }
+            }
+        }
+        int gy = y0 + ground;
+        Map<Integer, String> changed = new HashMap<>();
+        for (int y = 0; y < t.sy; y++) {
+            for (int z = 0; z < t.sz; z++) {
+                for (int x = 0; x < t.sx; x++) {
+                    int p = t.at(x, y, z);
+                    if (p >= 0 && isChestName(blockOf(t.palette.get(p)))) {
+                        changed.put(x + t.sx * (z + t.sz * y), y < gy ? "minecraft:cave_air" : "minecraft:air");
+                    }
+                }
+            }
+        }
+        return changed.isEmpty() ? t : t.withStates(changed);
     }
 
     /** Trunks: columns of at least this many natural (not stripped) logs. */

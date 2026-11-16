@@ -119,6 +119,11 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
     are taken out and the others become chests, drawn again in each copy (two towers are not the same). A barrel
     that holds something (a slab or a pot on top, a vine fixed to it) always becomes a chest; in a stack the top ones
     go first. 794 barrels, 26 always chests, ~239 chests per set of the 10 buildings.
+  - Chests of the buildings (15 Nov 2026, first step of the procedural chests): the 556 chests saved in the templates
+    of the 10 buildings are taken out when they load, after the overgrowth (the `.nbt` files do not change, nor the
+    overgrowth, the barrels or any other structure; the ramp building, the police station, the houses, the shops and
+    the park fountain keep their chests). The new chests, spread by floors and rooms (12–28 per small building, 25–47
+    medium, 38–65 large, 51–83 immense), come in the next stages.
 
   The containers (chests, barrels, dispensers, droppers, decorated pots) get their loot table when they are placed;
   the banners get the design of the template; the other block entities (furnaces, beds, skulls, chiseled bookshelves,
@@ -145,9 +150,9 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   `index.txt` (the chest in the tree of the abandoned modern house), or by where it stands: underground (at or under
   the street floor), on the terrace (open sky, 4+ blocks over the ground and at most 5 under the top of the structure)
   or, only in the houses, in the attic (only the roof between it and the sky, 4+ blocks over the ground). The height
-  alone does not count. That is 129 of the 3,106 containers: the attics of the houses (87), the police station (18:
-  its basement), the apocalyptic building (10, closed rooms), the abandoned mansion (3, a closed room), the roof of
-  each large pharmacy (1), a barrel set in the floor of each small workshop (1), the bluish building (1) and the chest in the tree.
+  alone does not count. That is 125 of the 2,550 containers: the attics of the houses (87), the police station (18:
+  its basement), the apocalyptic building (7 barrels in closed rooms), the abandoned mansion (3, a closed room), the
+  roof of each large pharmacy (1), a barrel set in the floor of each small workshop (1) and the chest in the tree.
 - **Nature taking the city back** (`core/Flora`, `core/Wild`):
   - the ground in patches: grass, moss, coarse dirt and remains of the concrete (`gray_concrete_powder`);
   - the mod's own trees, ~1 per 55 columns: oak, birch, dark oak and spruce, small and large, with vines hanging from
@@ -227,7 +232,7 @@ core/   the pure planner (no Minecraft classes), tested with JUnit
   Wild            the core of a block: ground, trees and plants, kept out of the structures
   Ring            the ring of structures around a block (short sides whole, long sides in what is left), gaps, limits
   Structures      the 52 files (30 models) of `amcs/buildings/index.txt`: loading in order, box, ground layer,
-                  rotation, per-city limits, digging with `cave_air`
+                  rotation, per-city limits, digging with `cave_air`, the chests of the buildings taken out
   StructureLoader the preparation of each template: floor out to the edge, real leaves, cut crowns completed, loose
                   cobwebs, openings of the garage
   Access          the containers of the structures that are hard to get to (out of walking reach, listed by hand

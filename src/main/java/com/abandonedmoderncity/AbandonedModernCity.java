@@ -52,6 +52,9 @@ public final class AbandonedModernCity {
             LOGGER.info("[AMCS] Structure overgrowth {}", Weathering.enabled
                     ? "on (" + Structures.WEATHERING.values().stream()
                     .mapToInt(Weathering.Report::total).sum() + " blocks changed)" : "off");
+            LOGGER.info("[AMCS] Chests saved in the buildings' templates removed: {} in {} buildings",
+                    Structures.CHESTS_REMOVED.values().stream().mapToInt(Integer::intValue).sum(),
+                    Structures.CHESTS_REMOVED.size());
         }));
         NeoForge.EVENT_BUS.addListener(AmcsCommands::register);
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> Plans.clear());

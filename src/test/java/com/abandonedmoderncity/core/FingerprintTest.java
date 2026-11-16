@@ -54,7 +54,8 @@ import org.junit.jupiter.api.Test;
  * when the containers underground, on the terrace and in the attics of the houses became hard to get to (the loot
  * access; the blocks did not change); structures changed again when the buildings were classified by height (the
  * type and the category of 4 of them: the blocks did not change), and again with the margin of 3 blocks on the
- * limits (the type of 3 of them). Change them
+ * limits (the type of 3 of them); lots and structures changed when the 556 chests saved in the templates of the 10
+ * buildings were taken out (they become air; nothing else changes, the barrels included: BuildingChestsTest). Change them
  * only in a commit that is meant to change the world, and say so in it.
  */
 class FingerprintTest {
@@ -65,11 +66,11 @@ class FingerprintTest {
         EXPECTED.put("highways", "480e692cad232384cc5a0d486154e33b13a8ebc6d381e0dfbffa8cd18434ddf9");
         EXPECTED.put("village", "6d77e372e3111d53b3995b84b46308716b65b8107b051b8f4411eca72a61f71c");
         EXPECTED.put("chunks", "aac1f39821a3e01b096634443468315a31f6c5c4ebcacdaee30e15f4014a5ad9");
-        EXPECTED.put("lots", "5fe9a739536d6ced74390fc9465827e3579c99abf05a591b81b44574b60f4d34");
+        EXPECTED.put("lots", "ff5264149b95a6ed6982a3b5bb66f2bae09226aec19f7812c9dca22d3fd624b0");
         EXPECTED.put("roads", "bcf16888eff09ec35d77b4c97d496a5d006061d045c8e02abd16c5a56418aef6");
         EXPECTED.put("lamps", "85591f5e99c109803aa1dfb294e112106e69005b6f9706d41bb2abb565addb23");
         EXPECTED.put("crowns", "4d9143c986f8bc57f9bc9ec5edbd5b32542c6373b86ca5b8cedee32f0daa6117");
-        EXPECTED.put("structures", "37ccef32fb3322e5731d2f9d026082bc17dfccb5547b77637c0e7803f3605779");
+        EXPECTED.put("structures", "26cc34777dac4299a240c81b95360c05e2c2287b59eedd9d3b73ce16d395edf1");
         EXPECTED.put("weathering", "5b8482cc06ec86bebd98c3c30ea697bcd685bfb97c98dabcba1f466f606b591b");
         EXPECTED.put("benches", "e8ee1c72349ec4768b6c4880b5810913a01abed52a0c8790553a5f97fb15e7e8");
     }

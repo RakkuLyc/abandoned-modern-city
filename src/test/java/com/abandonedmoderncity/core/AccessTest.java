@@ -228,7 +228,8 @@ class AccessTest {
                 + houses + ", hard " + housesHard);
         // houses: their attics make about a fifth of their containers hard
         assertTrue(housesHard * 3 <= houses && housesHard * 10 >= houses, housesHard + " of " + houses + " in houses");
-        // closed rooms, the hand list, underground, terraces and the attics of the houses: 129 of 3,106 (about 4%)
+        // closed rooms, the hand list, underground, terraces and the attics of the houses: 125 of 2,550 (about 5%; the
+        // chests saved in the buildings are taken out)
         assertTrue(hard * 50 >= containers && hard * 20 <= containers, hard + " of " + containers);
         for (String tall : List.of("tower", "abandoned_green_tower", "brutalist_u_building_75x58")) {
             assertEquals(0, Structures.ALL.stream().filter(d -> d.name().equals(tall)).findFirst().orElseThrow()
