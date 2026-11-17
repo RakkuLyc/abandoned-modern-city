@@ -675,7 +675,8 @@ public final class City {
     /**
      * Rings of the whole city at once, block by block in a fixed order (north to south, west to east), so that the
      * spawn limits per city ({@link Structures#LIMITS}) hold whatever block is asked for first. A city that does not
-     * draw {@link #SPECIAL_CHANCE} starts with the {@code special} group full: none of it is ever drawn there.
+     * draw {@link #SPECIAL_CHANCE} starts with the {@code special} group full: none of it is ever drawn there; a city
+     * that draws 1 gas station ({@link #gasStations}) starts with one of the 2 places of that group taken.
      */
     private Map<Long, List<Lot>> rings() {
         Map<Long, List<Lot>> r = rings;
@@ -688,6 +689,11 @@ public final class City {
                 Map<String, Integer> used = new HashMap<>();
                 if (!allowsSpecial()) {
                     used.put("special", Structures.LIMITS.get("special"));
+                }
+                // the city's own most of gas stations, 1 or 2: drawn 1, it starts with one of the 2 places taken
+                int gas = gasStations();
+                if (gas < Structures.LIMITS.get("gas_station")) {
+                    used.put("gas_station", Structures.LIMITS.get("gas_station") - gas);
                 }
                 Map<Long, List<Lot>> out = new HashMap<>();
                 for (int bj = -L.n; bj <= L.n; bj++) {
@@ -715,6 +721,15 @@ public final class City {
      * it get other structures there. More special structures would raise the share: measure again and adjust.
      */
     public static final double SPECIAL_CHANCE = 0.40;
+
+    /**
+     * Most gas stations this city may have (both kinds), drawn from its seed: 1 or 2, half the cities each (asked by the
+     * user on 16 Nov 2026; before every city had the limit of 2 of {@link Structures#LIMITS}). A most, not a count: a
+     * city may get fewer if its rings draw fewer.
+     */
+    public int gasStations() {
+        return Hash.range(Hash.of(seed, 0x47415353L, 0), 1, Structures.LIMITS.get("gas_station")); // "GASS"
+    }
 
     /** Whether this city may have a structure of the {@code special} category ({@link #SPECIAL_CHANCE}). */
     public boolean allowsSpecial() {

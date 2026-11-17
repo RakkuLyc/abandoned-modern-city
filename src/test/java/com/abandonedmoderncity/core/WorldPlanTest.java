@@ -47,6 +47,42 @@ class WorldPlanTest {
     }
 
     @Test
+    void eachCityDrawsOneOrTwoGasStations() {
+        // the most gas stations of a city (both kinds) is drawn, 1 or 2, half the cities each; none has more
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        int[] drawn = new int[3];
+        int[] have = new int[3];
+        for (long seed : SEEDS) {
+            for (TestTerrain.Kind kind : TestTerrain.Kind.values()) {
+                for (City c : allCities(plan(seed, kind))) {
+                    if (!seen.add(c.seed + " " + c)) {
+                        continue;
+                    }
+                    int most = c.gasStations();
+                    assertTrue(most == 1 || most == 2, c + " " + most);
+                    drawn[most]++;
+                    int n = c.gridHalf();
+                    int gas = 0;
+                    for (int bj = -n; bj <= n; bj++) {
+                        for (int bi = -n; bi <= n; bi++) {
+                            for (Lot l : c.lots(bi, bj)) {
+                                gas += l.building != null && "gas_station".equals(l.building.group()) ? 1 : 0;
+                            }
+                        }
+                    }
+                    assertTrue(gas <= most, c + ": " + gas + " gas stations, most " + most);
+                    have[gas]++;
+                }
+            }
+        }
+        int cities = seen.size();
+        System.out.printf("[WorldPlanTest] gas stations: %d distinct cities, most 1 in %d (%.1f%%), 2 in %d; with 0 %d,"
+                + " 1 %d, 2 %d (%.2f a city)%n", cities, drawn[1], 100.0 * drawn[1] / cities, drawn[2], have[0], have[1],
+                have[2], (have[1] + 2.0 * have[2]) / cities);
+        assertTrue(drawn[1] > 0.4 * cities && drawn[2] > 0.4 * cities, "about half each: " + drawn[1] + " " + drawn[2]);
+    }
+
+    @Test
     void specialStructuresAreInAboutOneCityInTen() {
         // the special category (the ramp building) only in the cities that draw City.SPECIAL_CHANCE, ~1 city in 10
         int cities = 0;
@@ -372,6 +408,8 @@ class WorldPlanTest {
                 for (var e : groups.entrySet()) {
                     assertTrue(e.getValue() <= Structures.LIMITS.get(e.getKey()), c + " " + e);
                 }
+                // the city's own most of gas stations (1 or 2)
+                assertTrue(groups.getOrDefault("gas_station", 0) <= c.gasStations(), c + " " + groups);
                 // never the same building twice in a city
                 for (var e : buildings.entrySet()) {
                     assertEquals(1, e.getValue(), c + " has " + e.getValue() + " " + e.getKey());

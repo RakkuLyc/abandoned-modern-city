@@ -25,7 +25,8 @@
    buildings (and again with the margin of 3 blocks), their type and category: the blocks did not change; `lots` and `structures` again since the chests saved in the
    templates of the buildings were taken out, 15 Nov 2026; `lots` again since each copy of a building got its drawn
    chests, `core/ChestDraw`, and again when the drawn chests underground or on the terrace became hard to get to, and
-   again when the barrels that hold something stayed barrels) and the battery
+   again when the barrels that hold something stayed barrels; `layout`, `chunks`, `lots` and `crowns` since each city
+   draws 1 or 2 gas stations, 16 Nov 2026) and the battery
    prints per target `mod blocks:` (the blocks the mod decides in the generated world; the reference is in
    `docs/TESTING.md`, section 6, with another one for `structureOvergrowth = false`). In a change that must not alter
    the world (cleanup, splitting files, comments), the test passes and the `mod blocks:` and `stats:` lines stay the
@@ -228,7 +229,7 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   `prédio_esqueleto_31x29.nbt` became `skeleton_building_31x29`, without the accent, because the argument of
   `/amcs spawn` only takes ASCII); then the 22 color variants (43 files), the 7 new structures (50 files) and the
   police station and the crash building (52 files, 30 models). The post-apocalyptic mansion was updated on 13 Nov
-  with the new version of the folder (only the state of 12 doors changed). The houses are ~51% of the structures of
+  with the new version of the folder (only the state of 12 doors changed). The houses are ~52% of the structures of
   the cities (39% of a ring without the per-city limits). Color variants (13 Nov 2026, asked by the user; the `model`
   field of the index): pharmacy (yellow, blue, purple, green besides the red one), large pharmacy (blue, purple,
   green, red besides the yellow one), medium workshop (yellow and blue, yellow and red besides the blue and black
@@ -371,16 +372,20 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   - banners with the design saved in the template (`Template.banners`, applied when the banner is placed,
     `Palette.applyBanner`): the letters D R U G S T O R E of the pharmacies (9 on the pharmacy, 18 on the large
     pharmacy); against the sidewalk, forming a ring; drawn per file, no pattern;
-  - limits per city (`Structures.LIMITS`): pharmacies 3 (both kinds), workshops 2 (both kinds), gas stations 2 (both
-    kinds), special 1 (the ramp building), police station 1; the `special` category only in the cities that draw
+  - limits per city (`Structures.LIMITS`): pharmacies 3 (both kinds), workshops 2 (both kinds), gas stations 1 or 2
+    (both kinds; each city draws its most from its seed, half the cities each, `City.gasStations`; asked by the user on
+    16 Nov 2026, before 2 in every city; a city that draws 1 starts with one of the 2 places taken; only the cities that
+    had 2 and drew 1 changed; in the test cities, 1,022 by cell and level: the most 1 in 51.6%, and 0 stations in 3.7%,
+    1 in 56.0%, 2 in 40.3%, 1.37 a city, 1.81 before), special 1 (the ramp building), police station 1; the `special` category only in the cities that draw
     `City.SPECIAL_CHANCE` = 0.40 (`City.allowsSpecial`, from the city's seed; asked by the user after 13 Nov 2026:
     "around 1 in 10 cities"): the others start with the group full. The ramp building only fits some rows (a city that may
     have it gets it ~27% of the time): over 2,838 distinct cities of 50 world seeds, 10.5% have it (39.0% may);
-    in the test cities (1,129, but only 170 distinct: the 7 terrains repeat the cities) 11.2%, before 22.7%. Only the cities that
+    in the test cities (1,129, but only 170 distinct: the 7 terrains repeat the cities) 11.9% (11.2% before the gas
+    stations were drawn), before 22.7%. Only the cities that
     had it changed (they get other structures there); and each building (types `buildings_*` and `special`,
     `Def.onePerCity`) at most 1 time per city, in any block (13 Nov 2026, asked by the user: there were cities with 2
-    or 3 bluish buildings; houses, pharmacies, workshops and gas stations may repeat within the limits); 6.30
-    buildings per city in the tests; the rings of the whole city are drawn at once (`City.rings`, blocks from north to
+    or 3 bluish buildings; houses, pharmacies, workshops and gas stations may repeat within the limits); 6.38
+    buildings per city in the tests (6.30 before the gas stations were drawn); the rings of the whole city are drawn at once (`City.rings`, blocks from north to
     south, west to east), and a group at its limit is drawn again;
   - never two of the same structure (the same model, in any color) in one block (13 Nov 2026, asked by the user): a
     structure already in some row of the block is drawn again (`Ring.row`); before, 80% of the blocks had some

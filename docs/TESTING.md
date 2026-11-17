@@ -114,7 +114,7 @@ Each terrain runs with the seeds `20261104`, `-3297019724594858492` and `42`, on
 
 ## 2. What is checked
 
-### Unit (81 tests)
+### Unit (82 tests)
 
 | Test | Checks |
 |---|---|
@@ -125,7 +125,7 @@ Each terrain runs with the seeds `20261104`, `-3297019724594858492` and `42`, on
 | `WorldPlanTest.parkBenchesSitOnTheEdgeOfThePathsFacingThem` | in the 30 parks of the flat terrain: every seat with the path in front and no path behind; every armrest with its panel against a seat; no bench on the path; nothing grows through a bench (only a high crown); benches 8+ apart; every park with a bench; 565 benches, 1,018 seats, 1 per 18.6 blocks of path |
 | `WorldPlanTest.streetLightsStandOnTheSidewalksWithTheirArmsOverTheLanes` | in 20 cities, column by column: street lights only on street segments (never on a crossing or a crosswalk); a whole post of 13 (with a tuft of leaves only on the overgrown variant); the back vine always facing the post, 3+ up and with the post beside it at the same height; over the lanes nothing below 11 but the fallen lamp; a hanging vine always under a slab; a broken arm only on its first 2 columns; 129.9 street lights per city (of 144, 10% gone), variants 505 / 523 / 533 / 525 / 511; in the chunk plans the post and the fallen lamp are not drivable |
 | `WorldPlanTest.cutCrownsHangOverSidewalksAndCores` | in the cities of the flat terrain (897 chunks with completed crowns): 7,267 leaves in the woods and 860 over sidewalks; 1,047 too low over the street and 13 where the woods already plan something are left out; none in another structure; each one in the chunk asked for |
-| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | in every city of the 7 terrains (357 2 × 2 cities of 180 × 120 blocks, 11,500 lots; no building repeated in a city, 6.30 buildings per city — structures, parks and cores taken over by nature; no block with two of the same structure; in each city at most 3 pharmacies, 2 workshops and 2 gas stations; 204 park blocks, each with the park of 110 × 64 in a corner and 947 structures around, none less than 4 blocks from it; 9,868 structures in 1,428 blocks, 6.91 per block, 7.29 in the blocks without a park, 4.64 in those with one, 51.3% houses; writes `park_block.png`): no node of degree 1 (no dead ends), nodes of degree 2 only at the corners (with the arc of the corner); every lot column is a lot of the right block and does not touch a street |
+| `WorldPlanTest.cityStreetsHaveNoDeadEndsAndLotsAreBuildable` | in every city of the 7 terrains (357 2 × 2 cities of 180 × 120 blocks, 11,500 lots; no building repeated in a city, 6.38 buildings per city — structures, parks and cores taken over by nature; no block with two of the same structure; in each city at most 3 pharmacies, 2 workshops and its own drawn most of gas stations (1 or 2); 204 park blocks, each with the park of 110 × 64 in a corner and 940 structures around, none less than 4 blocks from it; 9,853 structures in 1,428 blocks, 6.90 per block, 7.28 in the blocks without a park, 4.61 in those with one, 52.1% houses; writes `park_block.png`): no node of degree 1 (no dead ends), nodes of degree 2 only at the corners (with the arc of the corner); every lot column is a lot of the right block and does not touch a street |
 | `WorldPlanTest.streetWidthIsConstantOnStraightStreets` | every straight city street has exactly 33 columns; the zebra is on rows 2 to 4 of the segment, with 14 stripes, and on no other row |
 | `WorldPlanTest.highwayNetworkIsConsistentAndWellConnected` | 21 terrain × seed combinations: Gabriel symmetric, a highway starts and ends exactly at the entrance of each city, curve radius ≥ 60, points ~1 block apart, maximum length, an entrance crossing never used twice (a corner has two exits, but only one highway), at most 4 highways per city (`City.EXITS`), no pair of highways too close (no crossings); limits: flat/hills ≥ 85% of the links and ≤ 5% of cities without a highway, mountains/rivers/canyons ≤ 15%, and at least half of the cells with a city (except islands); writes `network_*.png` |
 | `FloraTest.overgrownBlocksAreConsistent` | 6 cores of 140 × 90 (the test uses this fixed size): more than 120 trees each, crowns inside the block, every vine held by a leaf/log or under another vine, every leaf with a distance of 1 to 6 and a neighbour one step closer to the wood (vanilla's leaf decay rule), plants only 1 block above the ground and only on soil (grass, moss, coarse dirt), the top halves of tall plants right, rubble never floats; no tree enters a structure; writes `wild_block.png` |
@@ -185,7 +185,8 @@ Each terrain runs with the seeds `20261104`, `-3297019724594858492` and `42`, on
 | `WeatheringTest.everyStructureReachesTheMeasuresOfTheApocalypticBuilding` | no measure drops (cracked and vines may drop up to 3 points when a floor turns into moss: the block leaves the family or the counted wall); cracked at 31% (−3) or more; the side least covered with vines at 19% or more (target 25%); on the apocalyptic building only the vines change |
 | `WeatheringTest.wholeNamesAreNotTakenForParts` | `light_gray_concrete`, `smooth_sandstone` and `mud_bricks` are whole stone; planks are whole but not stone; glass, leaves, slab, chest, banner and the light block are not whole |
 | `RingTest.cutCrownsAreCompletedOutsideTheBox` | 189 leaves complete cut crowns, only on the pool house, the garage house, the suburban house, the tower house, the glass house, the skeleton building and the ramp building; in the 4 rotations: all outside the box and up to 4 from it, not persistent, distance 1 to 6 with a neighbour one step closer to the trunk, no repeated position; those of the pool house are in front and above `CLEARANCE` |
-| `WorldPlanTest.specialStructuresAreInAboutOneCityInTen` | in the cities of the 3 seeds × 7 terrains, the `special` category (the ramp building) only in the cities that draw `City.SPECIAL_CHANCE` (0.40) and in 7% to 13% of the cities: 127 of 1,129 (11.2%), 496 may have it (before the draw: 256, 22.7%); the 1,129 are only 170 distinct cities (the 7 terrains repeat them); a measurement apart over 2,838 distinct cities of 50 world seeds (flat terrain): 39.0% may have it, 10.5% have it |
+| `WorldPlanTest.eachCityDrawsOneOrTwoGasStations` | in the cities of the 3 seeds × 7 terrains (1,022 by cell and level), the most gas stations of each city is 1 or 2, about half each (1 in 51.6%), and no city has more than its most: 0 stations in 38, 1 in 572, 2 in 412, 1.37 a city (1.81 when every city had 2: 38, 120, 864) |
+| `WorldPlanTest.specialStructuresAreInAboutOneCityInTen` | in the cities of the 3 seeds × 7 terrains, the `special` category (the ramp building) only in the cities that draw `City.SPECIAL_CHANCE` (0.40) and in 7% to 13% of the cities: 134 of 1,129 (11.9%; 127, 11.2%, before the gas stations were drawn), 496 may have it (before the draw: 256, 22.7%); the 1,129 are only 170 distinct cities (the 7 terrains repeat them); a measurement apart over 2,838 distinct cities of 50 world seeds (flat terrain): 39.0% may have it, 10.5% have it |
 | `RingTest.everyStructureHasASpawnCategory` | every structure has one of the 10 `/amcs spawn` categories (2 of them, `building_medium` and `building_immense`, with none today): house 12, police_station 1, special 1, pharmacy 10, workshop 8, gas_station 10, building_small 3, building_large 7 (52) |
 | `RingTest.buildingsAreClassifiedByHeight` | the limits of `Structures.heightClass` with the margin of 3 blocks (43 small, 44 medium, 78 medium, 79 large, 143 large, 144 immense) and each of the 10 buildings with the `type` and the category of its height: small apartment building 37, small building 41, skeleton building 43; large wide building 80, crash building 90, bluish building 106, apocalyptic building 110, tower 118, brutalist U building 125, green tower 143 (fails if a new `.nbt` is in the wrong class) |
 | `RingTest.lightningRodsBecomeRedstoneTorches` | no lightning rod state is left in the structures; 5 standing redstone torches coming from lightning rods (plus 15 saved as torches in the new structures, 3 of them in the police station: 20) (one on top of each structure that had a lightning rod); a sideways lightning rod becomes a wall torch with the same direction |
@@ -424,7 +425,8 @@ road on the ground, without a bridge wall).
 
 ## 6. Current results (12 Nov 2026, blocks of 180 × 120 with a ring of structures with gaps and a core taken over by nature, streets and highways of 33, cities in the middle of cells of 736, 4 entrances)
 
-- **Unit:** 80 pass and 1 is skipped (16 Nov 2026, with the test of medium and immense on a large building); 79 + 1 with
+- **Unit:** 81 pass and 1 is skipped (16 Nov 2026, with the test of the gas stations drawn per city); 80 + 1 with the
+  test of medium and immense on a large building; 79 + 1 with
   the test of the hard drawn chests; 78 + 1 with the 5 tests of
   the drawn chests (`ChestDrawTest`) and 1 more of `BuildingChestsTest`; 72 + 1 with the 10 tests of the floors, rooms and spots of the buildings (`RoomsTest`); 62 + 1 with the 6 tests of the chests of the buildings taken out (`BuildingChestsTest`); before, 55 pass and 1 is skipped (the test without structures), 14 Nov 2026, with the test of the hard containers
   underground, on the terrace and in the attic (`AccessTest.undergroundTerraceAndAttic`); 54 + 1 with the 7 tests of
@@ -442,8 +444,9 @@ road on the ground, without a bridge wall).
     groups.
   - **Ring (6,000 blocks), gaps of 4 to 17:** with the 52 files (13 Nov, step 4 of the review) 7.81 structures per
     block, ~25% on each side, 52.5% of the free ground covered, 39.1% houses; in the cities of the 7 terrains, with
-    the per-city limits, 6.91 per block (7.29 in the blocks without a park, 4.64 in those with one) and 51.3% houses
-    (6.85, 7.22 and 50.7% before the special structures became ~1 city in 10).
+    the per-city limits, 6.90 per block (7.28 in the blocks without a park, 4.61 in those with one) and 52.1% houses
+    since the gas stations are drawn 1 or 2 per city (6.91, 7.29, 4.64 and 51.3% before; 6.85, 7.22 and 50.7% before the
+    special structures became ~1 city in 10).
     Before: ~8.2 structures per block, ~25% on each side, 51% of the free ground covered (with gaps of 10 to 19 it was
     7.7 and 45%); 13 Nov, with 21 structures: without repeats in the block 8.15
     per block and 50.9% covered; before the rule 8.41 and 51.1%, with 80% of the blocks having some repeated one; an
@@ -516,6 +519,7 @@ road on the ground, without a bridge wall).
 
   | Seed | Scope | Date | Version | Result |
   |---|---|---|---|---|
+  | `20261027` | default (8 targets) and quick with `structureOvergrowth = false` | 16 Nov | each city draws 1 or 2 gas stations (`City.gasStations`) | PASS on both (8 of 8 and 3 of 3), 0 generation errors; only the lines of the cities that drew 1 and had 2 changed: t01 (its city, 1,872 → 1,888 block entities, `structure_loot_hard` 125 → 130) and t08 (the cities along the highway, 542 → 581, one lot fewer, 68 → 67), and t01 of the quick run; the roads, highways, bridges, tunnels and lamps and their counts equal; the new references; 2.78 ms per chunk (4.56 ms with the overgrowth off). Before: the lots of the 1,022 test cities (by cell and level) against the previous code: the 495 that drew 2 and the 75 that drew 1 with at most 1 station identical, only the 452 that had 2 and drew 1 changed; `FingerprintTest`: `layout`, `chunks`, `lots` and `crowns` changed, the 7 other parts equal |
   | `20261027` | default (8 targets) and quick with `structureOvergrowth = false` | 16 Nov | the barrels that hold something stay barrels (finding 77) | PASS on both (8 of 8 and 3 of 3), every count equal to the references; only t01 and t02 (towers) changed in their `mod blocks:` lines (and t01 of the quick run): the new references; 2.82 ms per chunk (4.47 ms with the overgrowth off). Before: cell by cell against the previous code only the 26 barrels that hold something, chest → barrel in the copies; `FingerprintTest`: only `lots` changed |
   | all 4 | default (8 targets each) | 16 Nov | stage 5 of the procedural chests: the world audit also checks the containers of the buried layers of a structure | `20261027` PASS (8 of 8), the `mod blocks:` lines equal to the reference, only the structure counts up where buried containers stand (t01, t06, t08: the 18 of the basement of the police station; t02 25; t05 the 5 garage chests of a wide building), all hard, no wrong loot: the new reference; run again on a new world: identical (determinism in the game); quick with `structureOvergrowth = false` PASS (3 of 3), the same; `3478477863671517581` PASS (8 of 8); `-3297019724594858492` FAIL (1): `loot_in_city`, a vanilla village chest under the floor of a structure (finding 75); `1` FAIL (1): `hole_filled`, the leaves of a vanilla tree in a bridge hole (finding 76); both fail the same on the code of `fe5af60`, before stage 1 (a git worktree, seed −3297… full and seed 1 quick): older than the procedural chests; no `structure_without_loot` nor `structure_wrong_loot` in any seed; 2.79 ms per chunk (3.19, 2.83 and 2.32 on the other seeds). `tools/verify/chest_walk.sh` 200 copies: PASS (83,920 chests) |
   | `20261027` | default (8 targets) and quick with `structureOvergrowth = false` | 16 Nov | the drawn chests underground or on the terrace hard to get to (`Def.hard` with `Structures.hardSpots`, stage 4) | PASS on both (8 of 8 and 3 of 3), 0 generation errors, no `structure_wrong_loot`; only `structure_loot_hard` up (t01 105 → 107, t02 61 → 63, t03 133 → 136, t08 23 → 26; off: t01 105 → 107), every other count equal; t05 (and t03 off) changed only in the loot tables of 5 garage chests the audit does not see (finding 74); t04, t06 and t07 equal: the new references; 2.83 ms per chunk (4.57 ms with the overgrowth off). Before: the cells of the 52 structures against stage 3: the codes identical, only the hard flag added on the hard spots (wide 275, crash 117, skeleton 14, green tower 9 in each rotation); `FingerprintTest`: only `lots` changed |
@@ -594,16 +598,18 @@ road on the ground, without a bridge wall).
 
   | Target | SHA-256 | Positions | Block entities |
   |---|---|---|---|
-  | t01 city nearest to the spawn | `ca314d05d8503da04e68f5825550783ac69d38e1bd3c0f81ceac8160981a2c5f` | 1,877,158 | 1,872 |
+  | t01 city nearest to the spawn | `d12151460ea5a2cf361f02f552bfd44fa9147e4e0bf2b9f48a7bf706af3db542` | 1,905,551 | 1,888 |
   | t02 highest city (level 103) | `35c2c6df9fa2a6b3a16d4ec2f7e8c3dade25593ff1e993c83425650fe5d1cfd0` | 3,290,072 | 2,816 |
   | t03 roughest city | `2dfe0a01624730bac56a3ce90dc7dad016f3eed720b758b3a7b916c861f71852` | 2,225,236 | 1,958 |
   | t04 longest tunnel (352) | `1ddc8428606ce64bf3cdec72584e85ac4e6542d22441e95a95647be41696dbb0` | 543,064 | 158 |
   | t05 longest bridge over water (349) | `ca1d6c2971a4227c2272995f861f3387120cba95cda01569cb0552034e428b91` | 452,586 | 423 |
   | t06 longest dry viaduct (239) | `7f308a090e9b9df655b6ee55c2ecfeaaec2c1695b245bd3bdb32758a7aa709e1` | 581,916 | 377 |
   | t07 longest ramp (360) | `f960ad531d4199d12ecf42bb72b87d9a199bc1fccb85235572528b07c3dcc118` | 191,450 | 0 |
-  | t08 whole highway | `d2093ef440c4116bb9f46cee8417ac3fae724f3eafc7e7c78abfb204431d78ba` | 822,838 | 542 |
+  | t08 whole highway | `63bf770760e36a5245d111c80170b0633b8cacbabc04b574f8acc08ed615f1f3` | 816,399 | 581 |
 
-  Since the barrels that hold something stay barrels (16 Nov 2026, finding 77) t01 and t02 changed in those barrels
+  Since each city draws 1 or 2 gas stations (16 Nov 2026) t01 and t08 changed in the cities that drew 1 and had 2
+  (other structures in place of a station), the roads the same. Before, since the barrels that hold something stay
+  barrels (16 Nov 2026, finding 77) t01 and t02 changed in those barrels
   (chest → barrel), every count the same. Before, since the audit also checks the buried layers of the structures (16
   Nov 2026, stage 5) the 8 lines are the same and
   only the `stats:` counts of the structures went up where buried containers stand. Before, since the drawn chests
@@ -649,7 +655,8 @@ road on the ground, without a bridge wall).
   `tools/verify/reference/battery-20261027-full.txt` (what `tools/verify/compare_battery.py` compares); the world of
   that run is (outside git) in `run/selftest_world_ref_english/`, and the one from before the names in
   `run/selftest_world_ref_4dd94ae/` (same blocks), to compare block by block if a line changes.
-- **Reference with the overgrowth off** (`structureOvergrowth = false`, quick scope, 16 Nov 2026, with the audit of the
+- **Reference with the overgrowth off** (`structureOvergrowth = false`, quick scope, 16 Nov 2026, with the gas stations
+  drawn 1 or 2 per city: t01 changed in its city, the others the same; before, with the audit of the
   buried layers: the 3 lines the same, t01 and t03 counts up by the buried containers; before, the same day, with the
   hard drawn chests: t01 and t03 changed only in loot table names, `structure_loot_hard` t01 105 → 107; before, 15 Nov 2026,
   with the chests drawn in each copy: block entities and containers up as in the default scope, positions and the other counts equal;
@@ -666,7 +673,7 @@ road on the ground, without a bridge wall).
 
   | Target | SHA-256 | Positions | Block entities |
   |---|---|---|---|
-  | t01 city nearest to the spawn | `a65212f645eff2acd7ecd75c99e1c0924bca65f6b9867f3a6ccdecde031b2e6f` | 1,874,811 | 1,872 |
+  | t01 city nearest to the spawn | `ec1a9dd4e91d0fbdabd466e45f0f7448bf5524750463121f487719034a0aa6f2` | 1,903,301 | 1,888 |
   | t02 longest tunnel (352) | `b46da4ce3ccfc841eff76f2acc26dba9796aca0ab68348bbc8995c2cdfadf633` | 541,806 | 162 |
   | t03 longest bridge over water (349) | `7e1d7cc2facba009f34fb6d4a1d6bbd4ecc6db6bf4ae801ae0914778689277d0` | 452,586 | 424 |
 

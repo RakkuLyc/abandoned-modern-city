@@ -357,7 +357,8 @@ public final class Structures {
     public static final int MIN_WIDTH;
     /**
      * Most structures of a group per city: pharmacies 3 (both kinds), car workshops 2 (both kinds), gas stations 2
-     * (both kinds), the special building 1, the police station 1. The group is the start of the structure's type.
+     * (both kinds; each city draws 1 or 2, {@link City#gasStations}), the special building 1, the police station 1.
+     * The group is the start of the structure's type.
      */
     public static final Map<String, Integer> LIMITS = Map.of("pharmacy", 3, "workshop", 2, "gas_station", 2, "special", 1,
             "police_station", 1);
