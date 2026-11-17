@@ -26,7 +26,8 @@
    templates of the buildings were taken out, 15 Nov 2026; `lots` again since each copy of a building got its drawn
    chests, `core/ChestDraw`, and again when the drawn chests underground or on the terrace became hard to get to, and
    again when the barrels that hold something stayed barrels; `layout`, `chunks`, `lots` and `crowns` since each city
-   draws 1 or 2 gas stations, 16 Nov 2026) and the battery
+   draws 1 or 2 gas stations, 16 Nov 2026; `lots`, `structures` and `weathering` since the 3 chests added to the medium
+   workshop, 17 Nov 2026) and the battery
    prints per target `mod blocks:` (the blocks the mod decides in the generated world; the reference is in
    `docs/TESTING.md`, section 6, with another one for `structureOvergrowth = false`). In a change that must not alter
    the world (cleanup, splitting files, comments), the test passes and the `mod blocks:` and `stats:` lines stay the
@@ -235,7 +236,16 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   green, red besides the yellow one), medium workshop (yellow and blue, yellow and red besides the blue and black
   one), small workshop (yellow, blue, purple, red besides the green one), gas station (yellow, blue, purple, green
   besides the red one), small gas station (yellow, blue, purple, green besides the red one): 22 files, each variant
-  of the size, front and ground of the original (99.6 to 100% of the blocks in the same place).
+  of the size, front and ground of the original (99.6 to 100% of the blocks in the same place). The medium workshop
+  (its 3 colors, the copies and the originals in `structures/Oficina de carros/`) got 3 chests in its `.nbt` (asked by
+  the user on 17 Nov 2026, not part of the procedural chests): one in the work bay against the inner wall (18,1,10,
+  facing west), one in the back room against the back wall (28,1,24, facing north) and one on the terrace behind the
+  middle post of the sign (11,6,7, facing south), written like its first chest (`village_toolsmith` in the template,
+  replaced by the `workshop` loot when placed); 65 containers each (62 before), none hard (the terrace one lies 10
+  under the top of the sign, more than `Access.TERRACE_TOP`; it is reached by the vines of the overgrowth: with
+  `structureOvergrowth = false` the roof has no way up and that chest is out of reach, so hard). The overgrowth moved 4 of its blocks: the vine it had
+  put in the terrace cell of the yellow and red one, and one green spot of the roof of the yellow and blue one and of
+  the yellow and red one (its share of the floors under the open sky).
   The ring draws the model (all equally likely, `Structures.pick`) and then the color: the variants do not change the
   frequencies. The pharmacy variants came without the banners; the index copies them from the original at load time
   (`Template.withBannersFrom`, field `banners` = `source@dx,dz:color=color`): on the small pharmacy the letters are in
@@ -478,8 +488,8 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     (50%).
   It never touches leaves, logs, glass, block entities (containers, banners, beds...), doors, water or partial blocks;
   plants only on soil, carpets only on a full block, vines only held by a full block or by the vine above. In the 52
-  files: 38,501 vines, 10,192 floors turned into soil, 5,088 carpets, 4,947 plants, 3,907 mossy, 2,451 cracked (65,086
-  blocks). The measures before and after of each structure are in `docs/TESTING.md`.
+  files: 38,500 vines, 10,190 floors turned into soil, 5,088 carpets, 4,946 plants, 3,907 mossy, 2,451 cracked (65,082
+  blocks; 65,086 before the chests of the medium workshop). The measures before and after of each structure are in `docs/TESTING.md`.
 - Villages inside the cities (13 Nov 2026, asked by the user: villagers and an iron golem in a city generated where
   there was a village): the houses of the village are generated before the city, each with its creatures, which stayed
   when the city was built over them (in the test, a villager stuck inside the fill of the street). When it builds each
@@ -523,7 +533,7 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   walk: the path jumps 1 block (never over a fence,
   wall or pane), falls any height, climbs ladders, vines, scaffolding and water, opens doors, trapdoors and gates (not
   the iron ones); plants, cobwebs, carpets and torches do not block; leaves do; the container must be 1 block to the
-  side (diagonal counts) of where the player stands, from 1 below the feet to 1 above the head. Today 125 of 2,550
+  side (diagonal counts) of where the player stands, from 1 below the feet to 1 above the head. Today 125 of 2,559
   containers of the 52 files with the overgrowth on (in the templates, with the barrels and without the chests of the
   buildings; the chests drawn in the buildings come on top, hard on the 415 hard spots, see above; 129 of 3,106 with those chests, 29 before the rules of where it stands): out of reach 24 (police station
   13, the closed rooms of its basement; apocalyptic building 7, its barrels; abandoned mansion 3, a room 2 blocks

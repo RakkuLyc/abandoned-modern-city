@@ -62,7 +62,8 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   loot (every building uses the `building` theme) nor the barrels, nor the sorting of the ring.
   Color variants: pharmacy and large pharmacy (5 colors each, the D R U G S T O R E letters copied from the original
   in the variant's color, without the F A R M Á C I A sign in blocks the variants had: the wall stays white as on
-  the original), medium workshop (3), small workshop (5), gas station and small gas station (5 each).
+  the original), medium workshop (3), small workshop (5), gas station and small gas station (5 each). The medium
+  workshop has 3 chests added to its `.nbt` (17 Nov 2026): one in the work bay, one in the back room, one on the terrace.
 
   | Structure | Type | Box (front × depth × height) | Ground |
   |---|---|---|---|
@@ -112,7 +113,7 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
     changing size: cracked stone in patches (31% of the bricks and tiles that crack), spots of moss, grass and dirt on
     the floors (8% under a roof, 36% under the open sky) with a moss carpet, grass, a fern or a dead bush, long vines
     on all 4 sides (25% of the outer facade of each side, strands of 3 to 12 blocks in patches, on every structure)
-    and mossy cobblestone and stone bricks near the green. 65,086 blocks in the 52 files.
+    and mossy cobblestone and stone bricks near the green. 65,082 blocks in the 52 files.
   - Lightning rods become lit redstone torches (5: on top of the tower house, the post-apocalyptic mansion, the
     apartment building, the apocalyptic building and the tower).
   - Barrels of the buildings (`core/Barrels`): in the 10 structures of the `building_*` categories, 70% of the barrels
@@ -160,7 +161,7 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   `index.txt` (the chest in the tree of the abandoned modern house), or by where it stands: underground (at or under
   the street floor), on the terrace (open sky, 4+ blocks over the ground and at most 5 under the top of the structure)
   or, only in the houses, in the attic (only the roof between it and the sky, 4+ blocks over the ground). The height
-  alone does not count. That is 125 of the 2,550 containers: the attics of the houses (87), the police station (18:
+  alone does not count. That is 125 of the 2,559 containers: the attics of the houses (87), the police station (18:
   its basement), the apocalyptic building (7 barrels in closed rooms), the abandoned mansion (3, a closed room), the
   roof of each large pharmacy (1), a barrel set in the floor of each small workshop (1) and the chest in the tree.
   The chests drawn in the buildings follow the same rule by where they stand: hard in the garage of the wide building

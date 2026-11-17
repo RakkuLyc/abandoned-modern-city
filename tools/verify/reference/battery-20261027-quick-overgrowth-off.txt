@@ -1,6 +1,6 @@
 AMCS self-test, seed 20261027, Params[cellSize=736, cityChance=0.7, minRadius=128, maxRadius=230, maxCityLevel=150, highwayMaxLength=4000, highways=true]
 palette: 142 block states, all breakable
-planning the targets took 13236 ms, 9295 terrain samples
+planning the targets took 13216 ms, 9295 terrain samples
 targets: 3 (scope quick)
   city nearest to spawn City[-1,0 @ -368,368 r=230 level=69] chunk -23,23 r=18
   longest tunnel (352 blocks) of Highway[2,2 -> 3,3 len=841] chunk 121,137 r=15
@@ -8,15 +8,15 @@ targets: 3 (scope quick)
 network around spawn: cells 36, cities 14 (no city: {mostly water=13, no city rolled=9}; 4,0 blocks per city, 0 of 1-2 blocks), candidate links 36, highways 23 (64%, dropped: {curve too tight=8, mostly water=5}), cities without highway 1 (7%), groups of linked cities 3
 
 == t01: city nearest to spawn City[-1,0 @ -368,368 r=230 level=69]
-   chunks -41,5 .. -5,41 (blocks -656,80 .. -65,671), generated in 26458 ms
+   chunks -41,5 .. -5,41 (blocks -656,80 .. -65,671), generated in 25610 ms
    PLAN OK
      stats: {cities=1, cities_fully_checked=1, highway_bridge_columns=612, highway_ends_checked=2, highway_ground_columns=6826, highways=2, lots=33, road_columns=76639, road_components=1, slab_columns=627, street_columns=69201, street_nodes=9}
    WORLD OK
-     stats: {blocks_checked_for_hardness=2451467, bridge_columns=612, crown_leaves=158, fountain_chests=1, ground_road_columns=76027, loot_containers_anywhere=1403, pillar_columns=14, road_columns=76639, road_components=1, road_plants=7116, slab_columns=627, street_light_blocks=3460, structure_banners=58, structure_block_entities=1888, structure_loot_containers=1210, structure_loot_hard=130, taken_road_columns=22510, wall_gap_columns=8}
-   mod blocks: ec1a9dd4e91d0fbdabd466e45f0f7448bf5524750463121f487719034a0aa6f2 (1369 chunks, 1903301 positions, 1888 block entities)
+     stats: {blocks_checked_for_hardness=2451467, bridge_columns=612, crown_leaves=158, fountain_chests=1, ground_road_columns=76027, loot_containers_anywhere=1404, pillar_columns=14, road_columns=76639, road_components=1, road_plants=7116, slab_columns=627, street_light_blocks=3460, structure_banners=58, structure_block_entities=1891, structure_loot_containers=1213, structure_loot_hard=131, taken_road_columns=22510, wall_gap_columns=8}
+   mod blocks: 4ee9fe3dafae041c29c4a16a7495cee6a36b61b9d739c255bdb39c622510e1a2 (1369 chunks, 1903302 positions, 1891 block entities)
 
 == t02: longest tunnel (352 blocks) of Highway[2,2 -> 3,3 len=841]
-   chunks 106,122 .. 136,152 (blocks 1696,1952 .. 2191,2447), generated in 22258 ms
+   chunks 106,122 .. 136,152 (blocks 1696,1952 .. 2191,2447), generated in 20613 ms
    PLAN OK
      stats: {cities=3, highway_bridge_columns=1848, highway_ends_checked=2, highway_ground_columns=7469, highway_tunnel_columns=11926, highways=2, lots=97, road_columns=35235, road_components=1, slab_columns=8099, street_columns=13992, street_nodes=27, tunnels=1}
    WORLD OK
@@ -24,7 +24,7 @@ network around spawn: cells 36, cities 14 (no city: {mostly water=13, no city ro
    mod blocks: b46da4ce3ccfc841eff76f2acc26dba9796aca0ab68348bbc8995c2cdfadf633 (961 chunks, 541806 positions, 162 block entities)
 
 == t03: longest bridge over water (349 blocks) of Highway[2,2 -> 3,3 len=841]
-   chunks 122,140 .. 150,168 (blocks 1952,2240 .. 2415,2703), generated in 39863 ms
+   chunks 122,140 .. 150,168 (blocks 1952,2240 .. 2415,2703), generated in 24216 ms
    PLAN OK
      stats: {cities=3, highway_bridge_columns=11787, highway_ends_checked=1, highway_ground_columns=2079, highway_tunnel_columns=3114, highways=1, lots=97, road_columns=29157, road_components=1, slab_columns=7802, street_columns=12177, street_nodes=27, tunnels=1}
    WORLD OK
@@ -33,7 +33,7 @@ network around spawn: cells 36, cities 14 (no city: {mostly water=13, no city ro
 
 generation errors: 0
 village creatures removed from cities: 14
-chunks through the feature: 3717, mean 4,56 ms per chunk
-terrain noise samples for planning: 30662, 83,7 s in total
-total time: 160 s
+chunks through the feature: 3717, mean 4,55 ms per chunk
+terrain noise samples for planning: 30662, 83,4 s in total
+total time: 142 s
 RESULT: PASS

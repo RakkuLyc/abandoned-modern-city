@@ -61,7 +61,8 @@ import org.junit.jupiter.api.Test;
  * underground or on the terrace became hard to get to (the loot access; the blocks did not change), and again when
  * the barrels that hold something stayed barrels instead of chests (26: 25 in the tower, 1 in the crash building).
  * layout, chunks, lots and crowns changed when each city drew 1 or 2 gas stations (City.gasStations; only the
- * cities that had 2 and drew 1 changed).
+ * cities that had 2 and drew 1 changed); lots, structures and weathering when the 3 medium workshops got 3 chests
+ * in their .nbt (2 on the ground floor, 1 on the terrace; the overgrowth moved 4 of its blocks).
  * Change them
  * only in a commit that is meant to change the world, and say so in it.
  */
@@ -73,12 +74,12 @@ class FingerprintTest {
         EXPECTED.put("highways", "480e692cad232384cc5a0d486154e33b13a8ebc6d381e0dfbffa8cd18434ddf9");
         EXPECTED.put("village", "6d77e372e3111d53b3995b84b46308716b65b8107b051b8f4411eca72a61f71c");
         EXPECTED.put("chunks", "0abf3493c315734d8fecc10ba8a9f3d6452ed4cf0c528e8a1e966140a21850ed");
-        EXPECTED.put("lots", "eee61a9e8bd0bc73d435b41a8ee04a3a54249a494aab1bfbf15a5f433311812c");
+        EXPECTED.put("lots", "71a020f1409bb05d35352f56407054e5b9f40272068b9111ac7cd38b2045edb0");
         EXPECTED.put("roads", "bcf16888eff09ec35d77b4c97d496a5d006061d045c8e02abd16c5a56418aef6");
         EXPECTED.put("lamps", "85591f5e99c109803aa1dfb294e112106e69005b6f9706d41bb2abb565addb23");
         EXPECTED.put("crowns", "132f3a3dc4d1869af2bbb430cd0931c8bf88e7c026e9e18c321b91ff0d330449");
-        EXPECTED.put("structures", "26cc34777dac4299a240c81b95360c05e2c2287b59eedd9d3b73ce16d395edf1");
-        EXPECTED.put("weathering", "5b8482cc06ec86bebd98c3c30ea697bcd685bfb97c98dabcba1f466f606b591b");
+        EXPECTED.put("structures", "eae75644abe9a5a1a80c2d3f746120fcb64eda7763b58e5b237edeb360c53456");
+        EXPECTED.put("weathering", "f63f167de64de34e2a9b6d570ed53e887a97c24bd40d13a56d9532694e85b0ce");
         EXPECTED.put("benches", "e8ee1c72349ec4768b6c4880b5810913a01abed52a0c8790553a5f97fb15e7e8");
     }
 
