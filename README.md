@@ -50,7 +50,7 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   then its color: the 12 houses make ~52% of the structures of the cities), with a per-city limit: pharmacies 3,
   workshops 2, gas stations always 2 (2 small or 1 small and 1 large, half the cities each; never 2 large), and each building (apartment, skeleton, bluish, tower, apocalyptic, small, brutalist,
   wide, green tower, crash, ramp) at most 1 per city; the ramp building (the `special` category) in only ~1 city in
-  10 (`City.SPECIAL_CHANCE`). Never two of the same structure (the same model, in any color)
+  10 (`CityRings.SPECIAL_CHANCE`). Never two of the same structure (the same model, in any color)
   in one block.
   The buildings are classified by the height of their box (buried layers included; the `type` of `index.txt` and the
   `/amcs spawn` / `locate` category follow it): **small** up to 40 blocks, **medium** up to 75, **large** up to 140 and
@@ -237,7 +237,10 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
 core/   the pure planner (no Minecraft classes), tested with JUnit
   Params          all the fixed geometry (widths, blocks, ramps, tunnels, bridges) + the config values
   Terrain         interface: natural ground height and water per column
-  City            stage 1 (is there a city? center, height) and stage 2 (streets, blocks, lots)
+  City            stage 1 (is there a city? center, height) and stage 2 (streets, crossings, highway exits, the
+                  lots of each block, cached)
+  CityRings       what stands in the blocks of a city: the rings of structures drawn for the whole city, the 2 gas
+                  stations, the special structure (~1 city in 10), the parks in a corner, the nature of the rest
   StreetLights    the street lights: where they stand, the 5 abandoned variants and the block at each height
   Lot             lots: a park (in a corner of the block), a structure or the core taken over by nature (WILD)
   Flora           trees (4 species, vines), patchy ground, plants and rubble; a bucketed index of trees

@@ -45,7 +45,7 @@ import org.junit.jupiter.api.Test;
  * A change that only reshapes the code (imports, moved methods, comments) keeps every digest. A digest that moves means
  * the generated world changed. The expected values come from commit 4dd94ae, except layout, structures and weathering,
  * which hash the structure names: they changed when the structures got English names (the blocks did not); layout
- * changed again when the special structures became ~1 city in 10 ({@code City.SPECIAL_CHANCE}); structures changed
+ * changed again when the special structures became ~1 city in 10 ({@code CityRings.SPECIAL_CHANCE}); structures changed
  * again with the loot theme building_large (buildings with 100+ containers; the blocks did not change); lots and
  * structures changed when the height rule of the hard-to-get-to containers was removed (the loot access); structures
  * changed again with the loot theme police_station (the blocks did not change); lots changed when 70% of the barrels

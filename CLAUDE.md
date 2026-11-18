@@ -141,8 +141,8 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   grid, `City.MAX_CUTS` = 0) was taken out in the code review (13 Nov 2026, asked by the user); it remains in the git
   history (commit `4dd94ae`).
 - City blocks: all get a ring of structures (see below) and the rest (the core) is taken over by nature (see
-  "Nature"). ~1 block in 8 (`City.PARK_BLOCK_CHANCE`) has a park in a corner (13 Nov 2026, asked by the user; before,
-  the park took the whole block): 110 × 64 (`City.PARK_LONG`/`PARK_SHORT`, its long side along the long side of the
+  "Nature"). ~1 block in 8 (`CityRings.PARK_BLOCK_CHANCE`) has a park in a corner (13 Nov 2026, asked by the user; before,
+  the park took the whole block): 110 × 64 (`CityRings.PARK_LONG`/`PARK_SHORT`, its long side along the long side of the
   block), corner drawn; the structures stand along the two other streets, in an L, and never less than 4 blocks from
   the park (`Ring.lots` with `keepOut`); ~5 structures per park block.
 - Nature (11 Nov 2026, `core/Flora` + `core/Wild`, a `WILD` lot covering the whole block under the structures, which
@@ -392,16 +392,16 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     pharmacy); against the sidewalk, forming a ring; drawn per file, no pattern;
   - limits per city (`Structures.LIMITS`): pharmacies 3 (both kinds), workshops 2 (both kinds), gas stations exactly
     2 in every city, never 2 large ones (asked by the user on 17 Nov 2026: 2 small or 1 small and 1 large, half the
-    cities each, `City.twoSmallGasStations`; until 16 Nov the rings drew up to 2, then up to 1 or 2 drawn per city, and
+    cities each, `CityRings.twoSmallGasStations`; until 16 Nov the rings drew up to 2, then up to 1 or 2 drawn per city, and
     3.7% of the cities had none). The rings never draw a station (the `gas_station` group starts full); before them
-    `City.gasStations` reserves the 2: the color drawn, 2 different blocks of the city, in each a row drawn of the 4 and
+    `CityRings.gasStations` reserves the 2: the color drawn, 2 different blocks of the city, in each a row drawn of the 4 and
     its 1st or 2nd place (`Ring.Forced`); one that does not fit there (too deep or too wide for what is left of the row,
     the row closed before its place, or the block already has that model) goes on to the first place of the next row,
     then of the next block; one still due after the last block is moved to the first place of the first row of its
     block (then of the next block) and the city drawn again. Every city changed. In the test cities (1,022 by cell and
     level) all have 2, 55.5% two small, 51 with both in one block (a small and a large: never two of one model in a
     block); over 2,883 distinct cities of 50 world seeds (flat terrain) all have 2, 50.3% two small; special 1 (the ramp building), police station 1; the `special` category only in the cities that draw
-    `City.SPECIAL_CHANCE` = 0.40 (`City.allowsSpecial`, from the city's seed; asked by the user after 13 Nov 2026:
+    `CityRings.SPECIAL_CHANCE` = 0.40 (`CityRings.allowsSpecial`, from the city's seed; asked by the user after 13 Nov 2026:
     "around 1 in 10 cities"): the others start with the group full. The ramp building only fits some rows (a city that may
     have it gets it ~27% of the time): over 2,838 distinct cities of 50 world seeds, 10.5% have it (39.0% may);
     in the test cities (1,129, but only 170 distinct: the 7 terrains repeat the cities) 12.3% (11.9% with the gas
@@ -409,7 +409,7 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     had it changed (they get other structures there); and each building (types `buildings_*` and `special`,
     `Def.onePerCity`) at most 1 time per city, in any block (13 Nov 2026, asked by the user: there were cities with 2
     or 3 bluish buildings; houses, pharmacies, workshops and gas stations may repeat within the limits); 6.35
-    buildings per city in the tests (6.38 with the gas stations drawn 1 or 2, 6.30 before that); the rings of the whole city are drawn at once (`City.rings`, blocks from north to
+    buildings per city in the tests (6.38 with the gas stations drawn 1 or 2, 6.30 before that); the rings of the whole city are drawn at once (`CityRings.rings`, blocks from north to
     south, west to east), and a group at its limit is drawn again;
   - never two of the same structure (the same model, in any color) in one block (13 Nov 2026, asked by the user): a
     structure already in some row of the block is drawn again (`Ring.row`); before, 80% of the blocks had some

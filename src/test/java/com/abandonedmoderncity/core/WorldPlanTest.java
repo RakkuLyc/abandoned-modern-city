@@ -80,7 +80,7 @@ class WorldPlanTest {
                     }
                     assertEquals(2, small + large, c + ": " + small + " small, " + large + " large");
                     assertTrue(large <= 1, c + ": 2 large gas stations");
-                    assertEquals(c.twoSmallGasStations(), large == 0, c + ": the drawn pair");
+                    assertEquals(c.rings.twoSmallGasStations(), large == 0, c + ": the drawn pair");
                     twoSmall += large == 0 ? 1 : 0;
                     sameBlock += blocks.size() == 1 ? 1 : 0;
                 }
@@ -95,7 +95,7 @@ class WorldPlanTest {
 
     @Test
     void specialStructuresAreInAboutOneCityInTen() {
-        // the special category (the ramp building) only in the cities that draw City.SPECIAL_CHANCE, ~1 city in 10
+        // the special category (the ramp building) only in the cities that draw CityRings.SPECIAL_CHANCE, ~1 city in 10
         int cities = 0;
         int allowed = 0;
         int with = 0;
@@ -103,7 +103,7 @@ class WorldPlanTest {
             for (TestTerrain.Kind kind : TestTerrain.Kind.values()) {
                 for (City c : allCities(plan(seed, kind))) {
                     cities++;
-                    allowed += c.allowsSpecial() ? 1 : 0;
+                    allowed += c.rings.allowsSpecial() ? 1 : 0;
                     int n = c.gridHalf();
                     boolean has = false;
                     for (int bj = -n; bj <= n; bj++) {
@@ -113,7 +113,7 @@ class WorldPlanTest {
                             }
                         }
                     }
-                    assertFalse(has && !c.allowsSpecial(), c + " has a special structure without the draw");
+                    assertFalse(has && !c.rings.allowsSpecial(), c + " has a special structure without the draw");
                     with += has ? 1 : 0;
                 }
             }
@@ -443,7 +443,7 @@ class WorldPlanTest {
                         }
                         int pw = park.x1 - park.x0 + 1;
                         int ph = park.z1 - park.z0 + 1;
-                        assertTrue(pw == City.PARK_LONG && ph == City.PARK_SHORT || pw == City.PARK_SHORT && ph == City.PARK_LONG,
+                        assertTrue(pw == CityRings.PARK_LONG && ph == CityRings.PARK_SHORT || pw == CityRings.PARK_SHORT && ph == CityRings.PARK_LONG,
                                 c + " park " + pw + " x " + ph);
                         Lot wild = ls.get(ls.size() - 1);
                         assertEquals(Lot.Type.WILD, wild.type);
