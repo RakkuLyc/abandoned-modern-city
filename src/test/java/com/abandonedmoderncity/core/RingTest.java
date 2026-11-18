@@ -3,9 +3,11 @@ package com.abandonedmoderncity.core;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,16 +21,28 @@ import org.junit.jupiter.api.Test;
 /** The structures (rotation, boxes, block codes) and the ring of them around a block. */
 class RingTest {
 
+    /**
+     * Every row of {@code index.txt} gives a structure: the structure tests below fail (instead of being skipped) when
+     * the templates do not load.
+     */
     @Test
-    void withoutStructuresBlocksStayEmpty() {
-        assumeTrue(Structures.ALL.isEmpty(), "structures present");
-        assertTrue(Ring.lots(0, 0, 179, 119, 1).isEmpty());
-        assertTrue(Structures.STATES.isEmpty());
+    void everyRowOfTheIndexIsLoaded() throws IOException {
+        int rows = 0;
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(
+                RingTest.class.getResourceAsStream("/amcs/buildings/index.txt"), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                rows += !line.isBlank() && !line.startsWith("#") ? 1 : 0;
+            }
+        }
+        assertTrue(rows > 0, "empty index.txt");
+        assertEquals(rows, Structures.ALL.size(), "structures loaded from index.txt");
+        assertFalse(Structures.STATES.isEmpty(), "no block states");
     }
 
     @Test
     void structuresHaveSolidBoxesWithAFloorLayer() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         // the floor layer of every structure has blocks (nothing floats: the box starts at the first solid layer)
         for (Structures.Def d : Structures.ALL) {
             assertTrue(d.w() > 0 && d.h() > 0 && d.d() > 0, d.name());
@@ -46,7 +60,7 @@ class RingTest {
 
     @Test
     void rotationKeepsEveryBlockAndTurnsTheFrontToTheStreet() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         for (Structures.Def d : Structures.ALL) {
             long[] count = new long[4];
             for (int rot = 0; rot < 4; rot++) {
@@ -84,7 +98,7 @@ class RingTest {
 
     @Test
     void ringsFitTheirBlockTouchTheSidewalksAndDoNotOverlap() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         int[][] sizes = {{180, 120}, {120, 180}};
         long lots = 0;
         long houses = 0;
@@ -154,7 +168,7 @@ class RingTest {
 
     @Test
     void everyStructureFitsNextToTheShallowestInA120Block() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         // each structure fits a 180 x 120 block next to the shallowest structure (depth 20) and the widest forest (30):
         // facing a long side (depth across the 120), or facing a short side (front within the 120, depth across the
         // 180), as the predio_rampa (102 x 72) does
@@ -167,7 +181,7 @@ class RingTest {
 
     @Test
     void groundLayerAndBuriedLayers() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         for (Structures.Def d : Structures.ALL) {
             int buried = 0;
             int below = 0;
@@ -200,7 +214,7 @@ class RingTest {
 
     @Test
     void frontsMeetTheSidewalk() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         for (Structures.Def d : Structures.ALL) {
             int front = 0;
             for (int x = 0; x < d.w(); x++) {
@@ -221,7 +235,7 @@ class RingTest {
 
     @Test
     void structureTreesHaveRealLeaves() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         int[][] six = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
         long real = 0;
         for (Structures.Def d : Structures.ALL) {
@@ -270,7 +284,7 @@ class RingTest {
 
     @Test
     void spawnLimitsHoldOverACity() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         for (long seed = 0; seed < 300; seed++) {
             Map<String, Integer> used = new HashMap<>();
             Map<String, Integer> seen = new HashMap<>();
@@ -296,7 +310,7 @@ class RingTest {
 
     @Test
     void housesWithTheirFrontOnPlusZFaceTheStreet() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         // the front of these two is on the template's +Z side
         List<String> turned = List.of("abandoned_modern_house", "post_apocalyptic_mansion");
         for (Structures.Def c : Structures.ALL) {
@@ -322,7 +336,7 @@ class RingTest {
 
     @Test
     void undergroundGarageKeepsItsRampAndStairsOpen() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         for (Structures.Def d : Structures.ALL) {
             int openings = 0;
             for (int rot = 0; rot < 4; rot++) {
@@ -364,7 +378,7 @@ class RingTest {
 
     @Test
     void pharmacyVariantsMatchTheirOriginalButTheColor() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         int variants = 0;
         for (Structures.Def d : Structures.ALL) {
             if (!d.type().startsWith("pharmacy") || d.name().equals("pharmacy_red") || d.name().equals("pharmacy_large_yellow")) {
@@ -399,7 +413,7 @@ class RingTest {
 
     @Test
     void pharmacyBannersKeepTheirLetters() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         // the originals and their color variants (whose letters are copied from the originals, in their color)
         List<Structures.Def> pharmacies = Structures.ALL.stream().filter(s -> s.type().startsWith("pharmacy")).toList();
         assertEquals(10, pharmacies.size());
@@ -451,7 +465,7 @@ class RingTest {
 
     @Test
     void noFloatingCobwebs() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         int[][] six = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
         long webs = 0;
         for (Structures.Def d : Structures.ALL) {
@@ -481,7 +495,7 @@ class RingTest {
 
     @Test
     void everyStructureHasASpawnCategory() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         Map<String, Integer> n = new TreeMap<>();
         for (Structures.Def d : Structures.ALL) {
             assertTrue(Arrays.asList(Structures.CATEGORIES).contains(d.category()), d.name() + " category " + d.category());
@@ -500,7 +514,7 @@ class RingTest {
      */
     @Test
     void buildingsAreClassifiedByHeight() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         assertEquals("small", Structures.heightClass(43));
         assertEquals("medium", Structures.heightClass(44));
         assertEquals("medium", Structures.heightClass(78));
@@ -520,7 +534,7 @@ class RingTest {
 
     @Test
     void lightningRodsBecomeRedstoneTorches() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         assertTrue(Structures.STATES.stream().noneMatch(st -> st.startsWith("minecraft:lightning_rod")), "lightning rod state left");
         int torches = 0;
         for (Structures.Def d : Structures.ALL) {
@@ -546,7 +560,7 @@ class RingTest {
 
     @Test
     void cutCrownsAreCompletedOutsideTheBox() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         int total = 0;
         Set<String> with = new HashSet<>();
         for (Structures.Def d : Structures.ALL) {
@@ -618,7 +632,7 @@ class RingTest {
 
     @Test
     void structuresNeverTouchAndLeaveTheForest() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         long pairs = 0;
         int minGap = Integer.MAX_VALUE;
         int minCore = Integer.MAX_VALUE;

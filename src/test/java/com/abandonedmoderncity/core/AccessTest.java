@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -150,7 +149,7 @@ class AccessTest {
     @Test
     void theChestInTheTreeOfTheModernHouseIsHard() {
         // reached by jumping up the leaves, but listed as hard by hand (index.txt, column hard)
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         Structures.Def d = Structures.ALL.stream().filter(s -> s.name().equals("abandoned_modern_house")).findFirst()
                 .orElseThrow();
         assertEquals(1, d.access().listed());
@@ -189,7 +188,7 @@ class AccessTest {
 
     @Test
     void structuresHardContainers() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         int containers = 0;
         int hard = 0;
         int houses = 0;
@@ -240,7 +239,7 @@ class AccessTest {
 
     @Test
     void everyStructureHasItsLootTables() throws IOException {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         for (Structures.Def d : Structures.ALL) {
             for (String tier : TIERS) {
                 String path = "/data/abandonedmoderncity/loot_table/chests/" + d.lootTheme() + "/" + tier + ".json";

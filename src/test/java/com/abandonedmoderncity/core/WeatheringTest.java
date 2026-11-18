@@ -3,7 +3,6 @@ package com.abandonedmoderncity.core;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.BufferedReader;
@@ -64,7 +63,7 @@ class WeatheringTest {
 
     @Test
     void onlyAllowedChangesAndEverythingHolds() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         assumeTrue(Weathering.enabled, "overgrowth off");
         Map<String, Integer> kinds = new TreeMap<>();
         for (Structures.Def d : Structures.ALL) {
@@ -255,7 +254,7 @@ class WeatheringTest {
 
     @Test
     void everyStructureReachesTheMeasuresOfTheApocalypticBuilding() {
-        assumeFalse(Structures.ALL.isEmpty(), "no structures");
+        assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         assumeTrue(Weathering.enabled, "overgrowth off");
         System.out.println("[WeatheringTest] structure: cracked, green under a roof, green open, facade with vines, least covered side (before -> after)");
         for (Structures.Def d : Structures.ALL) {
