@@ -48,7 +48,7 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   with the structures in an L along the two other streets.
 - **Structures (30 models, 52 files, `structures/`):** drawn at random in the ring (every model with the same chance,
   then its color: the 12 houses make ~52% of the structures of the cities), with a per-city limit: pharmacies 3,
-  workshops 2, gas stations 1 or 2 (drawn per city, half the cities each), and each building (apartment, skeleton, bluish, tower, apocalyptic, small, brutalist,
+  workshops 2, gas stations always 2 (2 small or 1 small and 1 large, half the cities each; never 2 large), and each building (apartment, skeleton, bluish, tower, apocalyptic, small, brutalist,
   wide, green tower, crash, ramp) at most 1 per city; the ramp building (the `special` category) in only ~1 city in
   10 (`City.SPECIAL_CHANCE`). Never two of the same structure (the same model, in any color)
   in one block.
@@ -81,7 +81,7 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   | Large pharmacy (yellow, blue, purple, green, red) | pharmacy | 26 × 40 × 15 | layer 0 |
   | Medium workshop (blue and black, yellow and blue, yellow and red) | workshop (limit 2 with the small one) | 35 × 26 × 17 | layer 0 |
   | Small workshop (green, yellow, blue, purple, red) | workshop | 22 × 33 × 16 | layer 0 |
-  | Gas station (red, yellow, blue, purple, green) | gas station (with the small one, 1 or 2 per city, drawn) | 45 × 37 × 18 | layer 0 |
+  | Gas station (red, yellow, blue, purple, green) | gas station (with the small one, always 2 per city, never 2 large) | 45 × 37 × 18 | layer 0 |
   | Small gas station (red, yellow, blue, purple, green) | gas station | 25 × 20 × 18 | layer 0 |
   | Apartment building | building (small) | 31 × 29 × 37 | layer 1 (1 down) |
   | Skeleton building (`skeleton_building_31x29`) | building (small) | 31 × 29 × 43 | layer 0 |

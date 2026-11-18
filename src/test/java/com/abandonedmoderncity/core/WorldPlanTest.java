@@ -47,39 +47,50 @@ class WorldPlanTest {
     }
 
     @Test
-    void eachCityDrawsOneOrTwoGasStations() {
-        // the most gas stations of a city (both kinds) is drawn, 1 or 2, half the cities each; none has more
+    void everyCityHasTwoGasStationsNeverTwoLarge() {
+        // exactly 2 gas stations in every city: 2 small or 1 small and 1 large (half the cities each), never 2 large
         java.util.Set<String> seen = new java.util.HashSet<>();
-        int[] drawn = new int[3];
-        int[] have = new int[3];
+        int twoSmall = 0;
+        int sameBlock = 0;
         for (long seed : SEEDS) {
             for (TestTerrain.Kind kind : TestTerrain.Kind.values()) {
                 for (City c : allCities(plan(seed, kind))) {
                     if (!seen.add(c.seed + " " + c)) {
                         continue;
                     }
-                    int most = c.gasStations();
-                    assertTrue(most == 1 || most == 2, c + " " + most);
-                    drawn[most]++;
                     int n = c.gridHalf();
-                    int gas = 0;
+                    int small = 0;
+                    int large = 0;
+                    java.util.Set<String> blocks = new java.util.HashSet<>();
                     for (int bj = -n; bj <= n; bj++) {
                         for (int bi = -n; bi <= n; bi++) {
                             for (Lot l : c.lots(bi, bj)) {
-                                gas += l.building != null && "gas_station".equals(l.building.group()) ? 1 : 0;
+                                if (l.building == null || !"gas_station".equals(l.building.group())) {
+                                    continue;
+                                }
+                                blocks.add(bi + "," + bj);
+                                if (l.building.type().equals("gas_station_small")) {
+                                    small++;
+                                } else {
+                                    assertEquals("gas_station", l.building.type());
+                                    large++;
+                                }
                             }
                         }
                     }
-                    assertTrue(gas <= most, c + ": " + gas + " gas stations, most " + most);
-                    have[gas]++;
+                    assertEquals(2, small + large, c + ": " + small + " small, " + large + " large");
+                    assertTrue(large <= 1, c + ": 2 large gas stations");
+                    assertEquals(c.twoSmallGasStations(), large == 0, c + ": the drawn pair");
+                    twoSmall += large == 0 ? 1 : 0;
+                    sameBlock += blocks.size() == 1 ? 1 : 0;
                 }
             }
         }
         int cities = seen.size();
-        System.out.printf("[WorldPlanTest] gas stations: %d distinct cities, most 1 in %d (%.1f%%), 2 in %d; with 0 %d,"
-                + " 1 %d, 2 %d (%.2f a city)%n", cities, drawn[1], 100.0 * drawn[1] / cities, drawn[2], have[0], have[1],
-                have[2], (have[1] + 2.0 * have[2]) / cities);
-        assertTrue(drawn[1] > 0.4 * cities && drawn[2] > 0.4 * cities, "about half each: " + drawn[1] + " " + drawn[2]);
+        System.out.printf("[WorldPlanTest] gas stations: %d distinct cities, all with 2; 2 small %d (%.1f%%), small and"
+                + " large %d; both in one block %d%n", cities, twoSmall, 100.0 * twoSmall / cities, cities - twoSmall,
+                sameBlock);
+        assertTrue(twoSmall > 0.4 * cities && twoSmall < 0.6 * cities, "about half each: " + twoSmall + " of " + cities);
     }
 
     @Test
@@ -408,8 +419,8 @@ class WorldPlanTest {
                 for (var e : groups.entrySet()) {
                     assertTrue(e.getValue() <= Structures.LIMITS.get(e.getKey()), c + " " + e);
                 }
-                // the city's own most of gas stations (1 or 2)
-                assertTrue(groups.getOrDefault("gas_station", 0) <= c.gasStations(), c + " " + groups);
+                // always 2 gas stations
+                assertEquals(2, groups.getOrDefault("gas_station", 0), c + " " + groups);
                 // never the same building twice in a city
                 for (var e : buildings.entrySet()) {
                     assertEquals(1, e.getValue(), c + " has " + e.getValue() + " " + e.getKey());

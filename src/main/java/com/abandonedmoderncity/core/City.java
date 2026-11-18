@@ -675,8 +675,9 @@ public final class City {
     /**
      * Rings of the whole city at once, block by block in a fixed order (north to south, west to east), so that the
      * spawn limits per city ({@link Structures#LIMITS}) hold whatever block is asked for first. A city that does not
-     * draw {@link #SPECIAL_CHANCE} starts with the {@code special} group full: none of it is ever drawn there; a city
-     * that draws 1 gas station ({@link #gasStations}) starts with one of the 2 places of that group taken.
+     * draw {@link #SPECIAL_CHANCE} starts with the {@code special} group full: none of it is ever drawn there. Every
+     * city has exactly 2 gas stations ({@link #gasStations}): the {@code gas_station} group starts full, so the rings
+     * never draw one, and the 2 are placed first in their reserved rows.
      */
     private Map<Long, List<Lot>> rings() {
         Map<Long, List<Lot>> r = rings;
@@ -686,25 +687,53 @@ public final class City {
         synchronized (this) {
             if (rings == null) {
                 Layout L = layout();
-                Map<String, Integer> used = new HashMap<>();
-                if (!allowsSpecial()) {
-                    used.put("special", Structures.LIMITS.get("special"));
-                }
-                // the city's own most of gas stations, 1 or 2: drawn 1, it starts with one of the 2 places taken
-                int gas = gasStations();
-                if (gas < Structures.LIMITS.get("gas_station")) {
-                    used.put("gas_station", Structures.LIMITS.get("gas_station") - gas);
-                }
-                Map<Long, List<Lot>> out = new HashMap<>();
+                List<long[]> blocks = new ArrayList<>();
                 for (int bj = -L.n; bj <= L.n; bj++) {
                     for (int bi = -L.n; bi <= L.n; bi++) {
-                        if (!L.isCity(bi, bj)) {
-                            continue;
+                        if (L.isCity(bi, bj)) {
+                            blocks.add(new long[]{bi, bj});
+                        }
+                    }
+                }
+                Ring.Forced[] gas = gasStations(blocks.size());
+                Map<Long, List<Lot>> out = new HashMap<>();
+                // a station still due after the last block (its row closed before its place, and no row after it):
+                // the city is drawn again with it first in the first row of its block, then of the next block
+                for (int attempt = 0; attempt <= 2 * blocks.size(); attempt++) {
+                    Map<String, Integer> used = new HashMap<>();
+                    if (!allowsSpecial()) {
+                        used.put("special", Structures.LIMITS.get("special"));
+                    }
+                    // the 2 gas stations come only from their reserved rows, never from the draw of the rings
+                    used.put("gas_station", Structures.LIMITS.get("gas_station"));
+                    java.util.ArrayDeque<Ring.Forced> due = new java.util.ArrayDeque<>();
+                    for (Ring.Forced g : gas) {
+                        g.reset();
+                    }
+                    out = new HashMap<>();
+                    for (int b = 0; b < blocks.size(); b++) {
+                        int bi = (int) blocks.get(b)[0];
+                        int bj = (int) blocks.get(b)[1];
+                        for (Ring.Forced g : gas) {
+                            if (g.block == b) {
+                                due.add(g);
+                            }
                         }
                         int[] f = freeRect(bi, bj);
                         long rs = Hash.of(seed, 0x52494E47L, bi, bj);
                         int[] park = parkBlock(bi, bj) ? parkRect(f, rs) : null;
-                        out.put(Cache.key(bi, bj), Ring.lots(f[0], f[1], f[2], f[3], Hash.next(rs, 2), used, park));
+                        out.put(Cache.key(bi, bj),
+                                Ring.lots(f[0], f[1], f[2], f[3], Hash.next(rs, 2), used, park, due));
+                    }
+                    if (due.isEmpty()) {
+                        break;
+                    }
+                    for (Ring.Forced g : due) {
+                        if (g.planRow == 0 && g.planSlot == 0) {
+                            g.block = (g.block + 1) % blocks.size();
+                        }
+                        g.planRow = 0;
+                        g.planSlot = 0;
                     }
                 }
                 rings = Map.copyOf(out);
@@ -723,12 +752,46 @@ public final class City {
     public static final double SPECIAL_CHANCE = 0.40;
 
     /**
-     * Most gas stations this city may have (both kinds), drawn from its seed: 1 or 2, half the cities each (asked by the
-     * user on 16 Nov 2026; before every city had the limit of 2 of {@link Structures#LIMITS}). A most, not a count: a
-     * city may get fewer if its rings draw fewer.
+     * Whether this city's 2 gas stations are both small; else one small and one large (asked by the user on 17 Nov
+     * 2026: always 2 stations, never 2 large ones; half the cities each).
      */
-    public int gasStations() {
-        return Hash.range(Hash.of(seed, 0x47415353L, 0), 1, Structures.LIMITS.get("gas_station")); // "GASS"
+    public boolean twoSmallGasStations() {
+        return Hash.unit(Hash.of(seed, 0x47415353L, 0)) < 0.5; // "GASS"
+    }
+
+    /**
+     * The 2 gas stations of this city (asked by the user on 17 Nov 2026; before 16 Nov the rings drew up to 2, then up
+     * to 1 or 2): small and small or small and large ({@link #twoSmallGasStations}), the color drawn, each in its own
+     * block (2 different ones of the {@code blocks} of the city, in the order the rings are drawn), in a row drawn
+     * from the 4 of its block and as its 1st or 2nd structure. One that does not fit there goes on to the next row (or
+     * block; one still due after the last block is moved to the first place of its block, then of the next, and the
+     * city drawn again: {@code rings}): {@code WorldPlanTest} checks that every city gets its 2.
+     */
+    private Ring.Forced[] gasStations(int blocks) {
+        long h = Hash.of(seed, 0x47415353L, 1);
+        boolean small = twoSmallGasStations();
+        // which of the 2 is the large one (when there is one)
+        int large = Hash.range(Hash.next(h, 1), 0, 1);
+        if (blocks == 0) {
+            return new Ring.Forced[0];
+        }
+        int first = Hash.range(Hash.next(h, 2), 0, blocks - 1);
+        // a city of one block (none today: every city has its 2 x 2) gets both there
+        int second = blocks == 1 ? 0 : Hash.range(Hash.next(h, 3), 0, blocks - 2);
+        if (blocks > 1 && second >= first) {
+            second++;
+        }
+        Ring.Forced[] out = new Ring.Forced[2];
+        for (int i = 0; i < 2; i++) {
+            long g = Hash.next(h, 10 + i);
+            String type = !small && i == large ? "gas_station" : "gas_station_small";
+            List<Structures.Def> colors = Structures.MODELS.stream()
+                    .filter(m -> m.get(0).type().equals(type)).findFirst().orElseThrow();
+            Structures.Def def = colors.get(Hash.range(Hash.next(g, 1), 0, colors.size() - 1));
+            out[i] = new Ring.Forced(def, i == 0 ? first : second, Hash.range(Hash.next(g, 2), 0, 3),
+                    Hash.range(Hash.next(g, 3), 0, 1));
+        }
+        return out;
     }
 
     /** Whether this city may have a structure of the {@code special} category ({@link #SPECIAL_CHANCE}). */

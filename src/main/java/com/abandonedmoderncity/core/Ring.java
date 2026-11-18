@@ -1,6 +1,8 @@
 package com.abandonedmoderncity.core;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,38 @@ public final class Ring {
     /** Draws of a structure for a row before the row is closed. */
     static final int TRIES = 40;
 
+    /**
+     * A structure that must stand in the city (the 2 gas stations, {@link City}): it is placed in row {@link #planRow}
+     * (0 to 3, in the order the rows are drawn) of block {@link #block}, as the {@link #planSlot}-th structure of that
+     * row (0 or 1). When it does not fit there (too deep, too wide for what is left, the row closed before that slot)
+     * it goes to the first structure of the next row, then of the next blocks; it bypasses the limit of its group.
+     */
+    public static final class Forced {
+        final Structures.Def def;
+        /** The index of its block among the blocks of the city, its row there and its place in the row. */
+        public int block;
+        public int planRow;
+        public int planSlot;
+        int row;
+        int slot;
+        boolean placed;
+
+        public Forced(Structures.Def def, int block, int row, int slot) {
+            this.def = def;
+            this.block = block;
+            this.planRow = row;
+            this.planSlot = slot;
+            reset();
+        }
+
+        /** Back to its plan, not placed (before the rings of the city are drawn). */
+        public void reset() {
+            row = planRow;
+            slot = planSlot;
+            placed = false;
+        }
+    }
+
     /** The lots of the free rectangle x0..x1, z0..z1 of a block, with no spawn limit. */
     public static List<Lot> lots(int x0, int z0, int x1, int z1, long seed) {
         return lots(x0, z0, x1, z1, seed, new HashMap<>());
@@ -48,6 +82,15 @@ public final class Ring {
      */
     public static List<Lot> lots(int x0, int z0, int x1, int z1, long seed, Map<String, Integer> used,
                                  int[] keepOut) {
+        return lots(x0, z0, x1, z1, seed, used, keepOut, new ArrayDeque<>());
+    }
+
+    /**
+     * The same, placing first the structures of {@code forced} that are due in this block (in order, at most one a
+     * row); those placed leave the queue, the others stay in it for the next block (from its first row).
+     */
+    public static List<Lot> lots(int x0, int z0, int x1, int z1, long seed, Map<String, Integer> used,
+                                 int[] keepOut, Deque<Forced> forced) {
         if (Structures.ALL.isEmpty()) {
             // no structures in resources/amcs/buildings: the block stays free city ground
             return List.of();
@@ -72,15 +115,21 @@ public final class Ring {
         int gS = 0;
         int gW = 0;
         int gE = 0;
+        int r = -1;
         for (int pass = 0; pass < 2; pass++) {
             boolean ns = (pass == 0) == shortX;
             for (int k = 0; k < 2; k++) {
+                r++;
+                Forced f = forced.peek();
+                if (f != null && f.row > r) {
+                    f = null;
+                }
                 long rs = Hash.next(seed, (ns ? 10 : 20) + k);
                 if (ns) {
                     boolean north = (k == 0) == northFirst;
                     int other = north ? dS : dN;
                     int depth = row(out, x0 + dW + gW, x1 - dE - gE, z0, z1, north ? Structures.NORTH : Structures.SOUTH,
-                            h - coreNS - Math.max(other, Structures.MIN_DEPTH), rs, used, keepOut);
+                            h - coreNS - Math.max(other, Structures.MIN_DEPTH), rs, used, keepOut, f);
                     int g = depth > 0 ? Hash.range(Hash.next(rs, 7), GAP_MIN, GAP_MAX) : 0;
                     if (north) {
                         dN = depth;
@@ -93,7 +142,7 @@ public final class Ring {
                     boolean west = (k == 0) == westFirst;
                     int other = west ? dE : dW;
                     int depth = row(out, x0, x1, z0 + dN + gN, z1 - dS - gS, west ? Structures.WEST : Structures.EAST,
-                            w - coreWE - Math.max(other, Structures.MIN_DEPTH), rs, used, keepOut);
+                            w - coreWE - Math.max(other, Structures.MIN_DEPTH), rs, used, keepOut, f);
                     int g = depth > 0 ? Hash.range(Hash.next(rs, 7), GAP_MIN, GAP_MAX) : 0;
                     if (west) {
                         dW = depth;
@@ -103,36 +152,57 @@ public final class Ring {
                         gE = g;
                     }
                 }
+                if (f != null) {
+                    if (f.placed) {
+                        forced.poll();
+                    } else {
+                        // it did not fit in this row: the first structure of the next one
+                        f.slot = 0;
+                    }
+                }
             }
+        }
+        // what is still due goes to the first row of the next block
+        for (Forced f : forced) {
+            f.row = 0;
+            f.slot = 0;
         }
         return out;
     }
 
     /**
      * One row along the {@code side} edge of the rectangle x0..x1, z0..z1 (for the west and east rows the z range is
-     * the part between the north and south rows). Returns the depth of its deepest structure (0 for none).
+     * the part between the north and south rows). Returns the depth of its deepest structure (0 for none). A
+     * {@code forced} structure (or null) is placed as the {@link Forced#slot}-th of the row, if it fits.
      */
     private static int row(List<Lot> out, int x0, int x1, int z0, int z1, int side, int maxDepth, long seed,
-                           Map<String, Integer> used, int[] keepOut) {
+                           Map<String, Integer> used, int[] keepOut, Forced forced) {
         boolean alongX = side == Structures.NORTH || side == Structures.SOUTH;
         int length = alongX ? x1 - x0 + 1 : z1 - z0 + 1;
         int at = 0;
         int deepest = 0;
         int failures = 0;
+        int placed = 0;
         long h = seed;
         while (length - at >= Structures.MIN_WIDTH && failures < TRIES) {
             h = Hash.next(h, 1);
-            Structures.Def def = Structures.pick(h);
-            boolean full = def.group() != null
+            boolean force = forced != null && !forced.placed && placed == forced.slot;
+            Structures.Def def = force ? forced.def : Structures.pick(h);
+            boolean inBlock = false;
+            for (Lot l : out) {
+                inBlock |= l.building.model().equals(def.model());
+            }
+            if (force && (inBlock || def.depth() > maxDepth || def.front() > length - at)) {
+                // it never fits in what is left of this row (or the block has it): it goes on to the next row
+                forced = null;
+                continue;
+            }
+            boolean full = !force && def.group() != null
                     && used.getOrDefault(def.group(), 0) >= Structures.LIMITS.get(def.group())
                     // a building already in the city (any block of it)
                     || def.onePerCity() && used.getOrDefault("model:" + def.model(), 0) >= 1;
             // already in this block (any of its rows): never two of the same structure (any color of it) in one block
-            boolean twice = false;
-            for (Lot l : out) {
-                twice |= l.building.model().equals(def.model());
-            }
-            if (full || twice || def.depth() > maxDepth || def.front() > length - at) {
+            if (full || inBlock || def.depth() > maxDepth || def.front() > length - at) {
                 failures++;
                 continue;
             }
@@ -157,10 +227,15 @@ public final class Ring {
                     at = past;
                     continue;
                 }
+                if (force) {
+                    forced = null;
+                }
                 failures++;
                 continue;
             }
-            if (def.group() != null) {
+            if (force) {
+                forced.placed = true;
+            } else if (def.group() != null) {
                 used.merge(def.group(), 1, Integer::sum);
             }
             if (def.onePerCity()) {
@@ -169,6 +244,7 @@ public final class Ring {
             out.add(Lot.building(x, z, def, rot, Hash.next(h, 2)));
             at += def.front() + Hash.range(Hash.next(h, 3), GAP_MIN, GAP_MAX);
             deepest = Math.max(deepest, def.depth());
+            placed++;
         }
         return deepest;
     }

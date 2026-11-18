@@ -27,7 +27,8 @@
    chests, `core/ChestDraw`, and again when the drawn chests underground or on the terrace became hard to get to, and
    again when the barrels that hold something stayed barrels; `layout`, `chunks`, `lots` and `crowns` since each city
    draws 1 or 2 gas stations, 16 Nov 2026; `lots`, `structures` and `weathering` since the 3 chests added to the medium
-   workshop, 17 Nov 2026) and the battery
+   workshop, 17 Nov 2026; `layout`, `chunks`, `lots` and `crowns` since every city has exactly 2 gas stations, never 2
+   large ones, 17 Nov 2026) and the battery
    prints per target `mod blocks:` (the blocks the mod decides in the generated world; the reference is in
    `docs/TESTING.md`, section 6, with another one for `structureOvergrowth = false`). In a change that must not alter
    the world (cleanup, splitting files, comments), the test passes and the `mod blocks:` and `stats:` lines stay the
@@ -382,20 +383,26 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   - banners with the design saved in the template (`Template.banners`, applied when the banner is placed,
     `Palette.applyBanner`): the letters D R U G S T O R E of the pharmacies (9 on the pharmacy, 18 on the large
     pharmacy); against the sidewalk, forming a ring; drawn per file, no pattern;
-  - limits per city (`Structures.LIMITS`): pharmacies 3 (both kinds), workshops 2 (both kinds), gas stations 1 or 2
-    (both kinds; each city draws its most from its seed, half the cities each, `City.gasStations`; asked by the user on
-    16 Nov 2026, before 2 in every city; a city that draws 1 starts with one of the 2 places taken; only the cities that
-    had 2 and drew 1 changed; in the test cities, 1,022 by cell and level: the most 1 in 51.6%, and 0 stations in 3.7%,
-    1 in 56.0%, 2 in 40.3%, 1.37 a city, 1.81 before), special 1 (the ramp building), police station 1; the `special` category only in the cities that draw
+  - limits per city (`Structures.LIMITS`): pharmacies 3 (both kinds), workshops 2 (both kinds), gas stations exactly
+    2 in every city, never 2 large ones (asked by the user on 17 Nov 2026: 2 small or 1 small and 1 large, half the
+    cities each, `City.twoSmallGasStations`; until 16 Nov the rings drew up to 2, then up to 1 or 2 drawn per city, and
+    3.7% of the cities had none). The rings never draw a station (the `gas_station` group starts full); before them
+    `City.gasStations` reserves the 2: the color drawn, 2 different blocks of the city, in each a row drawn of the 4 and
+    its 1st or 2nd place (`Ring.Forced`); one that does not fit there (too deep or too wide for what is left of the row,
+    the row closed before its place, or the block already has that model) goes on to the first place of the next row,
+    then of the next block; one still due after the last block is moved to the first place of the first row of its
+    block (then of the next block) and the city drawn again. Every city changed. In the test cities (1,022 by cell and
+    level) all have 2, 55.5% two small, 51 with both in one block (a small and a large: never two of one model in a
+    block); over 2,883 distinct cities of 50 world seeds (flat terrain) all have 2, 50.3% two small; special 1 (the ramp building), police station 1; the `special` category only in the cities that draw
     `City.SPECIAL_CHANCE` = 0.40 (`City.allowsSpecial`, from the city's seed; asked by the user after 13 Nov 2026:
     "around 1 in 10 cities"): the others start with the group full. The ramp building only fits some rows (a city that may
     have it gets it ~27% of the time): over 2,838 distinct cities of 50 world seeds, 10.5% have it (39.0% may);
-    in the test cities (1,129, but only 170 distinct: the 7 terrains repeat the cities) 11.9% (11.2% before the gas
-    stations were drawn), before 22.7%. Only the cities that
+    in the test cities (1,129, but only 170 distinct: the 7 terrains repeat the cities) 12.3% (11.9% with the gas
+    stations drawn 1 or 2, 11.2% before that), before 22.7%. Only the cities that
     had it changed (they get other structures there); and each building (types `buildings_*` and `special`,
     `Def.onePerCity`) at most 1 time per city, in any block (13 Nov 2026, asked by the user: there were cities with 2
-    or 3 bluish buildings; houses, pharmacies, workshops and gas stations may repeat within the limits); 6.38
-    buildings per city in the tests (6.30 before the gas stations were drawn); the rings of the whole city are drawn at once (`City.rings`, blocks from north to
+    or 3 bluish buildings; houses, pharmacies, workshops and gas stations may repeat within the limits); 6.35
+    buildings per city in the tests (6.38 with the gas stations drawn 1 or 2, 6.30 before that); the rings of the whole city are drawn at once (`City.rings`, blocks from north to
     south, west to east), and a group at its limit is drawn again;
   - never two of the same structure (the same model, in any color) in one block (13 Nov 2026, asked by the user): a
     structure already in some row of the block is drawn again (`Ring.row`); before, 80% of the blocks had some
