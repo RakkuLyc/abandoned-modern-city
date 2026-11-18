@@ -289,12 +289,10 @@ public final class Access {
             return x + fw * (z + fd * y);
         }
 
-        /** Kind of a cell; above the frame is air, under it solid. */
-        int kind(int x, int y, int z) {
-            return kind(x, y, z, -1);
-        }
-
-        /** Kind of a cell with the cell of frame index {@code blocked} solid (a chest put there), or none (-1). */
+        /**
+         * Kind of a cell (above the frame air, under it solid), with the cell of frame index {@code blocked} solid (a
+         * chest put there), or none (-1).
+         */
         int kind(int x, int y, int z, int blocked) {
             if (y >= fh) {
                 return 1;
@@ -313,10 +311,6 @@ public final class Access {
         boolean pass(int x, int y, int z, int blocked) {
             int k = kind(x, y, z, blocked);
             return k == 1 || k == 2;
-        }
-
-        boolean climb(int x, int y, int z) {
-            return climb(x, y, z, -1);
         }
 
         boolean climb(int x, int y, int z, int blocked) {

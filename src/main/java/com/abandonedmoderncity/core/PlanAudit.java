@@ -157,7 +157,7 @@ public final class PlanAudit {
         // cities: street segments, node degrees, lots, connectivity
         List<City> cities = plan.citiesIn(x0 - 400, z0 - 400, x0 + w + 400, z0 + d + 400);
         for (City c : cities) {
-            auditCity(plan, c, r, x0, z0, w, d, kind, drivable, h2);
+            auditCity(c, r, x0, z0, w, d, kind, drivable, h2);
         }
         // highways
         for (Highway h : plan.highwaysIn(x0, z0, x0 + w, z0 + d, 0)) {
@@ -172,7 +172,7 @@ public final class PlanAudit {
         return gx >= 0 && gz >= 0 && gx < w && gz < d;
     }
 
-    private static void auditCity(WorldPlan plan, City c, Report r, int x0, int z0, int w, int d,
+    private static void auditCity(City c, Report r, int x0, int z0, int w, int d,
                                   byte[] kind, boolean[] drivable, short[] h2) {
         int n = c.gridHalf();
         boolean fullyInside = true;
@@ -214,7 +214,6 @@ public final class PlanAudit {
         }
         r.stat("cities", 1);
         // lots
-        City.Hit hit = new City.Hit();
         for (int j = -n; j <= n; j++) {
             for (int i = -n; i <= n; i++) {
                 List<Lot> blockLots = c.lots(i, j);
@@ -229,8 +228,8 @@ public final class PlanAudit {
                         }
                     }
                 }
-                for (Lot lot : blockLots) {
-                    r.stat("lots", 1);
+                if (!blockLots.isEmpty()) {
+                    r.stat("lots", blockLots.size());
                 }
             }
         }

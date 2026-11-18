@@ -29,8 +29,6 @@ final class NeighbourRepair {
     private NeighbourRepair() {
     }
 
-    /** How far into a neighbour the crowns of this chunk's trees (and lakes) can reach. */
-    private static final int NEIGHBOUR_REACH = 16;
     /** Tallest vanilla trees stand below ~40 blocks over their ground. */
     private static final int OVERHANG = 48;
 
@@ -42,8 +40,8 @@ final class NeighbourRepair {
      * <ul>
      *   <li>road columns: surface and base blocks, parapets, tunnel ceilings, and the free height above the lanes;</li>
      *   <li>tunnel wall columns: the wall;</li>
-     *   <li>within {@link #NEIGHBOUR_REACH} of the border: crowns and plants over roads (up to {@link #OVERHANG})
-     *   and inside / on top of buildings.</li>
+     *   <li>over the whole neighbour (the crowns of this chunk's trees, its lakes and ore blobs can reach anywhere in
+     *   it): crowns and plants over roads (up to {@link #OVERHANG}) and inside / on top of buildings.</li>
      * </ul>
      * Neighbours not built yet are left alone: they will be built from scratch, over whatever was put there. The
      * loose blocks around every block removed are added to {@code seeds} (what rested on it may float now:
@@ -76,8 +74,6 @@ final class NeighbourRepair {
                         byte kind = np.kind[i];
                         int x = nbx + lx;
                         int z = nbz + lz;
-                        boolean near = (dx < 0 ? lx >= 16 - NEIGHBOUR_REACH : dx == 0 || lx < NEIGHBOUR_REACH)
-                                && (dz < 0 ? lz >= 16 - NEIGHBOUR_REACH : dz == 0 || lz < NEIGHBOUR_REACH);
                         if (kind == ChunkPlan.TUNNEL_WALL) {
                             int ys = ChunkPlan.surfaceY(np.h2[i]);
                             for (int y = ys - 1; y <= ys + ChunkBuilder.CEILING; y++) {
@@ -87,9 +83,9 @@ final class NeighbourRepair {
                         }
                         if (kind == ChunkPlan.LOT) {
                             Lot lot = np.lot[i];
-                            // a structure is put back over its whole height near the border (ore blobs of the chunk
-                            // decorated later reach it at any height)
-                            int above = near && lot != null ? Math.max(LOT_REPAIR_ABOVE, lot.heightAboveBase()) : LOT_REPAIR_ABOVE;
+                            // a structure is put back over its whole height (ore blobs of the chunk decorated later
+                            // reach it at any height)
+                            int above = lot != null ? Math.max(LOT_REPAIR_ABOVE, lot.heightAboveBase()) : LOT_REPAIR_ABOVE;
                             repairLot(region, nc, p, n, crowns, x, z, np.h2[i] / 2 - 1, lot,
                                     np.city != null ? np.city.yardCode() : BlockCode.GRASS, above, seeds);
                             continue;
@@ -186,7 +182,7 @@ final class NeighbourRepair {
                                 region.setBlock(p, part, Block.UPDATE_CLIENTS);
                             }
                         }
-                        if (tunnel || !near) {
+                        if (tunnel) {
                             continue;
                         }
                         // crowns and plants hanging over the road

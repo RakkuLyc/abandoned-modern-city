@@ -184,7 +184,7 @@ public final class Weathering {
         e.box = new int[]{x0, y0, z0, x1, y1, z1};
         int cracked = crack(e, gy, seed);
         int[] green = green(e, gy, seed);
-        int vines = vines(e, gy, x0, z0, x1, z1, seed);
+        int vines = vines(e, gy, seed);
         int mossy = mossy(e, gy, seed);
         Report r = new Report(cracked, green[0], green[1], green[2], vines, mossy);
         return new Result(r.total() == 0 ? t : e.build(), r);
@@ -418,7 +418,7 @@ public final class Weathering {
      * leave others bare. A side already that covered keeps what it has. Under the eaves (a full block above, outside),
      * one vine in {@link #EAVES} holds by its top.
      */
-    private static int vines(Editor e, int gy, int x0, int z0, int x1, int z1, long seed) {
+    private static int vines(Editor e, int gy, long seed) {
         int[] b = e.box;
         int added = 0;
         for (int k = 0; k < 4; k++) {

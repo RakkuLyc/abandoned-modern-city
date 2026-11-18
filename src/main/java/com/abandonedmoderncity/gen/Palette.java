@@ -6,7 +6,6 @@ import com.abandonedmoderncity.core.BlockCode;
 import com.abandonedmoderncity.core.ChunkPlan;
 import com.abandonedmoderncity.core.RoadDecay;
 import com.abandonedmoderncity.core.Rooms;
-import com.abandonedmoderncity.core.StreetLights;
 import com.abandonedmoderncity.core.Structures;
 import com.abandonedmoderncity.core.Template;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;

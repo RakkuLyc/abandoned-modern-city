@@ -101,7 +101,7 @@ public final class SelfTest {
         NetworkStats ns = NetworkStats.of(plan, -3, -3, 2, 2);
         report.append("network around spawn: ").append(ns).append('\n');
         index = -1;
-        nextTarget(level);
+        nextTarget();
     }
 
     private static File outDir() {
@@ -269,7 +269,7 @@ public final class SelfTest {
 
     // ------------------------------------------------------------------ running
 
-    private static void nextTarget(ServerLevel level) {
+    private static void nextTarget() {
         index++;
         if (index >= targets.size()) {
             done = true;
@@ -347,7 +347,7 @@ public final class SelfTest {
         for (ChunkPos p : requested) {
             source.removeRegionTicket(TICKET, p, 0, p);
         }
-        nextTarget(level);
+        nextTarget();
     }
 
     private static void finish(MinecraftServer server) {

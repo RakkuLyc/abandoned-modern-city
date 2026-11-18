@@ -117,8 +117,4 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
     public static int margin(int maxRadius) {
         return (int) Math.ceil(influence(Math.max(maxRadius, GRID_RADIUS))) + 2;
     }
-
-    public int margin() {
-        return margin(maxRadius);
-    }
 }
