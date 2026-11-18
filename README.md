@@ -337,9 +337,15 @@ changed the size of the cities) are removed from the file the same way.
   as in the city: buried layers, floor out to the edge, real leaves and loot tables in the containers. The air of the
   template clears the terrain inside the box (above the ground); below the ground only the template's `cave_air`
   digs the terrain (basements, such as underground garages).
-- `/amcs plan [radius]` — audit of the plan around (generates nothing) + PNG.
-- `/amcs audit [radius]` — generates the chunks around, audits the plan and the blocks, PNG of the world.
-- `/amcs network [radius]` — PNG of the network of cities and highways.
-- `/amcs column <x> <z> <y0> <y1>` — the real blocks of a column next to what the plan wants there (diagnosis).
+- `/amcs plan [radius]` — audit of the plan around (generates nothing) + PNG; radius in chunks, 8 by default, at most
+  16.
+- `/amcs audit [radius]` — generates the chunks around, audits the plan and the blocks, PNG of the world; radius in
+  chunks, 6 by default, at most 8.
+- `/amcs network [radius]` — PNG of the network of cities and highways; radius in blocks, 500 to 1000 (default).
+- `/amcs column <x> <z> <y0> <y1>` — the real blocks of a column next to what the plan wants there (diagnosis); the
+  heights are kept inside the world (at most 384 lines).
+
+`plan`, `audit` and `network` make the server wait while they run (seconds: network 1000 ~23 s, plan 16 ~19 s, audit 8 ~15 s,
+measured on a development server in a region not planned yet); the limits keep them under the 60 s after which a server's watchdog shuts it down.
 
 The files go to `amcs_renders/` in the server folder.

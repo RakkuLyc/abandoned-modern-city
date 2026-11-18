@@ -36,7 +36,9 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   <li>{@code audit [radius]}: generates the chunks around you, audits plan and blocks, writes PNGs.</li>
  *   <li>{@code network [radius]}: PNG of cities and highways (blocks, 8 per pixel).</li>
  * </ul>
- * Files go to {@code amcs_renders/} in the server folder.
+ * Files go to {@code amcs_renders/} in the server folder. The commands run on the server thread, which waits for them:
+ * their ranges are kept to what takes seconds, not minutes (a server stopped for 60 s is shut down by its watchdog).
+ * Measured on a development server, in a region not planned yet: network 1000 ~23 s, plan 16 ~19 s, audit 8 ~15 s.
  */
 public final class AmcsCommands {
     private AmcsCommands() {
@@ -55,9 +57,9 @@ public final class AmcsCommands {
                         })
                         .executes(c -> locate(c, StringArgumentType.getString(c, "what")))))
                 .then(Commands.literal("plan").executes(c -> plan(c, 8))
-                        .then(Commands.argument("radius", IntegerArgumentType.integer(1, 64)).executes(c -> plan(c, IntegerArgumentType.getInteger(c, "radius")))))
+                        .then(Commands.argument("radius", IntegerArgumentType.integer(1, MAX_PLAN_RADIUS)).executes(c -> plan(c, IntegerArgumentType.getInteger(c, "radius")))))
                 .then(Commands.literal("audit").executes(c -> audit(c, 6))
-                        .then(Commands.argument("radius", IntegerArgumentType.integer(1, 32)).executes(c -> audit(c, IntegerArgumentType.getInteger(c, "radius")))))
+                        .then(Commands.argument("radius", IntegerArgumentType.integer(1, MAX_AUDIT_RADIUS)).executes(c -> audit(c, IntegerArgumentType.getInteger(c, "radius")))))
                 .then(Commands.literal("column").then(Commands.argument("x", IntegerArgumentType.integer())
                         .then(Commands.argument("z", IntegerArgumentType.integer())
                                 .then(Commands.argument("y0", IntegerArgumentType.integer())
@@ -65,9 +67,16 @@ public final class AmcsCommands {
                                                 .executes(c -> column(c, IntegerArgumentType.getInteger(c, "x"),
                                                         IntegerArgumentType.getInteger(c, "z"), IntegerArgumentType.getInteger(c, "y0"),
                                                         IntegerArgumentType.getInteger(c, "y1"))))))))
-                .then(Commands.literal("network").executes(c -> network(c, 4000))
-                        .then(Commands.argument("radius", IntegerArgumentType.integer(500, 20000)).executes(c -> network(c, IntegerArgumentType.getInteger(c, "radius"))))));
+                .then(Commands.literal("network").executes(c -> network(c, MAX_NETWORK_RADIUS))
+                        .then(Commands.argument("radius", IntegerArgumentType.integer(500, MAX_NETWORK_RADIUS)).executes(c -> network(c, IntegerArgumentType.getInteger(c, "radius"))))));
     }
+
+    /** Largest radius of {@code /amcs plan} (chunks), {@code /amcs audit} (chunks) and {@code /amcs network} (blocks). */
+    static final int MAX_PLAN_RADIUS = 16;
+    static final int MAX_AUDIT_RADIUS = 8;
+    static final int MAX_NETWORK_RADIUS = 1000;
+    /** Most lines {@code /amcs column} prints (the height of the overworld, -64 to 319). */
+    static final int MAX_COLUMN_LINES = 384;
 
     static File outDir(ServerLevel level) {
         return level.getServer().getServerDirectory().resolve("amcs_renders").toFile();
@@ -246,7 +255,10 @@ public final class AmcsCommands {
         return pr.ok() && wr.ok() ? 1 : 0;
     }
 
-    /** Blocks of one column next to what the plan wants there (diagnostics). */
+    /**
+     * Blocks of one column next to what the plan wants there (diagnostics): from the higher of y0, y1 down to the lower,
+     * kept inside the height of the world and to {@link #MAX_COLUMN_LINES} lines.
+     */
     private static int column(CommandContext<CommandSourceStack> c, int x, int z, int y0, int y1) {
         WorldPlan plan = plan(c);
         if (plan == null) {
@@ -264,7 +276,12 @@ public final class AmcsCommands {
                     .append(lot.x1).append(',').append(lot.z1);
         }
         var chunk = level.getChunk(x >> 4, z >> 4);
-        for (int y = y1; y >= y0; y--) {
+        int top = Math.min(Math.max(y0, y1), level.getMaxBuildHeight() - 1);
+        int bottom = Math.max(Math.max(Math.min(y0, y1), level.getMinBuildHeight()), top - MAX_COLUMN_LINES + 1);
+        if (top != Math.max(y0, y1) || bottom != Math.min(y0, y1)) {
+            sb.append(" (heights ").append(bottom).append(" to ").append(top).append(')');
+        }
+        for (int y = top; y >= bottom; y--) {
             var s = chunk.getBlockState(new BlockPos(x, y, z));
             sb.append("\n  ").append(y).append(' ').append(BuiltInRegistries.BLOCK.getKey(s.getBlock()).getPath());
             if (lot != null) {
