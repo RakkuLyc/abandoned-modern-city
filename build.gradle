@@ -97,6 +97,11 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
+// the GPL asks that every copy carry the license: the jar holds LICENSE (with the additional terms)
+tasks.named('jar', Jar).configure {
+    from('LICENSE')
+}
+
 idea {
     module {
         downloadSources = true

@@ -71,5 +71,10 @@ Changing the config changes where the cities go: use it in a new world. Config f
 
 ## License and credits
 
-MIT (see [LICENSE](LICENSE)). By RakkuLyc. For building, testing and the full specification see
+**Abandoned Modern City, created by RakkuLyc.** GNU General Public License version 3 (GPL-3.0-only), with additional
+terms (see [LICENSE](LICENSE)): you may use, share and modify the mod, and a modified version you publish must be
+GPL-3.0 with its source, keep the attribution "Abandoned Modern City, created by RakkuLyc" where users and readers see
+it, say that it is a modified version, and use another name. Modpacks may include the mod.
+
+For building, testing and the full specification see
 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/TESTING.md](docs/TESTING.md) and [CLAUDE.md](CLAUDE.md).
