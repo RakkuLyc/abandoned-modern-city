@@ -8,18 +8,22 @@ package com.abandonedmoderncity.core;
  * A "walking height" is the y a player stands on: the y of the top full block + 1, or y + 0.5 on a bottom slab.
  * Road heights are kept as {@code h2 = 2 * walking height} (an integer), so half-block ramps are exact.
  *
- * @param cellSize         side of the square world cell that holds at most one city (blocks)
+ * @param cellSize         side of the square world cell that holds at most one city (blocks), at least
+ *                         {@link #MIN_CELL_SIZE}; neighbouring cities stand this far apart
  * @param cityChance       probability that a cell holds a city
- * @param minRadius        smallest city radius (blocks)
- * @param maxRadius        largest city radius (blocks)
  * @param maxCityLevel     highest walking height a city may sit at
  * @param highwayMaxLength longest highway path (blocks)
  * @param highways         whether cities are linked by highways
  */
-public record Params(int cellSize, double cityChance, int minRadius, int maxRadius, int maxCityLevel,
-                     int highwayMaxLength, boolean highways) {
+public record Params(int cellSize, double cityChance, int maxCityLevel, int highwayMaxLength, boolean highways) {
 
-    public static final Params DEFAULT = new Params(736, 0.7, 128, 230, 150, 4000, true);
+    /**
+     * Smallest {@link #cellSize}: two margins and 64 blocks between the areas of two neighbouring cities (734). Declared
+     * before {@link #DEFAULT}, whose constructor checks it.
+     */
+    public static final int MIN_CELL_SIZE = 2 * margin() + 64;
+
+    public static final Params DEFAULT = new Params(736, 0.7, 150, 4000, true);
 
     // ------------------------------------------------------------------ city grid
 
@@ -90,31 +94,26 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
     public static final int MAX_HIGHWAY_LEVEL = 180;
 
     public Params {
-        if (cellSize < 2 * margin(maxRadius) + 64) {
-            throw new IllegalArgumentException("cellSize " + cellSize + " is too small for maxRadius " + maxRadius
-                    + " (needs at least " + (2 * margin(maxRadius) + 64) + ")");
-        }
-        if (minRadius < 1 || minRadius > maxRadius) {
-            throw new IllegalArgumentException("bad city radius range " + minRadius + ".." + maxRadius);
+        if (cellSize < MIN_CELL_SIZE) {
+            throw new IllegalArgumentException("cellSize " + cellSize + " is too small (needs at least " + MIN_CELL_SIZE
+                    + ")");
         }
     }
 
     /**
      * Farthest distance from a city center at which the city changes anything (lots, streets, slopes): the corner of
-     * the rectangular city (half diagonal: 286 for 230 x 170), then a slack and the slopes. Cities of another radius
-     * (config) use 1.2 x radius.
+     * the rectangular city (half diagonal: 286 for 230 x 170), then a slack and the slopes (~332).
      */
-    public static double influence(int radius) {
-        double corner = radius == GRID_RADIUS ? Math.hypot(GRID_RADIUS, GRID_HALF_SHORT) : radius * 1.2;
-        return corner + INFLUENCE_SLACK + CITY_SKIRT + 4;
+    public static double influence() {
+        return Math.hypot(GRID_RADIUS, GRID_HALF_SHORT) + INFLUENCE_SLACK + CITY_SKIRT + 4;
     }
 
     /** Half the long side of a city, streets included: 230 for the 2 x 2 grid (the short side: 170). */
     public static final int GRID_RADIUS = GRID * BLOCK_LONG / 2 + (int) STREET_HW + 1;
     public static final int GRID_HALF_SHORT = GRID * BLOCK_SHORT / 2 + (int) STREET_HW + 1;
 
-    /** City centers are kept this far from the cell edges, so the cities of two cells never overlap. */
-    public static int margin(int maxRadius) {
-        return (int) Math.ceil(influence(Math.max(maxRadius, GRID_RADIUS))) + 2;
+    /** City centers are kept this far from the cell edges, so the cities of two cells never overlap (335). */
+    public static int margin() {
+        return (int) Math.ceil(influence()) + 2;
     }
 }

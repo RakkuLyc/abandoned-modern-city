@@ -64,7 +64,7 @@ public final class City {
         this.cz = cz;
         this.radius = radius;
         this.level = level;
-        this.influence = Params.influence(radius);
+        this.influence = Params.influence();
         // street centerlines on block centers (x + 0.5), so a 33-wide street covers exactly 33 columns
         // the grid (blocks FIRST..LAST) is centered on the city center
         this.u0 = cx - (int) Math.floor((FIRST + LAST + 1) / 2.0 * SX) + 0.5;

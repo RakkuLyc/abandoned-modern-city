@@ -309,15 +309,15 @@ command/  /amcs (StructureCommands: locate structure and spawn), the block audit
 
 ## Configuration (`config/abandonedmoderncity-common.toml`)
 
-`enabled`, `cellSize`, `cityChance`, `minRadius`, `maxRadius`, `maxCityLevel`, `highways`, `highwayMaxLength`,
-`structureOvergrowth` (default `true`: nature taking over the structures; `false` generates them as they were saved;
-read at startup, restart the game after changing it).
+`enabled`, `cellSize`, `cityChance`, `maxCityLevel`, `highways`, `highwayMaxLength`, `structureOvergrowth` (default
+`true`: nature taking over the structures; `false` generates them as they were saved; read at startup, restart the game
+after changing it).
 The geometry (widths, blocks, ramps, tunnels, bridges) is in `core/Params` and the cities in `core/City`. Changes
 apply to new chunks and change the plan: use a new world.
-Defaults: `cellSize` = 736 and `maxRadius` = 230. An old config file keeps its values when they are still consistent
-(2048/288 and 1024/212: cities farther apart); with 512/131, 576/166, 640/190 or 648/190 the cell is too small for
-the city (it needs at least 734), the log says "Invalid config ... using the defaults" and the defaults are used.
-Delete the old file or adjust both values.
+`cellSize` (default 736) is the distance between neighbouring cities: the highways get longer with it. It must be at
+least 734; NeoForge raises a smaller value to 734 and rewrites the file (the log says "Configuration file ... is not
+correct. Correcting"), the other values stay. The keys `minRadius` and `maxRadius` of old config files (they never
+changed the size of the cities) are removed from the file the same way.
 
 ## Commands (op 2)
 

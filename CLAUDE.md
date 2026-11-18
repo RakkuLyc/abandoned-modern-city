@@ -70,9 +70,15 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   neighbouring centers; the gap between the edges (the length of the highway) is between ~277 and ~397, depending on
   the orientation of the blocks (the user asked on 11 Nov for 276–360; with the blocks of 180 × 120 the difference
   between the sides of the city became 120). No position jitter: a cell whose middle is over water or too high has no
-  city. The default `maxRadius` is 230 (half the long side of the city). The area of influence (`Params.influence`) is
-  the exact half diagonal of the city's rectangle (230 × 170 → 286) + 10 + a slope of 32 + 4 = ~332; with it the cell
-  needs at least 2 × 335 + 64 = 734 (`Params.margin`: the influence rounded up, + 2).
+  city. Every city reaches 230 from its center (half the long side, `Params.GRID_RADIUS`). The area of influence
+  (`Params.influence`) is the exact half diagonal of the city's rectangle (230 × 170 → 286) + 10 + a slope of 32 + 4 =
+  ~332; with it the cell needs at least 2 × 335 + 64 = 734 (`Params.MIN_CELL_SIZE`; `Params.margin`: the influence
+  rounded up, + 2). The config has no city radius (`minRadius` and `maxRadius` were removed in the review for 1.0.0, 18
+  Nov 2026: neither changed the cities nor the highways; only `cellSize` sets the distance between cities and so the
+  length of the highways). A `cellSize` under 734 in the config file is raised to 734 by NeoForge (it moves a value out
+  of its range to the nearest limit, keeps the other values and rewrites the file; checked on a server: 600 → 734, the
+  old keys removed); until 18 Nov 2026 the mod then dropped the whole config and
+  used the defaults.
 - A street 33 wide (10 Nov 2026): 3 `smooth_stone` (sidewalk) + 27 `polished_deepslate` (lanes; until 12 Nov it was
   `polished_blackstone`) + 3 `smooth_stone` (`Params.STREET_HW` = 16.5, `STREET_LANE_HW` = 13.5).
 - A street segment of 180 or 120 blocks (the side of the block) + 33 of crossing; a 3 × 3 square of `smooth_stone` at
