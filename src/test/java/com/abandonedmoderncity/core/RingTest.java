@@ -171,7 +171,7 @@ class RingTest {
         assertFalse(Structures.ALL.isEmpty(), "no structures loaded");
         // each structure fits a 180 x 120 block next to the shallowest structure (depth 20) and the widest forest (30):
         // facing a long side (depth across the 120), or facing a short side (front within the 120, depth across the
-        // 180), as the predio_rampa (102 x 72) does
+        // 180), as the ramp building (102 x 72) does
         for (Structures.Def d : Structures.ALL) {
             boolean longSide = d.depth() + Structures.MIN_DEPTH + Ring.CORE_MAX <= 120 && d.front() <= 180;
             boolean shortSide = d.depth() + Structures.MIN_DEPTH + Ring.CORE_MAX <= 180 && d.front() <= 120;
@@ -618,9 +618,9 @@ class RingTest {
         // the tree in front of the house with the pool: its crown hangs over the sidewalk, high
         Structures.Def pool = Structures.ALL.stream().filter(d -> d.name().equals("abandoned_pool_house")).findFirst()
                 .orElseThrow();
-        assertFalse(pool.overhangs(0).isEmpty(), "casa_piscina crown not completed");
+        assertFalse(pool.overhangs(0).isEmpty(), "pool house crown not completed");
         for (int[] q : pool.overhangs(0)) {
-            assertTrue(q[2] < 0 && q[1] > Params.CLEARANCE, "casa_piscina crown " + Arrays.toString(q));
+            assertTrue(q[2] < 0 && q[1] > Params.CLEARANCE, "pool house crown " + Arrays.toString(q));
         }
         assertEquals(Set.of("abandoned_pool_house", "abandoned_garage_house", "abandoned_suburban_house",
                 "abandoned_tower_house", "skeleton_building_31x29", "abandoned_glass_house", "abandoned_ramp_building"), with);

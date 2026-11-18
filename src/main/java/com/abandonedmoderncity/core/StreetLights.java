@@ -3,7 +3,7 @@ package com.abandonedmoderncity.core;
 import java.util.Arrays;
 
 /**
- * Street lights (modeled on the example structure poste_exemplo): on every segment of street,
+ * Street lights (modeled on an example street light the user built, not kept in the repository): on every segment of street,
  * one every {@link #LAMP_EVERY} blocks on both sides, facing each other, centered on the segment (7 a side on the
  * segments of 180, 5 on those of 120, away from the crosswalks and the crossings). The post ({@link #LAMP_POST}
  * high) stands on the sidewalk row next to the lanes; its arm (slabs) reaches {@link #LAMP_ARM} blocks over the

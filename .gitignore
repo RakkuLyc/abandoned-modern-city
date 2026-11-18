@@ -6,6 +6,10 @@ run/
 out/
 bin/
 
-# Jars de mods de terceiros (dependências locais; não versionar)
+# Jars of third-party mods (local dependencies; not versioned)
 libs/
 __pycache__/
+
+# Left in the project folder by a Claude Code installation; never versioned
+claude/
+applications/
