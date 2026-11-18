@@ -399,10 +399,10 @@ python3 tools/verify/compare_block_detail.py A/renders/t01_blocks.txt B/renders/
 python3 tools/verify/chunk_diff.py run/selftest_world_ref_english <other world> CX,CZ --ymin 60
 # the structures cell by cell (plain code, 3 copies with barrels and drawn chests, hard flag, opening, leaves):
 tools/verify/structure_cells.sh <jar before> before.txt       # copy the jar first: the next build replaces it
-tools/verify/structure_cells.sh build/libs/abandonedmoderncity-0.1.0.jar after.txt
+tools/verify/structure_cells.sh build/libs/abandonedmoderncity-1.0.0.jar after.txt
 python3 tools/verify/compare_structure_cells.py before.txt after.txt
 # copies of every building walked again with their barrels and drawn chests in place (ChestDrawTest does 40):
-tools/verify/chest_walk.sh build/libs/abandonedmoderncity-0.1.0.jar 200   # ~1.5 min, RESULT: PASS or FAIL
+tools/verify/chest_walk.sh build/libs/abandonedmoderncity-1.0.0.jar 200   # ~1.5 min, RESULT: PASS or FAIL
 ```
 
 The `run/config/abandonedmoderncity-common.toml` of the development server has the default values (`cellSize = 736`;
@@ -577,6 +577,7 @@ road on the ground, without a bridge wall).
 
   | Seed | Scope | Date | Version | Result |
   |---|---|---|---|---|
+  | all 4 | default (8 targets each) and quick with `structureOvergrowth = false` (20261027) | 18 Nov | **version 1.0.0** (the end of the review: `mod_version` 1.0.0, `abandonedmoderncity-1.0.0.jar`) | PASS on the 4 seeds, 0 generation errors: 20261027 2.03 ms per chunk, −3297… 2.10, 3478… 2.13, 1 1.85; 20261027 identical to the reference, and to the reference with the overgrowth off (3 of 3, 2.23 ms); no `vegetation_floating` in any seed (and 0 groups of Minecraft's own counted apart); floating vegetation removed: 3,785 blocks (−3297…), 8,933 (3478…), 8,215 (1); village creatures removed: 16, 11, 4. 84 unit tests pass, none skipped; `FingerprintTest` unchanged: the review moved no block |
   | — | — | 18 Nov | review for 1.0.0, stage 5, commit 5: `CHANGELOG.md` (the user's choice: a summary by theme of 1.0.0, what the mod generates, what the review changed for players, the known limitations) | documentation only |
   | — | — | 18 Nov | review for 1.0.0, stage 5, commit 4: `CONTRIBUTING.md` (the rules for structures sent by other players: legal, technical, style, how to send one, what happens next; the user's choice: the rules now, automatic checks later) and `CREDITS.md` | documentation only; its technical rules checked against the code (`Template.load` reads only `palette` and `blocks`, `Palette.placeable`/`exempt`, the sizes of the 52 structures: the largest 102 × 72, 51 of 52 under 60 deep) |
   | — | — | 18 Nov | review for 1.0.0, stage 5, commit 3: `CLAUDE.md` split (the user's choice): the working rules and the current specification stay (623 → 290 lines, by section: cities and streets, highways, blocks and nature, structures, loot and blocks, configuration and commands); its former text, with the history, is copied unchanged into `docs/HISTORY.md` | documentation only; every code name of the former text that is still current was checked to be in the new one (a list of the names in backticks of both) |
