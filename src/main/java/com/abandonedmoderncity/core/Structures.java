@@ -416,7 +416,7 @@ public final class Structures {
      * for all of them): what is left goes in the order of the index, so the block state ids stay the same.
      */
     private static Def define(String type, String name, int ground, int turn, String model, Preload.Prepared p,
-                              String hardCells, Map<String, Integer> ids) {
+                              String hardCells, Map<String, Integer> ids, Preload.Walks walks) {
         if (p.letters() >= 0) {
             LETTERS_REMOVED.put(name, p.letters());
         }
@@ -428,7 +428,7 @@ public final class Structures {
         if (isBuildingType(type)) {
             CHESTS_REMOVED.put(name, chestsIn(t));
         }
-        return of(type, name, t, ground, turn, model, hardCells, ids);
+        return of(type, name, t, ground, turn, model, hardCells, ids, walks);
     }
 
     /** A structure from a template already loaded (and weathered); the tests build small templates with it. */
@@ -439,28 +439,40 @@ public final class Structures {
     /** The same, with containers made hard by hand ({@code hardCells}: the {@code hard} column of index.txt). */
     static Def of(String type, String name, Template t, int ground, int turn, String model, String hardCells,
                   Map<String, Integer> ids) {
-        // the barrels read the template with its chests: a barrel facing up turns into a chest facing its first side
-        // with air in front, and that must not change where a saved chest stood beside it
-        Template withChests = t;
+        return of(type, name, t, ground, turn, model, hardCells, ids, null);
+    }
+
+    /**
+     * What {@link Access} and {@link Rooms} read of a structure's template, worked out without the block state ids, so
+     * that the loading can run them on several cores before the ids are given out in the order of the index: the
+     * template as placed (a building without the chests saved in it), the block of each palette entry as placed
+     * ({@link #swap}), which entries are solid, the box of the solid blocks ({@code x0..x1} etc.) and the openings of the
+     * ground layer ({@link StructureLoader#openings}).
+     */
+    record Shape(Template t, String[] placed, boolean[] solid, int x0, int y0, int z0, int x1, int y1, int z1,
+                 boolean[] openings) {
+    }
+
+    static Shape shape(String type, String name, Template t, int ground) {
         if (isBuildingType(type)) {
             // the chests saved in a building's template go, after the overgrowth
             t = withoutChests(t, ground);
         }
-        int[] state = new int[t.palette.size()];
-        boolean[] solid = new boolean[state.length];
-        String[] placed = new String[state.length];
-        for (int p = 0; p < state.length; p++) {
+        int n = t.palette.size();
+        int[] kind = new int[n];
+        boolean[] solid = new boolean[n];
+        String[] placed = new String[n];
+        for (int p = 0; p < n; p++) {
             String s = swap(t.palette.get(p));
             placed[p] = s;
             String block = blockOf(s);
             if (block.equals("minecraft:cave_air")) {
-                state[p] = CARVE_STATE;
+                kind[p] = CARVE_STATE;
             } else if (block.equals("minecraft:air") || block.equals("minecraft:void_air")) {
-                state[p] = AIR_STATE;
+                kind[p] = AIR_STATE;
             } else if (block.equals("minecraft:structure_void")) {
-                state[p] = -1;
+                kind[p] = -1;
             } else {
-                state[p] = StructureLoader.id(ids, s);
                 solid[p] = true;
             }
         }
@@ -488,6 +500,40 @@ public final class Structures {
         if (x1 < 0) {
             throw new IllegalStateException("structure " + name + " is empty");
         }
+        boolean[] openings = StructureLoader.openings(t, kind, x0, z0, x1 - x0 + 1, z1 - z0 + 1, y0 + ground);
+        return new Shape(t, placed, solid, x0, y0, z0, x1, y1, z1, openings);
+    }
+
+    /** The same, with the walks of {@link Access} and {@link Rooms} already worked out ({@link Preload#walks}), or null. */
+    static Def of(String type, String name, Template t, int ground, int turn, String model, String hardCells,
+                  Map<String, Integer> ids, Preload.Walks walks) {
+        // the barrels read the template with its chests: a barrel facing up turns into a chest facing its first side
+        // with air in front, and that must not change where a saved chest stood beside it
+        Template withChests = t;
+        Shape sh = shape(type, name, t, ground);
+        t = sh.t();
+        String[] placed = sh.placed();
+        boolean[] solid = sh.solid();
+        // the block state ids, given out in the order of the palette (and of the index)
+        int[] state = new int[placed.length];
+        for (int p = 0; p < state.length; p++) {
+            String block = blockOf(placed[p]);
+            if (block.equals("minecraft:cave_air")) {
+                state[p] = CARVE_STATE;
+            } else if (block.equals("minecraft:air") || block.equals("minecraft:void_air")) {
+                state[p] = AIR_STATE;
+            } else if (block.equals("minecraft:structure_void")) {
+                state[p] = -1;
+            } else {
+                state[p] = StructureLoader.id(ids, placed[p]);
+            }
+        }
+        int x0 = sh.x0();
+        int y0 = sh.y0();
+        int z0 = sh.z0();
+        int x1 = sh.x1();
+        int y1 = sh.y1();
+        int z1 = sh.z1();
         int w = x1 - x0 + 1;
         int d = z1 - z0 + 1;
         int gy = y0 + ground;
@@ -503,8 +549,8 @@ public final class Structures {
             }
         }
         // the attic rule of the hard containers is only for the houses
-        Access.Result access = Access.of(t, placed, x0, y0, z0, w, y1 - y0 + 1, d, ground,
-                categoryOf(type).equals("house"));
+        Access.Result access = walks != null ? walks.access() : Access.of(t, placed, x0, y0, z0, w, y1 - y0 + 1, d,
+                ground, categoryOf(type).equals("house"));
         if (hardCells != null) {
             // containers made hard by hand: x,y,z of the .nbt (as the structure block shows them), separated by ;
             Set<Integer> listed = new HashSet<>();
@@ -522,12 +568,12 @@ public final class Structures {
             }
             access = access.withHard(listed);
         }
-        boolean[] openings = StructureLoader.openings(t, state, x0, z0, w, d, y0 + ground);
+        boolean[] openings = sh.openings();
         // the barrels of the buildings: taken out or turned into chests, copy by copy
         Map<Integer, int[]> barrels = isBuildingType(type) ? Barrels.of(withChests, ids) : Map.of();
         // the floors, rooms and places for a chest of a building, and the states of its chests (ChestDraw)
-        Rooms.Layout rooms = isBuildingType(type)
-                ? Rooms.of(t, placed, x0, y0, z0, w, y1 - y0 + 1, d, ground, openings) : Rooms.Layout.EMPTY;
+        Rooms.Layout rooms = !isBuildingType(type) ? Rooms.Layout.EMPTY : walks != null ? walks.rooms()
+                : Rooms.of(t, placed, x0, y0, z0, w, y1 - y0 + 1, d, ground, openings);
         int[] chestStates = new int[4];
         if (!rooms.spots().isEmpty()) {
             for (int f = 0; f < 4; f++) {
@@ -688,13 +734,25 @@ public final class Structures {
         // read and weather every template at once (they depend on nothing else; ~2/3 of the loading time), then the
         // rest one by one in the order of the index
         List<Preload.Prepared> prepared = Preload.all(rows, Weathering.enabled);
+        // the walks of Access and Rooms (the rest of the loading's time) at once too: they read only the shape of each
+        // template, not the block state ids
+        List<Shape> shapes = new ArrayList<>();
+        List<String> types = new ArrayList<>();
+        int[] grounds = new int[rows.size()];
+        for (int k = 0; k < rows.size(); k++) {
+            String[] f = rows.get(k);
+            grounds[k] = f.length > 2 ? Integer.parseInt(f[2].trim()) : 0;
+            types.add(f[0]);
+            shapes.add(shape(f[0], f[1], prepared.get(k).template(), grounds[k]));
+        }
+        List<Preload.Walks> walks = Preload.walks(shapes, types.stream().map(Structures::isBuildingType).toList(),
+                types.stream().map(ty -> categoryOf(ty).equals("house")).toList(), grounds);
         for (int k = 0; k < rows.size(); k++) {
             String[] f = rows.get(k);
             int turn = f.length > 3 && !f[3].isBlank() ? Math.floorMod(Integer.parseInt(f[3].trim()) / 90, 4) : 0;
             String model = f.length > 4 && !f[4].isBlank() ? f[4].trim() : f[1].trim();
             String hard = f.length > 8 && !f[8].isBlank() ? f[8].trim() : null;
-            defs.add(define(f[0], f[1], f.length > 2 ? Integer.parseInt(f[2].trim()) : 0, turn, model,
-                    prepared.get(k), hard, ids));
+            defs.add(define(f[0], f[1], grounds[k], turn, model, prepared.get(k), hard, ids, walks.get(k)));
         }
         STATES.addAll(ids.keySet());
         ALL = List.copyOf(defs);

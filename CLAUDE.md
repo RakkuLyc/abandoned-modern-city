@@ -352,7 +352,9 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     The roofs: wide +61 8 spots, brutalist +116 21, apocalyptic +79 none (only a tree beside it). Floor plans:
     `build/test-renders/rooms/`. With the drawing below it brought the loading of the structures from 11.5 to ~14.0 s (since 18 Nov 2026 ~5.0 s
     outside the game and 5.1 s in it: the `.nbt` read through a buffer, the questions of the overgrowth about the
-    block names kept, the 52 templates read and weathered in parallel by `core/Preload`, the rest still in the order
+    block names kept, the 52 templates read and weathered in parallel by `core/Preload`; then, review for 1.0.0, the
+    walks of `Access` and `Rooms` in parallel too, from the shape of each template without the block state ids
+    (`Structures.Shape`, `Preload.walks`): ~4.3 s outside the game, 4.2 s in it; the block state ids still in the order
     of the index; nothing produced changed, see `docs/TESTING.md`, section 5);
   - chests drawn in each copy of a building (asked by the user on 15 Nov 2026, stage 3 of the procedural chests;
     `core/ChestDraw`, `Def.chests(seed)`, placed by `Def.code(..., seed)` where the template has air, through

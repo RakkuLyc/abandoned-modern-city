@@ -47,7 +47,8 @@ public final class Access {
             "twisting_vines_plant", "weeping_vines", "weeping_vines_plant", "cave_vines", "cave_vines_plant"};
 
     static String bare(String state) {
-        String b = Structures.blockOf(state);
+        // Template, not Structures: this also runs on other threads while Structures is still being initialized
+        String b = Template.blockOf(state);
         return b.startsWith("minecraft:") ? b.substring(10) : b;
     }
 

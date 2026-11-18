@@ -179,7 +179,8 @@ public final class Rooms {
             "copper_block", "crimson_stem", "warped_stem", "stripped_crimson_stem", "stripped_warped_stem"};
 
     private static boolean barrel(String state) {
-        return Structures.blockOf(state).equals("minecraft:barrel");
+        // Template, not Structures: this runs on other threads while Structures is still being initialized
+        return Template.blockOf(state).equals("minecraft:barrel");
     }
 
     /** Blocks a chest keeps away from: doors, trapdoors, gates, ladders, scaffolding (where people pass). */

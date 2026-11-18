@@ -56,6 +56,30 @@ final class Preload {
                 f.length > 7 && !f[7].isBlank() ? Integer.parseInt(f[7].trim()) : f[1].hashCode(), weathering)).toList();
     }
 
+    /** The walks of a structure: the access of its containers and, for a building, its floors, rooms and spots. */
+    record Walks(Access.Result access, Rooms.Layout rooms) {
+    }
+
+    /**
+     * {@link Access#of} for every structure and {@link Rooms#of} for every building, from their {@link Structures.Shape}
+     * (no block state ids), in parallel; the results in the order of the shapes. Like {@link #all}, the work handed to
+     * the other threads must not touch {@link Structures} (Access and Rooms read the block names through
+     * {@link Template#blockOf}).
+     */
+    static java.util.List<Walks> walks(java.util.List<Structures.Shape> shapes, java.util.List<Boolean> building,
+                                       java.util.List<Boolean> house, int[] grounds) {
+        return java.util.stream.IntStream.range(0, shapes.size()).parallel().mapToObj(k -> {
+            Structures.Shape s = shapes.get(k);
+            int w = s.x1() - s.x0() + 1;
+            int h = s.y1() - s.y0() + 1;
+            int d = s.z1() - s.z0() + 1;
+            Access.Result access = Access.of(s.t(), s.placed(), s.x0(), s.y0(), s.z0(), w, h, d, grounds[k], house.get(k));
+            Rooms.Layout rooms = building.get(k)
+                    ? Rooms.of(s.t(), s.placed(), s.x0(), s.y0(), s.z0(), w, h, d, grounds[k], s.openings()) : null;
+            return new Walks(access, rooms);
+        }).toList();
+    }
+
     /** {@link #source}, then the overgrowth when {@code weathering} (its report, or null). */
     static Prepared of(String name, String neutralFrom, String bannerSpec, int ground, long seed, boolean weathering) {
         Source s = source(name, neutralFrom, bannerSpec);
