@@ -478,7 +478,13 @@ road on the ground, without a bridge wall).
   the spots with the walk (stage 3); 12.7 s since the floors, rooms and spots of the buildings (`core/Rooms`, 15 Nov
   2026).
 
-## 6. Current results (12 Nov 2026, blocks of 180 × 120 with a ring of structures with gaps and a core taken over by nature, streets and highways of 33, cities in the middle of cells of 736, 4 entrances)
+## 6. Current results (version 1.0.0, 18 Nov 2026)
+
+**Version 1.0.0:** 84 unit tests pass, none skipped, `FingerprintTest` unchanged since the start of the review; the
+battery passes on the 4 seeds (20261027, −3297019724594858492, 3478477863671517581, 1), with 20261027 identical to
+both references (full and quick with `structureOvergrowth = false`). The world is the one of the design of 12 Nov
+2026 (blocks of 180 × 120 with a ring of structures with gaps and a core taken over by nature, streets and highways of
+33, cities in the middle of cells of 736, 4 entrances) with the changes listed in the table below.
 
 - **Unit:** 84 pass, none skipped (18 Nov 2026, review for 1.0.0: the 2 tests of the rows of `index.txt`; 82 when the skipped test without structures was replaced by `everyRowOfTheIndexIsLoaded`); before, 81 pass and 1 is skipped (18 Nov 2026 the same: the floating vegetation is checked in the generated world,
   by the battery; 17 Nov 2026, the test of the gas stations drawn 1 or 2 replaced by the one of the 2

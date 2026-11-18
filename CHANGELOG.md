@@ -27,8 +27,9 @@ The first release. Minecraft 1.21.1, NeoForge 21.1.219 or newer.
 - Clearer errors when `index.txt` has a malformed line; the Gradle wrapper checks the checksum of what it downloads.
 - License: GNU GPL version 3 with additional terms (keep the attribution "Abandoned Modern City, created by
   RakkuLyc", mark modified versions, use another name); rules for structures by other players in `CONTRIBUTING.md`.
-- The cities, roads and structures generated are the same as in the last development build: no change of the
-  review moved a block.
+- The cities, roads and structures generated are the same as in the last development build with a valid config: no
+  change of the review moved a block. A config file with a `cellSize` from 512 to 733 (refused before, so the defaults
+  were used) now gives 734 and keeps its other values, so such a world comes out different.
 
 ### Known limitations
 - Old worlds keep the chunks already generated: a city can be cut where old and new chunks meet.
