@@ -76,5 +76,8 @@ terms (see [LICENSE](LICENSE)): you may use, share and modify the mod, and a mod
 GPL-3.0 with its source, keep the attribution "Abandoned Modern City, created by RakkuLyc" where users and readers see
 it, say that it is a modified version, and use another name. Modpacks may include the mod.
 
+Structures built by other players are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md); the authors are listed in
+[CREDITS.md](CREDITS.md).
+
 For building, testing and the full specification see
 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/TESTING.md](docs/TESTING.md) and [CLAUDE.md](CLAUDE.md).
