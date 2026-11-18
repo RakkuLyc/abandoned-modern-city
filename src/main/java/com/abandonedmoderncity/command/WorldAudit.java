@@ -9,14 +9,18 @@ import com.abandonedmoderncity.core.Profile;
 import com.abandonedmoderncity.core.RoadDecay;
 import com.abandonedmoderncity.core.StreetLights;
 import com.abandonedmoderncity.core.WorldPlan;
+import com.abandonedmoderncity.gen.Floating;
 import com.abandonedmoderncity.gen.Overhangs;
 import com.abandonedmoderncity.gen.Palette;
+import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -57,6 +61,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  *   <li>{@code loot_in_city} / {@code container_in_city}: a container (with or without a loot table) in the city.</li>
  *   <li>{@code orphan_road}: a connected piece of drivable road that reaches no city street and does not leave the
  *   audited area.</li>
+ *   <li>{@code vegetation_floating}: a group of natural leaves, logs, vines, snow or plants above the ground of its
+ *   columns that touches nothing that holds it ({@link Floating}; a group reaching the edge of the audited area is
+ *   taken as standing).</li>
  * </ul>
  */
 public final class WorldAudit {
@@ -131,7 +138,67 @@ public final class WorldAudit {
             }
         }
         components(r, x0, z0, w, d, drivable, walk, city);
+        floating(r, level, plan, cx0, cz0, cx1, cz1);
         return r;
+    }
+
+    /**
+     * The loose natural blocks above the ground of each column (the highest block that is neither air nor loose) are
+     * grouped ({@link Floating#find}); a group that touches nothing that holds it fails {@code vegetation_floating}
+     * (one failure per group, with its first block, its size and its height above what is under it).
+     */
+    private static void floating(PlanAudit.Report r, ServerLevel level, WorldPlan plan, int cx0, int cz0, int cx1,
+                                 int cz1) {
+        int minY = level.getMinBuildHeight();
+        int maxY = level.getMaxBuildHeight() - 1;
+        int cw = cx1 - cx0 + 1;
+        LevelChunk[] chunks = new LevelChunk[cw * (cz1 - cz0 + 1)];
+        for (int cz = cz0; cz <= cz1; cz++) {
+            for (int cx = cx0; cx <= cx1; cx++) {
+                chunks[(cx - cx0) + (cz - cz0) * cw] = level.getChunk(cx, cz);
+            }
+        }
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        Floating.Reader world = (x, y, z) -> chunks[((x >> 4) - cx0) + ((z >> 4) - cz0) * cw].getBlockState(p.set(x, y, z));
+        LongArrayList seeds = new LongArrayList();
+        for (LevelChunk c : chunks) {
+            int highest = c.getHighestFilledSectionIndex();
+            if (highest < 0) {
+                continue;
+            }
+            int top = Math.min(maxY, SectionPos.sectionToBlockCoord(c.getSectionYFromSectionIndex(highest)) + 15);
+            int bx = c.getPos().getMinBlockX();
+            int bz = c.getPos().getMinBlockZ();
+            for (int lz = 0; lz < 16; lz++) {
+                for (int lx = 0; lx < 16; lx++) {
+                    for (int y = top; y >= minY; y--) {
+                        BlockState s = c.getBlockState(p.set(bx + lx, y, bz + lz));
+                        if (s.isAir()) {
+                            continue;
+                        }
+                        if (!Floating.loose(s)) {
+                            break;
+                        }
+                        seeds.add(BlockPos.asLong(bx + lx, y, bz + lz));
+                    }
+                }
+            }
+        }
+        r.stat("vegetation_checked", seeds.size());
+        Floating.find(seeds, world, new Floating.Planned(plan), cx0 * 16, cz0 * 16, cx1 * 16 + 15, cz1 * 16 + 15,
+                minY, maxY, new Long2ByteOpenHashMap(), g -> {
+                    long first = g.getLong(0);
+                    int x = BlockPos.getX(first);
+                    int y = BlockPos.getY(first);
+                    int z = BlockPos.getZ(first);
+                    String name = id(world.get(x, y, z));
+                    int under = y - 1;
+                    while (under > minY && world.get(x, under, z).isAir()) {
+                        under--;
+                    }
+                    r.fail("vegetation_floating", x + "," + y + "," + z + " " + name + ", " + g.size() + " blocks, "
+                            + (y - under) + " above " + id(world.get(x, under, z)));
+                });
     }
 
     /** A block of a bridge pillar: stone (old worlds) or the old bridge stones. */

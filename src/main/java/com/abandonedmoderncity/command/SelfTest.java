@@ -355,6 +355,7 @@ public final class SelfTest {
         long chunks = CityFeature.CHUNKS.get();
         report.append("\ngeneration errors: ").append(errors).append('\n');
         report.append("village creatures removed from cities: ").append(Plans.villageMobsRemoved()).append('\n');
+        report.append("floating vegetation removed: ").append(Plans.floatingRemoved()).append(" blocks\n");
         report.append("chunks through the feature: ").append(chunks).append(", mean ")
                 .append(chunks == 0 ? 0 : String.format("%.2f", CityFeature.NANOS.get() / 1e6 / chunks)).append(" ms per chunk\n");
         long samples = McTerrain.SAMPLES.get();

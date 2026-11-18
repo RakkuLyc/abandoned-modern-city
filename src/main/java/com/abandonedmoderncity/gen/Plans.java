@@ -40,4 +40,9 @@ public final class Plans {
     public static int villageMobsRemoved() {
         return ChunkBuilder.VILLAGE_MOBS_REMOVED.get();
     }
+
+    /** Blocks of floating vegetation removed so far (ChunkBuilder.removeFloating). */
+    public static long floatingRemoved() {
+        return ChunkBuilder.FLOATING_REMOVED.get();
+    }
 }

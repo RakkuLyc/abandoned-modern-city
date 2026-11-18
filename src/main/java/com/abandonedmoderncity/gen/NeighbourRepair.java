@@ -8,6 +8,7 @@ import com.abandonedmoderncity.core.Profile;
 import com.abandonedmoderncity.core.RoadDecay;
 import com.abandonedmoderncity.core.StreetLights;
 import com.abandonedmoderncity.core.WorldPlan;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -44,9 +45,11 @@ final class NeighbourRepair {
      *   <li>within {@link #NEIGHBOUR_REACH} of the border: crowns and plants over roads (up to {@link #OVERHANG})
      *   and inside / on top of buildings.</li>
      * </ul>
-     * Neighbours not built yet are left alone: they will be built from scratch, over whatever was put there.
+     * Neighbours not built yet are left alone: they will be built from scratch, over whatever was put there. The
+     * loose blocks around every block removed are added to {@code seeds} (what rested on it may float now:
+     * {@link Floating}).
      */
-    static void repairNeighbours(WorldPlan plan, WorldGenRegion region, ChunkPos c) {
+    static void repairNeighbours(WorldPlan plan, WorldGenRegion region, ChunkPos c, LongArrayList seeds) {
         BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
         BlockPos.MutableBlockPos n = new BlockPos.MutableBlockPos();
         for (int dz = -1; dz <= 1; dz++) {
@@ -88,7 +91,7 @@ final class NeighbourRepair {
                             // decorated later reach it at any height)
                             int above = near && lot != null ? Math.max(LOT_REPAIR_ABOVE, lot.heightAboveBase()) : LOT_REPAIR_ABOVE;
                             repairLot(region, nc, p, n, crowns, x, z, np.h2[i] / 2 - 1, lot,
-                                    np.city != null ? np.city.yardCode() : BlockCode.GRASS, above);
+                                    np.city != null ? np.city.yardCode() : BlockCode.GRASS, above, seeds);
                             continue;
                         }
                         if (kind != ChunkPlan.ROAD) {
@@ -152,6 +155,7 @@ final class NeighbourRepair {
                             }
                             boolean liquid = !s.getFluidState().isEmpty();
                             region.setBlock(p, Palette.AIR, Block.UPDATE_CLIENTS);
+                            Floating.seedAround(p.asLong(), seeds);
                             if (liquid) {
                                 for (Direction d : Direction.Plane.HORIZONTAL) {
                                     n.set(x + d.getStepX(), y, z + d.getStepZ());
@@ -183,6 +187,7 @@ final class NeighbourRepair {
                             if (ChunkBuilder.isDecoration(s) && !crowns.containsKey(BlockPos.asLong(x, y, z))
                                     && Palette.lampBlock(lamp, y - ys) == null) {
                                 region.setBlock(p.set(x, y, z), Palette.AIR, Block.UPDATE_CLIENTS);
+                                Floating.seedAround(p.asLong(), seeds);
                             }
                         }
                     }
@@ -201,7 +206,7 @@ final class NeighbourRepair {
      */
     private static void repairLot(WorldGenRegion region, ChunkAccess nc, BlockPos.MutableBlockPos p,
                                   BlockPos.MutableBlockPos n, Map<Long, BlockState> crowns, int x, int z,
-                                  int base, Lot lot, int yard, int above) {
+                                  int base, Lot lot, int yard, int above, LongArrayList seeds) {
         boolean paved = yard != BlockCode.GRASS;
         int depth = lot == null ? 0 : lot.depthBelowBase();
         for (int y = base - 3; y < base - depth; y++) {
@@ -228,6 +233,7 @@ final class NeighbourRepair {
                 if (liquid || code == BlockCode.AIR && !s.isAir()
                         || code == BlockCode.KEEP && y > base && !crown && (ChunkBuilder.isDecoration(s) || rock)) {
                     region.setBlock(p, Palette.AIR, Block.UPDATE_CLIENTS);
+                    Floating.seedAround(p.asLong(), seeds);
                     for (Direction d : Direction.Plane.HORIZONTAL) {
                         n.set(x + d.getStepX(), y, z + d.getStepZ());
                         if (canWrite(region, n) && !region.getBlockState(n).getFluidState().isEmpty()
@@ -263,6 +269,7 @@ final class NeighbourRepair {
             if ((code == BlockCode.KEEP || code == BlockCode.AIR) && ChunkBuilder.isDecoration(section.getBlockState(x & 15, y & 15, z & 15))
                     && !crowns.containsKey(BlockPos.asLong(x, y, z))) {
                 region.setBlock(p.set(x, y, z), Palette.AIR, Block.UPDATE_CLIENTS);
+                Floating.seedAround(p.asLong(), seeds);
             }
         }
     }

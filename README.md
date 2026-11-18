@@ -267,6 +267,8 @@ gen/    the game layer
   ChunkBuilder    writes the chunk plan in blocks; seals liquids; the bridge vines
   NeighbourRepair after every chunk, repairs the neighbours already built (trees, lakes and ores of chunks decorated
                   later)
+  Floating        natural vegetation left hanging in the air (pieces of trees, vines, snow): found and removed after
+                  every chunk, and checked by the audit (`vegetation_floating`)
   Palette         every block used (the structures included, turned by `BlockState.rotate`) + validation
   McTerrain       Terrain over ChunkGenerator.getBaseHeight (noise, the same in any thread)
   Plans           one WorldPlan per dimension (only the overworld)
@@ -292,6 +294,9 @@ command/  /amcs (StructureCommands: locate structure and spawn), the block audit
    - Liquids touching open air become stone.
    - Trees and plants that a neighbouring chunk decorated later puts on the road are removed again
      (`NeighbourRepair.repairNeighbours`).
+   - Natural vegetation that what was cut or removed left in the air (a crown whose trunk the city cut, snow and
+     vines that rested on removed leaves) is removed (`gen/Floating`): a group of leaves, logs, vines, snow or plants
+     that touches nothing else, starting from the blocks next to what this chunk opened or removed.
 
 ## Configuration (`config/abandonedmoderncity-common.toml`)
 

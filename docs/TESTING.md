@@ -246,6 +246,13 @@ Each terrain runs with the seeds `20261104`, `-3297019724594858492` and `42`, on
   - `crown_leaf_missing` (a planned leaf of a completed crown left without a block; the ones checked are counted in
     `crown_leaves`).
 - **Structures:** `parapet`, `tunnel_ceiling` (`stone` or `glowstone`), `tunnel_wall` and `pillar_floating`.
+- **Floating vegetation** (18 Nov 2026, `gen/Floating`): `vegetation_floating`, one failure per group of natural
+  leaves, logs, vines, snow layers or plants above the ground of its columns (the highest block that is neither air nor
+  one of them) that touches nothing holding it: no other block that is not air (ground, stone, water, a structure), no
+  block the plan places, by a face, an edge or a corner (the trunks of acacias touch only by an edge); a group that
+  reaches the edge of the audited area counts as standing. The loose blocks checked are counted in
+  `vegetation_checked`. The battery also prints how many blocks the generation removed ("floating vegetation
+  removed").
 - **Lots:**
   - `lot_hole` (water the structure puts at ground level, the pool of the mansion, does not count);
   - `yard_ground` (free city ground that is not `gray_concrete_powder`; since 11 Nov there is no free ground: the
@@ -355,6 +362,7 @@ hold where the idea applies: the neighbour repair and the rule of ladder and sup
 | 75 | Battery, seed −3297019724594858492, 16 Nov (stage 5) | `loot_in_city`: a vanilla chest (`minecraft:chests/village/village_plains_house`) at −1905, 77, −315, one block under the floor of a structure (`moss_block` at 78) with the planks of a village house under it | hypothesis (strongly supported, not proven): the fill under a lot only goes down from where the column scan finds the first solid block, and the walls and roof of a village house count as solid, so what the house had under the city's floor stays; the buried layers of a structure keep what the world has there. Older than the procedural chests: the code of `fe5af60` (before stage 1, with the old audit) fails the same, at the same position (a first guess that the audit of the buried layers had shown it was wrong) | not fixed: a decision of the user (removing it changes the generation outside the buildings) |
 | 76 | Battery, seed 1, 16 Nov (stage 5) | `hole_filled`: oak leaves in a hole of a bridge at 215, 70, 622 | the leaves are of a vanilla tree (not persistent, distance 3 to 5, 18 oak logs under them): its crown grew into the hole; hypothesis: the same order-of-generation effect as finding 65; the code of `fe5af60` (before stage 1) fails the same, at the same position, and no road, bridge or fill code changed since | not fixed: to look at apart |
 | 77 | In-game test by the user, 16 Nov | too many chests on the ground floor of the tower (older than the procedural chests) | the ground floor has 79 of its 149 barrels, 24 of them counters holding a stone slab, a decorated pot or an iron trapdoor; a barrel that holds something always became a chest: ~33 chests from barrels on that floor in every copy (73% of the tower's), against ~3 drawn | the barrels that hold something stay barrels (the user's choice A): ~9 chests from barrels and ~3 drawn on that floor; the tower 19.7 chests from barrels a copy (44.7 before), the 10 buildings ~212 (~239); cell by cell only those 26 cells changed (chest → barrel, 312 in the 4 rotations and 3 seeds) |
+| 78 | In-game test by the user, 18 Nov | in cities built where there were mountains, pieces of trees, vines and snow floating well above the ground | a chunk decorated after its neighbour was built grows a tree on the old, uncut ground whose branches reach into the neighbour; when the city cuts the trunk, the rest stays: the cleanup of crowns over roads and lots stopped 48 above the surface (a whole oak crown at 126–130 over a street at 77, seed −3297… t03; a cherry crown 49 over a highway, seed 1), the slopes (`SKIRT`) had no cleanup at all (most cases: oak, cherry and acacia crowns, vines and snow 3 to 38 above the ground), a piece of branch left behind kept its leaves "alive" for the cleanup of orphan leaves, and snow and vines resting on removed leaves stayed. Found with a scan of the saved worlds (a first version joined blocks only by their faces and took the standing acacias, whose trunks touch only by an edge, for ~10,800 floating blocks: corrected to 26 neighbours) and the plan of each column read through `/amcs column` (RCON on a copy of the world) | `gen/Floating`: after every chunk, the groups of natural leaves, logs, vines, snow and plants reached from what the chunk opened or removed (its own columns, the orphan leaves, the neighbour repair) that touch nothing holding them (no other block that is not air, no block the plan places, by a face, an edge or a corner; a group reaching the edge of the 3 × 3 chunks counts as standing) are removed, at any height. The audit checks it (`vegetation_floating`): before the fix 40 groups (seed −3297…), 54 (seed 1) and 42 (20261027), after 0 in the 4 seeds; the scan of the new worlds finds only the known false positives of the scan (glow lichen in caves, lily pads on water) |
 | — | Battery (infrastructure) | servers failing with "Address already in use" | a server of an interrupted battery was still shutting down | the script uses port 25591 and refuses to start while a development server is alive |
 
 ## 4. How to reproduce
@@ -417,6 +425,8 @@ road on the ground, without a bridge wall).
   - in Abandoned Simple City, with buildings: 2.45 ms with the cities of 186 (seed 20261027: a 4 × 4 city with 950
     buildings), between 2.26 and 2.77 ms in the following versions (ladders, facades, elastic depth, rooms);
   - 2.25 ms without buildings (this mod, 7 Nov);
+  - the cleanup of floating vegetation (18 Nov 2026, `gen/Floating`) adds ~8%: seed 20261027 2.81 → 3.02 ms,
+    −3297… 3.14 → 3.38, 1 2.41 → 2.66 (3478… 3.24 after; quick with the overgrowth off 4.55 → 4.84);
   - for comparison, Minecraft itself spends tens of ms per chunk.
 - **Unit tests:** ~2 min in all (without the buildings test, which took ~8 min).
 - **Loading of the structures** (the 52, with the overgrowth, outside the game): 11.5 s; ~14.0 s since the check of the
@@ -425,7 +435,8 @@ road on the ground, without a bridge wall).
 
 ## 6. Current results (12 Nov 2026, blocks of 180 × 120 with a ring of structures with gaps and a core taken over by nature, streets and highways of 33, cities in the middle of cells of 736, 4 entrances)
 
-- **Unit:** 81 pass and 1 is skipped (17 Nov 2026, the test of the gas stations drawn 1 or 2 replaced by the one of the 2
+- **Unit:** 81 pass and 1 is skipped (18 Nov 2026 the same: the floating vegetation is checked in the generated world,
+  by the battery; 17 Nov 2026, the test of the gas stations drawn 1 or 2 replaced by the one of the 2
   gas stations in every city; 16 Nov 2026, with the test of the gas stations drawn per city); 80 + 1 with the
   test of medium and immense on a large building; 79 + 1 with
   the test of the hard drawn chests; 78 + 1 with the 5 tests of
@@ -521,6 +532,7 @@ road on the ground, without a bridge wall).
 
   | Seed | Scope | Date | Version | Result |
   |---|---|---|---|---|
+  | all 4 | default (8 targets each) and quick with `structureOvergrowth = false` | 18 Nov | the cleanup of floating vegetation (`gen/Floating`, finding 78) with the new audit check `vegetation_floating` | before the fix (the check alone, the old generation): `vegetation_floating` 40 groups in seed −3297…, 54 in 1, 42 in 20261027 (among them the oak crown at −1841,127,918, 50 over the street); after: 0 in all 4; `20261027` PASS (8 of 8), every `mod blocks:` line and every count equal to the reference, only `vegetation_checked` added (the new references), 3,517 blocks removed; `3478477863671517581` PASS (8,780 removed); `-3297019724594858492` FAIL (1): only finding 75 (4,020 removed); `1` FAIL (1): only finding 76 (8,495 removed); quick with the overgrowth off PASS (3 of 3), the same lines and counts (966 removed); 0 generation errors; 3.02, 3.38, 2.66 and 3.24 ms per chunk (2.81, 3.14 and 2.41 before on the first three; 4.84 off, 4.55 before); `FingerprintTest` unchanged |
   | `20261027` | default (8 targets) and quick with `structureOvergrowth = false` | 17 Nov | every city has exactly 2 gas stations, never 2 large (`City.gasStations`, `Ring.Forced`) | PASS on both (8 of 8 and 3 of 3), 0 generation errors; every target with a city changed in its structures (other structures in other places: t01 1,891 → 1,920 block entities, t02 2,819 → 2,753, t03 1,961 → 1,645, t04 158 → 81, t06 377 → 257, t08 581 → 575; t05 the same count, other positions), t07 equal; the roads, streets, highways, bridges, tunnels and lamps and their counts equal in every target (every count but those of the lots, the structures and the crowns); the new references; 2.72 ms per chunk (4.55 ms with the overgrowth off). Before: `WorldPlanTest` on the 1,022 test cities and 2,883 cities of 50 seeds, all with 2 stations, never 2 large (a first version left 1 city with 1: a station reserved on the 2nd place of the last row of the last block, whose row closed before it; fixed by drawing the city again with it first); `FingerprintTest`: `layout`, `chunks`, `lots` and `crowns` changed, the 7 other parts equal |
   | `20261027` | default (8 targets) and quick with `structureOvergrowth = false` | 17 Nov | 3 chests added to the `.nbt` of the medium workshop (2 on the ground floor, 1 on the terrace) | PASS on both (8 of 8 and 3 of 3), 0 generation errors; t01, t02 and t03 (a medium workshop in each city) +3 block entities and loot containers, the other counts and the roads equal; with the overgrowth off t01 also `structure_loot_hard` 130 → 131: without the overgrowth no vine climbs the facade and the terrace of the workshop has no stairs, so its chest is out of reach (hard); with it, the vines reach the roof (606 roof cells) and the chest is normal; the new references; 2.77 ms per chunk (4.55 ms with the overgrowth off). Before: cell by cell the 3 chests in the 3 colors and 4 blocks of the overgrowth (finding: the vine of the terrace cell of the yellow and red one, a green spot of the roof of the yellow and blue one and of the yellow and red one); `FingerprintTest`: `lots`, `structures` and `weathering` changed |
   | `20261027` | default (8 targets) and quick with `structureOvergrowth = false` | 16 Nov | each city draws 1 or 2 gas stations (`City.gasStations`) | PASS on both (8 of 8 and 3 of 3), 0 generation errors; only the lines of the cities that drew 1 and had 2 changed: t01 (its city, 1,872 → 1,888 block entities, `structure_loot_hard` 125 → 130) and t08 (the cities along the highway, 542 → 581, one lot fewer, 68 → 67), and t01 of the quick run; the roads, highways, bridges, tunnels and lamps and their counts equal; the new references; 2.78 ms per chunk (4.56 ms with the overgrowth off). Before: the lots of the 1,022 test cities (by cell and level) against the previous code: the 495 that drew 2 and the 75 that drew 1 with at most 1 station identical, only the 452 that had 2 and drew 1 changed; `FingerprintTest`: `layout`, `chunks`, `lots` and `crowns` changed, the 7 other parts equal |
@@ -611,7 +623,9 @@ road on the ground, without a bridge wall).
   | t07 longest ramp (360) | `f960ad531d4199d12ecf42bb72b87d9a199bc1fccb85235572528b07c3dcc118` | 191,450 | 0 |
   | t08 whole highway | `5b8612f1107373637c5f6e300b8315506343e0dc59ecf102822629f64d62dae7` | 753,069 | 575 |
 
-  Since every city has exactly 2 gas stations, never 2 large (17 Nov 2026), every line but t07 (no city) changed:
+  Since the cleanup of floating vegetation (18 Nov 2026, `gen/Floating`) the 8 lines are the same and every count
+  too: the blocks removed are natural vegetation, none the mod plans; the `stats:` lines got the new count
+  `vegetation_checked` and no `vegetation_floating`. Before, since every city has exactly 2 gas stations, never 2 large (17 Nov 2026), every line but t07 (no city) changed:
   every city got other structures in other places; the roads, streets, highways, bridges, tunnels and lamps and their
   counts the same. Before, since the 3 chests of the medium workshop (17 Nov 2026) t01, t02 and t03 changed in it (+3
   block entities), the rest the same. Before, since each city draws 1 or 2 gas stations (16 Nov 2026) t01 and t08 changed in the cities that drew 1 and had 2
@@ -662,7 +676,8 @@ road on the ground, without a bridge wall).
   `tools/verify/reference/battery-20261027-full.txt` (what `tools/verify/compare_battery.py` compares); the world of
   that run is (outside git) in `run/selftest_world_ref_english/`, and the one from before the names in
   `run/selftest_world_ref_4dd94ae/` (same blocks), to compare block by block if a line changes.
-- **Reference with the overgrowth off** (`structureOvergrowth = false`, quick scope, 17 Nov 2026, with the 2 gas
+- **Reference with the overgrowth off** (`structureOvergrowth = false`, quick scope, 18 Nov 2026, with the cleanup of
+  floating vegetation: the 3 lines and every count the same, `vegetation_checked` added; before, 17 Nov 2026, with the 2 gas
   stations in every city: the 3 lines changed, the structures of their cities in other places, the roads the same;
   before, the same day, with the 3 chests of the medium workshop: t01 +3 containers, one of them hard (its terrace out of reach without the vines); before, 16 Nov
   2026, with the gas stations drawn 1 or 2 per city: t01 changed in its city, the others the same; before, with the audit of the

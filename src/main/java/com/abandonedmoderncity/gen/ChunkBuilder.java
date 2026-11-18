@@ -9,6 +9,8 @@ import com.abandonedmoderncity.core.Params;
 import com.abandonedmoderncity.core.Profile;
 import com.abandonedmoderncity.core.RoadDecay;
 import com.abandonedmoderncity.core.WorldPlan;
+import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -67,6 +70,8 @@ import net.minecraft.world.level.chunk.ProtoChunk;
  *   <li>Leaves left without their trunk are marked for post-processing, so vanilla lets them decay.</li>
  *   <li>Trees, lakes and plants that chunks decorated later put on neighbouring roads are removed again
  *   ({@link NeighbourRepair#repairNeighbours}).</li>
+ *   <li>Natural vegetation left hanging in the air by what this chunk cut or removed (pieces of trees, vines, snow)
+ *   is removed ({@link Floating}).</li>
  * </ol>
  * Writes stay in this chunk, except steps 2-4 which only touch the 3 x 3 chunks the region allows.
  */
@@ -85,6 +90,8 @@ final class ChunkBuilder {
     private final int[] airLo = new int[256];
     private final int[] airHi = new int[256];
     private final List<int[]> removedTrunks = new ArrayList<>();
+    /** The orphan leaves removed ({@link #removeOrphanLeaves}): what rested on them may float. */
+    private final LongArrayList orphansRemoved = new LongArrayList();
     private final int scanTop;
 
     // column scan results
@@ -113,14 +120,80 @@ final class ChunkBuilder {
         removeVillageMobs(plan, chunk);
         ChunkPlan cp = plan.chunk(c.x, c.z);
         boolean built = false;
+        // where vegetation may have lost what held it: around what this chunk cut and what the repair removed
+        LongArrayList seeds = new LongArrayList();
         if (cp.any) {
             ChunkBuilder b = new ChunkBuilder(plan, region, chunk, cp);
             b.run();
+            b.seeds(seeds);
             built = true;
         }
         built |= bridgeVines(plan, chunk);
-        NeighbourRepair.repairNeighbours(plan, region, c);
+        NeighbourRepair.repairNeighbours(plan, region, c, seeds);
+        built |= removeFloating(plan, region, c, seeds);
         return built;
+    }
+
+    /**
+     * The loose blocks ({@link Floating#loose}) beside the columns this chunk opened (from 1 under to 1 over the
+     * opened range, in the column and its 8 neighbours) and around the orphan leaves it removed.
+     */
+    private void seeds(LongArrayList out) {
+        int rx0 = bx - 16;
+        int rz0 = bz - 16;
+        int rx1 = bx + 31;
+        int rz1 = bz + 31;
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        for (int i = 0; i < 256; i++) {
+            if (airLo[i] > airHi[i]) {
+                continue;
+            }
+            int x = bx + (i & 15);
+            int z = bz + (i >> 4);
+            for (int dz = -1; dz <= 1; dz++) {
+                for (int dx = -1; dx <= 1; dx++) {
+                    int nx = x + dx;
+                    int nz = z + dz;
+                    if (nx < rx0 || nx > rx1 || nz < rz0 || nz > rz1) {
+                        continue;
+                    }
+                    for (int y = Math.max(minY, airLo[i] - 1); y <= Math.min(maxY - 1, airHi[i] + 1); y++) {
+                        if (Floating.loose(region.getBlockState(p.set(nx, y, nz)))) {
+                            out.add(BlockPos.asLong(nx, y, nz));
+                        }
+                    }
+                }
+            }
+        }
+        for (int k = 0; k < orphansRemoved.size(); k++) {
+            Floating.seedAround(orphansRemoved.getLong(k), out);
+        }
+    }
+
+    /**
+     * Removes the groups of natural vegetation reached from {@code seeds} that touch nothing holding them, inside the
+     * 3 x 3 chunks this chunk may write ({@link Floating#find}; a group reaching the edge counts as standing, and the
+     * chunk built next to it looks again). Nothing the plan places is removed.
+     */
+    private static boolean removeFloating(WorldPlan plan, WorldGenRegion region, ChunkPos c, LongArrayList seeds) {
+        if (seeds.isEmpty()) {
+            return false;
+        }
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        ChunkAccess center = region.getChunk(c.x, c.z);
+        int minY = center.getMinBuildHeight();
+        int maxY = center.getMaxBuildHeight() - 1;
+        long[] removed = {0};
+        Floating.find(seeds, (x, y, z) -> region.getBlockState(p.set(x, y, z)), new Floating.Planned(plan),
+                (c.x - 1) << 4, (c.z - 1) << 4, ((c.x + 1) << 4) + 15, ((c.z + 1) << 4) + 15, minY, maxY,
+                new Long2ByteOpenHashMap(), g -> {
+                    for (int k = 0; k < g.size(); k++) {
+                        region.setBlock(p.set(g.getLong(k)), Palette.AIR, Block.UPDATE_CLIENTS);
+                    }
+                    removed[0] += g.size();
+                });
+        FLOATING_REMOVED.addAndGet(removed[0]);
+        return removed[0] > 0;
     }
 
     /** Creatures a village brings with its houses ({@link #removeVillageMobs}). */
@@ -128,6 +201,8 @@ final class ChunkBuilder {
             "minecraft:zombie_villager", "minecraft:iron_golem", "minecraft:cat");
     /** Village creatures removed so far (the self-test reports it). */
     static final AtomicInteger VILLAGE_MOBS_REMOVED = new AtomicInteger();
+    /** Blocks of floating vegetation removed so far ({@link #removeFloating}). */
+    static final AtomicLong FLOATING_REMOVED = new AtomicLong();
 
     /**
      * A village generated where a city is: its houses are placed before the city, each
@@ -656,6 +731,7 @@ final class ChunkBuilder {
                         continue;
                     }
                     region.setBlock(p.set(x, y, z), Palette.AIR, Block.UPDATE_CLIENTS);
+                    orphansRemoved.add(BlockPos.asLong(x, y, z));
                 }
             }
         }

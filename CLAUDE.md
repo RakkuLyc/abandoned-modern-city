@@ -497,6 +497,23 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   plants only on soil, carpets only on a full block, vines only held by a full block or by the vine above. In the 52
   files: 38,500 vines, 10,190 floors turned into soil, 5,088 carpets, 4,946 plants, 3,907 mossy, 2,451 cracked (65,082
   blocks; 65,086 before the chests of the medium workshop). The measures before and after of each structure are in `docs/TESTING.md`.
+- Floating vegetation (18 Nov 2026, asked by the user: in cities built where there were mountains, pieces of trees,
+  vines and snow floated well above the ground; `gen/Floating`, finding 78): a chunk decorated after its neighbour was
+  built grows trees on the old, uncut ground whose branches reach into that neighbour; when the city cuts the trunk
+  the rest stayed (the cleanup of crowns over roads and lots stops 48 blocks up, the slopes had none, a piece of branch
+  kept its leaves "alive" for the cleanup of orphan leaves, snow and vines rested on removed leaves). After every chunk
+  (`ChunkBuilder.removeFloating`), starting from the loose blocks next to what it opened (from 1 under to 1 over the
+  opened range of each column, in the column and its 8 neighbours), around the orphan leaves it removed and around
+  what the neighbour repair removed, every group of natural decoration (`ChunkBuilder.isDecoration`: leaves not
+  persistent, logs, vines, snow layers, plants, huge mushrooms...) joined by a face, an edge or a corner that touches
+  nothing holding it is removed, at any height: holding = any other block that is not air (ground, stone, water, a
+  structure), a block the plan places there (`Floating.Planned`: lot codes other than keep and air, the leaves
+  completing structure crowns, street light parts), or the edge of the 3 × 3 chunks it may write (the chunk built next
+  to it looks again); a group of more than 20,000 blocks counts as standing (`Floating.MAX_GROUP`). The planned blocks
+  do not change (in the battery every `mod blocks:` line stayed the same); removed in the battery: 3,517 blocks in
+  seed 20261027, 4,020 in −3297…, 8,495 in 1, 8,780 in 3478…; the generation ~8% slower per chunk. The world audit
+  checks it (`vegetation_floating`, with the loose blocks checked in `vegetation_checked`): before the fix 40, 54 and
+  42 floating groups in three seeds, after 0 in all 4. Worlds generated before keep what floats in their chunks.
 - Villages inside the cities (13 Nov 2026, asked by the user: villagers and an iron golem in a city generated where
   there was a village): the houses of the village are generated before the city, each with its creatures, which stayed
   when the city was built over them (in the test, a villager stuck inside the fill of the street). When it builds each
