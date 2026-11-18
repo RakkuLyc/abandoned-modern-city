@@ -528,7 +528,11 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   do not change (in the battery every `mod blocks:` line stayed the same); removed in the battery: 3,517 blocks in
   seed 20261027, 4,020 in −3297…, 8,495 in 1, 8,780 in 3478…; the generation ~8% slower per chunk. The world audit
   checks it (`vegetation_floating`, with the loose blocks checked in `vegetation_checked`): before the fix 40, 54 and
-  42 floating groups in three seeds, after 0 in all 4. Worlds generated before keep what floats in their chunks.
+  42 floating groups in three seeds, after 0 in all 4. Worlds generated before keep what floats in their chunks. Since the review for 1.0.0
+  (findings 79 and 80: a vine hanging on nothing under jungle leaves and grass over a lava lake dug later, both
+  Minecraft's own, also with the mod off) the audit fails a group only within 7 columns (`Floating.MOD_REACH`) of a
+  road, lot or tunnel wall or of a slope whose ground the mod moved; the others are counted in
+  `vegetation_floating_vanilla`.
 - Planning on several cores (18 Nov 2026, asked by the user: a new world took ~13 s before its first chunks, 4,174
   terrain samples of ~2.9 ms): the cells of cities not decided yet in a `WorldPlan.citiesIn` (9 samples each; the
   highways near a chunk need the cities ~4,400 blocks around and their neighbours) are decided in parallel, and the

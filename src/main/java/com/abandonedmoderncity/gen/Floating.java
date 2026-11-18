@@ -180,4 +180,58 @@ public final class Floating {
         }
     }
 
+
+    /** How far (horizontally) from a column the mod changed a floating group may come from it (the reach of a crown). */
+    public static final int MOD_REACH = 7;
+
+    /**
+     * Whether the mod could have left this floating group: one of its blocks lies within {@link #MOD_REACH} columns of a
+     * column it builds (a road, a lot, a tunnel wall) or of a slope whose ground it moved, cut down to or filled up to a
+     * limit of the plan (the ground right at {@code lo} or {@code hi}; a slope whose ground lies strictly between them
+     * kept the natural ground). A group far from those is the natural world's own: Minecraft hangs vines that hold on
+     * nothing under jungle crowns and leaves plants over a lake a later chunk dug under them, with or without the mod
+     * (review for 1.0.0, B1 and B2). The slope's ground is read through {@code world}, only inside x0..x1, z0..z1.
+     */
+    public static boolean nearModColumns(WorldPlan plan, Reader world, LongArrayList group, int x0, int z0, int x1, int z1,
+                                         int minY, int maxY) {
+        Map<Long, Boolean> seen = new HashMap<>();
+        for (int k = 0; k < group.size(); k++) {
+            int gx = BlockPos.getX(group.getLong(k));
+            int gz = BlockPos.getZ(group.getLong(k));
+            for (int dz = -MOD_REACH; dz <= MOD_REACH; dz++) {
+                for (int dx = -MOD_REACH; dx <= MOD_REACH; dx++) {
+                    int x = gx + dx;
+                    int z = gz + dz;
+                    Boolean touched = seen.get(BlockPos.asLong(x, 0, z));
+                    if (touched == null) {
+                        touched = modColumn(plan, world, x, z, x0, z0, x1, z1, minY, maxY);
+                        seen.put(BlockPos.asLong(x, 0, z), touched);
+                    }
+                    if (touched) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean modColumn(WorldPlan plan, Reader world, int x, int z, int x0, int z0, int x1, int z1,
+                                     int minY, int maxY) {
+        ChunkPlan cp = plan.chunk(x >> 4, z >> 4);
+        int i = ChunkPlan.idx(x & 15, z & 15);
+        byte kind = cp.kind[i];
+        if (kind == ChunkPlan.ROAD || kind == ChunkPlan.LOT || kind == ChunkPlan.TUNNEL_WALL) {
+            return true;
+        }
+        if (kind != ChunkPlan.SKIRT || x < x0 || x > x1 || z < z0 || z > z1) {
+            return false;
+        }
+        int y = maxY;
+        while (y > minY && !ChunkBuilder.isGround(world.get(x, y, z))) {
+            y--;
+        }
+        int walk = y + 1;
+        return walk <= cp.lo[i] || walk >= cp.hi[i];
+    }
 }

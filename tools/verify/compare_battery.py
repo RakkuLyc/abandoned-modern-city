@@ -6,7 +6,8 @@ REFERENCE defaults to tools/verify/reference/battery-20261027-full.txt (use batt
 for a quick run with structureOvergrowth = false). Compared, target by target: the "mod blocks:" digest (the blocks the
 mod decides) and the "stats:" counts of both audits, without loot_containers_anywhere (it also counts vanilla chests,
 which differ from one run to the next) and vegetation_checked (the natural vegetation above the ground, vanilla trees
-included, which differ too: 350,389 and 352,020 in t01 in two runs of the same generation, 18 Nov 2026). Timings are not compared. Exits with 1 on any difference or if the report does
+included, which differ too: 350,389 and 352,020 in t01 in two runs of the same generation, 18 Nov 2026) and
+vegetation_floating_vanilla (floating groups of Minecraft's own, far from what the mod builds). Timings are not compared. Exits with 1 on any difference or if the report does
 not end with RESULT: PASS.
 """
 import os
@@ -32,7 +33,7 @@ def stable(path):
             out.append(('mod blocks', line.split('mod blocks:', 1)[1].strip()))
         elif 'stats:' in line:
             stats = line.split('stats:', 1)[1].strip()
-            for vanilla in ('loot_containers_anywhere', 'vegetation_checked'):
+            for vanilla in ('loot_containers_anywhere', 'vegetation_checked', 'vegetation_floating_vanilla'):
                 stats = re.sub(r'(, )?' + vanilla + r'=\d+', '', stats).replace('{, ', '{')
             out.append(('stats', stats))
     return out

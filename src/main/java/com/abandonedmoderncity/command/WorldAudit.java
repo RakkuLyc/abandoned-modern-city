@@ -65,7 +65,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  *   audited area.</li>
  *   <li>{@code vegetation_floating}: a group of natural leaves, logs, vines, snow or plants above the ground of its
  *   columns that touches nothing that holds it ({@link Floating}; a group reaching the edge of the audited area is
- *   taken as standing).</li>
+ *   taken as standing), within {@link Floating#MOD_REACH} of a column the mod built or a slope whose ground it moved
+ *   (farther, the group is Minecraft's own and only counted in the stat {@code vegetation_floating_vanilla}).</li>
  * </ul>
  */
 public final class WorldAudit {
@@ -147,7 +148,9 @@ public final class WorldAudit {
     /**
      * The loose natural blocks above the ground of each column (the highest block that is neither air nor loose) are
      * grouped ({@link Floating#find}); a group that touches nothing that holds it fails {@code vegetation_floating}
-     * (one failure per group, with its first block, its size and its height above what is under it).
+     * (one failure per group, with its first block, its size and its height above what is under it) when the mod could
+     * have left it ({@link Floating#nearModColumns}); the others, Minecraft's own, are counted in
+     * {@code vegetation_floating_vanilla}.
      */
     private static void floating(PlanAudit.Report r, ServerLevel level, WorldPlan plan, int cx0, int cz0, int cx1,
                                  int cz1) {
@@ -189,6 +192,12 @@ public final class WorldAudit {
         r.stat("vegetation_checked", seeds.size());
         Floating.find(seeds, world, new Floating.Planned(plan), cx0 * 16, cz0 * 16, cx1 * 16 + 15, cz1 * 16 + 15,
                 minY, maxY, new Long2ByteOpenHashMap(), g -> {
+                    if (!Floating.nearModColumns(plan, world, g, cx0 * 16, cz0 * 16, cx1 * 16 + 15, cz1 * 16 + 15, minY,
+                            maxY)) {
+                        // far from anything the mod built or moved: the natural world's own (counted apart)
+                        r.stat("vegetation_floating_vanilla", 1);
+                        return;
+                    }
                     long first = g.getLong(0);
                     int x = BlockPos.getX(first);
                     int y = BlockPos.getY(first);
