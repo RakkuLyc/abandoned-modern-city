@@ -25,6 +25,12 @@ ring around each city block, with per-city limits for pharmacies, workshops and 
   the vehicle parts of OAmP, Immersive Vehicles and MTS Official Pack). Whoever clones the repository and wants to
   redo that survey copies the jars into `libs/` by hand: `ApocalypseLoot-1.1.1.jar`,
   `Immersive Vehicles-1.21.1-24.0.0.jar`, `MTS Official Pack-1.21.1-V29.jar` and `OAmP-1.21.1-V3.jar`.
+- The mod's icon (`src/main/resources/logo.png`, `logoFile` of `neoforge.mods.toml`) is a render of the crash
+  building made by `tools/render_icon.py` (an oblique view of a `.nbt` with the game's textures, the ground layer
+  left out, transparent background): `python3 tools/render_icon.py
+  src/main/resources/amcs/buildings/abandoned_crash_building.nbt
+  build/moddev/artifacts/neoforge-21.1.219-client-extra-aka-minecraft-resources.jar src/main/resources/logo.png 512
+  oblique noground`.
 - The complete, current specification is in `CLAUDE.md`; how it got there (dates, what changed and why) in
   `docs/HISTORY.md`.
 
