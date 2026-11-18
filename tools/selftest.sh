@@ -11,9 +11,14 @@ if [ ${#SEEDS[@]} -eq 0 ]; then
   SEEDS=(20261027 -3297019724594858492 3478477863671517581 1)
 fi
 mkdir -p run
+# refuse to start while a development server is alive (it would hold the port and the world)
 if command -v powershell >/dev/null 2>&1; then
   running=$(powershell -NoProfile -Command "(Get-CimInstance Win32_Process -Filter \"Name = 'java.exe'\" | Where-Object { \$_.CommandLine -match 'devlaunch' }).Count" | tr -d '\r')
   if [ "${running:-0}" != "0" ] && [ -n "$running" ]; then echo "a dev server is already running; stop it first"; exit 2; fi
+elif command -v pgrep >/dev/null 2>&1; then
+  # the dots are escaped so that the pattern does not match a shell whose own command line contains it
+  running=$(pgrep -f 'net\.neoforged\.devlaunch\.Main' | tr '\n' ' ')
+  if [ -n "$running" ]; then echo "a dev server is already running (PID $running); stop it first, by that PID"; exit 2; fi
 fi
 echo "eula=true" > run/eula.txt
 overall=0
