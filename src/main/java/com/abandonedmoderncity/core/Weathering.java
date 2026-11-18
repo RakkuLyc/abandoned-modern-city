@@ -82,7 +82,16 @@ public final class Weathering {
             "minecraft:large_fern", "minecraft:dead_bush", "minecraft:cobweb", "minecraft:moss_carpet",
             "minecraft:glow_lichen"};
 
+    // the answers depend only on the name, and the same few hundred names come back millions of times: kept
+    private static final Map<String, Boolean> FULL = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String, Boolean> MINERAL_OF = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String, Boolean> SOFT_OF = new java.util.concurrent.ConcurrentHashMap<>();
+
     static boolean full(String block) {
+        return FULL.computeIfAbsent(block, Weathering::isFull);
+    }
+
+    private static boolean isFull(String block) {
         for (String k : NOT_FULL_EXACT) {
             if (block.equals(k)) {
                 return false;
@@ -97,6 +106,10 @@ public final class Weathering {
     }
 
     static boolean mineral(String block) {
+        return MINERAL_OF.computeIfAbsent(block, Weathering::isMineral);
+    }
+
+    private static boolean isMineral(String block) {
         if (!full(block)) {
             return false;
         }
@@ -109,6 +122,10 @@ public final class Weathering {
     }
 
     static boolean soft(String block) {
+        return SOFT_OF.computeIfAbsent(block, Weathering::isSoft);
+    }
+
+    private static boolean isSoft(String block) {
         for (String k : SOFT) {
             if (block.equals(k)) {
                 return true;
@@ -538,7 +555,7 @@ public final class Weathering {
         }
         for (int[] p : turn) {
             String full = e.state(p[0], p[1], p[2]);
-            String b = Structures.blockOf(full);
+            String b = Template.blockOf(full);
             for (String[] m : MOSSY) {
                 if (b.equals(m[0])) {
                     e.set(p[0], p[1], p[2], m[1] + full.substring(b.length()));
@@ -587,7 +604,7 @@ public final class Weathering {
         }
 
         String block(int x, int y, int z) {
-            return Structures.blockOf(state(x, y, z));
+            return Template.blockOf(state(x, y, z));
         }
 
         boolean added(int x, int y, int z) {

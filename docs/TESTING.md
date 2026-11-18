@@ -436,9 +436,23 @@ road on the ground, without a bridge wall).
     −3297… 3.14 → 3.38, 1 2.41 → 2.66 (3478… 3.24 after; quick with the overgrowth off 4.55 → 4.84);
   - for comparison, Minecraft itself spends tens of ms per chunk.
 - **Unit tests:** ~2 min in all (without the buildings test, which took ~8 min).
-- **Loading of the structures** (the 52, with the overgrowth, outside the game): 11.5 s; ~14.0 s since the check of the
-  spots with the walk (stage 3); 12.7 s since the floors, rooms
-  and spots of the buildings (`core/Rooms`, 15 Nov 2026), once at startup.
+- **Loading of the structures** (the 52, with the overgrowth, once at startup): **~5.0 s** outside the game since 18
+  Nov 2026 (asked by the user; three runs 5.17, 4.97 and 5.02 s), 13.3 s before; in the game the mod's deferred task
+  ("took ... to run a deferred task" in the log) 15.3 → 5.1 s (4.3 s with the overgrowth off). Measured stage by
+  stage before changing anything (outside the game, the 52 one after the other): overgrowth 6.1 s, reading the `.nbt`
+  4.3 s, rooms and spots 2.1 s, access 0.4 s, the rest under 0.3 s. Three changes, none of them in what is produced:
+  the `.nbt` reader read byte by byte from the decompressor without a buffer (`Template.load`: 4.3 → 1.2 s); the
+  overgrowth asked millions of times the same questions about the same block names (`Weathering.full`, `mineral`,
+  `soft`, `Template.blockOf`, now kept per name: 6.2 → 2.6 s); reading and weathering the 52 templates run in
+  parallel (`core/Preload`; what is left, the block state ids, whose order the world depends on, still goes one by one
+  in the order of the index). A first parallel version hung: the lambda handing the rows to the other threads was
+  written in `Structures`, so it belonged to the class being initialized and the threads waited for it while it
+  waited for them (a thread dump showed it); the lambda is now in `Preload`. Proof that nothing changed:
+  `FingerprintTest` (`structures`, `weathering`, `lots`) unchanged, the battery of 20261027 and the quick one with
+  the overgrowth off identical to the references, 65,082 blocks of overgrowth as before. Left: the rooms and spots
+  of the buildings (~2.3 s) still one by one (they come between the ids). Before: 11.5 s; ~14.0 s since the check of
+  the spots with the walk (stage 3); 12.7 s since the floors, rooms and spots of the buildings (`core/Rooms`, 15 Nov
+  2026).
 
 ## 6. Current results (12 Nov 2026, blocks of 180 × 120 with a ring of structures with gaps and a core taken over by nature, streets and highways of 33, cities in the middle of cells of 736, 4 entrances)
 
@@ -539,6 +553,7 @@ road on the ground, without a bridge wall).
 
   | Seed | Scope | Date | Version | Result |
   |---|---|---|---|---|
+  | `20261027` | default (8 targets) and quick with `structureOvergrowth = false` | 18 Nov | faster loading of the structures (buffered `.nbt` reader, the overgrowth's block-name questions kept, templates read and weathered in parallel by `core/Preload`): nothing produced may change | PASS on both (8 of 8 and 3 of 3), identical to both references (every `mod blocks:` line and count), 0 generation errors; the mod's deferred task in the game 15.3 → 5.1 s (4.3 s off), outside the game 13.3 → ~5.0 s; `FingerprintTest` unchanged; 2.89 ms per chunk (4.62 off) |
   | all 4 | default (8 targets each) and quick with `structureOvergrowth = false` | 18 Nov | the foundation of the lots (finding 75) and the holes of the bridges (finding 76), with the new audit check `lot_foundation` | before the fix (the check alone): `lot_foundation` 279 failures in seed −3297… (t01 and t08 water and caves under the floor, t02 the village chest, 3 beds and another chest, t03 and t06 caves), 13 in 20261027 (t02 caves, t03 a dungeon chest and spawner); after: **the 4 seeds PASS** (the first time since stage 1: no `loot_in_city`, no `hole_filled`), 0 generation errors; `20261027`: every `mod blocks:` line and every count equal to the reference (the structures' `building_mismatch`, block entities, loot and hard containers included), only `foundation_checked` added (the new references); quick with the overgrowth off PASS, the same; `vegetation_checked` varies between runs of the same generation (t01 350,389 and 352,020), so `compare_battery.py` skips it like `loot_containers_anywhere`; 3.37, 2.56, 2.90 and 3.14 ms per chunk (4.64 off); `FingerprintTest` unchanged |
   | all 4 | default (8 targets each) and quick with `structureOvergrowth = false` | 18 Nov | the cleanup of floating vegetation (`gen/Floating`, finding 78) with the new audit check `vegetation_floating` | before the fix (the check alone, the old generation): `vegetation_floating` 40 groups in seed −3297…, 54 in 1, 42 in 20261027 (among them the oak crown at −1841,127,918, 50 over the street); after: 0 in all 4; `20261027` PASS (8 of 8), every `mod blocks:` line and every count equal to the reference, only `vegetation_checked` added (the new references), 3,517 blocks removed; `3478477863671517581` PASS (8,780 removed); `-3297019724594858492` FAIL (1): only finding 75 (4,020 removed); `1` FAIL (1): only finding 76 (8,495 removed); quick with the overgrowth off PASS (3 of 3), the same lines and counts (966 removed); 0 generation errors; 3.02, 3.38, 2.66 and 3.24 ms per chunk (2.81, 3.14 and 2.41 before on the first three; 4.84 off, 4.55 before); `FingerprintTest` unchanged |
   | `20261027` | default (8 targets) and quick with `structureOvergrowth = false` | 17 Nov | every city has exactly 2 gas stations, never 2 large (`City.gasStations`, `Ring.Forced`) | PASS on both (8 of 8 and 3 of 3), 0 generation errors; every target with a city changed in its structures (other structures in other places: t01 1,891 → 1,920 block entities, t02 2,819 → 2,753, t03 1,961 → 1,645, t04 158 → 81, t06 377 → 257, t08 581 → 575; t05 the same count, other positions), t07 equal; the roads, streets, highways, bridges, tunnels and lamps and their counts equal in every target (every count but those of the lots, the structures and the crowns); the new references; 2.72 ms per chunk (4.55 ms with the overgrowth off). Before: `WorldPlanTest` on the 1,022 test cities and 2,883 cities of 50 seeds, all with 2 stations, never 2 large (a first version left 1 city with 1: a station reserved on the 2nd place of the last row of the last block, whose row closed before it; fixed by drawing the city again with it first); `FingerprintTest`: `layout`, `chunks`, `lots` and `crowns` changed, the 7 other parts equal |

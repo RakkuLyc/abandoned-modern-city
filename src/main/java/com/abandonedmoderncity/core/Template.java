@@ -147,8 +147,8 @@ public final class Template {
                     }
                     String want = src.palette.get(ps);
                     String have = palette.get(pv);
-                    if (NEUTRAL.contains(Structures.blockOf(want)) && !want.equals(have)
-                            && !Structures.blockOf(have).equals("minecraft:air")) {
+                    if (NEUTRAL.contains(blockOf(want)) && !want.equals(have)
+                            && !blockOf(have).equals("minecraft:air")) {
                         changed.put(x + sx * (z + sz * y), want);
                     }
                 }
@@ -185,6 +185,13 @@ public final class Template {
         return palette.indexOf(state);
     }
 
+    /** The block of a block state (its name without the properties); kept, it is asked millions of times. */
+    static String blockOf(String state) {
+        return BLOCK_OF.computeIfAbsent(state, s -> s.contains("[") ? s.substring(0, s.indexOf('[')) : s);
+    }
+
+    private static final Map<String, String> BLOCK_OF = new java.util.concurrent.ConcurrentHashMap<>();
+
     /** The park fountain (waterfall.nbt). */
     public static final Template WATERFALL = load("waterfall");
 
@@ -193,7 +200,7 @@ public final class Template {
             if (in == null) {
                 throw new IllegalStateException("missing template /amcs/" + name + ".nbt");
             }
-            DataInputStream d = new DataInputStream(new GZIPInputStream(in));
+            DataInputStream d = new DataInputStream(new java.io.BufferedInputStream(new GZIPInputStream(in, 65536), 65536));
             int type = d.readUnsignedByte();
             d.readUTF();
             @SuppressWarnings("unchecked")

@@ -331,21 +331,11 @@ public final class Structures {
 
     /** The template of a structure as saved, with the banners its index line copies in (before {@link Weathering}). */
     static Template source(String name) {
-        Template t = Template.load("buildings/" + name);
-        String from = NEUTRAL_FROM.get(name);
-        if (from != null) {
-            // the colored letters of the variant go: the original's neutral wall comes back
-            int[] n = new int[1];
-            t = t.withNeutralFrom(Template.load("buildings/" + from), n);
-            LETTERS_REMOVED.put(name, n[0]);
+        Preload.Source s = Preload.source(name, NEUTRAL_FROM.get(name), BANNER_SPECS.get(name));
+        if (s.letters() >= 0) {
+            LETTERS_REMOVED.put(name, s.letters());
         }
-        String spec = BANNER_SPECS.get(name);
-        if (spec != null) {
-            // <source>@<dx>,<dz>:<from color>=<to color>
-            String[] a = spec.split("[@,:=]");
-            t = t.withBannersFrom(Template.load("buildings/" + a[0]), Integer.parseInt(a[1]), Integer.parseInt(a[2]), a[3], a[4]);
-        }
-        return t;
+        return s.template();
     }
 
     /** Chests saved in the template of each building, taken out when it loads ({@link #withoutChests}). */
@@ -412,7 +402,7 @@ public final class Structures {
     }
 
     static String blockOf(String state) {
-        return state.contains("[") ? state.substring(0, state.indexOf('[')) : state;
+        return Template.blockOf(state);
     }
 
     static boolean isLogName(String b) {
@@ -423,20 +413,19 @@ public final class Structures {
         return b.endsWith("_leaves");
     }
 
-    private static Def define(String type, String name, int ground, int turn, String model, String bannerSpec,
-                              String neutralFrom, int seed, String hardCells, Map<String, Integer> ids) {
-        if (bannerSpec != null) {
-            BANNER_SPECS.put(name, bannerSpec);
+    /**
+     * A structure of the index from its template already read and weathered ({@link Preload#of}, done in parallel
+     * for all of them): what is left goes in the order of the index, so the block state ids stay the same.
+     */
+    private static Def define(String type, String name, int ground, int turn, String model, Preload.Prepared p,
+                              String hardCells, Map<String, Integer> ids) {
+        if (p.letters() >= 0) {
+            LETTERS_REMOVED.put(name, p.letters());
         }
-        if (neutralFrom != null) {
-            NEUTRAL_FROM.put(name, neutralFrom);
-        }
-        Template t = source(name);
-        if (Weathering.enabled) {
+        Template t = p.template();
+        if (p.report() != null) {
             // nature taking over (config structureOvergrowth): before anything below reads the template
-            Weathering.Result w = Weathering.apply(t, ground, seed);
-            t = w.template();
-            WEATHERING.put(name, w.report());
+            WEATHERING.put(name, p.report());
         }
         if (isBuildingType(type)) {
             CHESTS_REMOVED.put(name, chestsIn(t));
@@ -683,26 +672,36 @@ public final class Structures {
     static {
         Map<String, Integer> ids = new LinkedHashMap<>();
         List<Def> defs = new ArrayList<>();
+        List<String[]> rows = new ArrayList<>();
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
                 Structures.class.getResourceAsStream("/amcs/buildings/index.txt"), StandardCharsets.UTF_8))) {
             String line;
             while ((line = in.readLine()) != null) {
-                if (line.isBlank() || line.startsWith("#")) {
-                    continue;
+                if (!line.isBlank() && !line.startsWith("#")) {
+                    rows.add(line.trim().split("\\|"));
                 }
-                String[] f = line.trim().split("\\|");
-                int turn = f.length > 3 && !f[3].isBlank() ? Math.floorMod(Integer.parseInt(f[3].trim()) / 90, 4) : 0;
-                String model = f.length > 4 && !f[4].isBlank() ? f[4].trim() : f[1].trim();
-                String banners = f.length > 5 && !f[5].isBlank() ? f[5].trim() : null;
-                String neutral = f.length > 6 && !f[6].isBlank() ? f[6].trim() : null;
-                // the overgrowth seed: the index's, else the hash of the file name
-                int seed = f.length > 7 && !f[7].isBlank() ? Integer.parseInt(f[7].trim()) : f[1].hashCode();
-                String hard = f.length > 8 && !f[8].isBlank() ? f[8].trim() : null;
-                defs.add(define(f[0], f[1], f.length > 2 ? Integer.parseInt(f[2].trim()) : 0, turn, model, banners,
-                        neutral, seed, hard, ids));
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
+        }
+        for (String[] f : rows) {
+            if (f.length > 5 && !f[5].isBlank()) {
+                BANNER_SPECS.put(f[1], f[5].trim());
+            }
+            if (f.length > 6 && !f[6].isBlank()) {
+                NEUTRAL_FROM.put(f[1], f[6].trim());
+            }
+        }
+        // read and weather every template at once (they depend on nothing else; ~2/3 of the loading time), then the
+        // rest one by one in the order of the index
+        List<Preload.Prepared> prepared = Preload.all(rows, Weathering.enabled);
+        for (int k = 0; k < rows.size(); k++) {
+            String[] f = rows.get(k);
+            int turn = f.length > 3 && !f[3].isBlank() ? Math.floorMod(Integer.parseInt(f[3].trim()) / 90, 4) : 0;
+            String model = f.length > 4 && !f[4].isBlank() ? f[4].trim() : f[1].trim();
+            String hard = f.length > 8 && !f[8].isBlank() ? f[8].trim() : null;
+            defs.add(define(f[0], f[1], f.length > 2 ? Integer.parseInt(f[2].trim()) : 0, turn, model,
+                    prepared.get(k), hard, ids));
         }
         STATES.addAll(ids.keySet());
         ALL = List.copyOf(defs);

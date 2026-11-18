@@ -344,7 +344,10 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     2,395, 606; green tower 27, 1,447, 437; crash 18, 2,437, 725. Hard: wide 275 (the garage), crash 117, skeleton 14
     and green tower 9 (terrace); street: brutalist 251, bluish 217, tower 185, green tower 105, crash 78, skeleton 49.
     The roofs: wide +61 8 spots, brutalist +116 21, apocalyptic +79 none (only a tree beside it). Floor plans:
-    `build/test-renders/rooms/`. With the drawing below it brings the loading of the structures from 11.5 to ~14.0 s;
+    `build/test-renders/rooms/`. With the drawing below it brought the loading of the structures from 11.5 to ~14.0 s (since 18 Nov 2026 ~5.0 s
+    outside the game and 5.1 s in it: the `.nbt` read through a buffer, the questions of the overgrowth about the
+    block names kept, the 52 templates read and weathered in parallel by `core/Preload`, the rest still in the order
+    of the index; nothing produced changed, see `docs/TESTING.md`, section 5);
   - chests drawn in each copy of a building (asked by the user on 15 Nov 2026, stage 3 of the procedural chests;
     `core/ChestDraw`, `Def.chests(seed)`, placed by `Def.code(..., seed)` where the template has air, through
     `Lot.code` for the chunk builder, the neighbour repair, the audit, the fingerprint and `/amcs spawn`): a pure

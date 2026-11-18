@@ -249,6 +249,8 @@ core/   the pure planner (no Minecraft classes), tested with JUnit
                   rotation, per-city limits, digging with `cave_air`, the chests of the buildings taken out
   StructureLoader the preparation of each template: floor out to the edge, real leaves, cut crowns completed, loose
                   cobwebs, openings of the garage
+  Preload         reads and weathers the 52 templates in parallel at startup (~5 s in all; the rest of the loading
+                  goes in the order of the index, which the block state ids depend on)
   Access          the containers of the structures that are hard to get to (out of walking reach, listed by hand
                   in index.txt, underground, on the terrace, in the attic of a house): more generous loot
   Barrels         the barrels of the buildings: 70% taken out, the others chests, drawn per copy (lot seed)
