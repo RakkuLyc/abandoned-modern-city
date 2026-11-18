@@ -522,6 +522,12 @@ final class ChunkBuilder {
             set(x, y, z, y >= base - 3 ? Palette.DIRT : Palette.STONE);
         }
         Lot lot = cp.lot[i];
+        // the foundation: what stood there before the city (a cave, the house of a village) is not left under the floor
+        for (int y = base - FOUNDATION; y < base; y++) {
+            if ((lot == null || lot.code(x, y, z, base) == BlockCode.KEEP) && foundationGap(chunk.getBlockState(pos.set(x, y, z)))) {
+                set(x, y, z, Palette.DIRT);
+            }
+        }
         if (lot == null) {
             set(x, base, z, cp.city != null ? Palette.of(cp.city.yardCode(), null) : Palette.lotGround(natural));
             return;
@@ -548,6 +554,19 @@ final class ChunkBuilder {
      * structures do (the block entity of a chunk being generated only exists once asked for), with a seed from the
      * lot and the position.
      */
+    /**
+     * Layers under a lot's floor that never keep air, a liquid or a block entity where the plan keeps what the world has
+     * (finding 75, 18 Nov 2026: a village chest and beds, caves, water and the top of a dungeon were left right under
+     * the floor; the cells a structure plans there, its buried layers, are never touched). The neighbour repair applies
+     * the same rule ({@link NeighbourRepair}).
+     */
+    static final int FOUNDATION = 3;
+
+    /** What the foundation does not keep: air, a liquid or a block entity (a chest, a bed, a spawner...). */
+    static boolean foundationGap(BlockState s) {
+        return s.isAir() || !s.getFluidState().isEmpty() || s.hasBlockEntity();
+    }
+
     private void loot(Lot lot, BlockState s, boolean hard) {
         if (region.getBlockEntity(pos) instanceof RandomizableContainer c) {
             long seed = Hash.of(lot.seed, 0x4C4F4F54L, pos.getX(), pos.getY() * 31L + pos.getZ());

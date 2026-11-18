@@ -293,6 +293,8 @@ command/  /amcs (StructureCommands: locate structure and spawn), the block audit
    - `WorldPlan.chunk(cx, cz)` says what each column must be: street, highway, bridge, tunnel, tunnel wall, lot or
      slope. The `ChunkBuilder` only carries it out.
    - Liquids touching open air become stone.
+   - The 3 layers under a lot's floor never keep air, a liquid or a block entity where the plan keeps the world (what
+     stood there before, a cave or a village house, becomes dirt); the cells a structure plans there never change.
    - Trees and plants that a neighbouring chunk decorated later puts on the road are removed again
      (`NeighbourRepair.repairNeighbours`).
    - Natural vegetation that what was cut or removed left in the air (a crown whose trunk the city cut, snow and

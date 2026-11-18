@@ -55,6 +55,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  *   <li>{@code tunnel_ceiling} / {@code tunnel_wall}: missing tunnel lining.</li>
  *   <li>{@code pillar_floating}: a bridge pillar that ends in the air.</li>
  *   <li>{@code lot_hole}: a lot without ground (water a structure plans at the ground, a pool, is not one).</li>
+ *   <li>{@code lot_foundation}: air, a liquid or a block entity in the 3 layers under a lot's floor where the plan
+ *   keeps what the world has (the cells a structure plans there are not checked).</li>
  *   <li>{@code building_mismatch}: a building block that differs from the building's definition (seams between
  *   chunks would show up here).</li>
  *   <li>{@code hard_block}: an unbreakable block in a street, bridge, tunnel or building (any hardness is allowed).</li>
@@ -422,6 +424,18 @@ public final class WorldAudit {
         // the mouth of a garage ramp or stairwell is planned open
         if ((ground.isAir() || !ground.getFluidState().isEmpty()) && !plannedFluid && planned != BlockCode.AIR) {
             r.fail("lot_hole", x + "," + base + "," + z + " " + id(ground));
+        }
+        // the 3 layers under the floor, where the plan keeps what the world has (finding 75): no air, liquid or block
+        // entity left there by what stood before the city (a cave, the house of a village)
+        for (int y = base - 3; y < base; y++) {
+            if (lot != null && lot.code(x, y, z, base) != BlockCode.KEEP) {
+                continue;
+            }
+            BlockState s = at(c, p, x, y, z);
+            r.stat("foundation_checked", 1);
+            if (s.isAir() || !s.getFluidState().isEmpty() || s.hasBlockEntity()) {
+                r.fail("lot_foundation", x + "," + y + "," + z + " " + id(s));
+            }
         }
         if (lot == null) {
             if (cp.city != null) {

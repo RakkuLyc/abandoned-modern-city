@@ -32,7 +32,8 @@
    prints per target `mod blocks:` (the blocks the mod decides in the generated world; the reference is in
    `docs/TESTING.md`, section 6, with another one for `structureOvergrowth = false`). In a change that must not alter
    the world (cleanup, splitting files, comments), the test passes and the `mod blocks:` and `stats:` lines stay the
-   same (except `loot_containers_anywhere`, which counts vanilla chests). What the battery does not cover (bridge
+   same (except `loot_containers_anywhere`, which counts vanilla chests, and `vegetation_checked`, which counts vanilla
+   trees too). What the battery does not cover (bridge
    vines, fill, slopes, liquid sealing) is checked, in a change that only moves code, by an identical bytecode listing
    (`javap -c -p`) of the moved methods. The tools are in `tools/verify/` (`compare_battery.py`, `javap_dump.sh`,
    `compare_methods.py`, `compare_block_detail.py`, `chunk_diff.py`; since 16 Nov 2026 `structure_cells.sh` with
@@ -370,7 +371,9 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     the loot of the containers in the buried layers of a structure (the garage of the wide building, the basement of
     the police station), which it skipped before: all hard, none with a wrong table. The battery of the 4 seeds: 20261027 and
     3478477863671517581 pass; -3297019724594858492 (a vanilla village chest under the floor of a structure, finding
-    75) and 1 (the leaves of a vanilla tree in a bridge hole, finding 76) fail the same on the code before stage 1. The 12 checks the user asked for
+    75) and 1 (the leaves of a vanilla tree in a bridge hole, finding 76) failed the same on the code before stage 1;
+    since 18 Nov 2026 both are fixed (below: the foundation of the lots and the holes of the bridges) and the 4 seeds
+    pass. The 12 checks the user asked for
     and what proves each are listed in `docs/TESTING.md`, section 2.
     Measured (`ChestDrawTest`, 200 copies each): 20.0 chests on average in the small buildings, 51.5 in the large
     ones; on the street floor 3 to 20% (apartment 20, small 16, brutalist 11, wide and apocalyptic 9, tower 6, bluish
@@ -515,6 +518,20 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   seed 20261027, 4,020 in −3297…, 8,495 in 1, 8,780 in 3478…; the generation ~8% slower per chunk. The world audit
   checks it (`vegetation_floating`, with the loose blocks checked in `vegetation_checked`): before the fix 40, 54 and
   42 floating groups in three seeds, after 0 in all 4. Worlds generated before keep what floats in their chunks.
+- Foundation of the lots (18 Nov 2026, asked by the user, finding 75: a vanilla village chest and beds, caves, water
+  and the top of a dungeon were left right under the floor of the city): the 3 layers under a lot's floor
+  (`ChunkBuilder.FOUNDATION`) never keep air, a liquid or a block entity where the plan keeps what the world has
+  (`ChunkBuilder.foundationGap`): they become dirt, when the chunk is built (`lot()`) and in the neighbour repair
+  (`repairLot`, which until then only filled air and liquids there, so the result depended on the order of the
+  chunks; the fill under a lot only went down from the first solid block, and the walls and roof of a village house
+  counted as solid). The cells a structure plans there (its buried layers, the garage of the wide building, the
+  basement of the police station, the openings) are never touched: in the battery every `mod blocks:` line and every
+  count of the structures (`building_mismatch`, block entities, loot containers, hard ones) stayed the same. What
+  lies deeper (dungeons, mineshafts, ruins) does not change; a dungeon whose top reaches those 3 layers has that part
+  filled (seed 20261027, t03: a chest and a spawner). The audit checks it (`lot_foundation`, the cells checked in
+  `foundation_checked`): before the fix 279 failures in seed −3297… and 13 in 20261027, after 0. Holes of the bridges
+  (finding 76): the neighbour repair, which left them as built, removes the crowns and plants a chunk decorated later
+  grew into them, from the deck up (what is under the deck stays).
 - Villages inside the cities (13 Nov 2026, asked by the user: villagers and an iron golem in a city generated where
   there was a village): the houses of the village are generated before the city, each with its creatures, which stayed
   when the city was built over them (in the test, a villager stuck inside the fill of the street). When it builds each

@@ -103,7 +103,21 @@ final class NeighbourRepair {
                         boolean tunnel = np.struct[i] == Profile.TUNNEL;
                         boolean bridge = np.struct[i] == Profile.BRIDGE;
                         if ((np.flags[i] & ChunkPlan.F_HOLE) != 0) {
-                            // a hole through a bridge: left as built
+                            // a hole through a bridge stays open: the crowns and plants that a chunk decorated later
+                            // grew into it go, from the deck down (finding 76); what is under the deck stays
+                            int top = Math.min(maxY - 1, ys + OVERHANG);
+                            for (int y = ys - 1; y <= top; y++) {
+                                var section = nc.getSection(nc.getSectionIndex(y));
+                                if (section.hasOnlyAir()) {
+                                    y |= 15;
+                                    continue;
+                                }
+                                BlockState s = section.getBlockState(lx, y & 15, lz);
+                                if (ChunkBuilder.isDecoration(s) && !crowns.containsKey(BlockPos.asLong(x, y, z))) {
+                                    region.setBlock(p.set(x, y, z), Palette.AIR, Block.UPDATE_CLIENTS);
+                                    Floating.seedAround(p.asLong(), seeds);
+                                }
+                            }
                             continue;
                         }
                         int decay = RoadDecay.surface(plan.seed, x, z, zone, np.struct[i], ChunkPlan.isSlab(h2));
@@ -209,9 +223,12 @@ final class NeighbourRepair {
                                   int base, Lot lot, int yard, int above, LongArrayList seeds) {
         boolean paved = yard != BlockCode.GRASS;
         int depth = lot == null ? 0 : lot.depthBelowBase();
-        for (int y = base - 3; y < base - depth; y++) {
-            BlockState s = nc.getBlockState(p.set(x, y, z));
-            if (s.isAir() || !s.getFluidState().isEmpty()) {
+        // the foundation (ChunkBuilder.FOUNDATION): no air, liquid or block entity where the plan keeps the world
+        for (int y = base - ChunkBuilder.FOUNDATION; y < base - depth; y++) {
+            if (lot != null && lot.code(x, y, z, base) != BlockCode.KEEP) {
+                continue;
+            }
+            if (ChunkBuilder.foundationGap(nc.getBlockState(p.set(x, y, z)))) {
                 region.setBlock(p, Palette.DIRT, Block.UPDATE_CLIENTS);
             }
         }
@@ -220,8 +237,9 @@ final class NeighbourRepair {
             BlockState s = nc.getBlockState(p.set(x, y, z));
             boolean liquid = !s.getFluidState().isEmpty();
             if (y < base && code == BlockCode.KEEP) {
-                // ground between the buried blocks of a structure: refilled like the ground under any lot
-                if (s.isAir() || liquid) {
+                // ground between the buried blocks of a structure: refilled like the ground under any lot (and in the
+                // foundation no block entity either)
+                if (s.isAir() || liquid || y >= base - ChunkBuilder.FOUNDATION && s.hasBlockEntity()) {
                     region.setBlock(p, Palette.DIRT, Block.UPDATE_CLIENTS);
                 }
                 continue;
