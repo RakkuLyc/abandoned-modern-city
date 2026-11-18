@@ -80,7 +80,7 @@ public final class City {
      * the 8 left many cities without an entrance toward their neighbour (23% of the highways lost).
      */
     public static final int EXITS = 4;
-    /** Grid blocks of a city: FIRST..LAST in both directions (-1..0 for the 2 x 2 grid, -2..1 for 4 x 4). */
+    /** Grid blocks of a city: FIRST..LAST in both directions (-1..0 for the 2 x 2 grid). */
     public static final int FIRST = -(Params.GRID / 2);
     public static final int LAST = (Params.GRID + 1) / 2 - 1;
 

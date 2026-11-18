@@ -282,7 +282,7 @@ public final class WorldAudit {
         if (base.isAir() || !base.getFluidState().isEmpty()) {
             r.fail("no_base", where);
         }
-        for (int y = ys - 1; y <= ys + (tunnel ? Params6.CEILING : 1); y++) {
+        for (int y = ys - 1; y <= ys + (tunnel ? CEILING : 1); y++) {
             BlockState s = at(c, p, x, y, z);
             r.stat("blocks_checked_for_hardness", 1);
             if (!s.isAir() && hard(s)) {
@@ -356,7 +356,7 @@ public final class WorldAudit {
             }
         }
         if (tunnel) {
-            BlockState ceil = at(c, p, x, ys + Params6.CEILING, z);
+            BlockState ceil = at(c, p, x, ys + CEILING, z);
             if (!ceil.is(Blocks.STONE) && !ceil.is(Blocks.GLOWSTONE)) {
                 r.fail("tunnel_ceiling", where + " " + id(ceil));
             }
@@ -397,14 +397,12 @@ public final class WorldAudit {
         return m;
     }
 
-    /** Constants shared with the builder. */
-    private static final class Params6 {
-        static final int CEILING = Params.CLEARANCE + 1;
-    }
+    /** Height of a tunnel's ceiling over the road surface, as the builder places it ({@code ChunkBuilder.CEILING}). */
+    private static final int CEILING = Params.CLEARANCE + 1;
 
     private static void tunnelWall(PlanAudit.Report r, LevelChunk c, ChunkPlan cp, int i, int x, int z, BlockPos.MutableBlockPos p) {
         int ys = ChunkPlan.surfaceY(cp.h2[i]);
-        for (int y = ys - 1; y <= ys + Params6.CEILING; y++) {
+        for (int y = ys - 1; y <= ys + CEILING; y++) {
             BlockState s = at(c, p, x, y, z);
             if (!s.is(Blocks.STONE)) {
                 r.fail("tunnel_wall", x + "," + y + "," + z + " " + id(s));
@@ -489,9 +487,8 @@ public final class WorldAudit {
             int floor = ChunkPlan.surfaceY(cp.h2[i]);
             int ceiling = cp.kind[i] == ChunkPlan.LOT
                     ? floor + (cp.lot[i] == null ? 2 : cp.lot[i].heightAboveBase())
-                    : floor + Params6.CEILING;
-            // a structure's buried layers too (the garage of the wide building, the basement of the police station;
-            // asked by the user on 16 Nov 2026: before, their containers were never checked)
+                    : floor + CEILING;
+            // a structure's buried layers too (the garage of the wide building, the basement of the police station)
             int lowest = floor - 1;
             if (cp.kind[i] == ChunkPlan.LOT && cp.lot[i] != null && cp.lot[i].building != null) {
                 lowest = Math.min(lowest, cp.h2[i] / 2 - 1 - cp.lot[i].depthBelowBase());

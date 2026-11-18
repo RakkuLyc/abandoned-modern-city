@@ -131,7 +131,7 @@ public final class CityRings {
 
     /**
      * Share of the cities that may have a structure of the {@code special} category (the ramp building), for ~1 city
-     * in 10 with it (asked by the user). It only fits some rows, so a city that may have it gets it ~27% of the time:
+     * in 10 with it. It only fits some rows, so a city that may have it gets it ~27% of the time:
      * over 2,838 distinct cities of 50 world seeds, 39.0% may have it and 10.5% have it (the cities of the tests, 170
      * distinct ones, 11.2%; 22.7% there before this draw). Only the cities that had it change: those that do not draw
      * it get other structures there. More special structures would raise the share: measure again and adjust.
@@ -139,16 +139,15 @@ public final class CityRings {
     public static final double SPECIAL_CHANCE = 0.40;
 
     /**
-     * Whether this city's 2 gas stations are both small; else one small and one large (asked by the user on 17 Nov
-     * 2026: always 2 stations, never 2 large ones; half the cities each).
+     * Whether this city's 2 gas stations are both small; else one small and one large (always 2 stations,
+     * never 2 large ones; half the cities each).
      */
     public boolean twoSmallGasStations() {
         return Hash.unit(Hash.of(city.seed, 0x47415353L, 0)) < 0.5; // "GASS"
     }
 
     /**
-     * The 2 gas stations of this city (asked by the user on 17 Nov 2026; before 16 Nov the rings drew up to 2, then up
-     * to 1 or 2): small and small or small and large ({@link #twoSmallGasStations}), the color drawn, each in its own
+     * The 2 gas stations of this city: small and small or small and large ({@link #twoSmallGasStations}), the color drawn, each in its own
      * block (2 different ones of the {@code blocks} of the city, in the order the rings are drawn), in a row drawn
      * from the 4 of its block and as its 1st or 2nd structure. One that does not fit there goes on to the next row (or
      * block; one still due after the last block is moved to the first place of its block, then of the next, and the

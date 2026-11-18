@@ -9,8 +9,7 @@ import java.util.TreeMap;
 
 /**
  * Floors, rooms and the places where a chest can stand in a building (types {@code buildings_*}), read from its
- * template once when it loads (asked by the user on 15 Nov 2026, stage 2 of the procedural chests; {@link ChestDraw}
- * draws the chests of each copy on these spots). Built on the walk of {@link Access}: only where a player walking in from the street stands.
+ * template once when it loads ({@link ChestDraw} draws the chests of each copy on these spots). Built on the walk of {@link Access}: only where a player walking in from the street stands.
  * <ol>
  *   <li><b>Floors.</b> The cells where the feet stand on something solid, counted by height. A height with
  *   {@link #FLOOR_MIN_CELLS} or more of them, and no busier height within {@link #FLOOR_GAP}, is the base of a floor;
@@ -71,14 +70,13 @@ public final class Rooms {
     public static final int STAIRS_CLEAR = 1;
     /**
      * A room at the street level with this many cells or more on the edge of the box opens onto the street (a lobby
-     * without a door joined to an arcade or a covered sidewalk): its spots are {@link #STREET} (asked by the user on 15
-     * Nov 2026: half the weight when the chests are drawn). A doorway without a door is narrower.
+     * without a door joined to an arcade or a covered sidewalk): its spots are {@link #STREET} (half the weight when the
+     * chests are drawn). A doorway without a door is narrower.
      */
     public static final int STREET_EDGE = 24;
     /**
      * The spots of each floor farthest from where the walk arrives on it (by steps), this share of that floor's spots,
-     * are far (asked by the user on 15 Nov 2026: measured floor by floor, not from the street, so that the far ones are
-     * on every floor).
+     * are far (measured floor by floor, not from the street, so that the far ones are on every floor).
      */
     public static final double FAR_SHARE = 0.20;
     /** Smallest distance (sideways, on one floor) between two chests used to measure the capacity. */
@@ -650,8 +648,7 @@ public final class Rooms {
                 // outdoors at the street level (a yard, a plaza inside the box): only indoors, or up on a terrace
                 return null;
             }
-            // on a roof or a terrace under the open sky a low parapet or a railing is a wall too (asked by the user on
-            // 15 Nov 2026), leaves are not
+            // on a roof or a terrace under the open sky a low parapet or a railing is a wall too, leaves are not
             boolean roof = ceilings == 0;
             // walls, furniture, storage and where the player stands
             boolean[] wall = new boolean[4];

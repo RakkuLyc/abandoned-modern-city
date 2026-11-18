@@ -74,7 +74,7 @@ public final class WorldPlan {
         int cell = params.cellSize();
         // the cells not decided yet are decided at once, on several cores (each costs 9 terrain samples, ~26 ms in the
         // game, and the first chunks of a world ask for ~400 of them): City.create is a pure function of the seed and
-        // the terrain, so the cities are the same whatever the order (18 Nov 2026, asked by the user)
+        // the terrain, so the cities are the same whatever the order
         List<long[]> missing = new ArrayList<>();
         for (int cj = Math.floorDiv((int) Math.floor(z0), cell); cj <= Math.floorDiv((int) Math.floor(z1), cell); cj++) {
             for (int ci = Math.floorDiv((int) Math.floor(x0), cell); ci <= Math.floorDiv((int) Math.floor(x1), cell); ci++) {

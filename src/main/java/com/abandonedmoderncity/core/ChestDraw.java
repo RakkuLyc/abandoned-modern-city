@@ -8,19 +8,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The chests of one copy of a building (types {@code buildings_*}), drawn among the spots of its {@link Rooms} (asked
- * by the user on 15 Nov 2026, stage 3 of the procedural chests). A pure function of the copy's seed (the lot's, or a
+ * The chests of one copy of a building (types {@code buildings_*}), drawn among the spots of its {@link Rooms}. A pure function of the copy's seed (the lot's, or a
  * random one for {@code /amcs spawn}) and of the template: it does not depend on the rotation, the world position or
  * the order in which the chunks are generated.
  * <ol>
  *   <li><b>How many:</b> drawn evenly in the range of the building's height class ({@link #range}): small 12–28, medium
- *   25–47, large 38–65, immense 51–83 (approved on 15 Nov 2026). The chests of the barrels do not count.</li>
+ *   25–47, large 38–65, immense 51–83. The chests of the barrels do not count.</li>
  *   <li><b>Per floor:</b> in proportion to the floor's weight ({@link Rooms.Layout#floorWeight}: how many chests fit
- *   on it {@link Rooms#SPACING} apart, a spot of a lobby open onto the street counting half), largest remainders first
- *   (the user's choice).</li>
+ *   on it {@link Rooms#SPACING} apart, a spot of a lobby open onto the street counting half), largest remainders first.</li>
  *   <li><b>Which spots:</b> a weighted draw without replacement (each spot gets the key {@code -ln(u) / weight}, u from
  *   the seed and its cell; the smallest keys win), the weight of the spot (2 against a wall, 3 in a corner, +1 beside
- *   furniture) halved for a street spot (the user's choice 2B). A spot is skipped when it is closer than
+ *   furniture) halved for a street spot. A spot is skipped when it is closer than
  *   {@link Rooms#SPACING} (sideways, within 2 heights) to a chest already taken, when its floor has its share, or when
  *   its zone already has {@link #ZONE_CAP} chests (a small room is one zone; a hall is cut into zones of at most
  *   {@link Rooms#ZONE_MAX} cells).</li>
@@ -28,7 +26,7 @@ import java.util.Map;
  *   (zone cap up to 8), then the zone cap goes; the spacing always holds. The count is always reached in the 10
  *   buildings ({@code ChestDrawTest}).</li>
  *   <li><b>Exploration:</b> at least {@link #EXPLORATION_MIN} of the chests in a place that asks for exploring (far on
- *   its floor, under the open sky, or hard to get to). The plain draw gives 25 to 44% (the user's choice: a minimum,
+ *   its floor, under the open sky, or hard to get to). The plain draw gives 25 to 44% (a minimum,
  *   nothing reserved); a copy under it is drawn again with those spots first.</li>
  * </ol>
  */

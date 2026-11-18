@@ -44,11 +44,11 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
 
     // ------------------------------------------------------------------ cross sections (half widths from the centerline)
 
-    /** City street: smooth stone sidewalk 3 + polished blackstone 27 (center mark on the 17th block) + sidewalk 3 = 33. */
+    /** City street: smooth stone sidewalk 3 + polished deepslate 27 (center mark on the 17th block) + sidewalk 3 = 33. */
     public static final double STREET_HW = 16.5;
     public static final double STREET_LANE_HW = 13.5;
     /**
-     * Highway, as wide as a city street (33): smooth stone 3 (the outer one with a wall on top) + polished blackstone 27
+     * Highway, as wide as a city street (33): smooth stone 3 (the outer one with a wall on top) + polished deepslate 27
      * (yellow center mark) + smooth stone 3 (the outer one with a wall).
      */
     public static final double HIGHWAY_HW = STREET_HW;

@@ -13,8 +13,8 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Natural vegetation left hanging in the air (asked by the user on 18 Nov 2026: in cities built where there were
- * mountains, pieces of trees, vines and snow floated well above the ground). A chunk decorated after its neighbour was
+ * Natural vegetation left hanging in the air (in cities built where there were mountains, pieces of trees, vines and
+ * snow floated well above the ground). A chunk decorated after its neighbour was
  * built can grow a tree on the old, uncut ground whose branches reach into that neighbour; when the city then cuts the
  * trunk, what reached the neighbour stays: the cleanup of crowns over roads and lots stopped 48 blocks up, the slopes
  * had none, a piece of branch kept its leaves "alive", and snow and vines resting on removed leaves stayed.

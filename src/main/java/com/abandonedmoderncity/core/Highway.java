@@ -317,7 +317,7 @@ public final class Highway {
         int sea = terrain.seaLevel();
         int ns = (length + SAMPLE - 1) / SAMPLE + 1;
         // the samples of the path taken first, on several cores (~3 ms each in the game, a few hundred per highway);
-        // the terrain is pure and kept by the caller's cache, so the loop below reads the same values (18 Nov 2026)
+        // the terrain is pure and kept by the caller's cache, so the loop below reads the same values
         java.util.stream.IntStream.range(0, ns).parallel().forEach(i -> {
             int k = Math.min(i * SAMPLE, length);
             terrain.ground((int) Math.floor(px[k]), (int) Math.floor(pz[k]));

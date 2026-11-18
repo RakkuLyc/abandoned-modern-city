@@ -30,7 +30,8 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  * <ul>
  *   <li>{@code info}: plan of the column under you (kind, height, structure, city, highway).</li>
  *   <li>{@code locate city|highway|tunnel|bridge}: nearest one.</li>
- *   <li>{@code locate structure <name|type|group>} and {@code spawn <name>}: see {@link StructureCommands}.</li>
+ *   <li>{@code locate structure <category> [name]} and {@code spawn <category> <name>}: see {@link StructureCommands}.</li>
+ *   <li>{@code column <x> <z> <y0> <y1>}: the blocks of a column next to what the plan wants there.</li>
  *   <li>{@code plan [radius]}: plan audit of the chunks around you (nothing is generated) + PNG.</li>
  *   <li>{@code audit [radius]}: generates the chunks around you, audits plan and blocks, writes PNGs.</li>
  *   <li>{@code network [radius]}: PNG of cities and highways (blocks, 8 per pixel).</li>
@@ -78,6 +79,14 @@ public final class AmcsCommands {
             c.getSource().sendFailure(Component.literal("No cities in this dimension (or disabled in the config)"));
         }
         return plan;
+    }
+
+    /** Clickable coordinates "x y z" in green: a click suggests {@code /tp @s x y z}, like /locate. */
+    static Component tpLink(String coords) {
+        return Component.literal("[" + coords + "]").withStyle(style -> style
+                .withColor(ChatFormatting.GREEN)
+                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tp @s " + coords))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to teleport"))));
     }
 
     private static void say(CommandContext<CommandSourceStack> c, String s) {
@@ -184,10 +193,7 @@ public final class AmcsCommands {
             return 0;
         }
         String coords = at[0] + " " + at[1] + " " + at[2];
-        Component link = Component.literal("[" + coords + "]").withStyle(style -> style
-                .withColor(ChatFormatting.GREEN)
-                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tp @s " + coords))
-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to teleport"))));
+        Component link = tpLink(coords);
         Component msg = Component.literal("[AMCS] " + found + " at ").append(link)
                 .append(Component.literal(" (" + Math.round(best) + " blocks)"));
         c.getSource().sendSuccess(() -> msg, false);

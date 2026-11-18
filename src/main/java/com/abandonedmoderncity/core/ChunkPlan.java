@@ -7,7 +7,7 @@ package com.abandonedmoderncity.core;
 public final class ChunkPlan {
     // kind
     public static final byte NONE = 0;
-    /** A road surface (street, avenue or highway; ground, bridge or tunnel). */
+    /** A road surface (city street or highway; ground, bridge or tunnel). */
     public static final byte ROAD = 1;
     /** City ground at the city level (yard, park, plaza, building). */
     public static final byte LOT = 2;

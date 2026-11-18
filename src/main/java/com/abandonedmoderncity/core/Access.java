@@ -8,7 +8,7 @@ import java.util.Set;
  * Containers of a structure that are hard to get to: their loot is more generous, a reward for the effort.
  * A container is hard to get to when no one walking in from the street reaches it without breaking blocks (pure
  * function of the template), when the structure's line of {@code index.txt} lists it (column {@code hard}, see
- * {@link Result#withHard}), or by where it stands (asked by the user on 14 Nov 2026, on top of the other two):
+ * {@link Result#withHard}), or by where it stands:
  * <ul>
  *   <li>underground: at or under the ground layer (the basement of the police station);</li>
  *   <li>on the terrace: open sky over it, {@link #ABOVE} or more blocks over the ground layer and at most
@@ -17,8 +17,7 @@ import java.util.Set;
  *   <li>in the attic, only in the houses: one ceiling between it and the sky (the roof), {@link #ABOVE} or more blocks
  *       over the ground layer.</li>
  * </ul>
- * Its height alone does not count (the rule "15+ blocks above the city ground" was removed at the user's request
- * after 13 Nov 2026).
+ * Its height alone does not count.
  * <p>
  * The walk: a player stands in two passable cells over something solid (or in a ladder, vine, scaffolding or water);
  * walks to a side neighbour at the same height, jumps up one block (with room overhead, never onto a fence, a wall or

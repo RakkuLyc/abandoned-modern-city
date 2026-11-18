@@ -549,14 +549,8 @@ final class ChunkBuilder {
     }
 
     /**
-     * Loot table of the container just placed at {@link #pos} in a structure ({@link Palette#lootTable}: the kind of
-     * structure, the kind of container, and whether it is hard to get to). Set through the region, like vanilla
-     * structures do (the block entity of a chunk being generated only exists once asked for), with a seed from the
-     * lot and the position.
-     */
-    /**
      * Layers under a lot's floor that never keep air, a liquid or a block entity where the plan keeps what the world has
-     * (finding 75, 18 Nov 2026: a village chest and beds, caves, water and the top of a dungeon were left right under
+     * (finding 75: a village chest and beds, caves, water and the top of a dungeon were left right under
      * the floor; the cells a structure plans there, its buried layers, are never touched). The neighbour repair applies
      * the same rule ({@link NeighbourRepair}).
      */
@@ -567,6 +561,12 @@ final class ChunkBuilder {
         return s.isAir() || !s.getFluidState().isEmpty() || s.hasBlockEntity();
     }
 
+    /**
+     * Loot table of the container just placed at {@link #pos} in a structure ({@link Palette#lootTable}: the kind of
+     * structure, the kind of container, and whether it is hard to get to). Set through the region, like vanilla
+     * structures do (the block entity of a chunk being generated only exists once asked for), with a seed from the
+     * lot and the position.
+     */
     private void loot(Lot lot, BlockState s, boolean hard) {
         if (region.getBlockEntity(pos) instanceof RandomizableContainer c) {
             long seed = Hash.of(lot.seed, 0x4C4F4F54L, pos.getX(), pos.getY() * 31L + pos.getZ());

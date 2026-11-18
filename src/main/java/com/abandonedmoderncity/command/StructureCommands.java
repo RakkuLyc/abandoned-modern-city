@@ -14,14 +14,11 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Arrays;
 import java.util.TreeSet;
-import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.level.block.Block;
@@ -184,10 +181,7 @@ public final class StructureCommands {
             default -> new int[]{found.x0 - 2, cz};
         };
         String coords = at[0] + " " + foundCity.level + " " + at[1];
-        Component link = Component.literal("[" + coords + "]").withStyle(style -> style
-                .withColor(ChatFormatting.GREEN)
-                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tp @s " + coords))
-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to teleport"))));
+        Component link = AmcsCommands.tpLink(coords);
         String what = found.building.name() + " (" + found.building.type() + ")";
         final double dist = best;
         Component msg = Component.literal("[AMCS] " + what + " at ").append(link)

@@ -142,8 +142,8 @@ public final class Structures {
             int[] tc = template(rx, ry, rz, rot);
             int[] b = barrels.get(cell(tc[0], tc[1], tc[2]));
             if (b == null || b[Barrels.FORCED] == 1) {
-                // a barrel that holds something stays the barrel of the template (asked by the user on 16 Nov 2026: the
-                // counters of the tower's ground floor gave ~24 chests in every copy)
+                // a barrel that holds something stays the barrel of the template (the counters of the tower's ground
+                // floor keep their barrels)
                 return c;
             }
             return Barrels.kept(b, seed, t.sx * t.sz) ? BlockCode.STRUCT + 4 * b[Barrels.CHEST] + ((rot + turn) & 3)
@@ -262,8 +262,7 @@ public final class Structures {
 
         /**
          * Whether the container at (rx, ry, rz) of the rotated box is hard to get to ({@link Access}): a container of the
-         * template, or a chest drawn on a spot that {@link Access#place} marks (underground or on the terrace; asked by
-         * the user on 15 Nov 2026, stage 4 of the procedural chests). The spots are marked whether a copy draws them or
+         * template, or a chest drawn on a spot that {@link Access#place} marks (underground or on the terrace). The spots are marked whether a copy draws them or
          * not: the flag is only read where a container stands.
          */
         public boolean hard(int rx, int ry, int rz, int rot) {
@@ -367,9 +366,8 @@ public final class Structures {
             "building_medium", "building_large", "building_immense", "police_station", "special"};
     /**
      * Height classes of the buildings (the type {@code buildings_<size>} of index.txt), by the height of the box of the
-     * template with the buried layers: small up to 40, medium up to 75, large up to 140, immense above 140 (asked by the
-     * user after 13 Nov 2026), each limit with a margin of {@link #HEIGHT_MARGIN} blocks (asked on 15 Nov 2026: a
-     * building up to 3 blocks over a limit stays in the lower class). {@code RingTest} checks that each building has the
+     * template with the buried layers: small up to 40, medium up to 75, large up to 140, immense above 140, each limit with a
+     * margin of {@link #HEIGHT_MARGIN} blocks (a building up to 3 blocks over a limit stays in the lower class). {@code RingTest} checks that each building has the
      * type of its height.
      */
     public static final int HEIGHT_SMALL = 40;
@@ -445,7 +443,7 @@ public final class Structures {
         // with air in front, and that must not change where a saved chest stood beside it
         Template withChests = t;
         if (isBuildingType(type)) {
-            // the chests saved in a building's template go (asked by the user on 15 Nov 2026), after the overgrowth
+            // the chests saved in a building's template go, after the overgrowth
             t = withoutChests(t, ground);
         }
         int[] state = new int[t.palette.size()];

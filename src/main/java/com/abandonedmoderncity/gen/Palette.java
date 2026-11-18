@@ -80,7 +80,7 @@ public final class Palette {
             b(Blocks.STONE_BRICK_SLAB), b(Blocks.COBBLESTONE_SLAB)};
 
 
-    /** Sidewalks, highway edges and the 2 x 2 squares at the crossings: smooth stone. */
+    /** Sidewalks, highway edges and the 3 x 3 squares at the corners of the crossings: smooth stone. */
     public static final BlockState SIDEWALK = Blocks.SMOOTH_STONE.defaultBlockState();
     public static final BlockState SIDEWALK_SLAB = Blocks.SMOOTH_STONE_SLAB.defaultBlockState();
     public static final BlockState CITY_MARK = Blocks.WHITE_CONCRETE.defaultBlockState();

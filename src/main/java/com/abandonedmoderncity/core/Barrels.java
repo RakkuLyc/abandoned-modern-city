@@ -5,14 +5,14 @@ import java.util.Map;
 
 /**
  * The barrels of the buildings (the {@code building_*} categories of {@code /amcs spawn}, types {@code buildings_*}): in
- * each copy, {@link #GONE} of them are taken out (air) and the others become chests (asked by the user after 13 Nov
- * 2026), {@link #GONE} of each building's barrels on average. The draw is per copy: a pure function of the lot's seed and the barrel's cell in the template, so the chunk
+ * each copy, {@link #GONE} of them are taken out (air) and the others become chests, {@link #GONE} of each
+ * building's barrels on average. The draw is per copy: a pure function of the lot's seed and the barrel's cell in the template, so the chunk
  * builder, the neighbour repair, the audit and the fingerprint agree.
  * <ul>
  *   <li>A barrel that holds something (a block standing on the top of its stack, such as a slab or a pot; something
  *       hanging under it; or a block fixed to one of its faces: torch, sign, banner, ladder, button, lever, a vine or a
- *       lichen holding on it) is never taken out: it stays the barrel of the template (asked by the user on 16 Nov
- *       2026; before it always became a chest, ~24 chests on the counters of the tower's ground floor in every copy).
+ *       lichen holding on it) is never taken out: it stays the barrel of the template (the
+ *       counters of the tower's ground floor, with slabs and pots on them, keep their barrels).
  *       A vine near a barrel but held by a wall
  *       or by the vine over it does not count.</li>
  *   <li>In a stack of barrels (one over the other), the barrels taken out are always the top ones: the number kept
