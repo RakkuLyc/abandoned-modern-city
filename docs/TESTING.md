@@ -115,7 +115,7 @@ Each terrain runs with the seeds `20261104`, `-3297019724594858492` and `42`, on
 
 ## 2. What is checked
 
-### Unit (82 tests)
+### Unit (84 tests)
 
 | Test | Checks |
 |---|---|
@@ -137,6 +137,7 @@ Each terrain runs with the seeds `20261104`, `-3297019724594858492` and `42`, on
 | `WreckTest.holesAreAboutOnePerEightyBlocksOfBridgeInTheMiddleOfTheLanes` | 2,000 bridge profiles of 60 to 459 blocks: 1 hole per ~85 blocks of bridge, always on the bridge, away from the ends, inside the 27 lanes, of the size asked for; none off the bridges |
 | `RoadDecayTest.plantsOnlyOnGrassAndMossAndWithoutCollision` | plants only on grass and moss, always without collision (short grass, tall grass, fern), the top half of tall grass right |
 | `RingTest.everyRowOfTheIndexIsLoaded` | every row of `index.txt` gives a structure (52) and there are block states: the structure tests of `RingTest`, `AccessTest` and `WeatheringTest` now fail when the templates do not load (until 18 Nov 2026 they were skipped by 23 `assumeFalse` guards, and `withoutStructuresBlocksStayEmpty`, which only ran with an empty index, was always skipped) |
+| `IndexRowsTest.goodRowsAreSplitAtTheBars` / `aMalformedLineNamesItsNumberAndField` | the rows of `index.txt` are split at the bars, comments and blank lines skipped; a malformed line (no file name, a name with an accent or a space, a ground, front, seed, banner offset or hard cell that is not a whole number, a banner spec or hard cell of the wrong shape) stops the loading with `amcs/buildings/index.txt line N (name): ...` |
 | `RingTest.groundLayerAndBuriedLayers` | the structures with a buried layer have blocks below the ground and nothing deeper; buried air only in the wide building and the police station (the `cave_air` of the garage and of the basement, dug); abandoned mansion, large house, tower, bluish and apartment go 1 down, the wide building 8 |
 | `RingTest.undergroundGarageKeepsItsRampAndStairsOpen` | in the wide building, the 99 air cells of the ground layer stay open (the whole ramp, with its top, and the stairwell), with dug air or the ramp itself below (never terrain), in the 4 rotations; the police station has 405 (the rooms of the basement crossing the street layer); no other structure has an opening; its 249 containers are reachable (0 out of reach) |
 | `StructuresCarveTest.caveAirIsDugUnderTheGround` | a synthetic 3 × 3 × 3 template with ground 2: below the ground the `cave_air` becomes air (dug) and plain `air` stays terrain (`KEEP`); the buried stone and the one at ground level are placed |
@@ -466,7 +467,7 @@ road on the ground, without a bridge wall).
 
 ## 6. Current results (12 Nov 2026, blocks of 180 × 120 with a ring of structures with gaps and a core taken over by nature, streets and highways of 33, cities in the middle of cells of 736, 4 entrances)
 
-- **Unit:** 82 pass, none skipped (18 Nov 2026, review for 1.0.0: the skipped test without structures replaced by `everyRowOfTheIndexIsLoaded`); before, 81 pass and 1 is skipped (18 Nov 2026 the same: the floating vegetation is checked in the generated world,
+- **Unit:** 84 pass, none skipped (18 Nov 2026, review for 1.0.0: the 2 tests of the rows of `index.txt`; 82 when the skipped test without structures was replaced by `everyRowOfTheIndexIsLoaded`); before, 81 pass and 1 is skipped (18 Nov 2026 the same: the floating vegetation is checked in the generated world,
   by the battery; 17 Nov 2026, the test of the gas stations drawn 1 or 2 replaced by the one of the 2
   gas stations in every city; 16 Nov 2026, with the test of the gas stations drawn per city); 80 + 1 with the
   test of medium and immense on a large building; 79 + 1 with

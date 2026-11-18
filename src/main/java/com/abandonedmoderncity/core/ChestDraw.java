@@ -26,8 +26,8 @@ import java.util.Map;
  *   (zone cap up to 8), then the zone cap goes; the spacing always holds. The count is always reached in the 10
  *   buildings ({@code ChestDrawTest}).</li>
  *   <li><b>Exploration:</b> at least {@link #EXPLORATION_MIN} of the chests in a place that asks for exploring (far on
- *   its floor, under the open sky, or hard to get to). The plain draw gives 25 to 44% (a minimum,
- *   nothing reserved); a copy under it is drawn again with those spots first.</li>
+ *   its floor, under the open sky, or hard to get to): a minimum, nothing is reserved for them; the plain draw already
+ *   gives 25 to 43%, and a copy under the minimum is drawn again with those spots first.</li>
  * </ol>
  */
 public final class ChestDraw {

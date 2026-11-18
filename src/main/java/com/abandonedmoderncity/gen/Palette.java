@@ -199,11 +199,12 @@ public final class Palette {
     public static final BlockState[] RUBBLE = {b(Blocks.MOSSY_COBBLESTONE), b(Blocks.COBBLESTONE),
             b(Blocks.CRACKED_STONE_BRICKS), b(Blocks.GRAY_CONCRETE)};
 
-    /** Palette of the fountain template, as block states. */
-    private static BlockState[] fountain;
+    /** Palette of the fountain template, as block states (built once; read by the generation threads). */
+    private static volatile BlockState[] fountain;
 
     static BlockState[] fountain() {
-        if (fountain == null) {
+        BlockState[] f = fountain;
+        if (f == null) {
             List<String> names = Template.WATERFALL.palette;
             BlockState[] out = new BlockState[names.size()];
             for (int i = 0; i < out.length; i++) {
@@ -214,8 +215,9 @@ public final class Palette {
                 }
             }
             fountain = out;
+            f = out;
         }
-        return fountain;
+        return f;
     }
 
     /** Block states of the building structures turned 0..3 quarter turns clockwise: [state * 4 + rotation]. */

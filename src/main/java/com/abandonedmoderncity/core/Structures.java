@@ -670,15 +670,10 @@ public final class Structures {
     static {
         Map<String, Integer> ids = new LinkedHashMap<>();
         List<Def> defs = new ArrayList<>();
-        List<String[]> rows = new ArrayList<>();
+        List<String[]> rows;
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
                 Structures.class.getResourceAsStream("/amcs/buildings/index.txt"), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = in.readLine()) != null) {
-                if (!line.isBlank() && !line.startsWith("#")) {
-                    rows.add(line.trim().split("\\|"));
-                }
-            }
+            rows = IndexRows.read(in);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
