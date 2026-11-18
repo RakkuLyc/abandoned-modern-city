@@ -250,8 +250,7 @@ public final class PlanAudit {
     }
 
     private static int[] mid(City c, double u, double v) {
-        double[] p = c.warp.toWorld(u, v);
-        return new int[]{(int) Math.floor(p[0]), (int) Math.floor(p[1])};
+        return new int[]{(int) Math.floor(u), (int) Math.floor(v)};
     }
 
     private static void auditHighway(WorldPlan plan, Highway h, Report r, int x0, int z0, int w, int d,

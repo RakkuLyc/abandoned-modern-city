@@ -9,20 +9,20 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 /**
- * One city: a set of square blocks on a (gently waving) grid, all at a single walking height {@link #level}.
+ * One city: a rigid grid of {@link Params#GRID} x {@link Params#GRID} rectangular blocks, all at a single walking height
+ * {@link #level}.
  *
  * <h2>Streets</h2>
- * Every block side that touches at least one city block is a street segment. So every street node has degree 2, 3
- * or 4: there are no dead ends anywhere, and the outer streets form closed rings around the city. Where only one of the
- * four blocks around a node is a city block (a convex corner of the city outline) the two outer streets meet at a right
- * angle. Every segment is a street of the same width.
+ * Every block side is a street segment, so every street node has degree 2 (the 4 corners of the city), 3 (the
+ * middle of each side) or 4 (the center): there are no dead ends, and the outer streets form a closed ring. Every
+ * segment is a street of the same width.
  *
  * <h2>Stages</h2>
  * {@link #create} only samples a handful of terrain points (does the cell have a city, where, how big, at what height);
  * the block layout (more samples) is computed lazily the first time the geometry is needed.
  * <p>
- * Grid space: {@code u = x - wx(z)}, {@code v = z - wz(x)} (see {@link Warp}). North-south grid line {@code i} is
- * {@code u = U(i)}, east-west line {@code j} is {@code v = V(j)}; block (i, j) spans {@code [U(i), U(i+1)] x [V(j), V(j+1)]}.
+ * North-south street line {@code i} is {@code x = U(i)}, east-west line {@code j} is {@code z = V(j)}; block (i, j) spans
+ * {@code [U(i), U(i+1)] x [V(j), V(j+1)]}.
  */
 public final class City {
     /**
@@ -33,8 +33,8 @@ public final class City {
     public final int SZ;
     /** Whether the long side of the blocks runs east-west (along x). */
     public final boolean longX;
-    /** Grid-space search radius for street primitives: the widest street plus its slopes, with slack for the waves. */
-    static final double SEARCH = (Params.AVENUE_HW + Params.CITY_SKIRT) * 1.05 + 2;
+    /** Search radius for street primitives around a column: a street plus its slopes, with some slack. */
+    static final double SEARCH = (Params.STREET_HW + Params.CITY_SKIRT) * 1.05 + 2;
     private static final long SALT = 0x43495459L;
 
     public final int ci;
@@ -47,19 +47,12 @@ public final class City {
     /** Walking height of every street and lot of the city. */
     public final int level;
     public final double influence;
-    public final Warp warp;
     /** u of north-south line 0 and v of east-west line 0. */
     public final double u0;
     public final double v0;
-    private final double shapeA2;
-    private final double shapeP2;
-    private final double shapeA3;
-    private final double shapeP3;
-    private final Terrain terrain;
     private volatile Layout layout;
 
-    private City(int ci, int cj, long seed, int cx, int cz, int radius, int level, Warp warp,
-                 double a2, double p2, double a3, double p3, Terrain terrain) {
+    private City(int ci, int cj, long seed, int cx, int cz, int radius, int level) {
         this.ci = ci;
         this.cj = cj;
         this.id = Cache.key(ci, cj);
@@ -72,16 +65,10 @@ public final class City {
         this.radius = radius;
         this.level = level;
         this.influence = Params.influence(radius);
-        this.warp = warp;
         // street centerlines on block centers (x + 0.5), so a 33-wide street covers exactly 33 columns
         // the grid (blocks FIRST..LAST) is centered on the city center
         this.u0 = cx - (int) Math.floor((FIRST + LAST + 1) / 2.0 * SX) + 0.5;
         this.v0 = cz - (int) Math.floor((FIRST + LAST + 1) / 2.0 * SZ) + 0.5;
-        this.shapeA2 = a2;
-        this.shapeP2 = p2;
-        this.shapeA3 = a3;
-        this.shapeP3 = p3;
-        this.terrain = terrain;
     }
 
     // ------------------------------------------------------------------ stage 1
@@ -125,7 +112,8 @@ public final class City {
         if (r instanceof String s) {
             return s;
         }
-        return build(h, ci, cj, cx, cz, radius, (Integer) r, t);
+        // a rigid grid: straight streets, right angles
+        return new City(ci, cj, h, cx, cz, radius, (Integer) r);
     }
 
     /** The level of a city at (cx, cz), or why it cannot stand there. */
@@ -159,14 +147,6 @@ public final class City {
         return level;
     }
 
-    private static City build(long h, int ci, int cj, int cx, int cz, int radius, int level, Terrain t) {
-        // a rigid grid: straight streets, right angles
-        Warp warp = Warp.NONE;
-        return new City(ci, cj, h, cx, cz, radius, level, warp,
-                Hash.range(Hash.next(h, 12), 0.0, 0.12), Hash.range(Hash.next(h, 13), 0.0, 2 * Math.PI),
-                Hash.range(Hash.next(h, 14), 0.0, 0.08), Hash.range(Hash.next(h, 15), 0.0, 2 * Math.PI), t);
-    }
-
     public double U(int i) {
         return u0 + (double) i * SX;
     }
@@ -175,17 +155,11 @@ public final class City {
         return v0 + (double) j * SZ;
     }
 
-    /** Organic outline: the city reaches radius * shape(angle), at most 1.2 radius. */
-    double shape(double angle) {
-        return 1 + shapeA2 * StrictMath.sin(2 * angle + shapeP2) + shapeA3 * StrictMath.sin(3 * angle + shapeP3);
-    }
-
     // ------------------------------------------------------------------ stage 2: block layout
 
     static final class Layout {
         final int n;
         final int w;
-        final boolean[] city;
         final int blocks;
         /** Convex corner quadrant per node (0 = none), nodes i, j in [-n, n + 1]. */
         final byte[] corner;
@@ -193,17 +167,10 @@ public final class City {
         final List<Exit> exits;
         final AtomicReferenceArray<List<Lot>> lots;
 
-        Layout(int n, boolean[] city, long seed) {
+        Layout(int n, long seed) {
             this.n = n;
             this.w = 2 * n + 1;
-            this.city = city;
-            int count = 0;
-            for (boolean b : city) {
-                if (b) {
-                    count++;
-                }
-            }
-            this.blocks = count;
+            this.blocks = (LAST - FIRST + 1) * (LAST - FIRST + 1);
             this.nw = 2 * n + 2;
             this.corner = new byte[nw * nw];
             this.lots = new AtomicReferenceArray<>(w * w);
@@ -218,26 +185,25 @@ public final class City {
                     if (c == 1) {
                         corner[(i + n) + (j + n) * nw] = (byte) (seB ? 1 : swB ? 2 : neB ? 3 : 4);
                         // a corner of the city: a highway may continue either of its two border streets outwards
-                        ex.add(new Exit(i, j, seB || neB ? Exit.WEST : Exit.EAST, false));
-                        ex.add(new Exit(i, j, seB || swB ? Exit.NORTH : Exit.SOUTH, false));
+                        ex.add(new Exit(i, j, seB || neB ? Exit.WEST : Exit.EAST));
+                        ex.add(new Exit(i, j, seB || swB ? Exit.NORTH : Exit.SOUTH));
                     } else if (c == 2) {
                         // two edge-adjacent city blocks: a T junction on the outline, a possible highway exit
                         if (neB && seB) {
-                            ex.add(new Exit(i, j, Exit.WEST, false));
+                            ex.add(new Exit(i, j, Exit.WEST));
                         } else if (nwB && swB) {
-                            ex.add(new Exit(i, j, Exit.EAST, false));
+                            ex.add(new Exit(i, j, Exit.EAST));
                         } else if (swB && seB) {
-                            ex.add(new Exit(i, j, Exit.NORTH, false));
+                            ex.add(new Exit(i, j, Exit.NORTH));
                         } else if (nwB && neB) {
-                            ex.add(new Exit(i, j, Exit.SOUTH, false));
+                            ex.add(new Exit(i, j, Exit.SOUTH));
                         }
                     }
                 }
             }
-            // the border T crossings and the corners (two directions each) are the possible places; each city rolls
-            // EXITS of them, and WorldPlan picks the entrances among those
-            // one per side: for each direction, one of the crossings that can leave that way (the middle T or one of
-            // the two corners), never the same crossing twice
+            // the border T crossings and the corners (two directions each) are the possible places; one per side is
+            // rolled (the middle T or one of the two corners, never the same crossing twice), and WorldPlan picks the
+            // entrances among those
             List<Exit> picked = new ArrayList<>();
             List<Integer> dirs = new ArrayList<>(List.of(Exit.WEST, Exit.EAST, Exit.NORTH, Exit.SOUTH));
             dirs.sort(Comparator.comparingLong(d -> Hash.of(seed, 0x45584FL, d)));
@@ -261,8 +227,9 @@ public final class City {
             this.exits = List.copyOf(ex);
         }
 
+        /** Whether block (i, j) belongs to the city: the GRID x GRID blocks FIRST..LAST in both directions. */
         boolean isCity(int i, int j) {
-            return i >= -n && i <= n && j >= -n && j <= n && city[(i + n) + (j + n) * w];
+            return i >= FIRST && i <= LAST && j >= FIRST && j <= LAST;
         }
 
         int corner(int i, int j) {
@@ -284,13 +251,12 @@ public final class City {
     }
 
     /**
-     * A possible highway exit, leaving the city in direction {@code dir}: either an outline node (i, j) where an inner
-     * street meets the outer street, or a corner of the city ({@code mid = false}; the highway continues the street that
-     * runs in direction {@code dir}; a corner has one exit per direction, a single highway uses it), or the middle of the
-     * outline segment starting at node (i, j) ({@code mid = true}; along north-south line i for EAST/WEST, along
-     * east-west line j for NORTH/SOUTH).
+     * A possible highway exit, leaving the city in direction {@code dir} from the border node (i, j): the middle T
+     * crossing of a side, where an inner street meets the outer street, or a corner of the city (the highway continues
+     * the outer street that runs in direction {@code dir}; a corner has one exit per direction, a single highway uses
+     * it).
      */
-    public record Exit(int i, int j, int dir, boolean mid) {
+    public record Exit(int i, int j, int dir) {
         public static final int EAST = 0;
         public static final int WEST = 1;
         public static final int SOUTH = 2;
@@ -312,15 +278,7 @@ public final class City {
      * to the city level.
      */
     private Layout computeLayout() {
-        int n = Math.max(-FIRST, LAST);
-        int w = 2 * n + 1;
-        boolean[] city = new boolean[w * w];
-        for (int j = FIRST; j <= LAST; j++) {
-            for (int i = FIRST; i <= LAST; i++) {
-                city[(i + n) + (j + n) * w] = true;
-            }
-        }
-        return new Layout(n, city, seed);
+        return new Layout(Math.max(-FIRST, LAST), seed);
     }
 
     public int blockCount() {
@@ -353,43 +311,22 @@ public final class City {
 
     /** World position of a grid node. */
     public double[] nodeWorld(int i, int j) {
-        return warp.toWorld(U(i), V(j));
+        return new double[]{U(i), V(j)};
     }
 
     /** World position where a highway leaving through this exit starts (on the outer street's centerline). */
     public double[] exitWorld(Exit e) {
-        if (!e.mid()) {
-            return nodeWorld(e.i(), e.j());
-        }
-        boolean eastWest = e.dir() == Exit.EAST || e.dir() == Exit.WEST;
-        return eastWest ? warp.toWorld(U(e.i()), V(e.j()) + SZ / 2.0) : warp.toWorld(U(e.i()) + SX / 2.0, V(e.j()));
+        return nodeWorld(e.i(), e.j());
     }
 
     /** Unit world direction of a highway leaving through this exit (perpendicular to the outer street). */
     public double[] exitDirection(Exit e) {
-        double[] p = exitWorld(e);
-        double dx;
-        double dz;
-        switch (e.dir()) {
-            case Exit.EAST -> {
-                dx = 1;
-                dz = warp.dwz(p[0]);
-            }
-            case Exit.WEST -> {
-                dx = -1;
-                dz = -warp.dwz(p[0]);
-            }
-            case Exit.SOUTH -> {
-                dx = warp.dwx(p[1]);
-                dz = 1;
-            }
-            default -> {
-                dx = -warp.dwx(p[1]);
-                dz = -1;
-            }
-        }
-        double len = Math.sqrt(dx * dx + dz * dz);
-        return new double[]{dx / len, dz / len};
+        return switch (e.dir()) {
+            case Exit.EAST -> new double[]{1, 0};
+            case Exit.WEST -> new double[]{-1, 0};
+            case Exit.SOUTH -> new double[]{0, 1};
+            default -> new double[]{0, -1};
+        };
     }
 
     // ------------------------------------------------------------------ column query
@@ -416,7 +353,7 @@ public final class City {
         public long lampSeed;
         /** Number of street bands covering the column (2+ = intersection). */
         public int count;
-        /** Buildable ground of a city block (not street, inside the rounded corners). */
+        /** Buildable ground of a city block (not street). */
         public boolean lot;
         /** Distance beyond the outer edge of the nearest street; negative inside a street, +inf when far. */
         public double edge;
@@ -497,7 +434,7 @@ public final class City {
         // north-south streets (only the segment of block row bj can contain v)
         for (int i = iLo; i <= iHi; i++) {
             if (L.xDrawn(i, bj) && v >= V(bj) && v <= V(bj + 1)) {
-                if (consider(h, Math.abs(u - U(i)), false)) {
+                if (consider(h, Math.abs(u - U(i)))) {
                     markCandidate = true;
                     markAlong = v - V(bj) - hw;
                     markRun = SZ - (int) (2 * hw);
@@ -509,7 +446,7 @@ public final class City {
         // east-west streets
         for (int j = jLo; j <= jHi; j++) {
             if (L.zDrawn(bi, j) && u >= U(bi) && u <= U(bi + 1)) {
-                if (consider(h, Math.abs(v - V(j)), false)) {
+                if (consider(h, Math.abs(v - V(j)))) {
                     markCandidate = true;
                     markAlong = u - U(bi) - hw;
                     markRun = SX - (int) (2 * hw);
@@ -582,9 +519,9 @@ public final class City {
     }
 
     /** Registers one street primitive at world distance d; returns true if the column is on its center marking. */
-    private static boolean consider(Hit h, double d, boolean avenue) {
-        double hw = avenue ? Params.AVENUE_HW : Params.STREET_HW;
-        double lane = avenue ? Params.AVENUE_LANE_HW : Params.STREET_LANE_HW;
+    private static boolean consider(Hit h, double d) {
+        double hw = Params.STREET_HW;
+        double lane = Params.STREET_LANE_HW;
         double e = d - hw;
         if (e < h.edge) {
             h.edge = e;

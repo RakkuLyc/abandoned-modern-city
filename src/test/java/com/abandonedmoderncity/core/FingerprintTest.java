@@ -212,7 +212,8 @@ class FingerprintTest {
         d.i(e.i());
         d.i(e.j());
         d.i(e.dir());
-        d.b(e.mid());
+        // the exits had a "middle of a side" flag, always false, removed with the old city shapes: kept in the digest
+        d.b(false);
     }
 
     private static void highway(Digest d, Highway h, Terrain terrain) {

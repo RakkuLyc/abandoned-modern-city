@@ -20,7 +20,7 @@ import java.util.function.Supplier;
  *   circle of diameter AB), limited to {@link Params#MAX_LINK}. It is planar and connected, so it links every city
  *   to its natural neighbors without crossings of the straight links.</li>
  *   <li>Each city assigns one exit (an outline T junction) per neighbor, nearest neighbors first, choosing the exit
- *   that faces the neighbor (avenues preferred). The highway leaves straight along the street it continues.</li>
+ *   that faces the neighbor. The highway leaves straight along the street it continues.</li>
  *   <li>A link is kept when its curve is long enough to ramp between the two levels, has no curve tighter than
  *   {@link Params#MIN_CURVE_RADIUS}, stays clear of every city it does not serve (and of its own cities after the
  *   junction), is not mostly over water, and does not come closer than {@link Params#HIGHWAY_SEPARATION} to a
@@ -365,7 +365,7 @@ public final class WorldPlan {
     /** Null when the path keeps its distance from every city, else the reason. */
     private String clearOfCities(Highway h) {
         City.Hit hit = new City.Hit();
-        int junction = (int) Math.ceil(Params.AVENUE_HW + Params.HIGHWAY_HW + 4);
+        int junction = (int) Math.ceil(Params.STREET_HW + Params.HIGHWAY_HW + 4);
         for (int k = 0; k <= h.length; k++) {
             double x = h.x(k);
             double z = h.z(k);

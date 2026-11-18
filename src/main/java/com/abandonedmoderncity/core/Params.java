@@ -36,17 +36,17 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
     /** Dash / gap of the street center marking. */
     public static final int DASH = 11;
     public static final int DASH_GAP = 6;
-    /** Largest amplitude of the gentle street waves (blocks). */
-    public static final double MAX_WARP = 10;
+    /**
+     * Slack added to a city's area of influence (blocks), left from the old waving streets: the streets are straight
+     * now, but the value sets {@link #influence} and so the smallest cell (734) and the world; do not change it.
+     */
+    public static final double INFLUENCE_SLACK = 10;
 
     // ------------------------------------------------------------------ cross sections (half widths from the centerline)
 
     /** City street: smooth stone sidewalk 3 + polished blackstone 27 (center mark on the 17th block) + sidewalk 3 = 33. */
     public static final double STREET_HW = 16.5;
     public static final double STREET_LANE_HW = 13.5;
-    /** There are no wider avenues any more: same section as the streets. */
-    public static final double AVENUE_HW = STREET_HW;
-    public static final double AVENUE_LANE_HW = STREET_LANE_HW;
     /**
      * Highway, as wide as a city street (33): smooth stone 3 (the outer one with a wall on top) + polished blackstone 27
      * (yellow center mark) + smooth stone 3 (the outer one with a wall).
@@ -101,12 +101,12 @@ public record Params(int cellSize, double cityChance, int minRadius, int maxRadi
 
     /**
      * Farthest distance from a city center at which the city changes anything (lots, streets, slopes): the corner of
-     * the rectangular city (half diagonal: 286 for 230 x 170), then waves and slopes. Cities of another radius
+     * the rectangular city (half diagonal: 286 for 230 x 170), then a slack and the slopes. Cities of another radius
      * (config) use 1.2 x radius.
      */
     public static double influence(int radius) {
         double corner = radius == GRID_RADIUS ? Math.hypot(GRID_RADIUS, GRID_HALF_SHORT) : radius * 1.2;
-        return corner + MAX_WARP + CITY_SKIRT + 4;
+        return corner + INFLUENCE_SLACK + CITY_SKIRT + 4;
     }
 
     /** Half the long side of a city, streets included: 230 for the 2 x 2 grid (the short side: 170). */

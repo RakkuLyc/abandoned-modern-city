@@ -502,14 +502,11 @@ class WorldPlanTest {
 
     @Test
     void streetWidthIsConstantOnStraightStreets() {
-        // on a city without waves the street bands are exactly 11 (street) or 15 (avenue) columns wide
+        // the street bands are exactly 33 columns wide
         WorldPlan p = plan(SEEDS[0], TestTerrain.Kind.FLAT);
         City.Hit hit = new City.Hit();
         int checked = 0;
         for (City c : allCities(p)) {
-            if (c.warp.maxSlope() != 0) {
-                continue;
-            }
             int n = c.gridHalf();
             for (int i = -n; i <= n + 1; i++) {
                 for (int j = -n; j <= n; j++) {
