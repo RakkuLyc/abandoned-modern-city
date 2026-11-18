@@ -37,7 +37,8 @@
    (`javap -c -p`) of the moved methods. The tools are in `tools/verify/` (`compare_battery.py`, `javap_dump.sh`,
    `compare_methods.py`, `compare_block_detail.py`, `chunk_diff.py`; since 16 Nov 2026 `structure_cells.sh` with
    `compare_structure_cells.py`, the 52 structures cell by cell between two jars, and `chest_walk.sh`, copies of the
-   buildings walked again with their barrels and drawn chests) and the reference reports in
+   buildings walked again with their barrels and drawn chests; since 18 Nov 2026 `floating_scan.py`, the natural
+   vegetation floating in a saved world, and `world_column.py`, the blocks of a column of a saved world) and the reference reports in
    `tools/verify/reference/`. In a commit that changes the world on purpose, update the expected values of the test and
    the battery reference, and say so in the commit message.
 

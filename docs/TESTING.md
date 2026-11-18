@@ -380,6 +380,9 @@ python3 tools/verify/compare_battery.py R.txt tools/verify/reference/battery-202
 tools/verify/javap_dump.sh build/verify/before               # bytecode listing, before the change
 tools/verify/javap_dump.sh build/verify/after                # and after (./gradlew compileJava between the two)
 python3 tools/verify/compare_methods.py build/verify/before build/verify/after [--owners A,B] [--ignore-slots]
+# floating vegetation in a saved world, outside the game (finding 78; needs numpy), and the blocks of a column:
+python3 tools/verify/floating_scan.py run/selftest_world_20261027
+python3 tools/verify/world_column.py run/selftest_world_20261027 -253,607,60,90
 # if a mod blocks: line changes: where (per chunk and column) and which blocks
 python3 tools/verify/compare_block_detail.py A/renders/t01_blocks.txt B/renders/t01_blocks.txt
 python3 tools/verify/chunk_diff.py run/selftest_world_ref_english <other world> CX,CZ --ymin 60
