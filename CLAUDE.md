@@ -521,6 +521,14 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   seed 20261027, 4,020 in −3297…, 8,495 in 1, 8,780 in 3478…; the generation ~8% slower per chunk. The world audit
   checks it (`vegetation_floating`, with the loose blocks checked in `vegetation_checked`): before the fix 40, 54 and
   42 floating groups in three seeds, after 0 in all 4. Worlds generated before keep what floats in their chunks.
+- Planning on several cores (18 Nov 2026, asked by the user: a new world took ~13 s before its first chunks, 4,174
+  terrain samples of ~2.9 ms): the cells of cities not decided yet in a `WorldPlan.citiesIn` (9 samples each; the
+  highways near a chunk need the cities ~4,400 blocks around and their neighbours) are decided in parallel, and the
+  samples of a highway's path are taken in parallel before its loop reads them (`Highway.computeDetail`); both are
+  pure and cached, so the plan is the same (`FingerprintTest`); ~13 → ~4 s, and in the battery 2.9–3.4 → 1.8–2.1 ms
+  per chunk. The order in which the chunks finish changes with it: in a few chunks the vanilla features that reach
+  into a neighbour (ore and stone blobs) and the state of some leaves come out otherwise, as they already could from
+  one run to the next (finding 65; `docs/TESTING.md`, section 6).
 - Foundation of the lots (18 Nov 2026, asked by the user, finding 75: a vanilla village chest and beds, caves, water
   and the top of a dungeon were left right under the floor of the city): the 3 layers under a lot's floor
   (`ChunkBuilder.FOUNDATION`) never keep air, a liquid or a block entity where the plan keeps what the world has

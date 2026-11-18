@@ -262,7 +262,8 @@ core/   the pure planner (no Minecraft classes), tested with JUnit
   Template        .nbt structures (and the waterfall.nbt fountain)
   Highway         the curve between two city entrances, points every block, column projection
   Profile         the "flat or ramp" height profile and the ground / bridge / tunnel classification
-  WorldPlan       cities, highway network, the plan of each chunk (ChunkPlan); caches
+  WorldPlan       cities, highway network, the plan of each chunk (ChunkPlan); caches; the cities of an area and
+                  the samples of a highway's path computed on several cores
   PlanAudit       the plan audit (used in the tests and in game)
   PlanRender      PNGs of the plan (detail, network, side profile)
 gen/    the game layer

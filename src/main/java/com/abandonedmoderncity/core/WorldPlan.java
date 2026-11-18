@@ -72,6 +72,20 @@ public final class WorldPlan {
     /** Cities whose center lies in the rectangle. */
     public List<City> citiesIn(double x0, double z0, double x1, double z1) {
         int cell = params.cellSize();
+        // the cells not decided yet are decided at once, on several cores (each costs 9 terrain samples, ~26 ms in the
+        // game, and the first chunks of a world ask for ~400 of them): City.create is a pure function of the seed and
+        // the terrain, so the cities are the same whatever the order (18 Nov 2026, asked by the user)
+        List<long[]> missing = new ArrayList<>();
+        for (int cj = Math.floorDiv((int) Math.floor(z0), cell); cj <= Math.floorDiv((int) Math.floor(z1), cell); cj++) {
+            for (int ci = Math.floorDiv((int) Math.floor(x0), cell); ci <= Math.floorDiv((int) Math.floor(x1), cell); ci++) {
+                if (!cities.containsKey(Cache.key(ci, cj))) {
+                    missing.add(new long[]{ci, cj});
+                }
+            }
+        }
+        if (missing.size() > 1) {
+            missing.parallelStream().forEach(c -> city((int) c[0], (int) c[1]));
+        }
         List<City> out = new ArrayList<>();
         for (int cj = Math.floorDiv((int) Math.floor(z0), cell); cj <= Math.floorDiv((int) Math.floor(z1), cell); cj++) {
             for (int ci = Math.floorDiv((int) Math.floor(x0), cell); ci <= Math.floorDiv((int) Math.floor(x1), cell); ci++) {
