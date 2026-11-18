@@ -12,7 +12,8 @@
 6. **Documentation always up to date**: with every change to behavior, numbers, blocks, commands, configuration,
    architecture or tests, update in the **same commit**:
    - `CLAUDE.md` (the specification below);
-   - `README.md` (overview, tables of cities/buildings/roads, architecture, commands);
+   - `README.md` (the page for players: what the mod generates, requirements, configuration, commands, limitations) and
+     `docs/DEVELOPMENT.md` (overview, tables of cities/buildings/roads, architecture, commands);
    - `docs/TESTING.md` (the tests and what they check, the audits, the problems found and fixed, performance and the
      results of the latest runs).
    Before each commit, check whether any of these files went out of date. The values come from the code and the
@@ -469,7 +470,7 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
     old one-argument form no longer exists) (2 blocks in front of the player, centered, its front facing the player,
     its ground on the block the player stands on; the same rules as in the city, with loot);
   - height classes of the buildings (asked by the user on 15 Nov 2026): by the height of the box of the template with
-    the buried layers (`Def.h`, the number of the README table): **small** up to 40 (`Structures.HEIGHT_SMALL`),
+    the buried layers (`Def.h`, the number of the table of `docs/DEVELOPMENT.md`): **small** up to 40 (`Structures.HEIGHT_SMALL`),
     **medium** up to 75, **large** up to 140, **immense** above 140, each limit with a margin of 3 blocks
     (`Structures.HEIGHT_MARGIN`, asked the same day: a building up to 3 over a limit stays in the lower class; the
     user chose this direction, not the one that moves up a building 3 under a limit): small up to 43, medium up to 78,
