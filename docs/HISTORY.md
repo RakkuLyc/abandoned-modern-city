@@ -8,8 +8,8 @@ unchanged; the problems found and fixed, with their numbers (findings), are in `
 ## The world fingerprint and what changed it (rule 7 as it stood)
 
 7. **World fingerprint** (since 12 Nov 2026): `FingerprintTest` keeps what the planner produces (the values of commit
-   `4dd94ae`; `layout`, `structures` and `weathering`, which hold the names, since the English names; `layout` again
-   since the special structures in ~1 city in 10, commit `21cd4f6`; `structures` again since the loot theme
+   `d960e99`; `layout`, `structures` and `weathering`, which hold the names, since the English names; `layout` again
+   since the special structures in ~1 city in 10, commit `0f27bc0`; `structures` again since the loot theme
    `building_large` and again when it was taken out; `lots` since the barrels of the buildings, `core/Barrels`; `lots` and `structures` again since the hard
    containers underground, on the terrace and in the attics; `structures` again since the height classes of the
    buildings (and again with the margin of 3 blocks), their type and category: the blocks did not change; `lots` and `structures` again since the chests saved in the
@@ -135,7 +135,7 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   over the road (`Params.TUNNEL_COVER`).
 - No cut streets: every block has its 4 streets. The random removal of street segments (switched off since the 2 × 2
   grid, `City.MAX_CUTS` = 0) was taken out in the code review (13 Nov 2026, asked by the user); it remains in the git
-  history (commit `4dd94ae`).
+  history (commit `d960e99`).
 - City blocks: all get a ring of structures (see below) and the rest (the core) is taken over by nature (see
   "Nature"). ~1 block in 8 (`CityRings.PARK_BLOCK_CHANCE`) has a park in a corner (13 Nov 2026, asked by the user; before,
   the park took the whole block): 110 × 64 (`CityRings.PARK_LONG`/`PARK_SHORT`, its long side along the long side of the
@@ -201,7 +201,7 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   (front of 102 in the 120, depth of 72 along the 180) or, on the long sides, when the woods drawn are narrow. Leaves
   saved as not persistent far from any trunk (modern garage house, glass house, brutalist, ramp building) become
   persistent, or they would fall in the world. The stairs of the glass house started against the glass wall of the
-  front (one could only climb from the side); the template was replaced (13 Nov 2026, commit `7e0b2a9`) with L-shaped
+  front (one could only climb from the side); the template was replaced (13 Nov 2026, commit `55a8ce0`) with L-shaped
   stairs from the hall, a 2 × 2 landing in the corner and a continuous iron-bar railing up to the gallery. The 7
   already come overgrown; the overgrowth adds what is missing. The loot applies unchanged: the houses use the `house`
   theme, the buildings and the special one the `building` theme.
@@ -609,4 +609,4 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
 - Palette (`gen/Palette`): every block the generator places, checked at startup (`Palette.validate`). The 8 material
   styles of the buildings of Abandoned Simple City (walls, windows, floors, trims, stairs, balconies, doors), their
   block codes and the plaza and empty lot types were removed in the code review (13 Nov 2026, asked by the user); they
-  remain in the git history (commit `4dd94ae`).
+  remain in the git history (commit `d960e99`).
