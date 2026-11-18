@@ -80,4 +80,5 @@ Structures built by other players are welcome: see [CONTRIBUTING.md](CONTRIBUTIN
 [CREDITS.md](CREDITS.md).
 
 For building, testing and the full specification see
-[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/TESTING.md](docs/TESTING.md) and [CLAUDE.md](CLAUDE.md).
+[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/TESTING.md](docs/TESTING.md) and [CLAUDE.md](CLAUDE.md); the changes of
+each version are in [CHANGELOG.md](CHANGELOG.md).

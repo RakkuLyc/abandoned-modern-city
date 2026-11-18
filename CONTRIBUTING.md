@@ -64,4 +64,4 @@ Open an issue or a pull request in the repository with:
 The author reviews the structure in the game (`/amcs spawn`), copies it into the mod with its line in
 `src/main/resources/amcs/buildings/index.txt`, runs the tests and the in-world battery, and adds it to the credits.
 A new structure changes the cities of new worlds (it joins the draw), so structures are added in new versions of
-the mod, listed in its changelog (`CHANGELOG.md`). The author may ask for changes or decline a structure.
+the mod, listed in the [CHANGELOG](CHANGELOG.md). The author may ask for changes or decline a structure.
