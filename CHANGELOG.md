@@ -8,7 +8,10 @@
   per small building, ~19 to 48 per large one). They make plain zombies in any light (a torch does not stop them:
   break them), 2 at a time, at most 4 around each, when a player is within 12 blocks; nothing spawns in Peaceful.
   `/amcs spawn` places them too.
-- Config option `zombieSpawners` (on by default; read at startup). Off, the world is the same as in 1.0.0.
+- Config option `zombieSpawners` (on by default; read at startup). Off, the buildings have no spawners, as in 1.0.0.
+
+### Fixed
+- The stairs of the apocalyptic building faced the wrong way (they could be climbed, but looked reversed).
 
 ## 1.0.0 — 2026-11-18
 

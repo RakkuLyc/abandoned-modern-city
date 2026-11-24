@@ -629,3 +629,12 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   `FingerprintTest` `ecf9d723...` → `537e49bd...` (with the option off it is still `ecf9d723...`); both reference
   reports of 20261027 (full, and quick with `structureOvergrowth = false`): the `mod blocks:` lines of the targets
   with buildings and `structure_block_entities` up by the new `structure_spawners`, nothing else.
+- **The stairs of the apocalyptic building turned the right way** (24 Nov 2026, found by the user in the game: they
+  could be climbed but looked wrong). The 146 stairs of its stairwell (two flights a floor, x 24–25 and 28–29) were
+  saved facing the way down in the original `.nbt` (every flight climbed away from its facing; in the apartment, the
+  skeleton, the bluish building and the tower the flights climb toward it). What it replaced: north and south swapped
+  on those 146 stairs, nothing else, in `apocalyptic_building_57x45.nbt` and in its original
+  `structures/Prédios/predio_apocaliptico_57x45.nbt` (the user chose to fix both; the former file is kept in
+  `~/backups/amc-apocalyptic-stairs-2026-11-24/`). `FingerprintTest`: `lots` `537e49bd...` → `8acc1004...`,
+  `structures` `eae75644...` → `cbe4e5de...`; both reference reports of 20261027: the `mod blocks:` digests of the
+  targets with that building, the same positions and counts.

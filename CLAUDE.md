@@ -236,7 +236,7 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
   tower).
 - Zombie spawners of the buildings (`core/SpawnerDraw`, `Def.spawners(seed)`, placed by `Def.code` on air of the
   template, the last 512 copies kept; **off with `zombieSpawners = false`**, read at startup: then
-  `Structures.SPAWNER_STATE` is -1 and the world is the one of 1.0.0), a pure function of the copy's seed and the
+  `Structures.SPAWNER_STATE` is -1 and no spawner is placed), a pure function of the copy's seed and the
   template, drawn after the chests (which do not change): the floors over the ground one in two from the street floor (the 1st, 3rd, 5th...) and every floor under
   it (the garage of the wide building); 1 on each of them in a small building, else 2 to 5 drawn per floor
   (`LARGE_MIN`/`LARGE_MAX`; medium and immense like large). On a spot of `Rooms` not under the open sky nor (while the
