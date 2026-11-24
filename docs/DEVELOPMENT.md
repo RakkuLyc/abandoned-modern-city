@@ -269,6 +269,8 @@ core/   the pure planner (no Minecraft classes), tested with JUnit
   Barrels         the barrels of the buildings: 70% taken out, the others chests, drawn per copy (lot seed)
   Rooms           floors, rooms, corridors and places for a chest of each building, on the walk of Access
   ChestDraw       the chests of each copy of a building: how many, per floor, which spots (pure function of the seed)
+  SpawnerDraw     the zombie spawners of each copy of a building, near its chests, one floor in two (pure function
+                  of the seed; drawn but not placed in the world yet)
   Crowns          where the leaves completing the crowns cut by the edge of the structures go (gen/Overhangs places
                   them)
   Park            parks taken over by nature, with paths and the fountain

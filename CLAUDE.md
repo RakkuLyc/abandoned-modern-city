@@ -234,6 +234,16 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
   plain draw gives 25 to 43%). Chests face where the player stands (`Rooms.FACINGS`); a hard spot gets `chest_hard`
   (`Def.hard`, `Structures.hardSpots`: the garage of the wide building, the terraces of the crash, skeleton and green
   tower).
+- Zombie spawners of the buildings (`core/SpawnerDraw`, **drawn but not placed in the world yet**: nothing calls it
+  outside the tests), a pure function of the copy's seed and the template, drawn after the chests (which do not
+  change): the floors over the ground one in two from the street floor (the 1st, 3rd, 5th...) and every floor under
+  it (the garage of the wide building); 1 on each of them in a small building, else 2 to 5 drawn per floor
+  (`LARGE_MIN`/`LARGE_MAX`; medium and immense like large). On a spot of `Rooms` not under the open sky nor in a lobby
+  open onto the street, touching no chest and no other spawner (within 1 sideways and up or down, `TOUCH`, so never
+  in front of a chest), guarding a chest of the copy (a drawn one or a barrel turned into a chest) at most 5 sideways
+  and 2 up or down (`GUARD`, `GUARD_DY`), the chest with the fewest guards first, the spots in a weighted draw
+  (`-ln(u) / weight`); when none is left near a chest, an exploration spot of the floor (far or hard) farther than 5
+  from every chest; else the floor gets fewer.
 - Commands (`command/StructureCommands`): `/amcs locate structure <category> [name]` (the nearest planned one,
   coordinates on the sidewalk in front of it) and `/amcs spawn <category> <name>` (2 blocks in front of the player,
   front toward the player, ground on the block the player stands on, the same rules as in the city with loot);
