@@ -300,6 +300,9 @@ gen/    the game layer
                   says what is wrong with one (read by the audit)
   McTerrain       Terrain over ChunkGenerator.getBaseHeight (noise, the same in any thread)
   Plans           one WorldPlan per dimension (only the overworld)
+  OutpostZero     keeps Outpost Zero's bunkers 48+ from the cities and highways (WorldPlan.nearCityOrHighway)
+mixin/  mixins for other mods only, each applied when its mod is loaded (AmcsMixinPlugin; abandonedmoderncity.mixins.json,
+        declared in neoforge.mods.toml): OutpostZeroSiteMixin, the first thing Outpost Zero's site check asks
 command/  /amcs (StructureCommands: locate structure and spawn), the block audit (WorldAudit), renders, the battery
           (SelfTest), the fingerprint of the mod's blocks (WorldFingerprint)
 ```

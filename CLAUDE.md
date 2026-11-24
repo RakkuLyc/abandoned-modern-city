@@ -304,6 +304,14 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
   `plan [radius ≤ 16]`, `audit [radius ≤ 8]`, `network [radius 500–1000]`, `column <x> <z> <y0> <y1>` (heights kept
   in the world, at most 384 lines); they run on the server thread, so the limits keep them to seconds. Images go to
   `amcs_renders/`.
+- Other mods (`gen/OutpostZero`, `mixin/`): the bunkers of Outpost Zero (`outpostzero`), which it places after the
+  world is generated wherever its only site check (`BunkerSiteSuitabilityLogic.checkBunkerSite`: no water, no steep
+  slope) passes, are kept away from the cities and highways: the mixin `OutpostZeroSiteMixin` (applied only when that
+  mod is loaded, `AmcsMixinPlugin`; nothing of it compiled in, its result made through reflection) refuses a site 48
+  or less (`OutpostZero.REACH`, from the point it checks) from a city with its slopes (`CITY_SKIRT` beyond its border
+  streets, `City.distanceOutside`) or a highway with its slopes (`HIGHWAY_HW` + `HIGHWAY_SKIRT` from its centerline)
+  (`WorldPlan.nearCityOrHighway`), code `amcs_city_or_highway`; Outpost Zero then tries another spot (a bunker is
+  ~39 × 39, so its blocks stay ~53+ from the streets). Without that mod the mod changes no code of the game.
 - The plan is a pure function of the seed and the natural terrain, whatever the order of the chunks or the thread
   (cities decided and highway paths sampled on several cores, `WorldPlan.citiesIn`, `Highway.computeDetail`); the
   natural decoration next to a city can differ with the order of generation.

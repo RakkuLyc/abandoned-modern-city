@@ -41,7 +41,8 @@ structure in front of you.
 ## Known limitations
 
 - Worlds created before installing the mod keep their old chunks: a city can be cut where old and new land meet.
-- Other world generation mods have not been tested with it.
+- Other world generation mods have not been tested with it, except Outpost Zero: its bunkers are kept at least 48
+  blocks (from the point it checks) away from the cities and highways, so they do not cut into the streets.
 
 ## License and credits
 

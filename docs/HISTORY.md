@@ -638,3 +638,11 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   `~/backups/amc-apocalyptic-stairs-2026-11-24/`). `FingerprintTest`: `lots` `537e49bd...` → `8acc1004...`,
   `structures` `eae75644...` → `cbe4e5de...`; both reference reports of 20261027: the `mod blocks:` digests of the
   targets with that building, the same positions and counts.
+- **Outpost Zero's bunkers kept away from the cities and highways** (24 Nov 2026, found by the user in the game with
+  Outpost Zero 1.0.10: bunkers inside the cities and on the highways). That mod places its bunkers on a tick of the
+  server, after the world is generated, wherever its only site check (no water, no steep slope) passes, and the flat
+  ground of a city always passes it; nothing in the generation of this mod could stop it. The user chose a
+  compatibility in this mod (over switching that mod's additional bunkers off, `additionalBunkersEnabled = false`) and
+  48 blocks (over 100, or only outside the area). What it replaced: the mod had no mixin; now `mixin/` with one, for
+  that mod only (`AmcsMixinPlugin`), and `gen/OutpostZero`, `WorldPlan.nearCityOrHighway`, `City.distanceOutside`.
+  The world of the mod does not change (`FingerprintTest`, the battery identical).

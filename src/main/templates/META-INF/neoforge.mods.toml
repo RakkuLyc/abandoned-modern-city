@@ -23,3 +23,8 @@ description='''${mod_description}'''
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
+
+# Mixins for other mods only, each applied when its mod is loaded (mixin/AmcsMixinPlugin): Outpost Zero's bunkers kept
+# away from the cities and highways
+[[mixins]]
+    config="${mod_id}.mixins.json"

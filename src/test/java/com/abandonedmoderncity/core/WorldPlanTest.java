@@ -156,6 +156,81 @@ class WorldPlanTest {
     }
 
     @Test
+    void theEdgeOfACityIsItsBorderStreets() {
+        WorldPlan p = plan(SEEDS[0], TestTerrain.Kind.FLAT);
+        City.Hit hit = new City.Hit();
+        int cities = 0;
+        for (City c : allCities(p)) {
+            if (++cities > 30) {
+                break;
+            }
+            assertEquals(0, c.distanceOutside(c.cx, c.cz), c + " center");
+            // in the 4 directions from the center: 0 up to the last column of the city, then 1 a block
+            int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+            for (int[] d : dirs) {
+                int last = -1;
+                for (int k = 0; k < 400; k++) {
+                    c.query(c.cx + d[0] * k + 0.5, c.cz + d[1] * k + 0.5, hit);
+                    if (hit.inside()) {
+                        last = k;
+                    }
+                }
+                assertTrue(last > 100, c + " no city toward " + Arrays.toString(d));
+                for (int k = last - 5; k <= last + 60; k++) {
+                    double want = Math.max(k - last, 0);
+                    assertEquals(want, c.distanceOutside(c.cx + d[0] * k + 0.5, c.cz + d[1] * k + 0.5), 1.0,
+                            c + " " + Arrays.toString(d) + " at " + k + " (last city column " + last + ")");
+                }
+            }
+        }
+    }
+
+    @Test
+    void nearCityOrHighwayMatchesTheDistanceToEveryCityAndHighway() {
+        double reach = 48;
+        for (TestTerrain.Kind kind : new TestTerrain.Kind[]{TestTerrain.Kind.FLAT, TestTerrain.Kind.HILLS}) {
+            WorldPlan p = plan(SEEDS[1], kind);
+            List<City> cities = allCities(p);
+            Map<Highway, Boolean> highways = new java.util.IdentityHashMap<>();
+            for (City c : cities) {
+                for (Highway h : p.highways(c)) {
+                    highways.put(h, Boolean.TRUE);
+                }
+            }
+            double pad = Params.HIGHWAY_HW + Params.HIGHWAY_SKIRT + reach;
+            int cell = Params.DEFAULT.cellSize();
+            int near = 0;
+            int far = 0;
+            Highway.Proj pr = new Highway.Proj();
+            // every 13 blocks over the cells -2..1 (the cities of cells -4..4 and their highways are all known)
+            for (int z = -2 * cell; z < 2 * cell; z += 13) {
+                for (int x = -2 * cell; x < 2 * cell; x += 13) {
+                    boolean want = false;
+                    for (City c : cities) {
+                        want |= c.distanceOutside(x, z) <= Params.CITY_SKIRT + reach;
+                    }
+                    for (Highway h : highways.keySet()) {
+                        int[] all = new int[h.length];
+                        for (int k = 0; k < all.length; k++) {
+                            all[k] = k;
+                        }
+                        want |= h.project(x, z, all, pr) && pr.dist <= pad;
+                    }
+                    assertEquals(want, p.nearCityOrHighway(x, z, reach), kind + " at " + x + ", " + z);
+                    if (want) {
+                        near++;
+                    } else {
+                        far++;
+                    }
+                }
+            }
+            System.out.printf("[WorldPlanTest] %s: within %.0f of a city or highway %d points, away %d%n", kind, reach,
+                    near, far);
+            assertTrue(near > 1000 && far > 1000, kind + ": near " + near + ", far " + far);
+        }
+    }
+
+    @Test
     void parkBenchesSitOnTheEdgeOfThePathsFacingThem() {
         WorldPlan p = plan(SEEDS[0], TestTerrain.Kind.FLAT);
         int parks = 0;

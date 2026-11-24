@@ -1,0 +1,13 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.abandonedmoderncity.mixin",
+  "plugin": "com.abandonedmoderncity.mixin.AmcsMixinPlugin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "OutpostZeroSiteMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

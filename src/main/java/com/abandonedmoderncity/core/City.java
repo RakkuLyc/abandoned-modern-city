@@ -499,6 +499,16 @@ public final class City {
         return h.road || h.lot || h.edge <= margin;
     }
 
+    /**
+     * Distance from (x, z) to the outer edge of the city's border streets, 0 inside: every block has its 4 streets, so
+     * the city is the rectangle of its border streets (its slopes reach {@link Params#CITY_SKIRT} beyond).
+     */
+    public double distanceOutside(double x, double z) {
+        double dx = Math.max(Math.max(U(FIRST) - Params.STREET_HW - x, x - U(LAST + 1) - Params.STREET_HW), 0);
+        double dz = Math.max(Math.max(V(FIRST) - Params.STREET_HW - z, z - V(LAST + 1) - Params.STREET_HW), 0);
+        return Math.hypot(dx, dz);
+    }
+
     /** Rows of a crosswalk along the street, and lane rows between it and the crossing. */
     public static final int CROSSWALK_DEPTH = 3;
     public static final int CROSSWALK_GAP = 2;

@@ -12,6 +12,8 @@
 
 ### Fixed
 - The stairs of the apocalyptic building faced the wrong way (they could be climbed, but looked reversed).
+- With Outpost Zero: its bunkers were placed inside the cities and on the highways. They now stay at least 48 blocks
+  (from the point it checks) away from them.
 
 ## 1.0.0 — 2026-11-18
 

@@ -518,6 +518,31 @@ public final class WorldPlan {
         return out;
     }
 
+    /**
+     * Whether (x, z) is {@code reach} or less from the ground the mod shapes: a city with its slopes
+     * ({@link Params#CITY_SKIRT} beyond its border streets) or a highway with its slopes ({@link Params#HIGHWAY_HW} +
+     * {@link Params#HIGHWAY_SKIRT} from its centerline; its tunnels and bridges too). Other mods that place things after
+     * the world is generated are kept away with it (the bunkers of Outpost Zero, {@code gen/OutpostZero}).
+     */
+    public boolean nearCityOrHighway(double x, double z, double reach) {
+        double r = Params.influence() + reach;
+        for (City c : citiesIn(x - r, z - r, x + r, z + r)) {
+            if (c.distanceOutside(x, z) <= Params.CITY_SKIRT + reach) {
+                return true;
+            }
+        }
+        double pad = Params.HIGHWAY_HW + Params.HIGHWAY_SKIRT + reach;
+        int chunks = (int) Math.ceil(pad / 16) + 1;
+        Highway.Proj p = new Highway.Proj();
+        for (Highway h : highwaysIn(x, z, x, z, pad)) {
+            int[] segs = h.segmentsNear(Math.floorDiv((int) Math.floor(x), 16), Math.floorDiv((int) Math.floor(z), 16), chunks);
+            if (segs.length > 0 && h.project(x, z, segs, p) && p.dist <= pad) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private List<Highway> tile(int tx, int tz) {
         return tiles.get(Cache.key(tx, tz), k -> {
             double x0 = (double) tx * TILE;
