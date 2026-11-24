@@ -610,3 +610,22 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   styles of the buildings of Abandoned Simple City (walls, windows, floors, trims, stairs, balconies, doors), their
   block codes and the plaza and empty lot types were removed in the code review (13 Nov 2026, asked by the user); they
   remain in the git history (commit `d960e99`).
+
+## After 1.0.0
+
+- **Zombie spawners in the buildings** (24 Nov 2026, asked by the user; `core/SpawnerDraw`, `gen/Spawners`, config
+  `zombieSpawners`). Stage 1 (`cb7d05b`, `49ea765`) drew them in the tests only (the world did not change); stage 2
+  placed them. The user's choices: only the plain zombie; on the floors over the ground one in two from the street
+  floor (the 1st, 3rd, 5th...) and in the garage of the wide building; 1 a floor in a small building, 2 to 5 drawn per
+  floor in a large one (the other reading, 2 to 5 in the whole building, was offered and not chosen); near the chests,
+  "guarding" them, at most 5 blocks away, and when there is no room an exploration spot away from the chests; working
+  in any light (the game's rule, block light 0 and a dark sky, was offered and not chosen, and so was "ignore the sun
+  but stop at a torch"); a calmer pace than the game's (player within 12 instead of 16, 2 a wave instead of 4, at most
+  4 around instead of 6); a config option, on by default. First the lobbies open onto the street were left out (the
+  zombies would walk out into the sun): the street floors of the skeleton and bluish buildings got none, the tower and
+  the green tower ~1.9 of 2 to 5; the user chose to take them only when the floor has no room elsewhere.
+  What it replaced: the palette allowed no block entity but the containers and the decorative ones; now the spawners of
+  the buildings too (`Palette.exempt`). The fingerprint and the battery references changed with stage 2: `lots` of
+  `FingerprintTest` `ecf9d723...` → `537e49bd...` (with the option off it is still `ecf9d723...`); both reference
+  reports of 20261027 (full, and quick with `structureOvergrowth = false`): the `mod blocks:` lines of the targets
+  with buildings and `structure_block_entities` up by the new `structure_spawners`, nothing else.

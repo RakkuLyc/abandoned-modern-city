@@ -234,9 +234,10 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
   plain draw gives 25 to 43%). Chests face where the player stands (`Rooms.FACINGS`); a hard spot gets `chest_hard`
   (`Def.hard`, `Structures.hardSpots`: the garage of the wide building, the terraces of the crash, skeleton and green
   tower).
-- Zombie spawners of the buildings (`core/SpawnerDraw`, **drawn but not placed in the world yet**: nothing calls it
-  outside the tests), a pure function of the copy's seed and the template, drawn after the chests (which do not
-  change): the floors over the ground one in two from the street floor (the 1st, 3rd, 5th...) and every floor under
+- Zombie spawners of the buildings (`core/SpawnerDraw`, `Def.spawners(seed)`, placed by `Def.code` on air of the
+  template, the last 512 copies kept; **off with `zombieSpawners = false`**, read at startup: then
+  `Structures.SPAWNER_STATE` is -1 and the world is the one of 1.0.0), a pure function of the copy's seed and the
+  template, drawn after the chests (which do not change): the floors over the ground one in two from the street floor (the 1st, 3rd, 5th...) and every floor under
   it (the garage of the wide building); 1 on each of them in a small building, else 2 to 5 drawn per floor
   (`LARGE_MIN`/`LARGE_MAX`; medium and immense like large). On a spot of `Rooms` not under the open sky nor (while the
   floor has room elsewhere) in a lobby open onto the street, touching no chest and no other spawner (within 1 sideways and up or down, `TOUCH`, so never
@@ -244,6 +245,13 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
   and 2 up or down (`GUARD`, `GUARD_DY`), the chest with the fewest guards first, the spots in a weighted draw
   (`-ln(u) / weight`); when none is left near a chest, an exploration spot of the floor (far or hard) farther than 5
   from every chest; then the same with the spots of the lobby open onto the street; else the floor gets fewer.
+  The state id of `minecraft:spawner` is given out after every state of the templates (no other id moves). Each
+  spawner is set up when placed (in the chunk, by the neighbour repair, by `/amcs spawn`; `gen/Spawners`): a zombie,
+  its own light rules (block and sky light 0 to 15: it works in any light, a torch does not stop it; nothing in
+  Peaceful), wakes with a player within 12 (`PLAYER_RANGE`), 2 a wave (`COUNT`), stops at 4 around it
+  (`MAX_NEARBY`), 200 to 800 ticks between waves, range 4, first wave after 20 ticks. In 300 copies (`SpawnerDrawTest`):
+  apartment 3, skeleton and small building 4, bluish ~19, brutalist U ~21, tower, wide and apocalyptic ~25, crash
+  ~31, green tower ~48. The audit reads each one back (`spawner_wrong`, stat `structure_spawners`).
 - Commands (`command/StructureCommands`): `/amcs locate structure <category> [name]` (the nearest planned one,
   coordinates on the sidewalk in front of it) and `/amcs spawn <category> <name>` (2 blocks in front of the player,
   front toward the player, ground on the block the player stands on, the same rules as in the city with loot);
@@ -284,12 +292,14 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
 - Blocks (`gen/Palette`, every block the generator places, checked at startup by `Palette.validate`): any hardness
   but no unbreakable block. Block entities allowed: the fountain's chest and the containers of the structures
   (chests, barrels, brewing stands, decorated pots, lecterns, furnaces, beds, campfires, daylight detectors,
-  jukeboxes, banners, skulls, dispensers, droppers, chiseled bookshelves; `Palette.exempt`); banners get the design
+  jukeboxes, banners, skulls, dispensers, droppers, chiseled bookshelves; `Palette.exempt`) and the zombie spawners
+  of the buildings (`gen/Spawners`); banners get the design
   saved in the template (`Template.banners`, applied by `Palette.applyBanner`), signs come out without text.
 
 ### Configuration, commands and determinism
 - Config (`config/abandonedmoderncity-common.toml`, `AmcsConfig`): `enabled`, `cellSize` (734–8192), `cityChance`,
-  `maxCityLevel`, `highways`, `highwayMaxLength`, `structureOvergrowth`. NeoForge keeps each value in its range.
+  `maxCityLevel`, `highways`, `highwayMaxLength`, `structureOvergrowth`, `zombieSpawners`. NeoForge keeps each value
+  in its range.
 - Commands (op 2, `command/AmcsCommands`): `info`, `locate city|highway|tunnel|bridge`, `locate structure`, `spawn`,
   `plan [radius ≤ 16]`, `audit [radius ≤ 8]`, `network [radius 500–1000]`, `column <x> <z> <y0> <y1>` (heights kept
   in the world, at most 384 lines); they run on the server thread, so the limits keep them to seconds. Images go to

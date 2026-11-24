@@ -54,7 +54,7 @@ public final class Structures {
                       int ground, int turn, int[] state, int[] fill, Map<Integer, Integer> cells, Access.Result access,
                       List<int[]> overhang, String model, boolean[] openings, Map<Integer, int[]> barrels,
                       Rooms.Layout rooms, int[] chestStates, Map<Long, Map<Integer, Integer>> drawn,
-                      Set<Integer> hardSpots) {
+                      Set<Integer> hardSpots, Map<Long, Set<Integer>> spawnersDrawn) {
         /** Footprint size along x after {@code rot} quarter turns. */
         public int sizeX(int rot) {
             return ((rot + turn) & 1) == 0 ? w : d;
@@ -124,16 +124,22 @@ public final class Structures {
         /**
          * Block code at (rx, ry, rz) in one copy of the structure, of seed {@code seed} (the lot's): the same as
          * {@link #code(int, int, int, int)}, but the barrels of a building are taken out or become chests
-         * ({@link Barrels}). A barrel taken out is air, also under the ground (it stood in a dug-out room).
+         * ({@link Barrels}), and its drawn chests ({@link #chests}) and zombie spawners ({@link #spawners}) stand on
+         * air of the template. A barrel taken out is air, also under the ground (it stood in a dug-out room).
          */
         public int code(int rx, int ry, int rz, int rot, long seed) {
             int c = code(rx, ry, rz, rot);
             if (c == BlockCode.AIR && !rooms.spots().isEmpty()) {
                 // a chest of this copy (ChestDraw), on a spot of its rooms
                 int[] tc = template(rx, ry, rz, rot);
-                Integer facing = chests(seed).get(cell(tc[0], tc[1], tc[2]));
+                int cell = cell(tc[0], tc[1], tc[2]);
+                Integer facing = chests(seed).get(cell);
                 if (facing != null) {
                     return BlockCode.STRUCT + 4 * chestStates[facing] + ((rot + turn) & 3);
+                }
+                // a zombie spawner of this copy (SpawnerDraw), on a spot left by the chests
+                if (SPAWNER_STATE >= 0 && spawners(seed).contains(cell)) {
+                    return BlockCode.STRUCT + 4 * SPAWNER_STATE + ((rot + turn) & 3);
                 }
             }
             if (barrels.isEmpty() || c < BlockCode.STRUCT) {
@@ -171,6 +177,30 @@ public final class Structures {
                     drawn.clear();
                 }
                 drawn.put(seed, m);
+            }
+            return m;
+        }
+
+        /**
+         * The template cells of the zombie spawners of the copy of seed {@code seed} ({@link SpawnerDraw}); empty for a
+         * structure that is not a building, or with {@code zombieSpawners = false}. Kept for the last copies asked, like
+         * {@link #chests}.
+         */
+        public Set<Integer> spawners(long seed) {
+            if (SPAWNER_STATE < 0 || rooms.spots().isEmpty()) {
+                return Set.of();
+            }
+            Set<Integer> m = spawnersDrawn.get(seed);
+            if (m == null) {
+                Set<Integer> out = new HashSet<>();
+                for (SpawnerDraw.Spawner s : SpawnerDraw.of(this, seed)) {
+                    out.add(cell(s.spot().x(), s.spot().y(), s.spot().z()));
+                }
+                m = Set.copyOf(out);
+                if (spawnersDrawn.size() >= DRAWN_KEPT) {
+                    spawnersDrawn.clear();
+                }
+                spawnersDrawn.put(seed, m);
             }
             return m;
         }
@@ -318,6 +348,11 @@ public final class Structures {
     /** Distinct block state strings of all structures; a structure block code points into this list. */
     public static final List<String> STATES = new ArrayList<>();
     public static final List<Def> ALL;
+    /**
+     * State of {@code minecraft:spawner} (the zombie spawners of the buildings, {@link SpawnerDraw}), given out after
+     * every state of the templates so that no other id moves; -1 with {@code zombieSpawners = false}.
+     */
+    public static final int SPAWNER_STATE;
     /**
      * The structures grouped by model: the color variants of a structure are one model.
      * The ring draws a model, then one of its variants, so variants do not make a structure more frequent.
@@ -583,7 +618,7 @@ public final class Structures {
         }
         return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, turn, state, fill, cells, access,
                 overhang, model, openings, barrels, rooms, chestStates, new java.util.concurrent.ConcurrentHashMap<>(),
-                hardSpots(t, rooms));
+                hardSpots(t, rooms), new java.util.concurrent.ConcurrentHashMap<>());
     }
 
     static boolean isChestName(String block) {
@@ -754,6 +789,7 @@ public final class Structures {
             String hard = f.length > 8 && !f[8].isBlank() ? f[8].trim() : null;
             defs.add(define(f[0], f[1], grounds[k], turn, model, prepared.get(k), hard, ids, walks.get(k)));
         }
+        SPAWNER_STATE = SpawnerDraw.enabled ? StructureLoader.id(ids, "minecraft:spawner") : -1;
         STATES.addAll(ids.keySet());
         ALL = List.copyOf(defs);
         Map<String, List<Def>> models = new LinkedHashMap<>();

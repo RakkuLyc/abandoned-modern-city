@@ -31,6 +31,11 @@ public final class SpawnerDraw {
     private SpawnerDraw() {
     }
 
+    /**
+     * Whether the buildings get their zombie spawners ({@code zombieSpawners} in the config, read at startup before the
+     * structures load: {@link Structures#SPAWNER_STATE}).
+     */
+    public static volatile boolean enabled = true;
     /** Spawners on a floor of a large (not small) building that gets them: from this many... */
     public static final int LARGE_MIN = 2;
     /** ...to this many. */

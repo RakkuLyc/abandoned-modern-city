@@ -133,6 +133,7 @@ class BarrelsTest {
                 int gone = 0;
                 int drawn = 0;
                 int kept = 0;
+                int spawners = 0;
                 for (int ry = -d.ground(); ry < d.above(); ry++) {
                     for (int rz = 0; rz < d.sizeZ(rot); rz++) {
                         for (int rx = 0; rx < d.sizeX(rot); rx++) {
@@ -158,8 +159,13 @@ class BarrelsTest {
                                     Structures.STATES.get((copy - BlockCode.STRUCT) / 4)).equals("minecraft:chest")) {
                                 // a chest drawn for this copy on a spot of its rooms (ChestDraw), not a barrel
                                 drawn++;
+                            } else if (plain == BlockCode.AIR && copy == BlockCode.STRUCT + 4 * Structures.SPAWNER_STATE
+                                    + (copy & 3)) {
+                                // a zombie spawner of this copy (SpawnerDraw), on a spot left by the chests
+                                spawners++;
                             } else {
-                                assertEquals(plain, copy, d.name() + ": only the barrels and the drawn chests change");
+                                assertEquals(plain, copy, d.name() + ": only the barrels, the drawn chests and the"
+                                        + " spawners change");
                             }
                         }
                     }
@@ -169,6 +175,8 @@ class BarrelsTest {
                 assertEquals(forced, kept, d.name());
                 assertEquals(d.barrels().size(), gone + chests + kept, d.name());
                 assertEquals(d.chests(seed).size(), drawn, d.name() + ": the drawn chests");
+                assertEquals(d.spawners(seed).size(), spawners, d.name() + ": the spawners");
+                assertEquals(SpawnerDraw.of(d, seed).size(), spawners, d.name() + ": the spawners drawn");
             }
         }
     }

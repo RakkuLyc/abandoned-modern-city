@@ -13,6 +13,8 @@ Minecraft 1.21.1.
   station and rare special buildings, all cracked, mossy and covered in vines.
 - **Loot to find**: every chest, barrel and pot has loot that fits the place (food in houses, potions in pharmacies,
   tools in workshops...), and the hidden ones (basements, roofs, attics) are richer.
+- **Zombie spawners** in the tall buildings, near their chests, one floor in two (and in the underground garage).
+  They work in any light: a torch does not stop them, break them. Nothing spawns in Peaceful.
 - **Highways** between the cities, with tunnels through the mountains and bridges with holes over rivers and valleys.
 
 ## Installation
@@ -26,8 +28,9 @@ The mod must be installed on the server (or in single player).
 ## Configuration
 
 The file `config/abandonedmoderncity-common.toml` lets you change how far apart the cities are (`cellSize`), how
-many cells get one (`cityChance`), switch the highways off (`highways`) or generate the structures without the
-vines and moss (`structureOvergrowth`). Change it before creating a world.
+many cells get one (`cityChance`), switch the highways off (`highways`), generate the structures without the
+vines and moss (`structureOvergrowth`) or without the zombie spawners (`zombieSpawners`). Change it before creating a
+world (the last two are read when the game starts and change only the chunks generated after).
 
 ## Commands
 

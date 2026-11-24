@@ -266,6 +266,10 @@ final class NeighbourRepair {
                 }
             } else if (s.getBlock() != want.getBlock()) {
                 region.setBlock(p, want, Block.UPDATE_CLIENTS);
+                if (want.hasBlockEntity()) {
+                    // a zombie spawner of a building put back is set up again (a placed spawner is empty)
+                    Spawners.configure(region.getBlockEntity(p), p);
+                }
                 if (want.getBlock() instanceof IronBarsBlock) {
                     nc.markPosForPostprocessing(p.immutable());
                 }

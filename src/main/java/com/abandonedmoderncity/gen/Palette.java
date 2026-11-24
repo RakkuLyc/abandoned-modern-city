@@ -38,6 +38,7 @@ import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.ChiseledBookShelfBlock;
 import net.minecraft.world.level.block.DaylightDetectorBlock;
 import net.minecraft.world.level.block.DecoratedPotBlock;
+import net.minecraft.world.level.block.SpawnerBlock;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.JukeboxBlock;
@@ -390,7 +391,8 @@ public final class Palette {
      * The block entities allowed: the empty chest of the park fountain and what the building
      * structures bring, always empty and without loot: chests, barrels, brewing stands, decorated pots, lecterns,
      * furnaces (blast furnace, smoker), beds, campfires, daylight detectors, jukeboxes, banners, skulls, dispensers,
-     * droppers and chiseled bookshelves (empty). The structures' containers get a loot table when placed (ChunkBuilder.loot).
+     * droppers and chiseled bookshelves (empty), and the zombie spawners of the buildings (set up when placed,
+     * {@link Spawners}). The structures' containers get a loot table when placed (ChunkBuilder.loot).
      */
     public static boolean exempt(BlockState s) {
         Block b = s.getBlock();
@@ -406,7 +408,8 @@ public final class Palette {
                 || b instanceof AbstractBannerBlock
                 || b instanceof AbstractSkullBlock
                 || b instanceof DispenserBlock
-                || b instanceof ChiseledBookShelfBlock;
+                || b instanceof ChiseledBookShelfBlock
+                || b instanceof SpawnerBlock;
     }
 
     /**
@@ -517,7 +520,7 @@ public final class Palette {
         if (!bad.isEmpty()) {
             throw new IllegalStateException("[AMCS] Palette contains forbidden blocks: " + bad);
         }
-        AbandonedModernCity.LOGGER.info("[AMCS] Palette validated: {} block states and {} structure states, all breakable, no block entities but empty containers",
+        AbandonedModernCity.LOGGER.info("[AMCS] Palette validated: {} block states and {} structure states, all breakable, no block entities but empty containers and the buildings' spawners",
                 all().size(), nStructure);
     }
 

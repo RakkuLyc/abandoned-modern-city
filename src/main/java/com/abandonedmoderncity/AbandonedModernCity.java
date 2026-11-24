@@ -2,6 +2,7 @@ package com.abandonedmoderncity;
 
 import com.abandonedmoderncity.command.AmcsCommands;
 import com.abandonedmoderncity.command.SelfTest;
+import com.abandonedmoderncity.core.SpawnerDraw;
 import com.abandonedmoderncity.core.Structures;
 import com.abandonedmoderncity.core.Weathering;
 import com.abandonedmoderncity.gen.CityFeature;
@@ -48,10 +49,13 @@ public final class AbandonedModernCity {
         modBus.addListener((FMLCommonSetupEvent e) -> e.enqueueWork(() -> {
             // read before the structures load (Palette.validate loads them): the overgrowth is applied while loading
             Weathering.enabled = AmcsConfig.STRUCTURE_OVERGROWTH.get();
+            // and whether the buildings get their zombie spawners (the state id of the spawner is given out at load)
+            SpawnerDraw.enabled = AmcsConfig.ZOMBIE_SPAWNERS.get();
             Palette.validate();
             LOGGER.info("[AMCS] Structure overgrowth {}", Weathering.enabled
                     ? "on (" + Structures.WEATHERING.values().stream()
                     .mapToInt(Weathering.Report::total).sum() + " blocks changed)" : "off");
+            LOGGER.info("[AMCS] Zombie spawners in the buildings {}", Structures.SPAWNER_STATE >= 0 ? "on" : "off");
             LOGGER.info("[AMCS] Chests saved in the buildings' templates removed: {} in {} buildings",
                     Structures.CHESTS_REMOVED.values().stream().mapToInt(Integer::intValue).sum(),
                     Structures.CHESTS_REMOVED.size());

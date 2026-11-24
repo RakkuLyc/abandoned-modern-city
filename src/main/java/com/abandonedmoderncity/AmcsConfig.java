@@ -16,6 +16,7 @@ public final class AmcsConfig {
     public static final ModConfigSpec.BooleanValue HIGHWAYS;
     public static final ModConfigSpec.IntValue HIGHWAY_MAX_LENGTH;
     public static final ModConfigSpec.BooleanValue STRUCTURE_OVERGROWTH;
+    public static final ModConfigSpec.BooleanValue ZOMBIE_SPAWNERS;
 
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
@@ -30,6 +31,8 @@ public final class AmcsConfig {
         HIGHWAY_MAX_LENGTH = b.comment("Longest highway (blocks of path)").defineInRange("highwayMaxLength", d.highwayMaxLength(), 256, 8192);
         STRUCTURE_OVERGROWTH = b.comment("Nature taking over the building structures: cracked stone, moss and plants on the floors, vines on the facades (modeled on the apocalyptic building). Read at startup: restart the game after changing it.")
                 .define("structureOvergrowth", true);
+        ZOMBIE_SPAWNERS = b.comment("Zombie spawners in the buildings, near their chests, one floor in two. They work in any light (a torch does not stop them: break them). Read at startup: restart the game after changing it; it changes only the chunks generated after.")
+                .define("zombieSpawners", true);
         SPEC = b.build();
     }
 

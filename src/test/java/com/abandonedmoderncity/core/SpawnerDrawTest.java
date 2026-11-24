@@ -224,6 +224,37 @@ class SpawnerDrawTest {
     }
 
     @Test
+    void theCodeOfACopyPlacesItsSpawnersInEveryRotation() {
+        assertTrue(Structures.SPAWNER_STATE >= 0, "zombieSpawners on in the tests");
+        assertEquals("minecraft:spawner", Structures.STATES.get(Structures.SPAWNER_STATE));
+        assertEquals(Structures.STATES.size() - 1, Structures.SPAWNER_STATE, "the spawner's state id comes last");
+        for (Structures.Def d : Structures.ALL) {
+            long seed = seed(3);
+            Set<Integer> cells = new HashSet<>();
+            Template t = d.t();
+            for (SpawnerDraw.Spawner s : SpawnerDraw.of(d, seed)) {
+                cells.add(s.spot().x() + t.sx * (s.spot().z() + t.sz * s.spot().y()));
+            }
+            assertEquals(cells, d.spawners(seed), d.name());
+            for (int rot = 0; rot < 4; rot++) {
+                int found = 0;
+                for (int y = -d.ground(); y < d.above(); y++) {
+                    for (int z = 0; z < d.sizeZ(rot); z++) {
+                        for (int x = 0; x < d.sizeX(rot); x++) {
+                            int c = d.code(x, y, z, rot, seed);
+                            if (c >= BlockCode.STRUCT && (c - BlockCode.STRUCT) / 4 == Structures.SPAWNER_STATE) {
+                                assertEquals(BlockCode.AIR, d.code(x, y, z, rot), d.name() + ": a spawner on air");
+                                found++;
+                            }
+                        }
+                    }
+                }
+                assertEquals(cells.size(), found, d.name() + " rot " + rot);
+            }
+        }
+    }
+
+    @Test
     void copiesWithSpawnersWalkedAgainLoseNothing() {
         // each copy with its barrels kept (as chests) or taken out, its chests and its spawners in place: every chest
         // reached with someone standing in front of it, every container reached before still reached, and every place

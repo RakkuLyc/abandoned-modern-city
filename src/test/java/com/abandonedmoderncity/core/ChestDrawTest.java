@@ -177,7 +177,9 @@ class ChestDrawTest {
                         for (int z = 0; z < d.sizeZ(rot); z++) {
                             for (int x = 0; x < d.sizeX(rot); x++) {
                                 int c = d.code(x, y, z, rot, seed);
-                                if (c >= BlockCode.STRUCT && d.code(x, y, z, rot) == BlockCode.AIR) {
+                                if (c >= BlockCode.STRUCT && d.code(x, y, z, rot) == BlockCode.AIR
+                                        && Structures.blockOf(Structures.STATES.get((c - BlockCode.STRUCT) / 4))
+                                        .equals("minecraft:chest")) {
                                     drawnChests++;
                                     hardChests += d.hard(x, y, z, rot) ? 1 : 0;
                                 }
@@ -297,6 +299,10 @@ class ChestDrawTest {
                                 continue;
                             }
                             String s = Structures.STATES.get((c - BlockCode.STRUCT) / 4);
+                            if (Structures.blockOf(s).equals("minecraft:spawner")) {
+                                // a zombie spawner of the copy (SpawnerDraw): no facing
+                                continue;
+                            }
                             assertEquals("minecraft:chest", Structures.blockOf(s), d.name());
                             int f = List.of(Rooms.FACINGS).indexOf(s.replaceAll(".*facing=(\\w+).*", "$1"));
                             int world = (f + (c - BlockCode.STRUCT) % 4) & 3;

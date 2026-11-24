@@ -8,6 +8,7 @@ import com.abandonedmoderncity.core.Structures;
 import com.abandonedmoderncity.core.WorldPlan;
 import com.abandonedmoderncity.gen.Palette;
 import com.abandonedmoderncity.gen.Plans;
+import com.abandonedmoderncity.gen.Spawners;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -257,6 +258,7 @@ public final class StructureCommands {
                     placed++;
                     if (s.hasBlockEntity()) {
                         Palette.applyBanner(level.getBlockEntity(pos), def.banner(rx, ry, rz, rot), level.registryAccess());
+                        Spawners.configure(level.getBlockEntity(pos), pos);
                     }
                     if (s.hasBlockEntity() && level.getBlockEntity(pos) instanceof RandomizableContainer rc) {
                         boolean hard = def.hard(rx, ry, rz, rot);

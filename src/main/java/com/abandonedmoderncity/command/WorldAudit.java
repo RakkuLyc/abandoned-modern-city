@@ -12,6 +12,7 @@ import com.abandonedmoderncity.core.WorldPlan;
 import com.abandonedmoderncity.gen.Floating;
 import com.abandonedmoderncity.gen.Overhangs;
 import com.abandonedmoderncity.gen.Palette;
+import com.abandonedmoderncity.gen.Spawners;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import java.util.ArrayDeque;
@@ -33,6 +34,7 @@ import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.entity.BannerBlockEntity;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -61,6 +63,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  *   chunks would show up here).</li>
  *   <li>{@code hard_block}: an unbreakable block in a street, bridge, tunnel or building (any hardness is allowed).</li>
  *   <li>{@code loot_in_city} / {@code container_in_city}: a container (with or without a loot table) in the city.</li>
+ *   <li>{@code spawner_wrong}: a zombie spawner of a building not set up as {@link Spawners} says (the mob, its light
+ *   rules or one of its values, read back from the world; the stat {@code structure_spawners} counts them).</li>
  *   <li>{@code orphan_road}: a connected piece of drivable road that reaches no city street and does not leave the
  *   audited area.</li>
  *   <li>{@code vegetation_floating}: a group of natural leaves, logs, vines, snow or plants above the ground of its
@@ -517,6 +521,13 @@ public final class WorldAudit {
                     if (!(be instanceof BannerBlockEntity bb)
                             || bb.getPatterns().layers().size() != design.size()) {
                         r.fail("banner_without_design", bp.toShortString() + " " + id(c.getBlockState(bp)));
+                    }
+                }
+                if (be instanceof SpawnerBlockEntity) {
+                    r.stat("structure_spawners", 1);
+                    String problem = Spawners.problem(be);
+                    if (problem != null) {
+                        r.fail("spawner_wrong", bp.toShortString() + " " + problem);
                     }
                 }
                 if (be instanceof RandomizableContainer rc) {

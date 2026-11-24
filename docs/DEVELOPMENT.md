@@ -144,10 +144,17 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
     cells), at least 15% in exploration places (far on their floor, under the open sky, underground), never blocking a
     passage; loot of the `building` theme, the more generous `chest_hard` on the spots underground (the garage of the
     wide building) or on a terrace (crash, skeleton, green tower).
+  - Zombie spawners of the buildings (24 Nov 2026, `core/SpawnerDraw`, set up by `gen/Spawners`; off with
+    `zombieSpawners = false`): drawn per copy after the chests, on the floors over the ground one in two from the
+    street floor and on every floor under it; 1 a floor in a small building, 2 to 5 in a large one; on a spot of
+    `Rooms` not under the open sky (the lobby open onto the street only when the floor has no room elsewhere),
+    touching no chest and no other spawner, at most 5 blocks from a chest it guards (else an exploration spot away
+    from the chests). A zombie in any light, 2 a wave, at most 4 around, wakes with a player within 12, 10 to 40 s
+    between waves. ~3–4 per small building, ~19–31 per large one, ~48 in the green tower.
 
   The containers (chests, barrels, dispensers, droppers, decorated pots) get their loot table when they are placed;
-  the banners get the design of the template; the other block entities (furnaces, beds, skulls, chiseled bookshelves,
-  etc.) come out empty. Loot with vanilla items only, in 36 tables of its own (`tools/gen_loot.py`): 6 themes × 6
+  the banners get the design of the template; the spawners are set up as zombie spawners; the other block entities
+  (furnaces, beds, skulls, chiseled bookshelves, etc.) come out empty. Loot with vanilla items only, in 36 tables of its own (`tools/gen_loot.py`): 6 themes × 6
   tiers.
 
   | Theme | Structures | Typical items | Rare |
@@ -270,7 +277,7 @@ core/   the pure planner (no Minecraft classes), tested with JUnit
   Rooms           floors, rooms, corridors and places for a chest of each building, on the walk of Access
   ChestDraw       the chests of each copy of a building: how many, per floor, which spots (pure function of the seed)
   SpawnerDraw     the zombie spawners of each copy of a building, near its chests, one floor in two (pure function
-                  of the seed; drawn but not placed in the world yet)
+                  of the seed; off with zombieSpawners = false)
   Crowns          where the leaves completing the crowns cut by the edge of the structures go (gen/Overhangs places
                   them)
   Park            parks taken over by nature, with paths and the fountain
@@ -289,6 +296,8 @@ gen/    the game layer
   Floating        natural vegetation left hanging in the air (pieces of trees, vines, snow): found and removed after
                   every chunk, and checked by the audit (`vegetation_floating`)
   Palette         every block used (the structures included, turned by `BlockState.rotate`) + validation
+  Spawners        sets up each zombie spawner of the buildings when it is placed (the mob, light rules, pace) and
+                  says what is wrong with one (read by the audit)
   McTerrain       Terrain over ChunkGenerator.getBaseHeight (noise, the same in any thread)
   Plans           one WorldPlan per dimension (only the overworld)
 command/  /amcs (StructureCommands: locate structure and spawn), the block audit (WorldAudit), renders, the battery
@@ -323,7 +332,8 @@ command/  /amcs (StructureCommands: locate structure and spawn), the block audit
 
 `enabled`, `cellSize`, `cityChance`, `maxCityLevel`, `highways`, `highwayMaxLength`, `structureOvergrowth` (default
 `true`: nature taking over the structures; `false` generates them as they were saved; read at startup, restart the game
-after changing it).
+after changing it), `zombieSpawners` (default `true`: the zombie spawners of the buildings; `false` gives the world of
+1.0.0; read at startup too).
 The geometry (widths, blocks, ramps, tunnels, bridges) is in `core/Params` and the cities in `core/City`. Changes
 apply to new chunks and change the plan: use a new world.
 `cellSize` (default 736) is the distance between neighbouring cities: the highways get longer with it. It must be at

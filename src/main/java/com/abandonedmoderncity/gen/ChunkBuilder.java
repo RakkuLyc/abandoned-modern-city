@@ -539,6 +539,7 @@ final class ChunkBuilder {
                 set(x, y, z, s);
                 if (lot.building != null && s.hasBlockEntity()) {
                     loot(lot, s, lot.hardAt(x, y, z, base));
+                    Spawners.configure(region.getBlockEntity(pos.set(x, y, z)), pos);
                     List<String[]> banner = lot.bannerAt(x, y, z, base);
                     if (banner != null) {
                         Palette.applyBanner(region.getBlockEntity(pos.set(x, y, z)), banner, region.registryAccess());
