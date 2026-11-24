@@ -15,14 +15,15 @@ import java.util.Map;
  *   the 5th...), and every floor under the ground (the garage of the wide building).</li>
  *   <li><b>How many:</b> on each of those floors 1 in a small building, else drawn evenly from {@link #LARGE_MIN} to
  *   {@link #LARGE_MAX}.</li>
- *   <li><b>Where:</b> a spot of the floor that is not under the open sky (a zombie burns there) nor in a lobby open onto
- *   the street, no chest on it, touching no chest and no other spawner ({@link #TOUCH}: within 1 block sideways and 1 up
- *   or down, so never on the cell in front of a chest either). A spawner guards a chest: it stands at most
+ *   <li><b>Where:</b> a spot of the floor that is not under the open sky (a zombie burns there) nor, while the floor
+ *   has room elsewhere, in a lobby open onto the street, no chest on it, touching no chest and no other spawner
+ *   ({@link #TOUCH}: within 1 block sideways and 1 up or down, so never on the cell in front of a chest either). A spawner guards a chest: it stands at most
  *   {@link #GUARD} blocks sideways ({@link #GUARD_DY} up or down) from one, the chest with the fewest guards first, the
  *   spots in the order of a weighted draw ({@code -ln(u) / weight}).</li>
  *   <li><b>When it does not fit</b> (no spot left near a chest, or no chest on the floor): the spawner goes to an
  *   exploration spot of the floor (far on its floor or hard to get to) farther than {@link #GUARD} from every chest;
- *   when there is none either, the floor gets fewer.</li>
+ *   when there is none either, the spots of a lobby open onto the street are taken too, by the same rules; when there
+ *   is still none, the floor gets fewer.</li>
  * </ol>
  * The chests of the copy are those drawn by {@link ChestDraw} and the barrels turned into chests ({@link Barrels}).
  */
@@ -77,37 +78,52 @@ public final class SpawnerDraw {
             return List.of();
         }
         Map<Integer, List<Rooms.Spot>> byFloor = new HashMap<>();
+        Map<Integer, List<Rooms.Spot>> streetByFloor = new HashMap<>();
         java.util.Set<Long> chestCells = new java.util.HashSet<>();
         for (int[] c : chests) {
             chestCells.add(key(c[0], c[1], c[2]));
         }
         Map<Rooms.Spot, Double> key = new HashMap<>();
         for (Rooms.Spot s : layout.spots()) {
-            if (s.is(Rooms.OPEN) || s.is(Rooms.STREET) || chestCells.contains(key(s.x(), s.y(), s.z()))) {
+            if (s.is(Rooms.OPEN) || chestCells.contains(key(s.x(), s.y(), s.z()))) {
                 continue;
             }
             long cell = s.x() + (long) sx * (s.z() + (long) sz * s.y());
             double u = Math.max(Hash.unit(Hash.of(seed, SALT_KEY, cell)), 1e-12);
             key.put(s, -Math.log(u) / s.weight());
-            byFloor.computeIfAbsent(s.floor(), k -> new ArrayList<>()).add(s);
+            (s.is(Rooms.STREET) ? streetByFloor : byFloor).computeIfAbsent(s.floor(), k -> new ArrayList<>()).add(s);
         }
+        Comparator<Rooms.Spot> byKey = Comparator.comparingDouble((Rooms.Spot s) -> key.get(s))
+                .thenComparingInt(Rooms.Spot::y).thenComparingInt(Rooms.Spot::z).thenComparingInt(Rooms.Spot::x);
         List<Spawner> out = new ArrayList<>();
         int[] guards = new int[chests.size()];
         for (int f = 0; f < layout.floors().size(); f++) {
             int n = count(layout, heightClass, groundY, f, seed);
-            List<Rooms.Spot> order = byFloor.getOrDefault(f, List.of());
-            if (n == 0 || order.isEmpty()) {
+            if (n == 0) {
                 continue;
             }
-            order = new ArrayList<>(order);
-            order.sort(Comparator.comparingDouble((Rooms.Spot s) -> key.get(s)).thenComparingInt(Rooms.Spot::y)
-                    .thenComparingInt(Rooms.Spot::z).thenComparingInt(Rooms.Spot::x));
-            for (int i = 0; i < n; i++) {
+            List<Rooms.Spot> order = new ArrayList<>(byFloor.getOrDefault(f, List.of()));
+            order.sort(byKey);
+            int placed = 0;
+            for (; placed < n; placed++) {
                 Spawner sp = next(order, chests, guards, out);
                 if (sp == null) {
                     break;
                 }
                 out.add(sp);
+            }
+            // a floor short of its spawners takes the spots of its lobby open onto the street too
+            List<Rooms.Spot> street = streetByFloor.getOrDefault(f, List.of());
+            if (placed < n && !street.isEmpty()) {
+                order.addAll(street);
+                order.sort(byKey);
+                for (; placed < n; placed++) {
+                    Spawner sp = next(order, chests, guards, out);
+                    if (sp == null) {
+                        break;
+                    }
+                    out.add(sp);
+                }
             }
         }
         return List.copyOf(out);

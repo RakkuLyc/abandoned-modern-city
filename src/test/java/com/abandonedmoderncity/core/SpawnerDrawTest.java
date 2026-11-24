@@ -75,6 +75,7 @@ class SpawnerDrawTest {
             long total = 0;
             long wanted = 0;
             long guarding = 0;
+            long street = 0;
             int least = Integer.MAX_VALUE;
             int most = 0;
             int copiesShort = 0;
@@ -87,6 +88,7 @@ class SpawnerDrawTest {
                 for (SpawnerDraw.Spawner s : sp) {
                     onFloor[s.spot().floor()]++;
                     guarding += s.guards() ? 1 : 0;
+                    street += s.spot().is(Rooms.STREET) ? 1 : 0;
                 }
                 boolean isShort = false;
                 for (int f = 0; f < nf; f++) {
@@ -123,9 +125,10 @@ class SpawnerDrawTest {
                 }
             }
             System.out.printf("[SpawnerDrawTest] %-28s %-6s %d copies: %.1f spawners on average (%d to %d), %.1f%% of"
-                            + " those wanted, %.1f%% guarding a chest, copies short %d%n[SpawnerDrawTest]    per floor"
-                            + " (height: average):%s%n", d.name(), cls(d), COPIES, (double) total / COPIES, least, most,
-                    100.0 * total / wanted, 100.0 * guarding / total, copiesShort, fl);
+                            + " those wanted, %.1f%% guarding a chest, %.1f%% in a lobby open onto the street, copies short"
+                            + " %d%n[SpawnerDrawTest]    per floor (height: average):%s%n", d.name(), cls(d), COPIES,
+                    (double) total / COPIES, least, most, 100.0 * total / wanted, 100.0 * guarding / total,
+                    100.0 * street / total, copiesShort, fl);
         }
     }
 
@@ -145,7 +148,15 @@ class SpawnerDrawTest {
                     Rooms.Spot s = sp.get(a).spot();
                     assertTrue(spots.contains(s), d.name() + ": not a spot " + s);
                     assertFalse(s.is(Rooms.OPEN), d.name() + ": under the open sky " + s);
-                    assertFalse(s.is(Rooms.STREET), d.name() + ": in a lobby open onto the street " + s);
+                    // a lobby open onto the street only once the floor found no room elsewhere: after every other
+                    // spawner of its floor
+                    if (s.is(Rooms.STREET)) {
+                        for (int b = a + 1; b < sp.size(); b++) {
+                            Rooms.Spot o = sp.get(b).spot();
+                            assertFalse(o.floor() == s.floor() && !o.is(Rooms.STREET), d.name()
+                                    + ": a lobby spot taken while the floor had room elsewhere " + s);
+                        }
+                    }
                     boolean nearAChest = false;
                     for (int[] c : chests) {
                         int dx = Math.abs(s.x() - c[0]);
