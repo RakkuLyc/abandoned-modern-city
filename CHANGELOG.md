@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.0 — not released yet (in testing, 2026-11-24)
+
+### Added
+- Zombie spawners in the tall buildings: near their chests, on the street floor and one floor in two above it, and
+  in the underground garage of the wide building; 1 a floor in the small buildings, 2 to 5 in the large ones (~3 to 4
+  per small building, ~19 to 48 per large one). They make plain zombies in any light (a torch does not stop them:
+  break them), 2 at a time, at most 4 around each, when a player is within 12 blocks; nothing spawns in Peaceful.
+  `/amcs spawn` places them too.
+- Config option `zombieSpawners` (on by default; read at startup). Off, the world is the same as in 1.0.0.
+
 ## 1.0.0 — 2026-11-18
 
 The first release. Minecraft 1.21.1, NeoForge 21.1.219 or newer.

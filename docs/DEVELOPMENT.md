@@ -12,7 +12,7 @@ ring around each city block, with per-city limits for pharmacies, workshops and 
 
 - modid `abandonedmoderncity` · package `com.abandonedmoderncity` · Java 21 · NeoForge 21.1.219 ·
   ModDevGradle 2.0.140
-- Build: `./gradlew build` → `build/libs/abandonedmoderncity-1.0.0.jar` (also runs the unit tests, ~2 min); the jar
+- Build: `./gradlew build` → `build/libs/abandonedmoderncity-1.1.0.jar` (also runs the unit tests, ~2 min); the jar
   only: `./gradlew build -x test`
 - Unit tests: `./gradlew test` (renders in `build/test-renders/`)
 - In-world test battery: `tools/selftest.sh [full|quick] [seed...]` (reports in `run/selftest/<seed>/`); details in

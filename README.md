@@ -20,7 +20,7 @@ Minecraft 1.21.1.
 ## Installation
 
 1. Install **NeoForge** for Minecraft **1.21.1** (21.1.219 or newer).
-2. Put `abandonedmoderncity-1.0.0.jar` in the `mods` folder.
+2. Put `abandonedmoderncity-1.1.0.jar` in the `mods` folder.
 3. Create a **new world**: the cities only appear in chunks generated with the mod.
 
 The mod must be installed on the server (or in single player).

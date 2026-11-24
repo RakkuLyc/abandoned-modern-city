@@ -410,10 +410,10 @@ python3 tools/verify/compare_block_detail.py A/renders/t01_blocks.txt B/renders/
 python3 tools/verify/chunk_diff.py run/selftest_world_ref_english <other world> CX,CZ --ymin 60
 # the structures cell by cell (plain code, 3 copies with barrels and drawn chests, hard flag, opening, leaves):
 tools/verify/structure_cells.sh <jar before> before.txt       # copy the jar first: the next build replaces it
-tools/verify/structure_cells.sh build/libs/abandonedmoderncity-1.0.0.jar after.txt
+tools/verify/structure_cells.sh build/libs/abandonedmoderncity-1.1.0.jar after.txt
 python3 tools/verify/compare_structure_cells.py before.txt after.txt
 # copies of every building walked again with their barrels and drawn chests in place (ChestDrawTest does 40):
-tools/verify/chest_walk.sh build/libs/abandonedmoderncity-1.0.0.jar 200   # ~1.5 min, RESULT: PASS or FAIL
+tools/verify/chest_walk.sh build/libs/abandonedmoderncity-1.1.0.jar 200   # ~1.5 min, RESULT: PASS or FAIL
 ```
 
 The `run/config/abandonedmoderncity-common.toml` of the development server has the default values (`cellSize = 736`;
@@ -489,7 +489,12 @@ road on the ground, without a bridge wall).
   the spots with the walk (stage 3); 12.7 s since the floors, rooms and spots of the buildings (`core/Rooms`, 15 Nov
   2026).
 
-## 6. Current results (version 1.0.0, 18 Nov 2026)
+## 6. Current results (version 1.1.0 in testing, 24 Nov 2026)
+
+**Version 1.1.0 (not released; 24 Nov 2026):** the zombie spawners of the buildings (`zombieSpawners`, on by
+default); 90 unit tests pass, none skipped; `FingerprintTest` changed only in `lots` (with `zombieSpawners = false`
+the value of 1.0.0); the battery passes on the 4 seeds, 20261027 identical to both new references and, with the
+option off, to the reference of 1.0.0 (the rows of 24 Nov below).
 
 **Version 1.0.0:** 84 unit tests pass, none skipped, `FingerprintTest` unchanged since the start of the review; the
 battery passes on the 4 seeds (20261027, −3297019724594858492, 3478477863671517581, 1), with 20261027 identical to
