@@ -4,8 +4,9 @@
 
 ### Added
 - Zombie spawners in the tall buildings: near their chests, on the street floor and one floor in two above it, and
-  in the underground garage of the wide building; 1 a floor in the small buildings, 2 to 5 in the large ones (~3 to 4
-  per small building, ~19 to 48 per large one). They make plain zombies in any light (a torch does not stop them:
+  in the underground garage of the wide building; by the area of each floor under a roof, one per 500 blocks, 1 to 5
+  a floor, so a wide floor spreads more of them and a narrow one does not crowd them (~3 to 4 per small building, ~14
+  in the narrow green tower, ~20 to 27 in the wide ones). They make plain zombies in any light (a torch does not stop them:
   break them), 2 at a time, at most 4 around each, when a player is within 12 blocks; nothing spawns in Peaceful.
   `/amcs spawn` places them too.
 - Config option `zombieSpawners` (on by default; read at startup). Off, the buildings have no spawners, as in 1.0.0.

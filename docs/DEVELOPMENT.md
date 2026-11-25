@@ -146,11 +146,12 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
     wide building) or on a terrace (crash, skeleton, green tower).
   - Zombie spawners of the buildings (24 Nov 2026, `core/SpawnerDraw`, set up by `gen/Spawners`; off with
     `zombieSpawners = false`): drawn per copy after the chests, on the floors over the ground one in two from the
-    street floor and on every floor under it; 1 a floor in a small building, 2 to 5 in a large one; on a spot of
+    street floor and on every floor under it; by the area of the floor under a ceiling (`Rooms.Floor.covered`), one
+    per 500 cells (`SpawnerDraw.AREA`), the rest drawn, 1 to 5 a floor, whatever the height class; on a spot of
     `Rooms` not under the open sky (the lobby open onto the street only when the floor has no room elsewhere),
     touching no chest and no other spawner, at most 5 blocks from a chest it guards (else an exploration spot away
     from the chests). A zombie in any light, 2 a wave, at most 4 around, wakes with a player within 12, 10 to 40 s
-    between waves. ~3–4 per small building, ~19–31 per large one, ~48 in the green tower.
+    between waves. ~3–4 per small building, ~14 in the narrow green tower, ~20–27 in the wide large ones.
 
   The containers (chests, barrels, dispensers, droppers, decorated pots) get their loot table when they are placed;
   the banners get the design of the template; the spawners are set up as zombie spawners; the other block entities

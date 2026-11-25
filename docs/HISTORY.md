@@ -656,3 +656,16 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   would find no site), with an option on by default (`spawnNearCity`). New: `core/SpawnSpot`, `gen/SpawnPoint`,
   `WorldPlan.nearCity` and `nearHighway` (split out of `nearCityOrHighway`, the same results). The world of the mod
   does not change (`FingerprintTest`, the battery identical).
+- **The zombie spawners of a floor counted by its area** (25 Nov 2026, asked by the user: on a narrow floor 5 spawners
+  crowd the zombies and make the exploration very hard; the class small or large is not enough, the width must count).
+  Before, 1 a floor in a small building and 2 to 5 drawn per floor in a large one, by the height alone: the green
+  tower, large by its height (143) but with floors of ~470 cells under a ceiling, as small as those of the small
+  buildings, got ~48 (~3.5 a floor), as many a floor as the bluish building on ~1,750. The user's choices: one per 500
+  cells under a ceiling (over 400 or 600), the same rule for the small buildings (over keeping their 1), no minimum
+  distance between two spawners of a floor (over 8 or 12; they still never touch). What it replaced:
+  `SpawnerDraw.LARGE_MIN`/`LARGE_MAX` and the height class in `SpawnerDraw.count` → `AREA`, `MIN`, `MAX` and
+  `Rooms.Floor.covered` (the cells of a floor with a ceiling over them; roofs and yards do not count, so a roof with a
+  small stairwell does not ask for 5). Green tower ~48 → ~14, crash ~31 → ~27, tower and apocalyptic ~25 → ~22, wide
+  ~24.5 → ~20.5, bluish ~19 → ~21.5, brutalist U ~21 → ~26, the small buildings the same. `FingerprintTest`: `lots`
+  `8acc1004...` → `4736ee67...` (with `zombieSpawners = false` it stays `5aab43a5...` before and after: only the
+  spawners moved); both reference reports of 20261027: only the spawners.

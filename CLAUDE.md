@@ -238,8 +238,9 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
   template, the last 512 copies kept; **off with `zombieSpawners = false`**, read at startup: then
   `Structures.SPAWNER_STATE` is -1 and no spawner is placed), a pure function of the copy's seed and the
   template, drawn after the chests (which do not change): the floors over the ground one in two from the street floor (the 1st, 3rd, 5th...) and every floor under
-  it (the garage of the wide building); 1 on each of them in a small building, else 2 to 5 drawn per floor
-  (`LARGE_MIN`/`LARGE_MAX`; medium and immense like large). On a spot of `Rooms` not under the open sky nor (while the
+  it (the garage of the wide building); on each of them, whatever the height class, by its area under a ceiling
+  (`Rooms.Floor.covered`: its cells with a ceiling over them, `Access.ceilings`; roofs and yards do not count): one for
+  every 500 cells (`AREA`), the rest drawn (1.4 gives 2 in 40% of the copies), from 1 to 5 (`MIN`/`MAX`). On a spot of `Rooms` not under the open sky nor (while the
   floor has room elsewhere) in a lobby open onto the street, touching no chest and no other spawner (within 1 sideways and up or down, `TOUCH`, so never
   in front of a chest), guarding a chest of the copy (a drawn one or a barrel turned into a chest) at most 5 sideways
   and 2 up or down (`GUARD`, `GUARD_DY`), the chest with the fewest guards first, the spots in a weighted draw
@@ -250,8 +251,8 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
   its own light rules (block and sky light 0 to 15: it works in any light, a torch does not stop it; nothing in
   Peaceful), wakes with a player within 12 (`PLAYER_RANGE`), 2 a wave (`COUNT`), stops at 4 around it
   (`MAX_NEARBY`), 200 to 800 ticks between waves, range 4, first wave after 20 ticks. In 300 copies (`SpawnerDrawTest`):
-  apartment 3, skeleton and small building 4, bluish ~19, brutalist U ~21, tower, wide and apocalyptic ~25, crash
-  ~31, green tower ~48. The audit reads each one back (`spawner_wrong`, stat `structure_spawners`).
+  apartment 3, skeleton and small building ~4, green tower ~14 (~1 a floor of ~470 cells), wide ~20.5, bluish and
+  tower ~21.5, apocalyptic ~22, brutalist U ~26, crash ~27. The audit reads each one back (`spawner_wrong`, stat `structure_spawners`).
 - Commands (`command/StructureCommands`): `/amcs locate structure <category> [name]` (the nearest planned one,
   coordinates on the sidewalk in front of it) and `/amcs spawn <category> <name>` (2 blocks in front of the player,
   front toward the player, ground on the block the player stands on, the same rules as in the city with loot);

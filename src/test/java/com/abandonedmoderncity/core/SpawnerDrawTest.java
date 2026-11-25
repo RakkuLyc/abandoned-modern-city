@@ -35,6 +35,18 @@ class SpawnerDrawTest {
         return d.oy() + d.ground();
     }
 
+    private static int clamp(int n) {
+        return Math.max(SpawnerDraw.MIN, Math.min(SpawnerDraw.MAX, n));
+    }
+
+    /** The average count of a floor of {@code covered} cells under a ceiling. */
+    private static double expected(int covered) {
+        double m = (double) covered / SpawnerDraw.AREA;
+        int whole = (int) Math.floor(m);
+        double rest = m - whole;
+        return clamp(whole) * (1 - rest) + clamp(whole + 1) * rest;
+    }
+
     @Test
     void onlyTheBuildingsGetSpawners() {
         int buildings = 0;
@@ -60,7 +72,6 @@ class SpawnerDrawTest {
             Rooms.Layout l = d.rooms();
             int nf = l.floors().size();
             int gy = gy(d);
-            boolean small = cls(d).equals("small");
             // the floors that get spawners: under the ground every one, over it one in two from the street floor
             boolean[] gets = new boolean[nf];
             int above = 0;
@@ -80,7 +91,7 @@ class SpawnerDrawTest {
             int most = 0;
             int copiesShort = 0;
             long[] perFloor = new long[nf];
-            Set<Integer> countsSeen = new HashSet<>();
+            long[] asked = new long[nf];
             for (int i = 0; i < COPIES; i++) {
                 long seed = seed(i);
                 List<SpawnerDraw.Spawner> sp = SpawnerDraw.of(d, seed);
@@ -92,14 +103,15 @@ class SpawnerDrawTest {
                 }
                 boolean isShort = false;
                 for (int f = 0; f < nf; f++) {
-                    int n = SpawnerDraw.count(l, cls(d), gy, f, seed);
+                    int n = SpawnerDraw.count(l, gy, f, seed);
                     if (!gets[f]) {
                         assertEquals(0, n, d.name() + ": floor " + f + " gets no spawner");
-                    } else if (small) {
-                        assertEquals(1, n, d.name() + ": 1 on floor " + f);
                     } else {
-                        assertTrue(n >= SpawnerDraw.LARGE_MIN && n <= SpawnerDraw.LARGE_MAX, d.name() + ": " + n);
-                        countsSeen.add(n);
+                        // one for every AREA cells under a ceiling, the rest drawn, from MIN to MAX
+                        int whole = l.floors().get(f).covered() / SpawnerDraw.AREA;
+                        assertTrue(n == clamp(whole) || n == clamp(whole + 1), d.name() + ": floor " + f + " of "
+                                + l.floors().get(f).covered() + " covered cells gets " + n);
+                        asked[f] += n;
                     }
                     assertTrue(onFloor[f] <= n, d.name() + ": floor " + f + " has " + onFloor[f] + " of " + n);
                     // a copy is short when a floor with spots gets fewer than drawn (no room near or away from a chest)
@@ -114,21 +126,32 @@ class SpawnerDrawTest {
                 least = Math.min(least, sp.size());
                 most = Math.max(most, sp.size());
             }
-            if (!small) {
-                assertEquals(4, countsSeen.size(), d.name() + ": every count from 2 to 5 comes up " + countsSeen);
-            }
             StringBuilder fl = new StringBuilder();
+            double covered = 0;
+            double askedFloors = 0;
             for (int f = 0; f < nf; f++) {
                 if (gets[f]) {
-                    fl.append(' ').append(l.floors().get(f).y() - gy).append(':')
+                    int cov = l.floors().get(f).covered();
+                    // the draw of the rest keeps the average: covered / AREA, held between MIN and MAX
+                    double mean = expected(cov);
+                    assertEquals(mean, (double) asked[f] / COPIES, 0.12, d.name() + ": floor " + f + " of " + cov
+                            + " covered cells");
+                    covered += cov;
+                    askedFloors += mean;
+                    fl.append(' ').append(l.floors().get(f).y() - gy).append(':').append(cov).append('=')
                             .append(String.format("%.1f", (double) perFloor[f] / COPIES));
                 }
             }
+            if (d.name().equals("abandoned_green_tower")) {
+                // the narrow tall tower: floors as small as those of the small buildings, about 1 each
+                assertTrue(askedFloors / IntStream.range(0, nf).filter(f -> gets[f]).count() < 1.5,
+                        "the green tower gets about 1 a floor");
+            }
             System.out.printf("[SpawnerDrawTest] %-28s %-6s %d copies: %.1f spawners on average (%d to %d), %.1f%% of"
                             + " those wanted, %.1f%% guarding a chest, %.1f%% in a lobby open onto the street, copies short"
-                            + " %d%n[SpawnerDrawTest]    per floor (height: average):%s%n", d.name(), cls(d), COPIES,
-                    (double) total / COPIES, least, most, 100.0 * total / wanted, 100.0 * guarding / total,
-                    100.0 * street / total, copiesShort, fl);
+                            + " %d, 1 per %.0f covered cells%n[SpawnerDrawTest]    per floor (height:covered cells=average):%s%n",
+                    d.name(), cls(d), COPIES, (double) total / COPIES, least, most, 100.0 * total / wanted,
+                    100.0 * guarding / total, 100.0 * street / total, copiesShort, covered * COPIES / total, fl);
         }
     }
 

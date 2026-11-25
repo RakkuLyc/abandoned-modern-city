@@ -119,11 +119,12 @@ public final class Rooms {
     }
 
     /**
-     * A floor: the template height of its base, the lowest and highest heights joined to it, its cells, and its plan
-     * ({@code w * d}, index {@code (x - ox) + w * (z - oz)}): a zone number, {@link #NONE}, {@link #PASSAGE},
-     * {@link #DOOR} or {@link #CORRIDOR}.
+     * A floor: the template height of its base, the lowest and highest heights joined to it, its cells, those of them
+     * under a ceiling ({@link Access#ceilings}: not under the open sky; the area that sets how many zombie spawners it
+     * gets, {@link SpawnerDraw}), and its plan ({@code w * d}, index {@code (x - ox) + w * (z - oz)}): a zone number,
+     * {@link #NONE}, {@link #PASSAGE}, {@link #DOOR} or {@link #CORRIDOR}.
      */
-    public record Floor(int y, int from, int to, int cells, int[] plan) {
+    public record Floor(int y, int from, int to, int cells, int covered, int[] plan) {
     }
 
     /**
@@ -440,7 +441,13 @@ public final class Rooms {
                         arrive[f] = Math.min(arrive[f], a.steps(ox + c % w, fy[c], oz + c / w));
                     }
                 }
-                floors.add(new Floor(bases.get(f), from[f], to[f], cells[f], plan));
+                int covered = 0;
+                for (int c = 0; c < w * d; c++) {
+                    if (fy[c] != Integer.MIN_VALUE && Access.ceilings(t, states, ox + c % w, fy[c], oz + c / w, top) > 0) {
+                        covered++;
+                    }
+                }
+                floors.add(new Floor(bases.get(f), from[f], to[f], cells[f], covered, plan));
             }
             // 4. spots
             List<int[]> raw = new ArrayList<>();

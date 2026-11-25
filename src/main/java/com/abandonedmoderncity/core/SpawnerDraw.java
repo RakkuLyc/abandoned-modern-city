@@ -13,8 +13,9 @@ import java.util.Map;
  * <ol>
  *   <li><b>Which floors:</b> the floors over the ground counted from the street floor, one in two (the 1st, the 3rd,
  *   the 5th...), and every floor under the ground (the garage of the wide building).</li>
- *   <li><b>How many:</b> on each of those floors 1 in a small building, else drawn evenly from {@link #LARGE_MIN} to
- *   {@link #LARGE_MAX}.</li>
+ *   <li><b>How many:</b> by the area of the floor under a ceiling ({@link Rooms.Floor#covered}), whatever the height
+ *   of the building: one for every {@link #AREA} cells, the rest drawn (1.4 gives 2 in 40% of the copies), from
+ *   {@link #MIN} to {@link #MAX}. A wide floor spreads its zombies; a narrow one does not crowd them.</li>
  *   <li><b>Where:</b> a spot of the floor that is not under the open sky (a zombie burns there) nor, while the floor
  *   has room elsewhere, in a lobby open onto the street, no chest on it, touching no chest and no other spawner
  *   ({@link #TOUCH}: within 1 block sideways and 1 up or down, so never on the cell in front of a chest either). A spawner guards a chest: it stands at most
@@ -36,10 +37,12 @@ public final class SpawnerDraw {
      * structures load: {@link Structures#SPAWNER_STATE}).
      */
     public static volatile boolean enabled = true;
-    /** Spawners on a floor of a large (not small) building that gets them: from this many... */
-    public static final int LARGE_MIN = 2;
-    /** ...to this many. */
-    public static final int LARGE_MAX = 5;
+    /** One spawner for every this many cells of a floor under a ceiling ({@link Rooms.Floor#covered})... */
+    public static final int AREA = 500;
+    /** ...at least this many on a floor that gets them... */
+    public static final int MIN = 1;
+    /** ...and at most this many. */
+    public static final int MAX = 5;
     /** A spawner stands at most this far sideways from the chest it guards. */
     public static final int GUARD = 5;
     /** ...and at most this far up or down. */
@@ -54,10 +57,10 @@ public final class SpawnerDraw {
     }
 
     /**
-     * How many spawners the floor {@code f} of a building of the height class gets in the copy of seed {@code seed}
-     * (before they are placed: a floor where they do not fit gets fewer); 0 on a floor that gets none.
+     * How many spawners the floor {@code f} gets in the copy of seed {@code seed} (before they are placed: a floor where
+     * they do not fit gets fewer); 0 on a floor that gets none.
      */
-    public static int count(Rooms.Layout layout, String heightClass, int groundY, int f, long seed) {
+    public static int count(Rooms.Layout layout, int groundY, int f, long seed) {
         List<Rooms.Floor> floors = layout.floors();
         Rooms.Floor fl = floors.get(f);
         if (fl.y() > groundY) {
@@ -69,16 +72,16 @@ public final class SpawnerDraw {
                 return 0;
             }
         }
-        return heightClass.equals("small") ? 1 : Hash.range(Hash.of(seed, SALT_COUNT, f), LARGE_MIN, LARGE_MAX);
+        int n = (int) Math.floor((double) fl.covered() / AREA + Hash.unit(Hash.of(seed, SALT_COUNT, f)));
+        return Math.max(MIN, Math.min(MAX, n));
     }
 
     /**
-     * The spawners of the copy of seed {@code seed} of a building of the height class whose template is {@code sx} by
-     * {@code sz}, ground layer at template height {@code groundY}, among the spots of {@code layout}; {@code chests}: the
-     * template cells {x, y, z} of every chest of the copy. Floor by floor, upwards.
+     * The spawners of the copy of seed {@code seed} of a building whose template is {@code sx} by {@code sz}, ground
+     * layer at template height {@code groundY}, among the spots of {@code layout}; {@code chests}: the template cells
+     * {x, y, z} of every chest of the copy. Floor by floor, upwards.
      */
-    public static List<Spawner> draw(Rooms.Layout layout, String heightClass, int sx, int sz, int groundY, long seed,
-                                     List<int[]> chests) {
+    public static List<Spawner> draw(Rooms.Layout layout, int sx, int sz, int groundY, long seed, List<int[]> chests) {
         if (layout.spots().isEmpty()) {
             return List.of();
         }
@@ -103,7 +106,7 @@ public final class SpawnerDraw {
         List<Spawner> out = new ArrayList<>();
         int[] guards = new int[chests.size()];
         for (int f = 0; f < layout.floors().size(); f++) {
-            int n = count(layout, heightClass, groundY, f, seed);
+            int n = count(layout, groundY, f, seed);
             if (n == 0) {
                 continue;
             }
@@ -221,7 +224,6 @@ public final class SpawnerDraw {
         if (d.rooms().spots().isEmpty()) {
             return List.of();
         }
-        return draw(d.rooms(), d.type().substring("buildings_".length()), d.t().sx, d.t().sz, d.oy() + d.ground(), seed,
-                chestsOf(d, seed));
+        return draw(d.rooms(), d.t().sx, d.t().sz, d.oy() + d.ground(), seed, chestsOf(d, seed));
     }
 }
