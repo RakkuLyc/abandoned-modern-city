@@ -8,6 +8,7 @@ import com.abandonedmoderncity.core.Weathering;
 import com.abandonedmoderncity.gen.CityFeature;
 import com.abandonedmoderncity.gen.Palette;
 import com.abandonedmoderncity.gen.Plans;
+import com.abandonedmoderncity.gen.SpawnPoint;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.levelgen.feature.Feature;
@@ -62,6 +63,7 @@ public final class AbandonedModernCity {
         }));
         NeoForge.EVENT_BUS.addListener(AmcsCommands::register);
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> Plans.clear());
+        NeoForge.EVENT_BUS.addListener(SpawnPoint::onCreateSpawn);
         SelfTest.init();
     }
 }

@@ -205,17 +205,17 @@ class WorldPlanTest {
             // every 13 blocks over the cells -2..1 (the cities of cells -4..4 and their highways are all known)
             for (int z = -2 * cell; z < 2 * cell; z += 13) {
                 for (int x = -2 * cell; x < 2 * cell; x += 13) {
-                    boolean want = false;
+                    boolean wantCity = false;
                     for (City c : cities) {
-                        want |= c.distanceOutside(x, z) <= Params.CITY_SKIRT + reach;
+                        wantCity |= c.distanceOutside(x, z) <= Params.CITY_SKIRT + reach;
                     }
+                    boolean wantHighway = false;
                     for (Highway h : highways.keySet()) {
-                        int[] all = new int[h.length];
-                        for (int k = 0; k < all.length; k++) {
-                            all[k] = k;
-                        }
-                        want |= h.project(x, z, all, pr) && pr.dist <= pad;
+                        wantHighway |= highwayDistance(h, x, z, pr) <= pad;
                     }
+                    boolean want = wantCity || wantHighway;
+                    assertEquals(wantCity, p.nearCity(x, z, reach), kind + " city at " + x + ", " + z);
+                    assertEquals(wantHighway, p.nearHighway(x, z, reach), kind + " highway at " + x + ", " + z);
                     assertEquals(want, p.nearCityOrHighway(x, z, reach), kind + " at " + x + ", " + z);
                     if (want) {
                         near++;
@@ -227,6 +227,87 @@ class WorldPlanTest {
             System.out.printf("[WorldPlanTest] %s: within %.0f of a city or highway %d points, away %d%n", kind, reach,
                     near, far);
             assertTrue(near > 1000 && far > 1000, kind + ": near " + near + ", far " + far);
+        }
+    }
+
+    /** Distance from (x, z) to the centerline of h, over all its segments (infinite when it projects on none). */
+    static double highwayDistance(Highway h, double x, double z, Highway.Proj pr) {
+        int[] all = new int[h.length];
+        for (int k = 0; k < all.length; k++) {
+            all[k] = k;
+        }
+        return h.project(x, z, all, pr) ? pr.dist : Double.POSITIVE_INFINITY;
+    }
+
+    @Test
+    void theSpawnStandsOutsideTheNearestCityAwayFromHighwaysAndOtherCities() {
+        int cell = Params.DEFAULT.cellSize();
+        TestTerrain.Kind[] kinds = {TestTerrain.Kind.FLAT, TestTerrain.Kind.HILLS, TestTerrain.Kind.MIXED,
+                TestTerrain.Kind.ISLANDS};
+        for (TestTerrain.Kind kind : kinds) {
+            int[] tiers = new int[SpawnSpot.HIGHWAY_CLEAR.length];
+            int none = 0;
+            int nearest = 0;
+            int found = 0;
+            double maxFromGame = 0;
+            for (long seed : new long[]{SEEDS[0], SEEDS[1]}) {
+                WorldPlan p = plan(seed, kind);
+                // every city of cells -5..5 with its highways: the spots of starting points in cells -1..0 are among them
+                List<City> cities = new ArrayList<>();
+                Map<Highway, Boolean> highways = new java.util.IdentityHashMap<>();
+                for (int cj = -5; cj <= 5; cj++) {
+                    for (int ci = -5; ci <= 5; ci++) {
+                        City c = p.city(ci, cj);
+                        if (c != null) {
+                            cities.add(c);
+                            for (Highway h : p.highways(c)) {
+                                highways.put(h, Boolean.TRUE);
+                            }
+                        }
+                    }
+                }
+                Highway.Proj pr = new Highway.Proj();
+                for (int z = -cell; z < cell; z += 97) {
+                    for (int x = -cell; x < cell; x += 97) {
+                        SpawnSpot.Spot s = SpawnSpot.find(p, x, z, sp -> true, 1);
+                        if (s == null) {
+                            none++;
+                            continue;
+                        }
+                        found++;
+                        tiers[s.tier()]++;
+                        assertEquals(s, SpawnSpot.find(p, x, z, sp -> true, 1), "the same spot twice");
+                        String at = kind + " seed " + seed + " from " + x + ", " + z + ": " + s;
+                        assertEquals(SpawnSpot.DISTANCE, s.city().distanceOutside(s.x(), s.z()), 1.5, at);
+                        double fromCity = Double.MAX_VALUE;
+                        City closest = null;
+                        for (City c : cities) {
+                            assertTrue(c.distanceOutside(s.x(), s.z()) >= SpawnSpot.DISTANCE - 1.5, at + " too near " + c);
+                            double d = c.distanceOutside(x, z);
+                            if (d < fromCity) {
+                                fromCity = d;
+                                closest = c;
+                            }
+                        }
+                        if (closest == s.city()) {
+                            nearest++;
+                        }
+                        double pad = Params.HIGHWAY_HW + Params.HIGHWAY_SKIRT + SpawnSpot.HIGHWAY_CLEAR[s.tier()];
+                        for (Highway h : highways.keySet()) {
+                            assertTrue(highwayDistance(h, s.x(), s.z(), pr) > pad, at + " near " + h);
+                        }
+                        assertTrue(SpawnSpot.dry(p.terrain, s.x(), s.z()), at + " wet");
+                        maxFromGame = Math.max(maxFromGame, Math.hypot(s.x() - x, s.z() - z));
+                    }
+                }
+            }
+            System.out.printf("[WorldPlanTest] spawn %s: %d starting points, %d spots (highway clearance %s: %s), "
+                    + "%d none, %d outside the nearest city, farthest %.0f blocks from the start%n", kind,
+                    found + none, found, Arrays.toString(SpawnSpot.HIGHWAY_CLEAR), Arrays.toString(tiers), none,
+                    nearest, maxFromGame);
+            if (kind == TestTerrain.Kind.FLAT || kind == TestTerrain.Kind.HILLS) {
+                assertEquals(0, none, kind + ": every starting point gets a spot");
+            }
         }
     }
 

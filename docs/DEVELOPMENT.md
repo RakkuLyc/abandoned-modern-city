@@ -262,6 +262,8 @@ core/   the pure planner (no Minecraft classes), tested with JUnit
   Flora           trees (4 species, vines), patchy ground, plants and rubble; a bucketed index of trees
   RoadDecay       abandoned roads: taken-over columns, worn texture, plants; stones and walls of the old bridges
   Wreck           holes in the bridges, by position along the highway
+  SpawnSpot       where a new world's spawn goes: 150 outside the border streets of the city nearest to the game's
+                  spot, away from the other cities and the highways (118 beyond their slopes, else 48), on dry ground
   Wild            the core of a block: ground, trees and plants, kept out of the structures
   Ring            the ring of structures around a block (short sides whole, long sides in what is left), gaps, limits
   Structures      the 52 files (30 models) of `amcs/buildings/index.txt`: loading in order, box, ground layer,
@@ -301,6 +303,9 @@ gen/    the game layer
   McTerrain       Terrain over ChunkGenerator.getBaseHeight (noise, the same in any thread)
   Plans           one WorldPlan per dimension (only the overworld)
   OutpostZero     keeps Outpost Zero's bunkers 48+ from the cities and highways (WorldPlan.nearCityOrHighway)
+  SpawnPoint      the spawn of a new world (LevelEvent.CreateSpawnPosition, spawnNearCity): the spot of core/SpawnSpot,
+                  checked on its generated chunk, then the bonus chest if asked for; any failure, or a world not of
+                  noise (superflat), keeps the game's spawn
 mixin/  mixins for other mods only, each applied when its mod is loaded (AmcsMixinPlugin; abandonedmoderncity.mixins.json,
         declared in neoforge.mods.toml): OutpostZeroSiteMixin, the first thing Outpost Zero's site check asks
 command/  /amcs (StructureCommands: locate structure and spawn), the block audit (WorldAudit), renders, the battery
@@ -336,7 +341,8 @@ command/  /amcs (StructureCommands: locate structure and spawn), the block audit
 `enabled`, `cellSize`, `cityChance`, `maxCityLevel`, `highways`, `highwayMaxLength`, `structureOvergrowth` (default
 `true`: nature taking over the structures; `false` generates them as they were saved; read at startup, restart the game
 after changing it), `zombieSpawners` (default `true`: the zombie spawners of the buildings; `false` gives the world of
-1.0.0; read at startup too).
+1.0.0; read at startup too), `spawnNearCity` (default `true`: a new world's spawn 150 blocks outside the city nearest to
+the game's spot, `core/SpawnSpot`, `gen/SpawnPoint`; only when a world is created).
 The geometry (widths, blocks, ramps, tunnels, bridges) is in `core/Params` and the cities in `core/City`. Changes
 apply to new chunks and change the plan: use a new world.
 `cellSize` (default 736) is the distance between neighbouring cities: the highways get longer with it. It must be at

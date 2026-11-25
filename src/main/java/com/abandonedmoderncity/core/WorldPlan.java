@@ -525,12 +525,25 @@ public final class WorldPlan {
      * the world is generated are kept away with it (the bunkers of Outpost Zero, {@code gen/OutpostZero}).
      */
     public boolean nearCityOrHighway(double x, double z, double reach) {
+        return nearCity(x, z, reach) || nearHighway(x, z, reach);
+    }
+
+    /** Whether (x, z) is {@code reach} or less from a city with its slopes ({@link Params#CITY_SKIRT} beyond its border streets). */
+    public boolean nearCity(double x, double z, double reach) {
         double r = Params.influence() + reach;
         for (City c : citiesIn(x - r, z - r, x + r, z + r)) {
             if (c.distanceOutside(x, z) <= Params.CITY_SKIRT + reach) {
                 return true;
             }
         }
+        return false;
+    }
+
+    /**
+     * Whether (x, z) is {@code reach} or less from a highway with its slopes ({@link Params#HIGHWAY_HW} +
+     * {@link Params#HIGHWAY_SKIRT} from its centerline).
+     */
+    public boolean nearHighway(double x, double z, double reach) {
         double pad = Params.HIGHWAY_HW + Params.HIGHWAY_SKIRT + reach;
         int chunks = (int) Math.ceil(pad / 16) + 1;
         Highway.Proj p = new Highway.Proj();

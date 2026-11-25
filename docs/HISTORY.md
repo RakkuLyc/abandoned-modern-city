@@ -646,3 +646,13 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   48 blocks (over 100, or only outside the area). What it replaced: the mod had no mixin; now `mixin/` with one, for
   that mod only (`AmcsMixinPlugin`), and `gen/OutpostZero`, `WorldPlan.nearCityOrHighway`, `City.distanceOutside`.
   The world of the mod does not change (`FingerprintTest`, the battery identical).
+- **The spawn of a new world near a city** (24 Nov 2026, asked by the user: cities 700 to 900 blocks from the spawn,
+  measured with `/amcs locate city`, which gives the distance to a center). Before, the game's own spawn: near 0, 0,
+  which is always the corner of 4 world cells (the cities stand in the middle of their cells), so the farthest place
+  from them: the nearest streets ~235 blocks away, the centers ~520, and ~880 / ~1,160 when none of the 4 cells has a
+  city (~1 world in 7 by the 4 test seeds, ~39% of the cells with a city). Of the options (move the spawn; force a city
+  in the 4 cells; shift the grid so a city stands on 0, 0, which breaks every existing world; nothing) the user chose to
+  move the spawn, 150 blocks outside the city (over on its highway or at its edge, where Outpost Zero's starter bunker
+  would find no site), with an option on by default (`spawnNearCity`). New: `core/SpawnSpot`, `gen/SpawnPoint`,
+  `WorldPlan.nearCity` and `nearHighway` (split out of `nearCityOrHighway`, the same results). The world of the mod
+  does not change (`FingerprintTest`, the battery identical).

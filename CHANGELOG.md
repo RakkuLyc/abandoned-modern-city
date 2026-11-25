@@ -9,6 +9,10 @@
   break them), 2 at a time, at most 4 around each, when a player is within 12 blocks; nothing spawns in Peaceful.
   `/amcs spawn` places them too.
 - Config option `zombieSpawners` (on by default; read at startup). Off, the buildings have no spawners, as in 1.0.0.
+- A new world's spawn is put about 150 blocks outside the city nearest to where the game would put it, on dry ground
+  away from the highways (the game's spot, near 0, 0, is always the farthest place from the cities around it: their
+  streets ~235 blocks away, ~880 when none of the 4 cells around it has a city). Config option `spawnNearCity` (on by
+  default); existing worlds keep their spawn. With Outpost Zero its starter bunker is still placed, near that spawn.
 
 ### Fixed
 - The stairs of the apocalyptic building faced the wrong way (they could be climbed, but looked reversed).

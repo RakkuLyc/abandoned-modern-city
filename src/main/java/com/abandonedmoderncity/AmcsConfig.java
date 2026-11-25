@@ -17,6 +17,7 @@ public final class AmcsConfig {
     public static final ModConfigSpec.IntValue HIGHWAY_MAX_LENGTH;
     public static final ModConfigSpec.BooleanValue STRUCTURE_OVERGROWTH;
     public static final ModConfigSpec.BooleanValue ZOMBIE_SPAWNERS;
+    public static final ModConfigSpec.BooleanValue SPAWN_NEAR_CITY;
 
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
@@ -33,6 +34,8 @@ public final class AmcsConfig {
                 .define("structureOvergrowth", true);
         ZOMBIE_SPAWNERS = b.comment("Zombie spawners in the buildings, near their chests, one floor in two. They work in any light (a torch does not stop them: break them). Read at startup: restart the game after changing it; it changes only the chunks generated after.")
                 .define("zombieSpawners", true);
+        SPAWN_NEAR_CITY = b.comment("New worlds: the spawn is put about 150 blocks outside the city nearest to where the game would put it, on dry ground away from the highways (with Outpost Zero, its starter bunker is looked for there). Only when a world is created: existing worlds keep their spawn.")
+                .define("spawnNearCity", true);
         SPEC = b.build();
     }
 

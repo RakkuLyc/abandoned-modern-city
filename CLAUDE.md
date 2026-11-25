@@ -298,12 +298,22 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
 
 ### Configuration, commands and determinism
 - Config (`config/abandonedmoderncity-common.toml`, `AmcsConfig`): `enabled`, `cellSize` (734–8192), `cityChance`,
-  `maxCityLevel`, `highways`, `highwayMaxLength`, `structureOvergrowth`, `zombieSpawners`. NeoForge keeps each value
-  in its range.
+  `maxCityLevel`, `highways`, `highwayMaxLength`, `structureOvergrowth`, `zombieSpawners`, `spawnNearCity`. NeoForge
+  keeps each value in its range.
 - Commands (op 2, `command/AmcsCommands`): `info`, `locate city|highway|tunnel|bridge`, `locate structure`, `spawn`,
   `plan [radius ≤ 16]`, `audit [radius ≤ 8]`, `network [radius 500–1000]`, `column <x> <z> <y0> <y1>` (heights kept
   in the world, at most 384 lines); they run on the server thread, so the limits keep them to seconds. Images go to
   `amcs_renders/`.
+- Spawn of a new world (`spawnNearCity`, on by default; `gen/SpawnPoint` on `LevelEvent.CreateSpawnPosition`, only when a
+  world is created): the game's spot (`findSpawnPosition`, near 0, 0, the corner of 4 cells) is replaced by the first
+  spot of `core/SpawnSpot`: around the cities with a center within 3 cells (`CELLS`), nearest first, 180 points
+  (`STEPS`) 150 outside their border streets (`DISTANCE`, `City.distanceOutside`), as far or farther from every other
+  city, beyond the slopes of every highway by 118 (`HIGHWAY_CLEAR`: Outpost Zero's 48 + the ~70 around the spawn where
+  it looks for its starter bunker), else by 48, nearest to the game's spot first; dry (`dry`: the spot and 7 of the 8
+  points 24 around it not water); then on its generated chunk the top full block that is not under water
+  (`MOTION_BLOCKING_NO_LEAVES`), at most 8 spots (`TRIES`). Then the bonus chest when asked for, as the game does; the
+  game's setup is skipped only after the spawn is set; any failure, or a world not of noise (superflat), keeps the
+  game's spawn. It takes ~6 s, mostly the planning the first chunks would do anyway (the server is ready as fast).
 - Other mods (`gen/OutpostZero`, `mixin/`): the bunkers of Outpost Zero (`outpostzero`), which it places after the
   world is generated wherever its only site check (`BunkerSiteSuitabilityLogic.checkBunkerSite`: no water, no steep
   slope) passes, are kept away from the cities and highways: the mixin `OutpostZeroSiteMixin` (applied only when that

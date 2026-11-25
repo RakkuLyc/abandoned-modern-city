@@ -29,8 +29,10 @@ The mod must be installed on the server (or in single player).
 
 The file `config/abandonedmoderncity-common.toml` lets you change how far apart the cities are (`cellSize`), how
 many cells get one (`cityChance`), switch the highways off (`highways`), generate the structures without the
-vines and moss (`structureOvergrowth`) or without the zombie spawners (`zombieSpawners`). Change it before creating a
-world (the last two are read when the game starts and change only the chunks generated after).
+vines and moss (`structureOvergrowth`) or without the zombie spawners (`zombieSpawners`), and keep the game's own
+spawn (`spawnNearCity = false`; by default a new world's spawn is about 150 blocks outside the nearest city, with the
+city in view). Change it before creating a world (`structureOvergrowth` and `zombieSpawners` are read when the game
+starts and change only the chunks generated after; `spawnNearCity` only acts when a world is created).
 
 ## Commands
 
