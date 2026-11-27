@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
  */
 class RoomsTest {
     /** The most chests a building of each height class will get (stage 3; immense approved, none exists yet). */
-    static final Map<String, Integer> MOST = Map.of("small", 28, "medium", 47, "large", 65, "immense", 83);
 
     /** A template drawn in code: a floor of stone at y = 0 (the ground layer). */
     private static final class Box {
@@ -253,7 +252,9 @@ class RoomsTest {
                 assertTrue(spotsOn[f] == 0 || farOn[f] > 0, d.name() + ": no far spot on floor " + f);
             }
             int[] cap = Rooms.capacity(d.rooms(), Rooms.SPACING);
-            int most = MOST.get(Structures.buildingClass(d.type()));
+            // the most chests a copy can draw (ChestDraw.count with the factor at its top)
+            int most = Math.max(ChestDraw.floorsWithRoom(d.rooms()), (int) Math.round(
+                    (double) ChestDraw.covered(d.rooms()) / ChestDraw.AREA * (1 + ChestDraw.SPREAD)));
             assertTrue(cap[0] >= most, d.name() + ": room for " + cap[0] + " chests " + Rooms.SPACING
                     + " apart, fewer than " + most);
         }

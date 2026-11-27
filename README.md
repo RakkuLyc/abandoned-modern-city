@@ -12,7 +12,9 @@ Minecraft 1.21.1.
 - **52 hand-built structures**: houses, pharmacies, car workshops, gas stations, tall office buildings, a police
   station and rare special buildings, all cracked, mossy and covered in vines.
 - **Loot to find**: every chest, barrel and pot has loot that fits the place (food in houses, potions in pharmacies,
-  tools in workshops...), and the hidden ones (basements, roofs, attics) are richer.
+  tools in workshops...), and the hidden ones (basements, roofs, attics) are richer. The tall buildings get chests by
+  their size: about one per 250 blocks of floor under a roof (±30%), at least one a floor, so a wide building has
+  many more than a narrow one (~8 to 10 in a small building, ~50 in the green tower, ~70 to 108 in the wide ones).
 - **Zombie spawners** in the tall buildings, near their chests, one floor in two (and in the underground garage),
   more on the wide floors than on the narrow ones (one per 500 blocks of floor under a roof, 1 to 5 a floor), and 1 to 3
   in every house, near its chests.

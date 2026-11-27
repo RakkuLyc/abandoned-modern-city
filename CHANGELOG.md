@@ -24,6 +24,11 @@
   (from the point it checks) away from them.
 
 ### Changed
+- The chests drawn in the tall buildings follow their size instead of their height: about one per 250 blocks of floor
+  under a roof, all floors together (±30% from copy to copy), at least one a floor. The wide buildings get more (the
+  crash building ~108 instead of ~52, the brutalist U ~96, the bluish ~79), the green tower stays at ~51 and the
+  small buildings, which were crowded, get fewer (~8 to 10 instead of ~20). The barrels turned into chests come on
+  top, as before. In a world made before, the buildings already generated keep their chests.
 - The crash building is now a special structure, like the ramp building: it stands only in the cities that draw a
   special structure (~40%), at most once, and such a city may have both (at most 2 special structures). It is in ~13%
   of the cities instead of ~26%. Inside it is the same (drawn chests, barrels, zombie spawners). `/amcs spawn` and

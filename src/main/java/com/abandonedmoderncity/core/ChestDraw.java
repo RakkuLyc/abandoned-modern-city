@@ -8,14 +8,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The chests of one copy of a building (types {@code buildings_*}), drawn among the spots of its {@link Rooms}. A pure function of the copy's seed (the lot's, or a
+ * The chests of one copy of a building (types {@code buildings_*} and {@code special_buildings_*}), drawn among the spots of its {@link Rooms}. A pure function of the copy's seed (the lot's, or a
  * random one for {@code /amcs spawn}) and of the template: it does not depend on the rotation, the world position or
  * the order in which the chunks are generated.
  * <ol>
- *   <li><b>How many:</b> drawn evenly in the range of the building's height class ({@link #range}): small 12–28, medium
- *   25–47, large 38–65, immense 51–83. The chests of the barrels do not count.</li>
+ *   <li><b>How many:</b> by the building's area under a ceiling ({@link Rooms.Floor#covered}, all its floors together:
+ *   roofs and yards do not count), one for every {@link #AREA} cells, times a factor drawn evenly from
+ *   1 − {@link #SPREAD} to 1 + {@link #SPREAD}, rounded; at least one per floor with room for a chest
+ *   ({@link #count}). The height class plays no part. The chests of the barrels do not count.</li>
  *   <li><b>Per floor:</b> in proportion to the floor's weight ({@link Rooms.Layout#floorWeight}: how many chests fit
- *   on it {@link Rooms#SPACING} apart, a spot of a lobby open onto the street counting half), largest remainders first.</li>
+ *   on it {@link Rooms#SPACING} apart, a spot of a lobby open onto the street counting half), largest remainders first;
+ *   a floor with room left at 0 takes one from the floor with the largest share ({@link #quotas}).</li>
  *   <li><b>Which spots:</b> a weighted draw without replacement (each spot gets the key {@code -ln(u) / weight}, u from
  *   the seed and its cell; the smallest keys win), the weight of the spot (2 against a wall, 3 in a corner, +1 beside
  *   furniture) halved for a street spot. A spot is skipped when it is closer than
@@ -40,24 +43,39 @@ public final class ChestDraw {
     public static final int ZONE_CAP = 1;
     /** Weight of a spot of a lobby open onto the street, against the others. */
     public static final double STREET_FACTOR = 0.5;
+    /** One chest for every this many cells under a ceiling, on average. */
+    public static final int AREA = 250;
+    /** The count of a copy is the average times a factor drawn evenly from 1 − SPREAD to 1 + SPREAD. */
+    public static final double SPREAD = 0.30;
     private static final long SALT_COUNT = 0x43484E54L; // "CHNT"
     private static final long SALT_KEY = 0x43484B59L; // "CHKY"
 
-    /** The range of chests of a height class ({@code small}, {@code medium}, {@code large}, {@code immense}). */
-    public static int[] range(String heightClass) {
-        return switch (heightClass) {
-            case "small" -> new int[]{12, 28};
-            case "medium" -> new int[]{25, 47};
-            case "large" -> new int[]{38, 65};
-            case "immense" -> new int[]{51, 83};
-            default -> throw new IllegalArgumentException("height class " + heightClass);
-        };
+    /** The cells under a ceiling of all the floors of the layout ({@link Rooms.Floor#covered}). */
+    public static int covered(Rooms.Layout layout) {
+        int c = 0;
+        for (Rooms.Floor f : layout.floors()) {
+            c += f.covered();
+        }
+        return c;
     }
 
-    /** How many chests the copy of seed {@code seed} gets, for a building of the height class. */
-    public static int count(String heightClass, long seed) {
-        int[] r = range(heightClass);
-        return Hash.range(Hash.of(seed, SALT_COUNT, 0), r[0], r[1]);
+    /** The floors of the layout with room for a chest (a weight above 0). */
+    public static int floorsWithRoom(Rooms.Layout layout) {
+        int n = 0;
+        for (double w : layout.floorWeight()) {
+            n += w > 0 ? 1 : 0;
+        }
+        return n;
+    }
+
+    /**
+     * How many chests the copy of seed {@code seed} gets: {@link #covered} / {@link #AREA} times a factor from
+     * 1 − {@link #SPREAD} to 1 + {@link #SPREAD}, rounded, at least {@link #floorsWithRoom}.
+     */
+    public static int count(Rooms.Layout layout, long seed) {
+        double factor = 1 - SPREAD + 2 * SPREAD * Hash.unit(Hash.of(seed, SALT_COUNT, 0));
+        int n = (int) Math.round((double) covered(layout) / AREA * factor);
+        return Math.max(floorsWithRoom(layout), n);
     }
 
     /** Whether a spot is an exploration place: far on its floor, under the open sky, or hard to get to. */
@@ -66,14 +84,14 @@ public final class ChestDraw {
     }
 
     /**
-     * The chests of the copy of seed {@code seed} of a building of the height class whose template is {@code sx} by
-     * {@code sz} (to number the cells), among the spots of {@code layout}: the spots taken, in the order they were taken.
+     * The chests of the copy of seed {@code seed} of a building whose template is {@code sx} by {@code sz} (to number
+     * the cells), among the spots of {@code layout}: the spots taken, in the order they were taken.
      */
-    public static List<Rooms.Spot> draw(Rooms.Layout layout, String heightClass, int sx, int sz, long seed) {
+    public static List<Rooms.Spot> draw(Rooms.Layout layout, int sx, int sz, long seed) {
         if (layout.spots().isEmpty()) {
             return List.of();
         }
-        int n = count(heightClass, seed);
+        int n = count(layout, seed);
         int[] quota = quotas(layout.floorWeight(), n);
         List<Rooms.Spot> order = new ArrayList<>(layout.spots());
         Map<Rooms.Spot, Double> key = new HashMap<>();
@@ -92,7 +110,11 @@ public final class ChestDraw {
         return List.copyOf(out);
     }
 
-    /** The floor shares of {@code n} chests, in proportion to the weights, largest remainders first. */
+    /**
+     * The floor shares of {@code n} chests, in proportion to the weights, largest remainders first; then every floor
+     * with a weight left at 0 takes one from the floor with the largest share (the first of them), while {@code n} is
+     * at least the number of floors with a weight.
+     */
     static int[] quotas(double[] weight, int n) {
         int nf = weight.length;
         double total = Arrays.stream(weight).sum();
@@ -118,6 +140,19 @@ public final class ChestDraw {
             if (weight[f] > 0) {
                 q[f]++;
                 sum++;
+            }
+        }
+        for (int f = 0; f < nf; f++) {
+            if (weight[f] > 0 && q[f] == 0) {
+                int most = 0;
+                for (int g = 1; g < nf; g++) {
+                    most = q[g] > q[most] ? g : most;
+                }
+                if (q[most] < 2) {
+                    break;
+                }
+                q[most]--;
+                q[f]++;
             }
         }
         return q;

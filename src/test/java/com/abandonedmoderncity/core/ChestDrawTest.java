@@ -1,5 +1,6 @@
 package com.abandonedmoderncity.core;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,38 +22,75 @@ class ChestDrawTest {
         return Structures.isBuildingType(d.type());
     }
 
-    private static String cls(Structures.Def d) {
-        return Structures.buildingClass(d.type());
-    }
-
     private static long seed(int i) {
         return (i + 1) * 0x9E3779B97F4A7C15L;
     }
 
     private static List<Rooms.Spot> draw(Structures.Def d, long seed) {
-        return ChestDraw.draw(d.rooms(), cls(d), d.t().sx, d.t().sz, seed);
+        return ChestDraw.draw(d.rooms(), d.t().sx, d.t().sz, seed);
+    }
+
+    /** The average count of a building: max(floors with room, round(covered / AREA × factor)), the factor even. */
+    private static double expected(Structures.Def d) {
+        int steps = 100_000;
+        double sum = 0;
+        double base = (double) ChestDraw.covered(d.rooms()) / ChestDraw.AREA;
+        for (int i = 0; i < steps; i++) {
+            double factor = 1 - ChestDraw.SPREAD + 2 * ChestDraw.SPREAD * (i + 0.5) / steps;
+            sum += Math.max(ChestDraw.floorsWithRoom(d.rooms()), Math.round(base * factor));
+        }
+        return sum / steps;
     }
 
     @Test
-    void countsCoverEveryRange() {
-        for (String c : List.of("small", "medium", "large", "immense")) {
-            int[] r = ChestDraw.range(c);
-            Set<Integer> seen = new HashSet<>();
-            for (int i = 0; i < 4000; i++) {
-                int n = ChestDraw.count(c, seed(i));
-                assertTrue(n >= r[0] && n <= r[1], c + " " + n);
-                seen.add(n);
+    void countsFollowTheAreaUnderACeiling() {
+        // the user's choices of 27 Nov 2026: one chest for every 250 cells under a ceiling, ±30%, at least one a floor
+        assertEquals(250, ChestDraw.AREA);
+        assertEquals(0.30, ChestDraw.SPREAD);
+        double apartment = 0;
+        double crash = 0;
+        for (Structures.Def d : Structures.ALL) {
+            if (!building(d)) {
+                continue;
             }
-            assertEquals(r[1] - r[0] + 1, seen.size(), c + ": every count of the range comes up");
+            Rooms.Layout l = d.rooms();
+            int floors = ChestDraw.floorsWithRoom(l);
+            double base = (double) ChestDraw.covered(l) / ChestDraw.AREA;
+            int low = Math.max(floors, (int) Math.round(base * (1 - ChestDraw.SPREAD)));
+            int high = Math.max(floors, (int) Math.round(base * (1 + ChestDraw.SPREAD)));
+            int min = Integer.MAX_VALUE;
+            int max = 0;
+            long sum = 0;
+            int copies = 4000;
+            for (int i = 0; i < copies; i++) {
+                int n = ChestDraw.count(l, seed(i));
+                assertTrue(n >= low && n <= high, d.name() + ": " + n + " out of " + low + "–" + high);
+                assertTrue(n >= floors, d.name() + ": fewer chests than floors with room");
+                min = Math.min(min, n);
+                max = Math.max(max, n);
+                sum += n;
+            }
+            double mean = (double) sum / copies;
+            double want = expected(d);
+            assertTrue(Math.abs(mean - want) <= 0.02 * want + 0.2, d.name() + ": " + mean + " against " + want);
+            assertEquals(low, min, d.name() + ": the lowest count comes up");
+            assertEquals(high, max, d.name() + ": the highest count comes up");
+            apartment = d.name().equals("apartment_building") ? mean : apartment;
+            crash = d.name().equals("abandoned_crash_building") ? mean : crash;
+            System.out.printf("[ChestDrawTest] %-28s %6d cells under a ceiling, %2d floors with room: %d to %d chests,"
+                    + " %.1f on average (expected %.1f)%n", d.name(), ChestDraw.covered(l), floors, min, max, mean, want);
         }
-        assertEquals(12, ChestDraw.range("small")[0]);
-        assertEquals(28, ChestDraw.range("small")[1]);
-        assertEquals(25, ChestDraw.range("medium")[0]);
-        assertEquals(47, ChestDraw.range("medium")[1]);
-        assertEquals(38, ChestDraw.range("large")[0]);
-        assertEquals(65, ChestDraw.range("large")[1]);
-        assertEquals(51, ChestDraw.range("immense")[0]);
-        assertEquals(83, ChestDraw.range("immense")[1]);
+        // the wider building gets more: the crash building (~26,900 cells) ten times the apartment building (~2,600)
+        assertTrue(crash > 8 * apartment, crash + " against " + apartment);
+    }
+
+    @Test
+    void quotasGiveEveryFloorWithRoomOne() {
+        // in proportion first (largest remainders: 6, 0, 4 and 2, 0, 1), then a floor with room left at 0 takes one
+        // from the largest share
+        assertArrayEquals(new int[]{5, 1, 4}, ChestDraw.quotas(new double[]{50, 1, 40}, 10));
+        assertArrayEquals(new int[]{1, 1, 1, 0}, ChestDraw.quotas(new double[]{50, 1, 40, 0}, 3));
+        assertArrayEquals(new int[]{30, 20}, ChestDraw.quotas(new double[]{60, 40}, 50));
     }
 
     @Test
@@ -90,7 +128,7 @@ class ChestDrawTest {
             for (int i = 0; i < COPIES; i++) {
                 long seed = seed(i);
                 List<Rooms.Spot> c = draw(d, seed);
-                int n = ChestDraw.count(cls(d), seed);
+                int n = ChestDraw.count(l, seed);
                 assertEquals(n, c.size(), d.name() + ": the count of the copy");
                 int[] perFloor = new int[nf];
                 Map<Integer, Integer> perZone = new HashMap<>();
@@ -110,10 +148,9 @@ class ChestDrawTest {
                     hard += s.is(Rooms.HARD) ? 1 : 0;
                 }
                 assertTrue(e >= Math.ceil(ChestDraw.EXPLORATION_MIN * n), d.name() + ": " + e + " exploration of " + n);
-                // every floor whose share is one chest or more gets some (a tiny roof may get none)
-                double weights = java.util.Arrays.stream(l.floorWeight()).sum();
+                // every floor with room for a chest gets one (the user's minimum of 27 Nov 2026)
                 for (int f = 0; f < nf; f++) {
-                    assertTrue(n * l.floorWeight()[f] / weights < 1 || perFloor[f] > 0, d.name() + ": no chest on floor " + f);
+                    assertTrue(l.floorWeight()[f] == 0 || perFloor[f] > 0, d.name() + ": no chest on floor " + f);
                 }
                 for (Map.Entry<Integer, Integer> z : perZone.entrySet()) {
                     roomsOverCap += z.getValue() > ChestDraw.ZONE_CAP
@@ -194,25 +231,6 @@ class ChestDrawTest {
     }
 
     @Test
-    void mediumAndImmenseReachTheirCountsOnALargeBuilding() {
-        // no building is medium or immense yet: their ranges, drawn on the rooms of a large one, always reach the count
-        Structures.Def d = Structures.ALL.stream().filter(x -> x.name().equals("brutalist_u_building_75x58")).findFirst()
-                .orElseThrow();
-        for (String c : List.of("medium", "immense")) {
-            int[] r = ChestDraw.range(c);
-            Set<Integer> sizes = new HashSet<>();
-            for (int i = 0; i < 400; i++) {
-                long seed = seed(i);
-                List<Rooms.Spot> l = ChestDraw.draw(d.rooms(), c, d.t().sx, d.t().sz, seed);
-                assertEquals(ChestDraw.count(c, seed), l.size(), c);
-                assertTrue(l.stream().filter(ChestDraw::exploration).count() >= Math.ceil(ChestDraw.EXPLORATION_MIN * l.size()), c);
-                sizes.add(l.size());
-            }
-            assertTrue(sizes.contains(r[0]) && sizes.contains(r[1]), c + ": " + sizes);
-        }
-    }
-
-    @Test
     void theSameSeedGivesTheSameChests() {
         for (Structures.Def d : Structures.ALL) {
             if (!building(d)) {
@@ -221,7 +239,7 @@ class ChestDrawTest {
             for (int i = 0; i < 5; i++) {
                 assertEquals(draw(d, seed(i)), draw(d, seed(i)), d.name());
                 Map<Integer, Integer> m = d.chests(seed(i));
-                assertEquals(ChestDraw.count(cls(d), seed(i)), m.size(), d.name());
+                assertEquals(ChestDraw.count(d.rooms(), seed(i)), m.size(), d.name());
                 assertEquals(m, d.chests(seed(i)), d.name());
             }
         }

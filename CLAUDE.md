@@ -174,7 +174,7 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
   `HEIGHT_SMALL`, `HEIGHT_MARGIN`); type `buildings_<class>`, category `building_<class>`: small 3 (apartment 37,
   small 41, skeleton 43), large 6 (wide 80, bluish 106, apocalyptic 110, tower 118, brutalist U 125, green tower
   143), medium and immense none; a special building keeps its class in its type (`special_buildings_<class>`,
-  `Structures.buildingClass`: the crash building, large, 90) and has the category `special`. The class changes neither the loot nor the ring. `RingTest` checks it.
+  `Structures.buildingClass`: the crash building, large, 90) and has the category `special`. The class changes neither the loot, the ring nor the chests and spawners drawn. `RingTest` checks it.
 - Placing: front = the -Z side of the `.nbt`, facing the street (the `front` field turns the others: the abandoned
   modern house and the post-apocalyptic mansion 180°); box = the box of the solid blocks; the `ground` layer lies at
   the city's level and the layers under it are buried (buried `air` becomes dirt; `cave_air` becomes real air and
@@ -228,10 +228,15 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
   hard (`Access.place`), open sky, far (the 20% of its floor farthest from where the walk arrives, `FAR_SHARE`),
   street (a room at street level with 24+ cells on the box's edge, `STREET_EDGE`).
 - Chests drawn in each copy (`core/ChestDraw`, `Def.chests(seed)`, placed by `Def.code`, through `Lot.code`; the last
-  512 copies kept per structure, `DRAWN_KEPT`): a pure function of the copy's seed and the template. How many: evenly
-  in the range of the height class (small 12–28, medium 25–47, large 38–65, immense 51–83, `ChestDraw.range`; the
-  barrels' chests do not count). Per floor: in proportion to its weight (`Rooms.Layout.floorWeight`, a street spot
-  counting half), largest remainders first. Which spots: a weighted draw without replacement (`-ln(u) / weight`, a
+  512 copies kept per structure, `DRAWN_KEPT`): a pure function of the copy's seed and the template. How many: by the
+  building's area under a ceiling, all its floors together (`ChestDraw.covered`, the `Rooms.Floor.covered` of each;
+  roofs and yards do not count), one for every 250 cells (`ChestDraw.AREA`) times a factor drawn evenly from 0.7 to
+  1.3 (`SPREAD` 0.30), rounded, at least one per floor with room for a chest (`floorsWithRoom`); whatever the height
+  class; the barrels' chests do not count. In 300 copies (`ChestDrawTest`): skeleton ~8.3 (8–10), small building ~9.4
+  (7–12), apartment ~10.3 (7–13), green tower ~51 (36–66), wide ~71 (49–92), tower ~76 (53–98), bluish ~79
+  (55–103), apocalyptic ~84 (59–109), brutalist U ~96 (67–124), crash ~108 (75–140). Per floor: in proportion to its
+  weight (`Rooms.Layout.floorWeight`, a street spot counting half), largest remainders first; a floor with room left
+  at 0 takes one from the floor with the largest share (`ChestDraw.quotas`), so every floor with room gets a chest. Which spots: a weighted draw without replacement (`-ln(u) / weight`, a
   street spot's weight halved), 4+ apart sideways within 2 heights (`Rooms.SPACING`), at most 1 per zone
   (`ZONE_CAP`) until the floor has its share, the cap then raised up to 4, the floor shares dropped (cap up to 8),
   the cap dropped. Exploration (far, open sky or hard): at least 15% of each copy (`EXPLORATION_MIN`, a minimum; the

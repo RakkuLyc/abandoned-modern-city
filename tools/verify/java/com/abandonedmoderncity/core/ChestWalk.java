@@ -28,19 +28,18 @@ public final class ChestWalk {
         int copies = a.length > 0 ? Integer.parseInt(a[0]) : 200;
         int problems = 0;
         for (Structures.Def d : Structures.ALL) {
-            if (!d.type().startsWith("buildings_")) {
+            if (!Structures.isBuildingType(d.type())) {
                 continue;
             }
             Template t = d.t();
             int layer = t.sx * t.sz;
-            String cls = d.type().substring("buildings_".length());
             int notReached = 0;
             int noFront = 0;
             int cut = 0;
             long chests = 0;
             for (int i = 0; i < copies; i++) {
                 long seed = (i + 1) * 0x9E3779B97F4A7C15L;
-                List<Rooms.Spot> c = ChestDraw.draw(d.rooms(), cls, t.sx, t.sz, seed);
+                List<Rooms.Spot> c = ChestDraw.draw(d.rooms(), t.sx, t.sz, seed);
                 chests += c.size();
                 Map<Integer, String> base = new HashMap<>();
                 for (Map.Entry<Integer, int[]> e : d.barrels().entrySet()) {

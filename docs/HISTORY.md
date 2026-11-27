@@ -689,3 +689,19 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   `HOUSE_MIN`/`HOUSE_MAX`. `FingerprintTest`: `lots` `4736ee67...` → `9e8d7c5f...` (with `zombieSpawners = false` it
   stays `5aab43a5...`: only spawners added); both reference reports of 20261027: `structure_spawners` and the block
   entities up by as many, the same positions.
+- **The chests of the buildings counted by their area** (27 Nov 2026, asked by the user: "like the spawners, they
+  should consider the width and depth of the buildings"). Before, each copy drew evenly in the range of its height
+  class (small 12–28, large 38–65; medium 25–47 and immense 51–83 unused), whatever its size: the small buildings had
+  1 chest per ~93 to ~128 cells under a ceiling, the wide large ones 1 per ~340 to ~520 (the crash building, on
+  ~26,900 cells, as many as the green tower on ~12,700). The user's choices: the area decides the total of the
+  building only, the shares of the floors still by the room on each (over a count per floor like the spawners, which
+  would leave the terraces under the open sky without chests); one per 250 cells (over 350, the same total in the
+  world, or 150); the barrels turned into chests still on top (over counting them in the total); at least one chest
+  per floor (over a minimum of 12 or none); a spread of ±30%. What it replaced: `ChestDraw.range` and
+  `count(heightClass, seed)` → `count(layout, seed)` with `AREA`, `SPREAD`, `covered`, `floorsWithRoom`;
+  `ChestDraw.draw` no longer takes the height class; `quotas` gives a floor with room left at 0 one from the largest
+  share. Small buildings 20 → ~8 to ~10, green tower ~51 (the same), the wide large ones ~52 → ~71 to ~108.
+  `FingerprintTest`: `lots` `9e8d7c5f...` → `5b923b75...` (only the drawn chests and the spawners that guard them:
+  every other cell of the 10 buildings identical with the code before and after); both reference reports of 20261027:
+  the containers and the spawners, the same positions. `tools/verify/ChestWalk` now also walks the crash building
+  (it skipped it since it became special).

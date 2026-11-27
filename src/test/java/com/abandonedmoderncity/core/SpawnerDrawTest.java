@@ -297,7 +297,7 @@ class SpawnerDrawTest {
                 assertEquals(SpawnerDraw.of(d, seed(i)), SpawnerDraw.of(d, seed(i)), d.name());
                 assertEquals(before, d.chests(seed(i)), d.name());
                 if (building(d)) {
-                    assertEquals(ChestDraw.count(cls(d), seed(i)), before.size(), d.name());
+                    assertEquals(ChestDraw.count(d.rooms(), seed(i)), before.size(), d.name());
                 }
             }
             Set<List<SpawnerDraw.Spawner>> distinct = new HashSet<>();

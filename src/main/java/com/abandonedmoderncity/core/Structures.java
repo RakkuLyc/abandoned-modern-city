@@ -169,8 +169,8 @@ public final class Structures {
             Map<Integer, Integer> m = drawn.get(seed);
             if (m == null) {
                 Map<Integer, Integer> out = new HashMap<>();
-                // the range of chests by the height class of the type (buildings_small ... buildings_immense)
-                for (Rooms.Spot s : ChestDraw.draw(rooms, buildingClass(type), t.sx, t.sz, seed)) {
+                // how many by the building's area under a ceiling (ChestDraw.count)
+                for (Rooms.Spot s : ChestDraw.draw(rooms, t.sx, t.sz, seed)) {
                     out.put(cell(s.x(), s.y(), s.z()), s.facing());
                 }
                 m = Map.copyOf(out);
