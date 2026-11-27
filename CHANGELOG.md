@@ -1,6 +1,11 @@
 # Changelog
 
-## 1.1.0 — not released yet (in testing, 2026-11-24)
+## 1.1.0 — 2026-11-27
+
+Zombie spawners in the buildings and houses, chests by the size of each building, a new world's spawn near a city and
+the crash building as a special structure. Minecraft 1.21.1, NeoForge 21.1.219 or newer. In a world made with 1.0.0
+the chunks already generated keep what they had and the new ones follow the new rules, so a city can be cut where
+they meet.
 
 ### Added
 - Zombie spawners in the tall buildings: near their chests, on the street floor and one floor in two above it, and
