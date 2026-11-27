@@ -192,9 +192,10 @@ class RoomsTest {
     }
 
     @Test
-    void onlyTheBuildingsHaveRooms() {
+    void onlyTheBuildingsAndTheHousesHaveRooms() {
+        // the houses for their zombie spawners only (since 27 Nov 2026)
         for (Structures.Def d : Structures.ALL) {
-            if (Structures.isBuildingType(d.type())) {
+            if (Structures.hasRooms(d.type())) {
                 assertFalse(d.rooms().spots().isEmpty(), d.name());
             } else {
                 assertEquals(Rooms.Layout.EMPTY, d.rooms(), d.name());

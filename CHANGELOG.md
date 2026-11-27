@@ -9,7 +9,10 @@
   in the narrow green tower, ~20 to 27 in the wide ones). They make plain zombies in any light (a torch does not stop them:
   break them), 2 at a time, at most 4 around each, when a player is within 12 blocks; nothing spawns in Peaceful.
   `/amcs spawn` places them too.
-- Config option `zombieSpawners` (on by default; read at startup). Off, the buildings have no spawners, as in 1.0.0.
+- Zombie spawners in the houses too: 1 to 3 in each house (each count as likely), near its chests and barrels, the
+  same kind and pace as in the buildings (~29 more per city).
+- Config option `zombieSpawners` (on by default; read at startup). Off, the buildings and houses have no spawners, as
+  in 1.0.0.
 - A new world's spawn is put about 150 blocks outside the city nearest to where the game would put it, on dry ground
   away from the highways (the game's spot, near 0, 0, is always the farthest place from the cities around it: their
   streets ~235 blocks away, ~880 when none of the 4 cells around it has a city). Config option `spawnNearCity` (on by

@@ -72,7 +72,9 @@ import org.junit.jupiter.api.Test;
  * with zombieSpawners = false lots stays 5aab43a5... before and after); layout and structures when the crash building
  * became a special structure (type special_buildings_large: the special group, its limit 2, only in the cities that
  * draw CityRings.SPECIAL_CHANCE; inside the same: cells, chests, barrels and spawners of 60 copies identical; lots did
- * not change, no city of its chunks had the crash building outside those cities).
+ * not change, no city of its chunks had the crash building outside those cities); lots when the houses got 1 to 3
+ * zombie spawners each (SpawnerDraw.drawHouse, near the chests and barrels of their template; with zombieSpawners =
+ * false lots stays 5aab43a5...).
  * Change them
  * only in a commit that is meant to change the world, and say so in it.
  */
@@ -84,7 +86,7 @@ class FingerprintTest {
         EXPECTED.put("highways", "480e692cad232384cc5a0d486154e33b13a8ebc6d381e0dfbffa8cd18434ddf9");
         EXPECTED.put("village", "6d77e372e3111d53b3995b84b46308716b65b8107b051b8f4411eca72a61f71c");
         EXPECTED.put("chunks", "78a5d87786413d16206aad039147b442b914166b72cc5578ed3254662a03d875");
-        EXPECTED.put("lots", "4736ee67ff47e36bc464122b24c14d0b216654d9751302914b8ea70b532a77cc");
+        EXPECTED.put("lots", "9e8d7c5ffa5395de7434cfa774d5da016555d7db7f84ec956edc5e13e669bd48");
         EXPECTED.put("roads", "bcf16888eff09ec35d77b4c97d496a5d006061d045c8e02abd16c5a56418aef6");
         EXPECTED.put("lamps", "85591f5e99c109803aa1dfb294e112106e69005b6f9706d41bb2abb565addb23");
         EXPECTED.put("crowns", "4a5615a2e28181f6844deeb7e60c98e1c16a8ccd0d63d069395ab5aca3e77b8a");

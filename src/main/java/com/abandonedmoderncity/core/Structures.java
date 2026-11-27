@@ -130,6 +130,7 @@ public final class Structures {
         public int code(int rx, int ry, int rz, int rot, long seed) {
             int c = code(rx, ry, rz, rot);
             if (c == BlockCode.AIR && !rooms.spots().isEmpty()) {
+                // (a house has rooms for its spawners only: chests() is empty for it)
                 // a chest of this copy (ChestDraw), on a spot of its rooms
                 int[] tc = template(rx, ry, rz, rot);
                 int cell = cell(tc[0], tc[1], tc[2]);
@@ -162,7 +163,7 @@ public final class Structures {
          * (a pure function of the seed: worked out again when forgotten).
          */
         public Map<Integer, Integer> chests(long seed) {
-            if (rooms.spots().isEmpty()) {
+            if (rooms.spots().isEmpty() || !isBuildingType(type)) {
                 return Map.of();
             }
             Map<Integer, Integer> m = drawn.get(seed);
@@ -183,7 +184,7 @@ public final class Structures {
 
         /**
          * The template cells of the zombie spawners of the copy of seed {@code seed} ({@link SpawnerDraw}); empty for a
-         * structure that is not a building, or with {@code zombieSpawners = false}. Kept for the last copies asked, like
+         * structure that is not a building nor a house, or with {@code zombieSpawners = false}. Kept for the last copies asked, like
          * {@link #chests}.
          */
         public Set<Integer> spawners(long seed) {
@@ -427,6 +428,16 @@ public final class Structures {
         return type.startsWith("buildings_") || type.startsWith("special_buildings_");
     }
 
+    /** Whether the type is the houses' ({@code houses}): their zombie spawners ({@link SpawnerDraw#drawHouse}). */
+    static boolean isHouseType(String type) {
+        return type.equals("houses");
+    }
+
+    /** Whether the structure has its {@link Rooms} worked out: a building or a house (for the zombie spawners). */
+    static boolean hasRooms(String type) {
+        return isBuildingType(type) || isHouseType(type);
+    }
+
     /** The height class of a building type ({@code small}, {@code medium}, {@code large} or {@code immense}). */
     static String buildingClass(String type) {
         return type.substring(type.indexOf("buildings_") + "buildings_".length());
@@ -623,11 +634,12 @@ public final class Structures {
         boolean[] openings = sh.openings();
         // the barrels of the buildings: taken out or turned into chests, copy by copy
         Map<Integer, int[]> barrels = isBuildingType(type) ? Barrels.of(withChests, ids) : Map.of();
-        // the floors, rooms and places for a chest of a building, and the states of its chests (ChestDraw)
-        Rooms.Layout rooms = !isBuildingType(type) ? Rooms.Layout.EMPTY : walks != null ? walks.rooms()
+        // the floors, rooms and places for a chest of a building (and for the zombie spawners of a building or a
+        // house), and the states of the chests of a building (ChestDraw)
+        Rooms.Layout rooms = !hasRooms(type) ? Rooms.Layout.EMPTY : walks != null ? walks.rooms()
                 : Rooms.of(t, placed, x0, y0, z0, w, y1 - y0 + 1, d, ground, openings);
         int[] chestStates = new int[4];
-        if (!rooms.spots().isEmpty()) {
+        if (isBuildingType(type) && !rooms.spots().isEmpty()) {
             for (int f = 0; f < 4; f++) {
                 chestStates[f] = StructureLoader.id(ids, "minecraft:chest[facing=" + Rooms.FACINGS[f]
                         + ",type=single,waterlogged=false]");
@@ -635,7 +647,7 @@ public final class Structures {
         }
         return new Def(type, name, group, t, x0, y0, z0, w, y1 - y0 + 1, d, ground, turn, state, fill, cells, access,
                 overhang, model, openings, barrels, rooms, chestStates, new java.util.concurrent.ConcurrentHashMap<>(),
-                hardSpots(t, rooms), new java.util.concurrent.ConcurrentHashMap<>());
+                isBuildingType(type) ? hardSpots(t, rooms) : Set.of(), new java.util.concurrent.ConcurrentHashMap<>());
     }
 
     static boolean isChestName(String block) {
@@ -797,7 +809,7 @@ public final class Structures {
             types.add(f[0]);
             shapes.add(shape(f[0], f[1], prepared.get(k).template(), grounds[k]));
         }
-        List<Preload.Walks> walks = Preload.walks(shapes, types.stream().map(Structures::isBuildingType).toList(),
+        List<Preload.Walks> walks = Preload.walks(shapes, types.stream().map(Structures::hasRooms).toList(),
                 types.stream().map(ty -> categoryOf(ty).equals("house")).toList(), grounds);
         for (int k = 0; k < rows.size(); k++) {
             String[] f = rows.get(k);

@@ -155,6 +155,9 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
     touching no chest and no other spawner, at most 5 blocks from a chest it guards (else an exploration spot away
     from the chests). A zombie in any light, 2 a wave, at most 4 around, wakes with a player within 12, 10 to 40 s
     between waves. ~3–4 per small building, ~14 in the narrow green tower, ~20–27 in the wide large ones.
+  - Zombie spawners of the houses (27 Nov 2026, `SpawnerDraw.drawHouse`; the same option, set-up and pace): 1 to 3 in
+    the whole house (each as likely), on the spots of its `Rooms` (worked out for the houses too, for this only),
+    guarding the chests and barrels of its `.nbt` (5 blocks), the rooms open onto the street last. ~29 more per city.
 
   The containers (chests, barrels, dispensers, droppers, decorated pots) get their loot table when they are placed;
   the banners get the design of the template; the spawners are set up as zombie spawners; the other block entities
@@ -282,8 +285,8 @@ core/   the pure planner (no Minecraft classes), tested with JUnit
   Barrels         the barrels of the buildings: 70% taken out, the others chests, drawn per copy (lot seed)
   Rooms           floors, rooms, corridors and places for a chest of each building, on the walk of Access
   ChestDraw       the chests of each copy of a building: how many, per floor, which spots (pure function of the seed)
-  SpawnerDraw     the zombie spawners of each copy of a building, near its chests, one floor in two (pure function
-                  of the seed; off with zombieSpawners = false)
+  SpawnerDraw     the zombie spawners of each copy of a building, near its chests, one floor in two, and of a
+                  house, 1 to 3 near the chests of its .nbt (pure function of the seed; off with zombieSpawners = false)
   Crowns          where the leaves completing the crowns cut by the edge of the structures go (gen/Overhangs places
                   them)
   Park            parks taken over by nature, with paths and the fountain
@@ -302,7 +305,7 @@ gen/    the game layer
   Floating        natural vegetation left hanging in the air (pieces of trees, vines, snow): found and removed after
                   every chunk, and checked by the audit (`vegetation_floating`)
   Palette         every block used (the structures included, turned by `BlockState.rotate`) + validation
-  Spawners        sets up each zombie spawner of the buildings when it is placed (the mob, light rules, pace) and
+  Spawners        sets up each zombie spawner of the buildings and houses when it is placed (the mob, light rules, pace) and
                   says what is wrong with one (read by the audit)
   McTerrain       Terrain over ChunkGenerator.getBaseHeight (noise, the same in any thread)
   Plans           one WorldPlan per dimension (only the overworld)
@@ -344,7 +347,7 @@ command/  /amcs (StructureCommands: locate structure and spawn), the block audit
 
 `enabled`, `cellSize`, `cityChance`, `maxCityLevel`, `highways`, `highwayMaxLength`, `structureOvergrowth` (default
 `true`: nature taking over the structures; `false` generates them as they were saved; read at startup, restart the game
-after changing it), `zombieSpawners` (default `true`: the zombie spawners of the buildings; `false` gives the world of
+after changing it), `zombieSpawners` (default `true`: the zombie spawners of the buildings and houses; `false` gives the world of
 1.0.0; read at startup too), `spawnNearCity` (default `true`: a new world's spawn 150 blocks outside the city nearest to
 the game's spot, `core/SpawnSpot`, `gen/SpawnPoint`; only when a world is created).
 The geometry (widths, blocks, ramps, tunnels, bridges) is in `core/Params` and the cities in `core/City`. Changes

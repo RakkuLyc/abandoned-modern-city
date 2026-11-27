@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The zombie spawners of one copy of a building (types {@code buildings_*}), drawn among the spots of its {@link Rooms}
+ * The zombie spawners of one copy of a building (types {@code buildings_*}) or a house ({@code houses}: {@link
+ * #HOUSE_MIN} to {@link #HOUSE_MAX} in the whole house, near the chests and barrels of its template), drawn among the
+ * spots of its {@link Rooms}
  * after its chests. A pure function of the copy's seed and of the template, like {@link ChestDraw}; it does not change
  * the chests.
  * <ol>
@@ -47,6 +49,10 @@ public final class SpawnerDraw {
     public static final int GUARD = 5;
     /** ...and at most this far up or down. */
     public static final int GUARD_DY = 2;
+    /** Spawners in a house (type {@code houses}), in the whole house: from this many... */
+    public static final int HOUSE_MIN = 1;
+    /** ...to this many, each count as likely. */
+    public static final int HOUSE_MAX = 3;
     /** Two blocks this close or closer sideways, and up or down, touch. */
     public static final int TOUCH = 1;
     private static final long SALT_COUNT = 0x5350434EL; // "SPCN"
@@ -82,6 +88,25 @@ public final class SpawnerDraw {
      * {x, y, z} of every chest of the copy. Floor by floor, upwards.
      */
     public static List<Spawner> draw(Rooms.Layout layout, int sx, int sz, int groundY, long seed, List<int[]> chests) {
+        return draw(layout, sx, sz, groundY, seed, chests, false);
+    }
+
+    /**
+     * The spawners of the copy of seed {@code seed} of a house ({@link #houseCount} in the whole house, its floors
+     * together), the same way: near the chests and barrels of its template ({@code chests}), else away from them, else
+     * in its rooms open onto the street.
+     */
+    public static List<Spawner> drawHouse(Rooms.Layout layout, int sx, int sz, long seed, List<int[]> chests) {
+        return draw(layout, sx, sz, 0, seed, chests, true);
+    }
+
+    /** How many spawners a house gets in the copy of seed {@code seed}: {@link #HOUSE_MIN} to {@link #HOUSE_MAX}. */
+    public static int houseCount(long seed) {
+        return Hash.range(Hash.of(seed, SALT_COUNT, -1), HOUSE_MIN, HOUSE_MAX);
+    }
+
+    private static List<Spawner> draw(Rooms.Layout layout, int sx, int sz, int groundY, long seed, List<int[]> chests,
+                                      boolean house) {
         if (layout.spots().isEmpty()) {
             return List.of();
         }
@@ -99,14 +124,16 @@ public final class SpawnerDraw {
             long cell = s.x() + (long) sx * (s.z() + (long) sz * s.y());
             double u = Math.max(Hash.unit(Hash.of(seed, SALT_KEY, cell)), 1e-12);
             key.put(s, -Math.log(u) / s.weight());
-            (s.is(Rooms.STREET) ? streetByFloor : byFloor).computeIfAbsent(s.floor(), k -> new ArrayList<>()).add(s);
+            // a house draws among the spots of all its floors together
+            (s.is(Rooms.STREET) ? streetByFloor : byFloor).computeIfAbsent(house ? 0 : s.floor(), k -> new ArrayList<>())
+                    .add(s);
         }
         Comparator<Rooms.Spot> byKey = Comparator.comparingDouble((Rooms.Spot s) -> key.get(s))
                 .thenComparingInt(Rooms.Spot::y).thenComparingInt(Rooms.Spot::z).thenComparingInt(Rooms.Spot::x);
         List<Spawner> out = new ArrayList<>();
         int[] guards = new int[chests.size()];
-        for (int f = 0; f < layout.floors().size(); f++) {
-            int n = count(layout, groundY, f, seed);
+        for (int f = 0; f < (house ? 1 : layout.floors().size()); f++) {
+            int n = house ? houseCount(seed) : count(layout, groundY, f, seed);
             if (n == 0) {
                 continue;
             }
@@ -219,10 +246,42 @@ public final class SpawnerDraw {
         return out;
     }
 
-    /** The spawners of the copy of seed {@code seed} of the structure {@code d} (none but in the buildings). */
+    /**
+     * The template cells {x, y, z} of the chests and barrels saved in the template of a house (they stay in every copy;
+     * a house draws no chest), worked out once per house.
+     */
+    static List<int[]> houseChests(Structures.Def d) {
+        return HOUSE_CHESTS.computeIfAbsent(d.name(), k -> {
+            Template t = d.t();
+            List<int[]> out = new ArrayList<>();
+            for (int y = d.oy(); y < d.oy() + d.h(); y++) {
+                for (int z = d.oz(); z < d.oz() + d.d(); z++) {
+                    for (int x = d.ox(); x < d.ox() + d.w(); x++) {
+                        int q = t.at(x, y, z);
+                        if (q < 0) {
+                            continue;
+                        }
+                        String b = Template.blockOf(t.palette.get(q));
+                        if (b.equals("minecraft:chest") || b.equals("minecraft:trapped_chest")
+                                || b.equals("minecraft:barrel")) {
+                            out.add(new int[]{x, y, z});
+                        }
+                    }
+                }
+            }
+            return List.copyOf(out);
+        });
+    }
+
+    private static final Map<String, List<int[]>> HOUSE_CHESTS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** The spawners of the copy of seed {@code seed} of the structure {@code d} (none but in the buildings and houses). */
     public static List<Spawner> of(Structures.Def d, long seed) {
         if (d.rooms().spots().isEmpty()) {
             return List.of();
+        }
+        if (Structures.isHouseType(d.type())) {
+            return drawHouse(d.rooms(), d.t().sx, d.t().sz, seed, houseChests(d));
         }
         return draw(d.rooms(), d.t().sx, d.t().sz, d.oy() + d.ground(), seed, chestsOf(d, seed));
     }

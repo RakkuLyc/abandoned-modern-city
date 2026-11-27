@@ -681,3 +681,11 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   (the 150 of 1,129 it already had among the cities with the draw; the ramp building the same 139). `FingerprintTest`:
   `layout` `4b410c7e...` → `c4417e1e...`, `structures` `cbe4e5de...` → `18168414...` (the type, the group and the
   limits; the cells, chests, barrels and spawners of the crash building the same); the battery of 20261027 identical.
+- **Zombie spawners in the houses** (27 Nov 2026, asked by the user: "1 to 3, at random"). Before, only the buildings
+  had spawners and only they had `Rooms` worked out. The user's choices: 1 to 3 in the whole house (over 1 to 3 a
+  floor), near the chests (over anywhere under a roof). What it replaced: `Structures.hasRooms` (buildings and houses)
+  where `isBuildingType` decided the rooms; `Def.chests`, the chest states and `hardSpots` stay for the buildings only
+  (a house draws no chest, its `.nbt` keeps its containers); `SpawnerDraw.drawHouse`, `houseCount`, `houseChests`,
+  `HOUSE_MIN`/`HOUSE_MAX`. `FingerprintTest`: `lots` `4736ee67...` → `9e8d7c5f...` (with `zombieSpawners = false` it
+  stays `5aab43a5...`: only spawners added); both reference reports of 20261027: `structure_spawners` and the block
+  entities up by as many, the same positions.

@@ -23,6 +23,20 @@ class SpawnerDrawTest {
         return Structures.isBuildingType(d.type());
     }
 
+    private static boolean house(Structures.Def d) {
+        return Structures.isHouseType(d.type());
+    }
+
+    /** The structures with zombie spawners: the buildings and the houses. */
+    private static boolean spawned(Structures.Def d) {
+        return building(d) || house(d);
+    }
+
+    /** The chests a spawner of the copy guards: drawn and barrels turned into chests, or a house's of its template. */
+    private static List<int[]> chestsOf(Structures.Def d, long seed) {
+        return house(d) ? SpawnerDraw.houseChests(d) : SpawnerDraw.chestsOf(d, seed);
+    }
+
     private static String cls(Structures.Def d) {
         return Structures.buildingClass(d.type());
     }
@@ -48,19 +62,63 @@ class SpawnerDrawTest {
     }
 
     @Test
-    void onlyTheBuildingsGetSpawners() {
+    void onlyTheBuildingsAndTheHousesGetSpawners() {
         int buildings = 0;
+        int houses = 0;
         for (Structures.Def d : Structures.ALL) {
-            if (!building(d)) {
+            if (!spawned(d)) {
                 for (int i = 0; i < 5; i++) {
-                    assertTrue(SpawnerDraw.of(d, seed(i)).isEmpty(), d.name() + " is not a building");
+                    assertTrue(SpawnerDraw.of(d, seed(i)).isEmpty(), d.name() + " is not a building nor a house");
                 }
                 continue;
             }
-            buildings++;
+            buildings += building(d) ? 1 : 0;
+            houses += house(d) ? 1 : 0;
             assertFalse(SpawnerDraw.of(d, seed(0)).isEmpty(), d.name() + " gets spawners");
+            if (house(d)) {
+                assertTrue(d.chests(seed(0)).isEmpty(), d.name() + ": a house draws no chest");
+                assertTrue(d.barrels().isEmpty(), d.name() + ": a house keeps its barrels");
+            }
         }
         assertEquals(10, buildings);
+        assertEquals(12, houses);
+    }
+
+    @Test
+    void everyHouseGetsOneToThreeNearItsChests() {
+        for (Structures.Def d : Structures.ALL) {
+            if (!house(d)) {
+                continue;
+            }
+            int[] seen = new int[SpawnerDraw.HOUSE_MAX + 1];
+            long total = 0;
+            long guarding = 0;
+            long street = 0;
+            int copiesShort = 0;
+            for (int i = 0; i < COPIES; i++) {
+                long seed = seed(i);
+                int n = SpawnerDraw.houseCount(seed);
+                assertTrue(n >= SpawnerDraw.HOUSE_MIN && n <= SpawnerDraw.HOUSE_MAX, d.name() + ": " + n);
+                seen[n]++;
+                List<SpawnerDraw.Spawner> sp = SpawnerDraw.of(d, seed);
+                assertTrue(sp.size() <= n, d.name() + ": " + sp.size() + " of " + n);
+                copiesShort += sp.size() < n ? 1 : 0;
+                total += sp.size();
+                for (SpawnerDraw.Spawner s : sp) {
+                    guarding += s.guards() ? 1 : 0;
+                    street += s.spot().is(Rooms.STREET) ? 1 : 0;
+                }
+            }
+            for (int n = SpawnerDraw.HOUSE_MIN; n <= SpawnerDraw.HOUSE_MAX; n++) {
+                // each count about as likely: a third of the copies, give or take
+                assertTrue(seen[n] > COPIES / 5, d.name() + ": " + n + " in " + seen[n] + " copies");
+            }
+            assertEquals(0, copiesShort, d.name() + ": copies with fewer than drawn");
+            System.out.printf("[SpawnerDrawTest] %-32s house  %d copies: %.2f spawners on average (1: %d, 2: %d, 3: %d"
+                            + " copies), %.1f%% guarding a chest or barrel of the house (%d of them), %.1f%% in a room"
+                            + " open onto the street%n", d.name(), COPIES, (double) total / COPIES, seen[1], seen[2],
+                    seen[3], 100.0 * guarding / total, SpawnerDraw.houseChests(d).size(), 100.0 * street / total);
+        }
     }
 
     @Test
@@ -158,25 +216,27 @@ class SpawnerDrawTest {
     @Test
     void everySpawnerGuardsAChestOrIsAwayFromThemAndTouchesNothing() {
         for (Structures.Def d : Structures.ALL) {
-            if (!building(d)) {
+            if (!spawned(d)) {
                 continue;
             }
             Set<Rooms.Spot> spots = new HashSet<>(d.rooms().spots());
             for (int i = 0; i < COPIES; i++) {
                 long seed = seed(i);
-                List<int[]> chests = SpawnerDraw.chestsOf(d, seed);
-                assertEquals(d.chests(seed).size() + keptBarrels(d, seed), chests.size(), d.name());
+                List<int[]> chests = chestsOf(d, seed);
+                if (building(d)) {
+                    assertEquals(d.chests(seed).size() + keptBarrels(d, seed), chests.size(), d.name());
+                }
                 List<SpawnerDraw.Spawner> sp = SpawnerDraw.of(d, seed);
                 for (int a = 0; a < sp.size(); a++) {
                     Rooms.Spot s = sp.get(a).spot();
                     assertTrue(spots.contains(s), d.name() + ": not a spot " + s);
                     assertFalse(s.is(Rooms.OPEN), d.name() + ": under the open sky " + s);
-                    // a lobby open onto the street only once the floor found no room elsewhere: after every other
-                    // spawner of its floor
+                    // a lobby open onto the street only once the floor (a house: the whole house) found no room
+                    // elsewhere: after every other spawner of its floor
                     if (s.is(Rooms.STREET)) {
                         for (int b = a + 1; b < sp.size(); b++) {
                             Rooms.Spot o = sp.get(b).spot();
-                            assertFalse(o.floor() == s.floor() && !o.is(Rooms.STREET), d.name()
+                            assertFalse((house(d) || o.floor() == s.floor()) && !o.is(Rooms.STREET), d.name()
                                     + ": a lobby spot taken while the floor had room elsewhere " + s);
                         }
                     }
@@ -229,20 +289,24 @@ class SpawnerDrawTest {
     @Test
     void theSameSeedGivesTheSameSpawnersAndTheChestsDoNotChange() {
         for (Structures.Def d : Structures.ALL) {
-            if (!building(d)) {
+            if (!spawned(d)) {
                 continue;
             }
             for (int i = 0; i < 5; i++) {
                 Map<Integer, Integer> before = d.chests(seed(i));
                 assertEquals(SpawnerDraw.of(d, seed(i)), SpawnerDraw.of(d, seed(i)), d.name());
                 assertEquals(before, d.chests(seed(i)), d.name());
-                assertEquals(ChestDraw.count(cls(d), seed(i)), before.size(), d.name());
+                if (building(d)) {
+                    assertEquals(ChestDraw.count(cls(d), seed(i)), before.size(), d.name());
+                }
             }
             Set<List<SpawnerDraw.Spawner>> distinct = new HashSet<>();
             for (int i = 0; i < 50; i++) {
                 distinct.add(SpawnerDraw.of(d, seed(i)));
             }
-            assertTrue(distinct.size() >= 48, d.name() + ": copies with the same spawners");
+            // a house has 1 to 3 among fewer spots: some copies may share theirs
+            assertTrue(distinct.size() >= (house(d) ? 25 : 48), d.name() + ": copies with the same spawners "
+                    + distinct.size());
         }
     }
 
@@ -284,7 +348,7 @@ class SpawnerDrawTest {
         // reached with the chests alone still reached with the spawners
         List<String> failures = java.util.Collections.synchronizedList(new ArrayList<>());
         for (Structures.Def d : Structures.ALL) {
-            if (!building(d)) {
+            if (!spawned(d)) {
                 continue;
             }
             Template t = d.t();

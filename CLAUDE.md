@@ -212,7 +212,8 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
 - Chests of the buildings: the 556 chests saved in the templates of the 10 buildings are taken out when they load,
   after the overgrowth (`Structures.withoutChests`; the log says so); the ramp building, the police station and every
   other structure keep theirs.
-- Floors, rooms and spots for a chest of each building (`core/Rooms`, `Def.rooms`, worked out at load on the walk of
+- Floors, rooms and spots for a chest of each building, and of each house for its zombie spawners only
+  (`Structures.hasRooms`; a house draws no chest, `Def.chests` is empty for it) (`core/Rooms`, `Def.rooms`, worked out at load on the walk of
   `core/Access`, the same reach and place rules as the hard containers: `Access.walk`, `Walk.reaches`,
   `Access.place`): floors = heights with 60+ cells to stand on (`FLOOR_MIN_CELLS`, `FLOOR_GAP`, `FRAGMENT_BELOW`);
   rooms = a floor cut at the doors and passages 2 wide or less (`NARROW`), corridors by median width and length
@@ -256,6 +257,14 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
   (`MAX_NEARBY`), 200 to 800 ticks between waves, range 4, first wave after 20 ticks. In 300 copies (`SpawnerDrawTest`):
   apartment 3, skeleton and small building ~4, green tower ~14 (~1 a floor of ~470 cells), wide ~20.5, bluish and
   tower ~21.5, apocalyptic ~22, brutalist U ~26, crash ~27. The audit reads each one back (`spawner_wrong`, stat `structure_spawners`).
+- Zombie spawners of the houses (type `houses`, `Structures.isHouseType`; `SpawnerDraw.drawHouse`, the same option,
+  placing and set-up as those of the buildings): 1 to 3 in the whole house, each count as likely
+  (`HOUSE_MIN`/`HOUSE_MAX`, `houseCount`), drawn among the spots of `Rooms` of all its floors together, not under the
+  open sky, touching no chest or barrel and no other spawner, guarding a chest or barrel saved in its template
+  (`SpawnerDraw.houseChests`; the houses keep the containers of their `.nbt` and draw none) at most 5 sideways and 2 up
+  or down, the one with the fewest guards first; else an exploration spot away from them; the rooms open onto the
+  street only when the house has no room elsewhere. In 300 copies of each house (`SpawnerDrawTest`): 2.04 on average,
+  every copy its count, all guarding a container. ~14.7 houses per city: ~29 more spawners per city.
 - Commands (`command/StructureCommands`): `/amcs locate structure <category> [name]` (the nearest planned one,
   coordinates on the sidewalk in front of it) and `/amcs spawn <category> <name>` (2 blocks in front of the player,
   front toward the player, ground on the block the player stands on, the same rules as in the city with loot);
@@ -297,7 +306,7 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
   but no unbreakable block. Block entities allowed: the fountain's chest and the containers of the structures
   (chests, barrels, brewing stands, decorated pots, lecterns, furnaces, beds, campfires, daylight detectors,
   jukeboxes, banners, skulls, dispensers, droppers, chiseled bookshelves; `Palette.exempt`) and the zombie spawners
-  of the buildings (`gen/Spawners`); banners get the design
+  of the buildings and houses (`gen/Spawners`); banners get the design
   saved in the template (`Template.banners`, applied by `Palette.applyBanner`), signs come out without text.
 
 ### Configuration, commands and determinism

@@ -14,7 +14,8 @@ Minecraft 1.21.1.
 - **Loot to find**: every chest, barrel and pot has loot that fits the place (food in houses, potions in pharmacies,
   tools in workshops...), and the hidden ones (basements, roofs, attics) are richer.
 - **Zombie spawners** in the tall buildings, near their chests, one floor in two (and in the underground garage),
-  more on the wide floors than on the narrow ones (one per 500 blocks of floor under a roof, 1 to 5 a floor).
+  more on the wide floors than on the narrow ones (one per 500 blocks of floor under a roof, 1 to 5 a floor), and 1 to 3
+  in every house, near its chests.
   They work in any light: a torch does not stop them, break them. Nothing spawns in Peaceful.
 - **Highways** between the cities, with tunnels through the mountains and bridges with holes over rivers and valleys.
 
