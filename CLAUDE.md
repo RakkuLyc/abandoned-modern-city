@@ -232,7 +232,7 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
   building's area under a ceiling, all its floors together (`ChestDraw.covered`, the `Rooms.Floor.covered` of each;
   roofs and yards do not count), one for every 250 cells (`ChestDraw.AREA`) times a factor drawn evenly from 0.7 to
   1.3 (`SPREAD` 0.30), rounded, at least one per floor with room for a chest (`floorsWithRoom`); whatever the height
-  class; the barrels' chests do not count. In 300 copies (`ChestDrawTest`): skeleton ~8.3 (8–10), small building ~9.4
+  class; the barrels' chests do not count. Over 4,000 seeds (`ChestDrawTest`): skeleton ~8.3 (8–10), small building ~9.4
   (7–12), apartment ~10.3 (7–13), green tower ~51 (36–66), wide ~71 (49–92), tower ~76 (53–98), bluish ~79
   (55–103), apocalyptic ~84 (59–109), brutalist U ~96 (67–124), crash ~108 (75–140). Per floor: in proportion to its
   weight (`Rooms.Layout.floorWeight`, a street spot counting half), largest remainders first; a floor with room left
@@ -260,7 +260,7 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
   its own light rules (block and sky light 0 to 15: it works in any light, a torch does not stop it; nothing in
   Peaceful), wakes with a player within 12 (`PLAYER_RANGE`), 2 a wave (`COUNT`), stops at 4 around it
   (`MAX_NEARBY`), 200 to 800 ticks between waves, range 4, first wave after 20 ticks. In 300 copies (`SpawnerDrawTest`):
-  apartment 3, skeleton and small building ~4, green tower ~14 (~1 a floor of ~470 cells), wide ~20.5, bluish and
+  apartment 3, skeleton ~4, small building 3 (its roof nook of 2 cells holds the chest of that floor), green tower ~14 (~1 a floor of ~470 cells), wide ~20.5, bluish and
   tower ~21.5, apocalyptic ~22, brutalist U ~26, crash ~27. The audit reads each one back (`spawner_wrong`, stat `structure_spawners`).
 - Zombie spawners of the houses (type `houses`, `Structures.isHouseType`; `SpawnerDraw.drawHouse`, the same option,
   placing and set-up as those of the buildings): 1 to 3 in the whole house, each count as likely

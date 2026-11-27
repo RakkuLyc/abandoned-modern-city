@@ -701,6 +701,8 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   `count(heightClass, seed)` → `count(layout, seed)` with `AREA`, `SPREAD`, `covered`, `floorsWithRoom`;
   `ChestDraw.draw` no longer takes the height class; `quotas` gives a floor with room left at 0 one from the largest
   share. Small buildings 20 → ~8 to ~10, green tower ~51 (the same), the wide large ones ~52 → ~71 to ~108.
+  A side effect: the small building's top floor, a roof nook of 2 cells with a single spot, now gets its chest, so the
+  spawner that stood there (guarding no chest) has no place: 4 → 3 spawners in every copy.
   `FingerprintTest`: `lots` `9e8d7c5f...` → `5b923b75...` (only the drawn chests and the spawners that guard them:
   every other cell of the 10 buildings identical with the code before and after); both reference reports of 20261027:
   the containers and the spawners, the same positions. `tools/verify/ChestWalk` now also walks the crash building

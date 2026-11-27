@@ -136,8 +136,8 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   - Chests of the buildings (15 Nov 2026, first step of the procedural chests): the 556 chests saved in the templates
     of the 10 buildings are taken out when they load, after the overgrowth (the `.nbt` files do not change, nor the
     overgrowth, the barrels or any other structure; the ramp building, the police station, the houses, the shops and
-    the park fountain keep their chests). The new chests, spread by floors and rooms (12–28 per small building, 25–47
-    medium, 38–65 large, 51–83 immense), come in the next stages. Stage 2 (`core/Rooms`) already finds, in each
+    the park fountain keep their chests). The new chests, spread by floors and rooms (then 12–28 per small building, 25–47
+    medium, 38–65 large, 51–83 immense; by the area since 27 Nov 2026), come in the next stages. Stage 2 (`core/Rooms`) already finds, in each
     building, its floors, rooms, corridors and the places where a chest can stand (indoors, or on a terrace or a roof
     against a wall or a railing; on a full block, beside where a player stands, away from doors, stairs, barrels and
     corridors), the ones far from where each floor is reached and the ones of a lobby open onto the street; stage 3 places the chests on them. Floor plans of each building: `build/test-renders/rooms/` (after `./gradlew test`). Stage 3
