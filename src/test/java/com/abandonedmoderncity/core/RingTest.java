@@ -504,8 +504,8 @@ class RingTest {
         System.out.println("[RingTest] spawn categories: " + n);
         assertEquals("building_large", Structures.ALL.stream().filter(d -> d.name().equals("abandoned_wide_building")).findFirst().orElseThrow().category());
         assertEquals("gas_station", Structures.ALL.stream().filter(d -> d.name().equals("gas_station_small_blue")).findFirst().orElseThrow().category());
-        assertEquals(Map.of("house", 12, "police_station", 1, "special", 1, "pharmacy", 10, "workshop", 8, "gas_station", 10,
-                "building_small", 3, "building_large", 7), n);
+        assertEquals(Map.of("house", 12, "police_station", 1, "special", 2, "pharmacy", 10, "workshop", 8, "gas_station", 10,
+                "building_small", 3, "building_large", 6), n);
     }
 
     /**
@@ -522,13 +522,20 @@ class RingTest {
         assertEquals("large", Structures.heightClass(143));
         assertEquals("immense", Structures.heightClass(144));
         Map<String, String> byName = new TreeMap<>();
+        int specials = 0;
         for (Structures.Def d : Structures.ALL) {
             if (Structures.isBuildingType(d.type())) {
-                assertEquals("buildings_" + Structures.heightClass(d.h()), d.type(), d.name() + " height " + d.h());
-                assertEquals("building_" + Structures.heightClass(d.h()), d.category(), d.name());
+                // a special building (the crash building) keeps its class in its type, its category is special
+                boolean special = d.type().startsWith("special_");
+                assertEquals((special ? "special_" : "") + "buildings_" + Structures.heightClass(d.h()), d.type(),
+                        d.name() + " height " + d.h());
+                assertEquals(Structures.heightClass(d.h()), Structures.buildingClass(d.type()), d.name());
+                assertEquals(special ? "special" : "building_" + Structures.heightClass(d.h()), d.category(), d.name());
                 byName.put(d.name(), d.category() + " " + d.h());
+                specials += special ? 1 : 0;
             }
         }
+        assertEquals(1, specials, "the crash building is the one special building");
         System.out.println("[RingTest] building height classes: " + byName);
     }
 

@@ -158,7 +158,8 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
   mansion, garage house, large house, pool house, suburban house, tower house, Victorian house, modern garage house,
   glass house); 6 shops with color variants, 28 files (pharmacy and large pharmacy 5 colors each, medium workshop 3,
   small workshop 5, gas station and small gas station 5 each); 10 buildings (apartment, skeleton, bluish, tower,
-  apocalyptic, small, brutalist U, wide, green tower, crash); the ramp building (type `special`); the police station
+  apocalyptic, small, brutalist U, wide, green tower, crash; the crash building is also special, type
+  `special_buildings_large`); the ramp building (type `special`); the police station
   (type `police_station`). The ring draws a model (all equally likely, `Structures.pick`), then a color.
 - Particular structures: the police station (54 × 38 × 33, ground on layer 3, a half-buried basement of `cave_air`
   rooms dug into the terrain with an inner stairway, 13 blue banners with the letters, 63 containers of which 18 hard,
@@ -171,8 +172,9 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
 - Height classes of the buildings (`Structures.heightClass`, by the height of the template's box with its buried
   layers, `Def.h`): small up to 43, medium up to 78, large up to 143, immense above (40, 75, 140 with a margin of 3,
   `HEIGHT_SMALL`, `HEIGHT_MARGIN`); type `buildings_<class>`, category `building_<class>`: small 3 (apartment 37,
-  small 41, skeleton 43), large 7 (wide 80, crash 90, bluish 106, apocalyptic 110, tower 118, brutalist U 125, green
-  tower 143), medium and immense none. The class changes neither the loot nor the ring. `RingTest` checks it.
+  small 41, skeleton 43), large 6 (wide 80, bluish 106, apocalyptic 110, tower 118, brutalist U 125, green tower
+  143), medium and immense none; a special building keeps its class in its type (`special_buildings_<class>`,
+  `Structures.buildingClass`: the crash building, large, 90) and has the category `special`. The class changes neither the loot nor the ring. `RingTest` checks it.
 - Placing: front = the -Z side of the `.nbt`, facing the street (the `front` field turns the others: the abandoned
   modern house and the post-apocalyptic mansion 180°); box = the box of the solid blocks; the `ground` layer lies at
   the city's level and the layers under it are buried (buried `air` becomes dirt; `cave_air` becomes real air and
@@ -196,13 +198,14 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
   of the cores never enter a structure. ~7.3 structures in a block without a park, ~52% of the free ground covered.
   The ramp building (102 × 72) only fits the rows of the short sides or a long side whose woods are narrow.
 - Limits per city (`Structures.LIMITS`, the rings of the whole city drawn at once, `CityRings.rings`, a group at its
-  limit drawn again): pharmacies 3, workshops 2, every building and the special one at most once (`Def.onePerCity`),
+  limit drawn again): pharmacies 3, workshops 2, every building and every special structure at most once (`Def.onePerCity`),
   the police station 1; houses may repeat. Gas stations: exactly 2 in every city, never 2 large (2 small or a small
   and a large, half the cities each, `CityRings.twoSmallGasStations`), reserved before the rings in 2 different
   blocks, a drawn row and its 1st or 2nd place (`CityRings.gasStations`, `Ring.Forced`; one that does not fit goes on
-  to the next row or block). The special structure only in the cities that draw `CityRings.SPECIAL_CHANCE` = 0.40
-  (`CityRings.allowsSpecial`): ~10% of the cities have the ramp building.
-- Barrels of the buildings (`core/Barrels`, types `buildings_*`, `Structures.isBuildingType`), drawn per copy (the lot's seed, or a random one
+  to the next row or block). The special structures (the ramp building and the crash building), at most 2 per city
+  (`Structures.LIMITS`), only in the cities that draw `CityRings.SPECIAL_CHANCE` = 0.40 (`CityRings.allowsSpecial`):
+  ~22% of the cities have one, the ramp building ~12%, the crash building ~13%, both ~3.6% (`WorldPlanTest`).
+- Barrels of the buildings (`core/Barrels`, types `buildings_*` and `special_buildings_*`, `Structures.isBuildingType`), drawn per copy (the lot's seed, or a random one
   for `/amcs spawn`, and the barrel's cell): 70% taken out (`Barrels.GONE`; in a stack the top ones), the others
   become single chests facing where the barrel faced; a barrel that holds something (a block on its top, something
   hanging under it, a block fixed to a face) stays a barrel. Hard flags worked out on the template with its barrels.
@@ -257,7 +260,7 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
   coordinates on the sidewalk in front of it) and `/amcs spawn <category> <name>` (2 blocks in front of the player,
   front toward the player, ground on the block the player stands on, the same rules as in the city with loot);
   categories `house` 12, `pharmacy` 10, `workshop` 8, `gas_station` 10, `building_small` 3, `building_medium` 0,
-  `building_large` 7, `building_immense` 0, `police_station` 1, `special` 1 (`Structures.CATEGORIES`); the game
+  `building_large` 6, `building_immense` 0, `police_station` 1, `special` 2 (`Structures.CATEGORIES`); the game
   suggests the names of the chosen category, a wrong name is refused with the list.
 - Overgrowth (`core/Weathering`, applied to each template at load, before anything reads it; **off with
   `structureOvergrowth = false`**, read at startup): it adds what is missing to reach the measures of the apocalyptic
@@ -279,7 +282,7 @@ current form is in `docs/HISTORY.md`. The page for players is `README.md`; build
   `data/abandonedmoderncity/loot_table/chests/<theme>/<tier>.json`, set when each container is placed (a seed per lot
   and position; `ChunkBuilder.loot`, `Palette.lootTable`). Theme by the structure's type (`Def.lootTheme`,
   `Structures.LOOT_THEMES`): `house`, `pharmacy`, `workshop`, `gas_station`, `building` (every building and the
-  special one), `police_station` (the same tables as `building`, its own theme for add-ons). Tier by the container:
+  special ones), `police_station` (the same tables as `building`, its own theme for add-ons). Tier by the container:
   chest `chest` (3 to 6 stacks, 10% a rare item), barrel, dispenser and dropper `barrel` (40% have 1 to 3 common
   stacks), decorated pot `pot` (40%, one stack); a container hard to get to uses `_hard` (`chest_hard` 5 to 8 stacks
   and 1 to 2 rare, `barrel_hard` 75% with 2 to 4 stacks, `pot_hard` 80% with one normal or rare stack).

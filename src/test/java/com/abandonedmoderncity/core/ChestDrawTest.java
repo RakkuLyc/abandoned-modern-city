@@ -18,11 +18,11 @@ class ChestDrawTest {
     private static final int[][] SIDE = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
 
     private static boolean building(Structures.Def d) {
-        return d.type().startsWith("buildings_");
+        return Structures.isBuildingType(d.type());
     }
 
     private static String cls(Structures.Def d) {
-        return d.category().substring("building_".length());
+        return Structures.buildingClass(d.type());
     }
 
     private static long seed(int i) {

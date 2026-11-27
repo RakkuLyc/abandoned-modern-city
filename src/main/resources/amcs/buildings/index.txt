@@ -2,7 +2,8 @@
 # type: houses, pharmacy, pharmacy_large, workshop_*, gas_station*, special, police_station, or for the buildings
 #   buildings_<class> by the height of the template's box (buried layers included): small up to 40, medium up to 75,
 #   large up to 140, immense above 140, each limit with a margin of 3 blocks (up to 43, 78, 143; RingTest.buildingsAreClassifiedByHeight checks it); /amcs spawn and locate
-#   use the category building_<class>
+#   use the category building_<class>; special_buildings_<class>: a special structure (the special group, category
+#   special) that is a building too (drawn chests, barrels, zombie spawners; class checked the same way)
 # ground: the template layer (from its lowest solid one) that lies at the city ground (1 = the lowest layer is buried)
 # front (optional, default 0): degrees clockwise that turn the template's front to its -Z side (180: front on +Z)
 # model (optional, default the file): color variants of one structure share a model; the ring draws a model, then a
@@ -68,5 +69,5 @@ buildings_large|brutalist_u_building_75x58|0|||||1132278429
 buildings_large|abandoned_wide_building|8|||||-935023223
 buildings_large|abandoned_green_tower|0|||||878824345
 special|abandoned_ramp_building|0|||||-1623252993
-buildings_large|abandoned_crash_building|0|||||1303918151
+special_buildings_large|abandoned_crash_building|0|||||1303918151
 police_station|abandoned_police_station|3|||||-1614901983

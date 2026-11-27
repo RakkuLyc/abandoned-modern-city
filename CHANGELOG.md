@@ -20,6 +20,12 @@
 - With Outpost Zero: its bunkers were placed inside the cities and on the highways. They now stay at least 48 blocks
   (from the point it checks) away from them.
 
+### Changed
+- The crash building is now a special structure, like the ramp building: it stands only in the cities that draw a
+  special structure (~40%), at most once, and such a city may have both (at most 2 special structures). It is in ~13%
+  of the cities instead of ~26%. Inside it is the same (drawn chests, barrels, zombie spawners). `/amcs spawn` and
+  `/amcs locate structure` list it under `special` instead of `building_large`.
+
 ## 1.0.0 — 2026-11-18
 
 The first release. Minecraft 1.21.1, NeoForge 21.1.219 or newer.

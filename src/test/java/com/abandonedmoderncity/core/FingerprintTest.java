@@ -69,7 +69,10 @@ import org.junit.jupiter.api.Test;
  * and structures when the 146 stairs of the stairwell of the apocalyptic building were turned the right way in its
  * .nbt (north and south swapped; nothing else); lots when the spawners of a floor were counted by its area under a
  * ceiling (one per 500 cells, SpawnerDraw.AREA) instead of the height class of the building (only spawners moved:
- * with zombieSpawners = false lots stays 5aab43a5... before and after).
+ * with zombieSpawners = false lots stays 5aab43a5... before and after); layout and structures when the crash building
+ * became a special structure (type special_buildings_large: the special group, its limit 2, only in the cities that
+ * draw CityRings.SPECIAL_CHANCE; inside the same: cells, chests, barrels and spawners of 60 copies identical; lots did
+ * not change, no city of its chunks had the crash building outside those cities).
  * Change them
  * only in a commit that is meant to change the world, and say so in it.
  */
@@ -77,7 +80,7 @@ class FingerprintTest {
     private static final Map<String, String> EXPECTED = new LinkedHashMap<>();
 
     static {
-        EXPECTED.put("layout", "4b410c7efdcdd8eb78616f2dfc8670be7d8fdb9aa5da9fd6c46e3774467c4cd9");
+        EXPECTED.put("layout", "c4417e1e12f2787abf59d378abd12359eb174f95d6f9ebe936d8d34bc7790e8c");
         EXPECTED.put("highways", "480e692cad232384cc5a0d486154e33b13a8ebc6d381e0dfbffa8cd18434ddf9");
         EXPECTED.put("village", "6d77e372e3111d53b3995b84b46308716b65b8107b051b8f4411eca72a61f71c");
         EXPECTED.put("chunks", "78a5d87786413d16206aad039147b442b914166b72cc5578ed3254662a03d875");
@@ -85,7 +88,7 @@ class FingerprintTest {
         EXPECTED.put("roads", "bcf16888eff09ec35d77b4c97d496a5d006061d045c8e02abd16c5a56418aef6");
         EXPECTED.put("lamps", "85591f5e99c109803aa1dfb294e112106e69005b6f9706d41bb2abb565addb23");
         EXPECTED.put("crowns", "4a5615a2e28181f6844deeb7e60c98e1c16a8ccd0d63d069395ab5aca3e77b8a");
-        EXPECTED.put("structures", "cbe4e5de0996ef38d3c0199f5963f32598e599a1e79501b5a86bcf0ac92f8f17");
+        EXPECTED.put("structures", "1816841460dcce963d7f2d2a7ce550c3b04bc94cd1f95c6ba955c3742996026a");
         EXPECTED.put("weathering", "f63f167de64de34e2a9b6d570ed53e887a97c24bd40d13a56d9532694e85b0ce");
         EXPECTED.put("benches", "e8ee1c72349ec4768b6c4880b5810913a01abed52a0c8790553a5f97fb15e7e8");
     }

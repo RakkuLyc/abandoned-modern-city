@@ -28,7 +28,7 @@ class BuildingChestsTest {
             "abandoned_crash_building", 68);
 
     private static boolean building(Structures.Def d) {
-        return d.type().startsWith("buildings_");
+        return Structures.isBuildingType(d.type());
     }
 
     /** The overgrowth seed of each structure (column {@code seed} of index.txt). */

@@ -94,34 +94,47 @@ class WorldPlanTest {
     }
 
     @Test
-    void specialStructuresAreInAboutOneCityInTen() {
-        // the special category (the ramp building) only in the cities that draw CityRings.SPECIAL_CHANCE, ~1 city in 10
+    void specialStructuresAreOnlyInTheCitiesThatDrawThem() {
+        // the special category (the ramp building and the crash building) only in the cities that draw
+        // CityRings.SPECIAL_CHANCE, each at most once, at most 2 (Structures.LIMITS); ~1 city in 5 has one
         int cities = 0;
         int allowed = 0;
         int with = 0;
+        int both = 0;
+        Map<String, Integer> byName = new java.util.TreeMap<>();
         for (long seed : SEEDS) {
             for (TestTerrain.Kind kind : TestTerrain.Kind.values()) {
                 for (City c : allCities(plan(seed, kind))) {
                     cities++;
                     allowed += c.rings.allowsSpecial() ? 1 : 0;
                     int n = c.gridHalf();
-                    boolean has = false;
+                    List<String> specials = new ArrayList<>();
                     for (int bj = -n; bj <= n; bj++) {
                         for (int bi = -n; bi <= n; bi++) {
                             for (Lot l : c.lots(bi, bj)) {
-                                has |= l.building != null && "special".equals(l.building.group());
+                                if (l.building != null && "special".equals(l.building.group())) {
+                                    specials.add(l.building.name());
+                                }
                             }
                         }
                     }
-                    assertFalse(has && !c.rings.allowsSpecial(), c + " has a special structure without the draw");
-                    with += has ? 1 : 0;
+                    assertFalse(!specials.isEmpty() && !c.rings.allowsSpecial(), c + " has a special structure without"
+                            + " the draw");
+                    assertTrue(specials.size() <= Structures.LIMITS.get("special"), c + ": " + specials);
+                    assertEquals(specials.size(), new java.util.HashSet<>(specials).size(), c + ": " + specials);
+                    for (String name : specials) {
+                        byName.merge(name, 1, Integer::sum);
+                    }
+                    with += specials.isEmpty() ? 0 : 1;
+                    both += specials.size() == 2 ? 1 : 0;
                 }
             }
         }
         double share = (double) with / cities;
-        System.out.printf("[WorldPlanTest] special: %d of %d cities (%.1f%%), %d may have it%n", with, cities,
-                100 * share, allowed);
-        assertTrue(share >= 0.07 && share <= 0.13, "special in " + with + " of " + cities + " cities");
+        System.out.printf("[WorldPlanTest] special: %d of %d cities (%.1f%%), %d may have it, %d with both; %s%n", with,
+                cities, 100 * share, allowed, both, byName);
+        assertEquals(2, byName.size(), "both special structures come up: " + byName);
+        assertTrue(share >= 0.17 && share <= 0.27, "special in " + with + " of " + cities + " cities");
     }
 
     @Test

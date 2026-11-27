@@ -669,3 +669,15 @@ structures of the `structures/` folder); on 10 Nov 2026 streets and highways bec
   ~24.5 → ~20.5, bluish ~19 → ~21.5, brutalist U ~21 → ~26, the small buildings the same. `FingerprintTest`: `lots`
   `8acc1004...` → `4736ee67...` (with `zombieSpawners = false` it stays `5aab43a5...` before and after: only the
   spawners moved); both reference reports of 20261027: only the spawners.
+- **The crash building a special structure** (27 Nov 2026, asked by the user). Before, a large building (type
+  `buildings_large`, category `building_large`) that could stand in any city, in ~26% of them; the special category
+  held only the ramp building, at most 1 per city, only in the cities that draw `CityRings.SPECIAL_CHANCE` (0.40). The
+  user's choices: it keeps everything of a building inside (drawn chests, barrels, zombie spawners; over becoming like
+  the ramp building, with the 68 chests of its `.nbt` and no spawner); at most 2 special structures per city, so a city
+  may have both (over 1, one or the other); its original moved from `structures/Prédios/` to `structures/Especial/`
+  (`predio_choque_abandonado.nbt`, not changed). What it replaced: the type `buildings_large` → `special_buildings_large`
+  (`Structures.isBuildingType` takes both, `Structures.buildingClass` reads the class, `categoryOf` gives `special`);
+  `Structures.LIMITS` special 1 → 2; `Def.onePerCity` for every type starting with `special`. Now in ~13% of the cities
+  (the 150 of 1,129 it already had among the cities with the draw; the ramp building the same 139). `FingerprintTest`:
+  `layout` `4b410c7e...` → `c4417e1e...`, `structures` `cbe4e5de...` → `18168414...` (the type, the group and the
+  limits; the cells, chests, barrels and spawners of the crash building the same); the battery of 20261027 identical.

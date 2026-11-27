@@ -194,7 +194,7 @@ class RoomsTest {
     @Test
     void onlyTheBuildingsHaveRooms() {
         for (Structures.Def d : Structures.ALL) {
-            if (d.type().startsWith("buildings_")) {
+            if (Structures.isBuildingType(d.type())) {
                 assertFalse(d.rooms().spots().isEmpty(), d.name());
             } else {
                 assertEquals(Rooms.Layout.EMPTY, d.rooms(), d.name());
@@ -205,7 +205,7 @@ class RoomsTest {
     @Test
     void buildingSpotsAreReachableOnAFullFloorAndRoomEnough() {
         for (Structures.Def d : Structures.ALL) {
-            if (!d.type().startsWith("buildings_")) {
+            if (!Structures.isBuildingType(d.type())) {
                 continue;
             }
             Template t = d.t();
@@ -252,7 +252,7 @@ class RoomsTest {
                 assertTrue(spotsOn[f] == 0 || farOn[f] > 0, d.name() + ": no far spot on floor " + f);
             }
             int[] cap = Rooms.capacity(d.rooms(), Rooms.SPACING);
-            int most = MOST.get(d.category().substring("building_".length()));
+            int most = MOST.get(Structures.buildingClass(d.type()));
             assertTrue(cap[0] >= most, d.name() + ": room for " + cap[0] + " chests " + Rooms.SPACING
                     + " apart, fewer than " + most);
         }
@@ -277,7 +277,7 @@ class RoomsTest {
         File dir = new File(WorldPlanTest.renderDir(), "rooms");
         dir.mkdirs();
         for (Structures.Def d : Structures.ALL) {
-            if (!d.type().startsWith("buildings_")) {
+            if (!Structures.isBuildingType(d.type())) {
                 continue;
             }
             Rooms.Layout l = d.rooms();

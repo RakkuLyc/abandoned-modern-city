@@ -15,7 +15,7 @@ class BarrelsTest {
     static final int SEEDS = 200;
 
     private static boolean building(Structures.Def d) {
-        return d.category().startsWith("building_");
+        return Structures.isBuildingType(d.type());
     }
 
     private static Set<Integer> barrelCells(Template t) {

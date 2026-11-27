@@ -58,16 +58,19 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
 - **Structures (30 models, 52 files, `structures/`):** drawn at random in the ring (every model with the same chance,
   then its color: the 12 houses make ~52% of the structures of the cities), with a per-city limit: pharmacies 3,
   workshops 2, gas stations always 2 (2 small or 1 small and 1 large, half the cities each; never 2 large), and each building (apartment, skeleton, bluish, tower, apocalyptic, small, brutalist,
-  wide, green tower, crash, ramp) at most 1 per city; the ramp building (the `special` category) in only ~1 city in
-  10 (`CityRings.SPECIAL_CHANCE`). Never two of the same structure (the same model, in any color)
+  wide, green tower, crash, ramp) at most 1 per city; the special structures (the ramp building and the crash
+  building, the `special` category, at most 2 per city) only in the 40% of the cities that draw
+  `CityRings.SPECIAL_CHANCE`: ~1 city in 5 has one (ramp ~12%, crash ~13%, both ~3.6%). Never two of the same structure (the same model, in any color)
   in one block.
   The buildings are classified by the height of their box (buried layers included; the `type` of `index.txt` and the
   `/amcs spawn` / `locate` category follow it): **small** up to 40 blocks, **medium** up to 75, **large** up to 140 and
   **immense** above 140, each limit with a margin of 3 blocks (a building up to 3 over a limit stays in the lower class:
   small up to 43, medium up to 78, large up to 143). Today: small 3 (apartment building 37, small building 41, skeleton
-  building 43), medium 0, large 7 (wide building 80, crash building 90, bluish building 106, apocalyptic building 110,
-  tower 118, brutalist U building 125, green tower 143), immense 0 (the categories exist for future buildings). The
-  ramp building (`special`, 134) and the police station (own category, 33) stay out of it. The class changes neither the
+  building 43), medium 0, large 6 (wide building 80, bluish building 106, apocalyptic building 110, tower 118,
+  brutalist U building 125, green tower 143), immense 0 (the categories exist for future buildings). The crash building
+  (90, large) is a special building: type `special_buildings_large`, category `special`, and inside still a building
+  (drawn chests, barrels, zombie spawners). The ramp building (`special`, 134) and the police station (own category,
+  33) stay out of it. The class changes neither the
   loot (every building uses the `building` theme) nor the barrels, nor the sorting of the ring.
   Color variants: pharmacy and large pharmacy (5 colors each, the D R U G S T O R E letters copied from the original
   in the variant's color, without the F A R M Á C I A sign in blocks the variants had: the wall stays white as on
@@ -103,8 +106,8 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   | Brutalist U building | building (large) | 75 × 58 × 125 | layer 0 |
   | Wide building (underground parking dug into the terrain, whole ramp and stairwell open) | building (large) | 84 × 31 × 80 | layer 8 (8 buried) |
   | Green tower | building (large) | 31 × 31 × 143 | layer 0 |
-  | Ramp building (folder Especial) | special (at most 1 per city, in ~1 city in 10) | 102 × 72 × 134 | layer 0 |
-  | Crash building (two leaning towers) | building (large) | 91 × 44 × 90 | layer 0 |
+  | Ramp building (folder Especial) | special (at most 1 per city, in ~1 city in 8) | 102 × 72 × 134 | layer 0 |
+  | Crash building (two leaning towers; folder Especial) | special, a building inside (large; at most 1 per city, in ~1 city in 8) | 91 × 44 × 90 | layer 0 |
   | Police station (half-buried basement dug into the terrain, letters on banners) | police station (at most 1 per city) | 54 × 38 × 33 | layer 3 (3 buried) |
 
   - Against the sidewalk without a gap: the edge rows without a floor get the floor of the first row that has one.
@@ -164,7 +167,7 @@ cells of 648 and got 4 entrances; on 12 Nov 2026 the city blocks became 180 × 1
   | `pharmacy` | the pharmacies | bottles, sugar, potions of healing, regeneration, night vision, fire resistance | healing II, long regeneration, bottles o' enchanting |
   | `workshop` | the workshops | iron, copper, coal, chains, worn iron tools, rails, pistons | diamond, iron block, enchanted tools, hopper, anvil |
   | `gas_station` | the gas stations | snacks, coal, lava bucket, map, compass, emeralds | emeralds, gold, golden apple, spyglass |
-  | `building` | the buildings and the ramp building (whatever their number of containers) | paper, books, arrows, pencils, redstone, worn bow and sword | diamond, enchanted iron armor, ender pearls, music discs |
+  | `building` | the buildings, the crash building and the ramp building (whatever their number of containers) | paper, books, arrows, pencils, redstone, worn bow and sword | diamond, enchanted iron armor, ender pearls, music discs |
   | `police_station` | the police station (63 containers) | the same as `building` (its own theme so that an add-on such as AMC TACZ Loot can give it more weapons) | the same |
 
   | Container | Normal | Hard to get to (`_hard`) |
@@ -257,7 +260,7 @@ core/   the pure planner (no Minecraft classes), tested with JUnit
   City            stage 1 (is there a city? center, height) and stage 2 (streets, crossings, highway exits, the
                   lots of each block, cached)
   CityRings       what stands in the blocks of a city: the rings of structures drawn for the whole city, the 2 gas
-                  stations, the special structure (~1 city in 10), the parks in a corner, the nature of the rest
+                  stations, the special structures (~1 city in 5), the parks in a corner, the nature of the rest
   StreetLights    the street lights: where they stand, the 5 abandoned variants and the block at each height
   Lot             lots: a park (in a corner of the block), a structure or the core taken over by nature (WILD)
   Flora           trees (4 species, vines), patchy ground, plants and rubble; a bucketed index of trees

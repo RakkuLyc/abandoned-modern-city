@@ -169,7 +169,7 @@ public final class Structures {
             if (m == null) {
                 Map<Integer, Integer> out = new HashMap<>();
                 // the range of chests by the height class of the type (buildings_small ... buildings_immense)
-                for (Rooms.Spot s : ChestDraw.draw(rooms, type.substring("buildings_".length()), t.sx, t.sz, seed)) {
+                for (Rooms.Spot s : ChestDraw.draw(rooms, buildingClass(type), t.sx, t.sz, seed)) {
                     out.put(cell(s.x(), s.y(), s.z()), s.facing());
                 }
                 m = Map.copyOf(out);
@@ -265,7 +265,7 @@ public final class Structures {
          * and recognizable, not the houses, pharmacies, workshops or gas stations.
          */
         public boolean onePerCity() {
-            return isBuildingType(type) || type.equals("special");
+            return isBuildingType(type) || type.startsWith("special");
         }
 
         /**
@@ -382,10 +382,11 @@ public final class Structures {
     /**
      * Most structures of a group per city: pharmacies 3 (both kinds), car workshops 2 (both kinds), gas stations 2
      * (both kinds; every city has exactly 2, never 2 large ones, placed in reserved rows: the rings never draw one,
-     * {@link CityRings#twoSmallGasStations}), the special building 1, the police station 1.
+     * {@link CityRings#twoSmallGasStations}), the special structures 2 (each once, {@link Def#onePerCity}; only in
+     * the cities that draw {@link CityRings#SPECIAL_CHANCE}), the police station 1.
      * The group is the start of the structure's type.
      */
-    public static final Map<String, Integer> LIMITS = Map.of("pharmacy", 3, "workshop", 2, "gas_station", 2, "special", 1,
+    public static final Map<String, Integer> LIMITS = Map.of("pharmacy", 3, "workshop", 2, "gas_station", 2, "special", 2,
             "police_station", 1);
     /**
      * Kinds of loot by the start of the structure type; every other type (the buildings) gets {@code building}.
@@ -416,15 +417,31 @@ public final class Structures {
                 : h <= HEIGHT_LARGE + HEIGHT_MARGIN ? "large" : "immense";
     }
 
-    /** Whether the type is one of the buildings ({@code buildings_small} ... {@code buildings_immense}). */
+    /**
+     * Whether the type is one of the buildings ({@code buildings_small} ... {@code buildings_immense}), or a special
+     * structure that is a building ({@code special_buildings_<class>}: the crash building): their chests are drawn
+     * ({@link ChestDraw}), their barrels turned into chests ({@link Barrels}), they get zombie spawners
+     * ({@link SpawnerDraw}).
+     */
     static boolean isBuildingType(String type) {
-        return type.startsWith("buildings_");
+        return type.startsWith("buildings_") || type.startsWith("special_buildings_");
     }
 
-    /** Category of {@code /amcs spawn} of a structure type (by the start of the type; buildings by height class). */
+    /** The height class of a building type ({@code small}, {@code medium}, {@code large} or {@code immense}). */
+    static String buildingClass(String type) {
+        return type.substring(type.indexOf("buildings_") + "buildings_".length());
+    }
+
+    /**
+     * Category of {@code /amcs spawn} of a structure type (by the start of the type; buildings by height class; a
+     * special building is {@code special}).
+     */
     static String categoryOf(String type) {
+        if (type.startsWith("special")) {
+            return "special";
+        }
         if (isBuildingType(type)) {
-            return "building_" + type.substring("buildings_".length());
+            return "building_" + buildingClass(type);
         }
         for (String k : CATEGORIES) {
             if (type.startsWith(k)) {
