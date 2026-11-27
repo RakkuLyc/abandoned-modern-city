@@ -134,6 +134,8 @@ class WorldPlanTest {
         System.out.printf("[WorldPlanTest] special: %d of %d cities (%.1f%%), %d may have it, %d with both; %s%n", with,
                 cities, 100 * share, allowed, both, byName);
         assertEquals(2, byName.size(), "both special structures come up: " + byName);
+        // the user's choice (27 Nov 2026): a city may have both
+        assertTrue(both > 0, "no city with both special structures");
         assertTrue(share >= 0.17 && share <= 0.27, "special in " + with + " of " + cities + " cities");
     }
 

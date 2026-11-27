@@ -24,7 +24,9 @@
 - The crash building is now a special structure, like the ramp building: it stands only in the cities that draw a
   special structure (~40%), at most once, and such a city may have both (at most 2 special structures). It is in ~13%
   of the cities instead of ~26%. Inside it is the same (drawn chests, barrels, zombie spawners). `/amcs spawn` and
-  `/amcs locate structure` list it under `special` instead of `building_large`.
+  `/amcs locate structure` list it under `special` instead of `building_large`. In a world made before, the cities
+  that had it without the draw (~1 in 8) are planned differently: where its chunks were already generated it stays,
+  cut where the new chunks meet them, and the structures around it can differ; a new world has none of that.
 
 ## 1.0.0 — 2026-11-18
 
